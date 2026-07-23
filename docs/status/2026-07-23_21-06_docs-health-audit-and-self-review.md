@@ -244,4 +244,4 @@ All issues identified above have been resolved:
 | **C — .golangci.yml never read** | Read and lint run. 0 issues. Build tags (`goexperiment.jsonv2`, etc.) confirmed in config. |
 | **G1 — Build environment question** | Answered: `GOWORK=off` (not `GOPRIVATE`) is the fix. The workspace, not go-sse, is misconfigured. |
 | **G2 — MIT or PROPRIETARY?** | Answered by user: **MIT**. LICENSE updated. |
-| **G3 — Should go-sse have a flake.nix?** | Tracked in TODO_LIST.md as high-impact item. Not yet created. |
+| **G3 — Should go-sse have a flake.nix?** | Yes — `flake.nix` now exists and passes `nix flake check`. Provides hermetic build/test/lint/coverage/format (Go 1.26, golangci-lint, treefmt). |

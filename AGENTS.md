@@ -4,7 +4,20 @@ Server-Sent Events transport library for Go. Single package (`sse`), flat layout
 
 ## Commands
 
-No `flake.nix`, `Makefile`, or CI config. Use raw `go` tooling (from `CONTRIBUTING.md`):
+`flake.nix` provides hermetic build/test/lint. The devShell sets `GOWORK=off` and `GOEXPERIMENT=jsonv2` automatically:
+
+```bash
+nix run .#test-race          # tests with race detector
+nix run .#vet                # go vet
+nix run .#lint               # golangci-lint
+nix run .#coverage           # test + coverage report
+nix flake check              # full hermetic check (compile + test)
+nix develop                  # enter dev shell (Go 1.26, golangci-lint, gopls, govulncheck)
+```
+
+Formatting via treefmt (`nix fmt`): gofumpt, goimports, golines, nixfmt.
+
+Raw `go` tooling (for environments without Nix):
 
 ```bash
 GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race -count=1   # tests
@@ -14,7 +27,7 @@ GOWORK=off GOEXPERIMENT=jsonv2 golangci-lint run ./...         # lint
 
 **`GOEXPERIMENT=jsonv2` is required** to build, transitively via `go-branded-id`. Without it, compilation fails. Always prefix build/test/vet commands with it.
 
-**`GOWORK=off` is required in this environment.** A parent `/home/lars/projects/go.work` includes sibling projects (cqrs-htmx, etc.). One sibling (`cqrs-htmx`) has a stale checksum in its `go.sum` for `go-cqrs-lite/query/v4@v4.0.2`, which causes a `SECURITY ERROR` checksum mismatch when workspace mode resolves the combined module graph. `GOWORK=off` isolates go-sse to its own (valid) `go.mod`/`go.sum`. The `go.work` file is gitignored and does not exist in a fresh clone — external contributors do not need this flag.
+**`GOWORK=off` is required in this environment.** A parent `/home/lars/projects/go.work` includes sibling projects (cqrs-htmx, etc.). One sibling (`cqrs-htmx`) has a stale checksum in its `go.sum` for `go-cqrs-lite/query/v4@v4.0.2`, which causes a `SECURITY ERROR` checksum mismatch when workspace mode resolves the combined module graph. `GOWORK=off` isolates go-sse to its own (valid) `go.mod`/`go.sum`. The `go.work` file is gitignored and does not exist in a fresh clone — external contributors do not need this flag. (The `flake.nix` devShell sets `GOWORK=off` automatically.)
 
 ## Dependencies
 

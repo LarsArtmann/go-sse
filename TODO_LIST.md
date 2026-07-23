@@ -17,7 +17,6 @@
 
 | Task                                                                       | Status    | Impact | Effort | Evidence                                                           |
 | -------------------------------------------------------------------------- | --------- | ------ | ------ | ------------------------------------------------------------------ |
-| Create `flake.nix` with devShell (test, lint, vet) per LarsArtmann convention | 🔴 `TODO` | High   | 1h     | No flake.nix exists; global AGENTS.md mandates it; `go-branded-id` has one |
 | Create CI workflow (`.github/workflows/ci.yml`): test + lint + vet + race  | 🔴 `TODO` | High   | 1h     | `.golangci.yml` configured but nothing runs it automatically      |
 
 ## Medium Impact

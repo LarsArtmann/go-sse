@@ -1,5 +1,5 @@
 {
-  description = "go-sse — Server-Sent Events transport for Go";
+  description = "Server-Sent Events transport for Go (wire format, fan-out, replay)";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -81,6 +81,7 @@
             {
               type = "app";
               program = lib.getExe script;
+              meta.description = "go-sse: ${name}";
             };
         in
         {
@@ -111,7 +112,7 @@
             GOEXPERIMENT = "jsonv2";
 
             shellHook = ''
-              echo "go-sse dev shell — $(go version)"
+              echo "go-sse dev shell: $(go version)"
               echo "GOEXPERIMENT=$GOEXPERIMENT"
             '';
           };
@@ -129,37 +130,46 @@
 
           apps = {
             test = mkApp "test" [ goPkg ] ''
+              export GOEXPERIMENT=jsonv2
               go test ./... -count=1 "$@"
             '';
 
             test-race = mkApp "test-race" [ goPkg ] ''
+              export GOEXPERIMENT=jsonv2
               go test ./... -race -count=1 "$@"
             '';
 
             build = mkApp "build" [ goPkg ] ''
+              export GOEXPERIMENT=jsonv2
               go build ./...
             '';
 
             vet = mkApp "vet" [ goPkg ] ''
+              export GOEXPERIMENT=jsonv2
               go vet ./...
             '';
 
             lint = mkApp "lint" [ pkgs.golangci-lint ] ''
+              export GOEXPERIMENT=jsonv2
               golangci-lint run ./...
             '';
 
             coverage = mkApp "coverage" [ goPkg ] ''
+              export GOEXPERIMENT=jsonv2
               go test ./... -coverprofile=coverage.out -covermode=atomic "$@"
               go tool cover -func=coverage.out
             '';
 
-            clean = mkApp "clean" [
-              goPkg
-              pkgs.trash-cli
-            ] ''
-              trash-put coverage.out 2>/dev/null || true
-              go clean -testcache
-            '';
+            clean =
+              mkApp "clean"
+                [
+                  goPkg
+                  pkgs.trash-cli
+                ]
+                ''
+                  trash-put coverage.out 2>/dev/null || true
+                  go clean -testcache
+                '';
           };
         };
     };
