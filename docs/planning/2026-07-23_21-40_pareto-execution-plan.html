@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>go-sse — Pareto Execution Plan</title>
+<style>
+:root {
+  --color-graphite: #0e0e10; --color-graphite-2: #18181d; --color-graphite-3: #16161a;
+  --color-bone: #f4f4f0; --color-red: #ff6b6b; --color-blue: #6eb5ff;
+  --color-yellow: #f4d35e; --color-amber: #ffb347;
+  --color-hairline: rgba(244,244,240,0.12); --color-hairline-strong: rgba(244,244,240,0.25);
+  --surface: var(--color-graphite); --surface-raised: var(--color-graphite-2);
+  --surface-sunken: var(--color-graphite-3); --text: var(--color-bone);
+  --text-muted: rgba(244,244,240,0.72); --text-faint: rgba(244,244,240,0.45);
+  --border: var(--color-hairline); --border-strong: var(--color-hairline-strong);
+  --accent: var(--color-amber); --problem: var(--color-red);
+  --solution: var(--color-blue); --warning: var(--color-yellow); --radius: 0px;
+  --font-heading: ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-body: ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono: ui-monospace,"Cascadia Code","Source Code Pro","JetBrains Mono",Menlo,Consolas,monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--surface); color: var(--text); font-family: var(--font-body); font-size: 15px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.top-bar { background: var(--text); color: var(--surface); padding: 0.6rem 2rem; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+.layout { display: flex; gap: 2.5rem; padding: 2rem; max-width: 1600px; margin: 0 auto; }
+.sidebar { width: 220px; flex-shrink: 0; position: sticky; top: 1rem; align-self: flex-start; height: calc(100vh - 2rem); overflow-y: auto; }
+.sidebar nav { display: flex; flex-direction: column; gap: 0; }
+.sidebar .label { font-family: var(--font-mono); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); margin-bottom: 0.75rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--text); }
+.sidebar a { font-size: 0.84rem; color: var(--text-muted); text-decoration: none; padding: 0.5rem 0.75rem; border-left: 3px solid transparent; font-weight: 600; transition: all 0.15s ease; line-height: 1.3; }
+.sidebar a:hover, .sidebar a.active { border-left-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); color: var(--accent); }
+.main { flex: 1; min-width: 0; }
+h1,h2,h3,h4 { font-family: var(--font-heading); font-weight: 900; letter-spacing: -0.02em; color: var(--text); }
+h1 { font-size: clamp(1.8rem,4.5vw,2.6rem); line-height: 1.08; margin: 0 0 0.6rem; }
+h2 { font-size: 1.4rem; margin: 2.5rem 0 1rem; padding-bottom: 0.4rem; border-bottom: 3px solid var(--text); display: flex; align-items: baseline; gap: 0.7rem; }
+h2 .num { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); font-weight: 700; }
+h3 { font-size: 1.1rem; margin: 0 0 0.4rem; font-weight: 700; }
+h4 { font-size: 0.95rem; margin: 0 0 0.3rem; font-weight: 700; }
+p { margin: 0 0 1rem; }
+ul,ol { margin: 0 0 1rem 1.4rem; }
+li { margin: 0.3rem 0; }
+code { font-family: var(--font-mono); font-size: 0.85em; background: var(--surface-sunken); padding: 0.1rem 0.35rem; }
+.hero { padding: 1.5rem 0 2rem; margin-bottom: 1.5rem; border-bottom: 3px solid var(--text); }
+.hero-badge { display: inline-block; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--accent); margin-bottom: 0.9rem; }
+.hero-subtitle { font-size: 1.05rem; color: var(--text-muted); max-width: 70ch; margin: 0 0 1rem; }
+.meta { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.tag { display: inline-block; font-family: var(--font-mono); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; background: var(--surface-sunken); color: var(--text); border: 1px solid var(--border-strong); }
+.tag.amber { background: var(--warning); border-color: var(--warning); color: var(--color-graphite); }
+.tag.teal { background: var(--solution); border-color: var(--solution); color: var(--color-graphite); }
+.tag.red { background: var(--problem); border-color: var(--problem); color: var(--color-graphite); }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 0; margin: 1.5rem 0 2rem; border: 3px solid var(--text); }
+.stat-card { padding: 1.3rem 1rem; text-align: center; border-right: 3px solid var(--text); background: var(--surface-raised); }
+.stat-card:last-child { border-right: none; }
+.stat-value { font-family: var(--font-heading); font-size: 2.4rem; font-weight: 900; line-height: 1; letter-spacing: -0.04em; }
+.stat-card .label { font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; margin-top: 0.5rem; color: var(--text-faint); }
+.stat-good { background: var(--solution); color: var(--color-graphite); }
+.stat-warn { background: var(--warning); color: var(--color-graphite); }
+.stat-bad { background: var(--problem); color: var(--color-graphite); }
+.card { background: var(--surface-raised); border: 2px solid var(--text); padding: 1.2rem 1.4rem; margin-bottom: 1rem; border-left: 8px solid var(--border-strong); }
+.card-problem { border-left-color: var(--problem); }
+.card-solution { border-left-color: var(--solution); }
+.card-warning { border-left-color: var(--warning); }
+.card h3 { margin-bottom: 0.4rem; }
+.card p:last-child { margin-bottom: 0; }
+.issue { background: var(--surface-raised); border: 2px solid var(--text); padding: 1.2rem 1.4rem; margin-bottom: 1rem; border-left: 8px solid var(--border-strong); }
+.issue-critical { border-left-color: var(--problem); }
+.issue-important { border-left-color: var(--warning); }
+.issue-nice { border-left-color: var(--solution); }
+.issue h3 { margin-bottom: 0.3rem; }
+.issue .where { font-family: var(--font-mono); font-size: 0.76rem; color: var(--text-faint); margin: 0.2rem 0 0.6rem; }
+.issue p:last-child { margin-bottom: 0; }
+.severity { display: inline-block; font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.22rem 0.6rem; margin-bottom: 0.6rem; color: var(--surface); }
+.severity-critical { background: var(--problem); }
+.severity-important { background: var(--warning); color: var(--color-graphite); }
+.severity-nice { background: var(--solution); }
+.badge { display: inline-block; font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.18rem 0.5rem; border: 1px solid var(--border-strong); color: var(--text); }
+.badge-critical { background: var(--problem); color: var(--color-graphite); border-color: var(--problem); }
+.badge-high { background: var(--warning); color: var(--color-graphite); border-color: var(--warning); }
+.badge-medium { background: var(--solution); color: var(--color-graphite); border-color: var(--solution); }
+.badge-low { background: var(--surface-sunken); color: var(--text-muted); }
+.callout { margin: 0.8rem 0 0; padding: 0.8rem 1rem; border: 1px solid var(--border-strong); border-left: 4px solid var(--border-strong); background: var(--surface-sunken); font-size: 0.9rem; }
+.callout strong { display: inline-block; margin-right: 0.4rem; }
+.callout-solution { border-left-color: var(--solution); background: color-mix(in srgb,var(--solution) 10%,var(--surface-raised)); }
+.callout-warning { border-left-color: var(--warning); background: color-mix(in srgb,var(--warning) 10%,var(--surface-raised)); }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: 0.84rem; }
+th { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 3px solid var(--text); font-family: var(--font-mono); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); white-space: nowrap; }
+td { padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:hover { background: color-mix(in srgb,var(--accent) 4%,transparent); }
+.pareto-tier { background: var(--surface-raised); border: 2px solid var(--text); padding: 1.2rem 1.4rem; margin-bottom: 1rem; border-left: 8px solid var(--border-strong); }
+.pareto-tier-1 { border-left-color: var(--problem); }
+.pareto-tier-4 { border-left-color: var(--warning); }
+.pareto-tier-20 { border-left-color: var(--solution); }
+.pareto-tier-rest { border-left-color: var(--text-faint); }
+.svg-container { background: #ffffff; border: 3px solid var(--text); padding: 1rem; margin: 1.5rem 0; overflow-x: auto; }
+.svg-container svg { max-width: 100%; height: auto; display: block; }
+.strengths { margin: 1rem 0; }
+.strength { display: flex; gap: 0.8rem; margin-bottom: 0.6rem; align-items: flex-start; }
+.strength .check { font-size: 1.3rem; font-weight: 900; color: var(--solution); flex-shrink: 0; line-height: 1.3; }
+.strength .text strong { display: block; }
+.strength .text span { font-size: 0.88rem; color: var(--text-muted); }
+@media (max-width: 1024px) { .sidebar { display: none; } .layout { padding: 1rem; } }
+@media (max-width: 640px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
+.footer { border-top: 3px solid var(--text); padding: 1.5rem 2rem; max-width: 1600px; margin: 0 auto; font-size: 0.8rem; color: var(--text-faint); font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <span>go-sse &middot; Pareto Execution Plan</span>
+  <span>2026-07-23 21:40</span>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <nav data-nav>
+      <div class="label">Plan Sections</div>
+      <a href="#hero">Overview</a>
+      <a href="#baseline">Baseline</a>
+      <a href="#pareto">Pareto Breakdown</a>
+      <a href="#medium">Medium Tasks</a>
+      <a href="#fine">Fine Tasks</a>
+      <a href="#graph">Execution Graph</a>
+      <a href="#findings">Key Findings</a>
+      <a href="#strengths">Strengths</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+<section id="hero" class="hero">
+  <div class="hero-badge">PARETO PLANNING &middot; 2026-07-23</div>
+  <h1>go-sse Deep Review &amp; Execution Plan</h1>
+  <p class="hero-subtitle">Full-codebase review of all 7 source files and 4 test files (1,901 lines). 15 medium-granularity tasks broken into 61 fine-grained subtasks, sorted by Pareto impact tiers (1% / 4% / 20% / remaining).</p>
+  <div class="meta">
+    <span class="tag teal">11 source files</span>
+    <span class="tag">1,901 LOC</span>
+    <span class="tag amber">95.9% coverage</span>
+    <span class="tag">0 lint issues</span>
+    <span class="tag red">1 spec bug fixed</span>
+  </div>
+</section>
+
+<section id="baseline">
+<h2><span class="num">00</span>Review Baseline</h2>
+<p>Every Go source file and test file was read end-to-end. All documentation files, config files (<code>flake.nix</code>, <code>.golangci.yml</code>, <code>go.mod</code>), and prior status reports were reviewed.</p>
+
+<div class="stat-grid">
+  <div class="stat-card stat-good"><div class="stat-value">95.9%</div><div class="label">Test Coverage</div></div>
+  <div class="stat-card stat-good"><div class="stat-value">0</div><div class="label">Lint Issues</div></div>
+  <div class="stat-card stat-good"><div class="stat-value">44</div><div class="label">Tests Passing</div></div>
+  <div class="stat-card stat-warn"><div class="stat-value">15</div><div class="label">Medium Tasks</div></div>
+  <div class="stat-card stat-bad"><div class="stat-value">1</div><div class="label">Spec Bug Found</div></div>
+  <div class="stat-card"><div class="stat-value">61</div><div class="label">Fine Subtasks</div></div>
+</div>
+
+<div class="card card-solution">
+  <h3>Quality Gate: PASSING</h3>
+  <p><code>GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race -count=1</code> &mdash; 44 tests pass, 11 benchmarks pass (0 allocs on fan-out hot path). <code>go vet</code> clean. <code>golangci-lint run ./...</code> &mdash; 0 issues. The library is in excellent shape; this plan is about raising the bar further.</p>
+</div>
+</section>
+
+<section id="pareto">
+<h2><span class="num">01</span>Pareto Breakdown</h2>
+<p>The 80/20 principle applied to go-sse. What are the few tasks that deliver the majority of the value?</p>
+
+<div class="pareto-tier pareto-tier-1">
+  <span class="severity severity-critical">Tier 1% &rarr; 51% of value</span>
+  <h3>The Foundation: CI + Security</h3>
+  <p>Two tasks unlock everything else. <strong>M1: CI workflow</strong> &mdash; one YAML file that runs test, lint, vet, race, and coverage on every push. Without CI, quality is manual forever. <strong>M2: LastEventIDFromRequest validation</strong> &mdash; the one security gap: untrusted HTTP header parsed without <code>ParseEventID</code>, allowing wire-format injection. For a transport library, closing the trust boundary is non-negotiable.</p>
+</div>
+
+<div class="pareto-tier pareto-tier-4">
+  <span class="severity severity-important">Tier 4% &rarr; 64% of value</span>
+  <h3>Quality &amp; Correctness</h3>
+  <p>Fuzz tests (M3), integration test with real <code>http.Server</code> (M4), test quality cleanup (M7), heartbeat duplication elimination (M8), edge-case test suite (M9). These catch the bugs CI surfaces and eliminate technical debt in the test layer.</p>
+</div>
+
+<div class="pareto-tier pareto-tier-20">
+  <span class="severity severity-nice">Tier 20% &rarr; 80% of value</span>
+  <h3>Type Safety &amp; API Hardening</h3>
+  <p><code>Event.Retry</code> &rarr; <code>uint</code> (M5), <code>EventStore.EventsAfter</code> &rarr; <code>EventID</code> param (M6), <code>Stream.Close</code> &rarr; <code>io.Closer</code> (M10), example/ directory (M11). These make impossible states unrepresentable and lower the adoption barrier.</p>
+</div>
+
+<div class="pareto-tier pareto-tier-rest">
+  <span class="badge badge-low">Tier 80% &rarr; 20% of value</span>
+  <h3>Release &amp; Polish</h3>
+  <p>First git tag v0.1.0 (M12), FEATURES.md line-ref precision (M13), README polish (M14), verify spec URL + build-tags note (M15). Important for credibility but not blocking functionality.</p>
+</div>
+</section>
+
+<section id="medium">
+<h2><span class="num">02</span>Medium-Granularity Plan (30&ndash;100min tasks)</h2>
+<p>15 tasks covering all review findings and existing TODO_LIST.md items. Sorted by Pareto tier, then impact/effort ratio.</p>
+
+<table>
+<thead><tr><th>#</th><th>Tier</th><th>Task</th><th>Impact</th><th>Effort</th><th>Category</th></tr></thead>
+<tbody>
+<tr><td><strong>M1</strong></td><td><span class="badge badge-critical">1%</span></td><td>CI workflow: test + lint + vet + race + coverage + format check</td><td>Critical</td><td>90min</td><td>Infrastructure</td></tr>
+<tr><td><strong>M2</strong></td><td><span class="badge badge-critical">1%</span></td><td>LastEventIDFromRequest: validate untrusted header via ParseEventID</td><td>Critical</td><td>45min</td><td>Security</td></tr>
+<tr><td><strong>M3</strong></td><td><span class="badge badge-high">4%</span></td><td>Fuzz tests: WriteEvent serializer + ParseEventID validator with corpus</td><td>High</td><td>100min</td><td>Testing</td></tr>
+<tr><td><strong>M4</strong></td><td><span class="badge badge-high">4%</span></td><td>Integration test with real http.Server: SSE round-trip</td><td>High</td><td>60min</td><td>Testing</td></tr>
+<tr><td><strong>M5</strong></td><td><span class="badge badge-high">4%</span></td><td>Type safety: Event.Retry int &rarr; uint (make negative impossible)</td><td>High</td><td>45min</td><td>Type Safety</td></tr>
+<tr><td><strong>M6</strong></td><td><span class="badge badge-high">4%</span></td><td>Type safety: EventStore.EventsAfter(string) &rarr; EventsAfter(EventID)</td><td>High</td><td>45min</td><td>Type Safety</td></tr>
+<tr><td><strong>M7</strong></td><td><span class="badge badge-medium">4%</span></td><td>Test quality: strings.Contains, strconv.Itoa, errorResponseWriter, b.Loop, t.Context, WaitGroup.Go</td><td>Medium</td><td>60min</td><td>Code Quality</td></tr>
+<tr><td><strong>M8</strong></td><td><span class="badge badge-medium">4%</span></td><td>Heartbeat constant extraction + eliminate WriteHeartbeat/Stream.Heartbeat duplication</td><td>Medium</td><td>30min</td><td>Code Quality</td></tr>
+<tr><td><strong>M9</strong></td><td><span class="badge badge-medium">4%</span></td><td>Edge-case tests: double-Close, BroadcastAfterClose, WriteRetry, lone-CR, unicode EventID, large payload</td><td>Medium</td><td>60min</td><td>Testing</td></tr>
+<tr><td><strong>M10</strong></td><td><span class="badge badge-medium">20%</span></td><td>Stream.Close &rarr; io.Closer interface (return error)</td><td>Medium</td><td>30min</td><td>API</td></tr>
+<tr><td><strong>M11</strong></td><td><span class="badge badge-medium">20%</span></td><td>example/ directory: minimal runnable server + client + compile test</td><td>Medium</td><td>45min</td><td>DX</td></tr>
+<tr><td><strong>M12</strong></td><td><span class="badge badge-low">80%</span></td><td>Publish: first git tag v0.1.0 + pkg.go.dev badge in README</td><td>Low</td><td>30min</td><td>Release</td></tr>
+<tr><td><strong>M13</strong></td><td><span class="badge badge-low">80%</span></td><td>FEATURES.md: fix ~11 imprecise line refs + remove hardcoded test count</td><td>Low</td><td>45min</td><td>Docs</td></tr>
+<tr><td><strong>M14</strong></td><td><span class="badge badge-low">80%</span></td><td>README: Event struct match source + non-blocking drop policy section</td><td>Low</td><td>30min</td><td>Docs</td></tr>
+<tr><td><strong>M15</strong></td><td><span class="badge badge-low">80%</span></td><td>Verify SSE spec URL live + build-tags note in CONTRIBUTING.md</td><td>Low</td><td>15min</td><td>Docs</td></tr>
+</tbody>
+</table>
+
+<div class="callout callout-solution">
+  <strong>Total effort:</strong> ~15 hours for all 15 tasks. The 1% tier (M1+M2) is ~2.25 hours and unlocks 51% of the value.
+</div>
+</section>
+
+<section id="fine">
+<h2><span class="num">03</span>Fine-Granularity Breakdown (max 15min each)</h2>
+<p>61 subtasks. Each independently completable, testable, and committable. Sorted by parent task then execution order.</p>
+
+<h3 style="margin-top:1.5rem">M1: CI Workflow (6 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F1.1</td><td>Create <code>.github/workflows/ci.yml</code> skeleton: checkout + Go 1.26 setup + GOEXPERIMENT</td><td>10min</td></tr>
+<tr><td>F1.2</td><td>Add test job: <code>go test ./... -race -count=1</code></td><td>10min</td></tr>
+<tr><td>F1.3</td><td>Add lint job: <code>golangci-lint run</code> with build-tags</td><td>10min</td></tr>
+<tr><td>F1.4</td><td>Add vet job: <code>go vet ./...</code></td><td>5min</td></tr>
+<tr><td>F1.5</td><td>Add coverage step: <code>-coverprofile</code> + artifact upload</td><td>10min</td></tr>
+<tr><td>F1.6</td><td>Add format check: <code>gofumpt -l</code> or <code>nix fmt --check</code></td><td>10min</td></tr>
+</tbody>
+</table>
+
+<h3>M2: LastEventIDFromRequest Security (5 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F2.1</td><td>Update <code>LastEventIDFromRequest</code>: validate via ParseEventID, return zero on invalid</td><td>10min</td></tr>
+<tr><td>F2.2</td><td>Update <code>Stream.LastEventID()</code> method if signature changes</td><td>5min</td></tr>
+<tr><td>F2.3</td><td>Add test: malicious <code>Last-Event-ID: foo\nbar</code> &rarr; treated as empty</td><td>10min</td></tr>
+<tr><td>F2.4</td><td>Add test: valid Last-Event-ID passes through unchanged</td><td>5min</td></tr>
+<tr><td>F2.5</td><td>Update doc.go and stream.go doc comments noting validation</td><td>5min</td></tr>
+</tbody>
+</table>
+
+<h3>M3: Fuzz Tests (7 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F3.1</td><td>Create <code>fuzz_test.go</code> with <code>FuzzWriteEvent</code> skeleton</td><td>10min</td></tr>
+<tr><td>F3.2</td><td>Add WriteEvent fuzz corpus seeds (multi-line, CRLF, unicode, empty)</td><td>15min</td></tr>
+<tr><td>F3.3</td><td>Write WriteEvent fuzz target: serialize &rarr; no panic, valid SSE output structure</td><td>15min</td></tr>
+<tr><td>F3.4</td><td>Add <code>FuzzParseEventID</code> skeleton</td><td>10min</td></tr>
+<tr><td>F3.5</td><td>Add ParseEventID fuzz corpus seeds (valid IDs, newlines, CR, unicode)</td><td>15min</td></tr>
+<tr><td>F3.6</td><td>Write ParseEventID fuzz target: valid &rarr; roundtrip, invalid &rarr; error</td><td>15min</td></tr>
+<tr><td>F3.7</td><td>Run fuzz tests locally for 1min each to verify</td><td>10min</td></tr>
+</tbody>
+</table>
+
+<h3>M4: Integration Test (4 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F4.1</td><td>Create <code>integration_test.go</code> with <code>httptest.Server</code> setup</td><td>15min</td></tr>
+<tr><td>F4.2</td><td>Connect via <code>http.Client</code>, read SSE stream with <code>bufio.Scanner</code></td><td>15min</td></tr>
+<tr><td>F4.3</td><td>Send events via Broadcaster, verify client receives correct data</td><td>15min</td></tr>
+<tr><td>F4.4</td><td>Test client disconnect &rarr; context cancellation &rarr; stream cleanup</td><td>15min</td></tr>
+</tbody>
+</table>
+
+<h3>M5: Event.Retry &rarr; uint (4 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F5.1</td><td>Change <code>Event.Retry</code> field type from <code>int</code> to <code>uint</code></td><td>10min</td></tr>
+<tr><td>F5.2</td><td>Update WriteEvent: <code>strconv.AppendUint</code> for retry field</td><td>10min</td></tr>
+<tr><td>F5.3</td><td>Update all tests referencing Retry field</td><td>10min</td></tr>
+<tr><td>F5.4</td><td>Update README, doc.go, FEATURES.md type references</td><td>10min</td></tr>
+</tbody>
+</table>
+
+<h3>M6: EventStore.EventsAfter(EventID) (3 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F6.1</td><td>Change <code>EventStore.EventsAfter</code> signature: <code>string</code> &rarr; <code>EventID</code></td><td>10min</td></tr>
+<tr><td>F6.2</td><td>Update <code>Replay</code> function to pass EventID directly (no <code>.Get()</code>)</td><td>5min</td></tr>
+<tr><td>F6.3</td><td>Update replay_test.go memoryStore + README EventStore example</td><td>15min</td></tr>
+</tbody>
+</table>
+
+<h3>M7: Test Quality Cleanup (6 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F7.1</td><td>Replace <code>contains()</code>/<code>startsWith()</code> with <code>strings.Contains</code> in stream_test.go</td><td>10min</td></tr>
+<tr><td>F7.2</td><td>Remove <code>contains()</code> and <code>startsWith()</code> helper functions</td><td>5min</td></tr>
+<tr><td>F7.3</td><td>Replace <code>itoa()</code> with <code>strconv.Itoa</code> in broadcaster_test.go</td><td>5min</td></tr>
+<tr><td>F7.4</td><td>Remove <code>itoa()</code> function</td><td>5min</td></tr>
+<tr><td>F7.5</td><td>Fix <code>errorResponseWriter</code>: initialize <code>writer</code> field to <code>&amp;errorWriter{}</code></td><td>10min</td></tr>
+<tr><td>F7.6</td><td>Modernize benchmarks: <code>b.N</code> &rarr; <code>b.Loop()</code>, WaitGroup.Go, <code>t.Context()</code></td><td>15min</td></tr>
+</tbody>
+</table>
+
+<h3>M8: Heartbeat Dedup (3 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F8.1</td><td>Extract <code>heartbeatFrame</code> constant in event.go</td><td>10min</td></tr>
+<tr><td>F8.2</td><td>Use <code>WriteHeartbeat</code> in <code>Stream.Heartbeat</code> instead of raw bytes</td><td>10min</td></tr>
+<tr><td>F8.3</td><td>Update AGENTS.md convention note about heartbeat constant</td><td>5min</td></tr>
+</tbody>
+</table>
+
+<h3>M9: Edge-Case Tests (5 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F9.1</td><td>Add <code>TestStream_DoubleCloseSafety</code></td><td>10min</td></tr>
+<tr><td>F9.2</td><td>Add <code>TestBroadcaster_BroadcastAfterClose</code></td><td>10min</td></tr>
+<tr><td>F9.3</td><td>Add <code>TestWriteRetry</code> (0% coverage on exported function)</td><td>10min</td></tr>
+<tr><td>F9.4</td><td>Add <code>TestWriteEvent_LoneCarriageReturn</code> (spec compliance)</td><td>10min</td></tr>
+<tr><td>F9.5</td><td>Add <code>TestParseEventID_Unicode</code> (unicode edge cases)</td><td>10min</td></tr>
+</tbody>
+</table>
+
+<h3>M10: Stream.Close &rarr; io.Closer (3 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F10.1</td><td>Change <code>Stream.Close()</code> to return <code>error</code> (always nil for now)</td><td>10min</td></tr>
+<tr><td>F10.2</td><td>Update all <code>defer stream.Close()</code> call sites in tests/docs</td><td>10min</td></tr>
+<tr><td>F10.3</td><td>Update doc comments, README, AGENTS.md, DOMAIN_LANGUAGE.md</td><td>5min</td></tr>
+</tbody>
+</table>
+
+<h3>M11: example/ Directory (4 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F11.1</td><td>Create <code>example/server.go</code>: Broadcaster + SSE endpoint + heartbeat</td><td>15min</td></tr>
+<tr><td>F11.2</td><td>Create <code>example/README.md</code> with curl + JS client examples</td><td>15min</td></tr>
+<tr><td>F11.3</td><td>Add <code>example_test.go</code> with compile check</td><td>10min</td></tr>
+<tr><td>F11.4</td><td>Reference example/ in README.md Quick Start section</td><td>5min</td></tr>
+</tbody>
+</table>
+
+<h3>M12: Publish v0.1.0 (3 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F12.1</td><td>Create annotated git tag <code>v0.1.0</code></td><td>10min</td></tr>
+<tr><td>F12.2</td><td>Add pkg.go.dev badge/link to README.md</td><td>10min</td></tr>
+<tr><td>F12.3</td><td>Update CHANGELOG.md with <code>[0.1.0]</code> section</td><td>10min</td></tr>
+</tbody>
+</table>
+
+<h3>M13: FEATURES.md Precision (3 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F13.1</td><td>Fix ~11 imprecise file:line refs to point at declarations not comments</td><td>15min</td></tr>
+<tr><td>F13.2</td><td>Replace hardcoded "52 tests" with <code>go test -v</code> command reference</td><td>5min</td></tr>
+<tr><td>F13.3</td><td>Add splitLines CR fix and any new features from this review</td><td>10min</td></tr>
+</tbody>
+</table>
+
+<h3>M14: README Polish (3 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F14.1</td><td>Update Event struct in README to match actual source style</td><td>10min</td></tr>
+<tr><td>F14.2</td><td>Add "Non-Blocking Drop Policy" implications section</td><td>10min</td></tr>
+<tr><td>F14.3</td><td>Verify README Quick Start code examples compile</td><td>10min</td></tr>
+</tbody>
+</table>
+
+<h3>M15: Verify + Document (2 subtasks)</h3>
+<table>
+<thead><tr><th>#</th><th>Subtask</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>F15.1</td><td>Fetch SSE spec URL to verify it resolves (200 OK)</td><td>5min</td></tr>
+<tr><td>F15.2</td><td>Add build-tags note to CONTRIBUTING.md lint section</td><td>10min</td></tr>
+</tbody>
+</table>
+
+</section>
+
+<section id="graph">
+<h2><span class="num">04</span>Execution Dependency Graph</h2>
+<p>Phase dependencies: Foundation gates Quality, Quality gates API, API gates Release. Within phases, tasks are mostly parallelizable.</p>
+
+<div class="svg-container" id="d2graph">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" data-d2-version="v0.7.1" preserveAspectRatio="xMinYMin meet" viewBox="0 0 2803 1341"><svg class="d2-96235881 d2-svg" width="2803" height="1341" viewBox="-91 -121 2803 1341"><rect x="-91.000000" y="-121.000000" width="2803.000000" height="1341.000000" rx="0.000000" fill="#FFFFFF" class=" fill-N7" stroke-width="0" /><style type="text/css"><![CDATA[
+.d2-96235881 .text {
+	font-family: "d2-96235881-font-regular";
+}
+@font-face {
+	font-family: d2-96235881-font-regular;
+	src: url("data:application/font-woff;base64,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");
+}
+.d2-96235881 .text-bold {
+	font-family: "d2-96235881-font-bold";
+}
+@font-face {
+	font-family: d2-96235881-font-bold;
+	src: url("data:application/font-woff;base64,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");
+}
+.d2-96235881 .text-italic {
+	font-family: "d2-96235881-font-italic";
+}
+@font-face {
+	font-family: d2-96235881-font-italic;
+	src: url("data:application/font-woff;base64,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");
+}]]></style><style type="text/css"><![CDATA[.shape {
+  shape-rendering: geometricPrecision;
+  stroke-linejoin: round;
+}
+.connection {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.blend {
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+		.d2-96235881 .fill-N1{fill:#0A0F25;}
+		.d2-96235881 .fill-N2{fill:#676C7E;}
+		.d2-96235881 .fill-N3{fill:#9499AB;}
+		.d2-96235881 .fill-N4{fill:#CFD2DD;}
+		.d2-96235881 .fill-N5{fill:#DEE1EB;}
+		.d2-96235881 .fill-N6{fill:#EEF1F8;}
+		.d2-96235881 .fill-N7{fill:#FFFFFF;}
+		.d2-96235881 .fill-B1{fill:#0D32B2;}
+		.d2-96235881 .fill-B2{fill:#0D32B2;}
+		.d2-96235881 .fill-B3{fill:#E3E9FD;}
+		.d2-96235881 .fill-B4{fill:#E3E9FD;}
+		.d2-96235881 .fill-B5{fill:#EDF0FD;}
+		.d2-96235881 .fill-B6{fill:#F7F8FE;}
+		.d2-96235881 .fill-AA2{fill:#4A6FF3;}
+		.d2-96235881 .fill-AA4{fill:#EDF0FD;}
+		.d2-96235881 .fill-AA5{fill:#F7F8FE;}
+		.d2-96235881 .fill-AB4{fill:#EDF0FD;}
+		.d2-96235881 .fill-AB5{fill:#F7F8FE;}
+		.d2-96235881 .stroke-N1{stroke:#0A0F25;}
+		.d2-96235881 .stroke-N2{stroke:#676C7E;}
+		.d2-96235881 .stroke-N3{stroke:#9499AB;}
+		.d2-96235881 .stroke-N4{stroke:#CFD2DD;}
+		.d2-96235881 .stroke-N5{stroke:#DEE1EB;}
+		.d2-96235881 .stroke-N6{stroke:#EEF1F8;}
+		.d2-96235881 .stroke-N7{stroke:#FFFFFF;}
+		.d2-96235881 .stroke-B1{stroke:#0D32B2;}
+		.d2-96235881 .stroke-B2{stroke:#0D32B2;}
+		.d2-96235881 .stroke-B3{stroke:#E3E9FD;}
+		.d2-96235881 .stroke-B4{stroke:#E3E9FD;}
+		.d2-96235881 .stroke-B5{stroke:#EDF0FD;}
+		.d2-96235881 .stroke-B6{stroke:#F7F8FE;}
+		.d2-96235881 .stroke-AA2{stroke:#4A6FF3;}
+		.d2-96235881 .stroke-AA4{stroke:#EDF0FD;}
+		.d2-96235881 .stroke-AA5{stroke:#F7F8FE;}
+		.d2-96235881 .stroke-AB4{stroke:#EDF0FD;}
+		.d2-96235881 .stroke-AB5{stroke:#F7F8FE;}
+		.d2-96235881 .background-color-N1{background-color:#0A0F25;}
+		.d2-96235881 .background-color-N2{background-color:#676C7E;}
+		.d2-96235881 .background-color-N3{background-color:#9499AB;}
+		.d2-96235881 .background-color-N4{background-color:#CFD2DD;}
+		.d2-96235881 .background-color-N5{background-color:#DEE1EB;}
+		.d2-96235881 .background-color-N6{background-color:#EEF1F8;}
+		.d2-96235881 .background-color-N7{background-color:#FFFFFF;}
+		.d2-96235881 .background-color-B1{background-color:#0D32B2;}
+		.d2-96235881 .background-color-B2{background-color:#0D32B2;}
+		.d2-96235881 .background-color-B3{background-color:#E3E9FD;}
+		.d2-96235881 .background-color-B4{background-color:#E3E9FD;}
+		.d2-96235881 .background-color-B5{background-color:#EDF0FD;}
+		.d2-96235881 .background-color-B6{background-color:#F7F8FE;}
+		.d2-96235881 .background-color-AA2{background-color:#4A6FF3;}
+		.d2-96235881 .background-color-AA4{background-color:#EDF0FD;}
+		.d2-96235881 .background-color-AA5{background-color:#F7F8FE;}
+		.d2-96235881 .background-color-AB4{background-color:#EDF0FD;}
+		.d2-96235881 .background-color-AB5{background-color:#F7F8FE;}
+		.d2-96235881 .color-N1{color:#0A0F25;}
+		.d2-96235881 .color-N2{color:#676C7E;}
+		.d2-96235881 .color-N3{color:#9499AB;}
+		.d2-96235881 .color-N4{color:#CFD2DD;}
+		.d2-96235881 .color-N5{color:#DEE1EB;}
+		.d2-96235881 .color-N6{color:#EEF1F8;}
+		.d2-96235881 .color-N7{color:#FFFFFF;}
+		.d2-96235881 .color-B1{color:#0D32B2;}
+		.d2-96235881 .color-B2{color:#0D32B2;}
+		.d2-96235881 .color-B3{color:#E3E9FD;}
+		.d2-96235881 .color-B4{color:#E3E9FD;}
+		.d2-96235881 .color-B5{color:#EDF0FD;}
+		.d2-96235881 .color-B6{color:#F7F8FE;}
+		.d2-96235881 .color-AA2{color:#4A6FF3;}
+		.d2-96235881 .color-AA4{color:#EDF0FD;}
+		.d2-96235881 .color-AA5{color:#F7F8FE;}
+		.d2-96235881 .color-AB4{color:#EDF0FD;}
+		.d2-96235881 .color-AB5{color:#F7F8FE;}.appendix text.text{fill:#0A0F25}.md{--color-fg-default:#0A0F25;--color-fg-muted:#676C7E;--color-fg-subtle:#9499AB;--color-canvas-default:#FFFFFF;--color-canvas-subtle:#EEF1F8;--color-border-default:#0D32B2;--color-border-muted:#0D32B2;--color-neutral-muted:#EEF1F8;--color-accent-fg:#0D32B2;--color-accent-emphasis:#0D32B2;--color-attention-subtle:#676C7E;--color-danger-fg:red;}.sketch-overlay-B1{fill:url(#streaks-darker-d2-96235881);mix-blend-mode:lighten}.sketch-overlay-B2{fill:url(#streaks-darker-d2-96235881);mix-blend-mode:lighten}.sketch-overlay-B3{fill:url(#streaks-bright-d2-96235881);mix-blend-mode:darken}.sketch-overlay-B4{fill:url(#streaks-bright-d2-96235881);mix-blend-mode:darken}.sketch-overlay-B5{fill:url(#streaks-bright-d2-96235881);mix-blend-mode:darken}.sketch-overlay-B6{fill:url(#streaks-bright-d2-96235881);mix-blend-mode:darken}.sketch-overlay-AA2{fill:url(#streaks-dark-d2-96235881);mix-blend-mode:overlay}.sketch-overlay-AA4{fill:url(#streaks-bright-d2-96235881);mix-blend-mode:darken}.sketch-overlay-AA5{fill:url(#streaks-bright-d2-96235881);mix-blend-mode:darken}.sketch-overlay-AB4{fill:url(#streaks-bright-d2-96235881);mix-blend-mode:darken}.sketch-overlay-AB5{fill:url(#streaks-bright-d2-96235881);mix-blend-mode:darken}.sketch-overlay-N1{fill:url(#streaks-darker-d2-96235881);mix-blend-mode:lighten}.sketch-overlay-N2{fill:url(#streaks-dark-d2-96235881);mix-blend-mode:overlay}.sketch-overlay-N3{fill:url(#streaks-normal-d2-96235881);mix-blend-mode:color-burn}.sketch-overlay-N4{fill:url(#streaks-normal-d2-96235881);mix-blend-mode:color-burn}.sketch-overlay-N5{fill:url(#streaks-bright-d2-96235881);mix-blend-mode:darken}.sketch-overlay-N6{fill:url(#streaks-bright-d2-96235881);mix-blend-mode:darken}.sketch-overlay-N7{fill:url(#streaks-bright-d2-96235881);mix-blend-mode:darken}.light-code{display: block}.dark-code{display: none}]]></style><g class="cGhhc2Ux"><g class="shape" ><rect x="361.000000" y="20.000000" width="651.000000" height="142.000000" stroke="#0D32B2" fill="#1d3557" class=" stroke-B1" style="stroke-width:2;" /></g><text x="686.500000" y="7.000000" fill="#f4f4f0" class="text" style="text-anchor:middle;font-size:28px">Phase 1 — Foundation (1% → 51%)</text></g><g class="cGhhc2Uy"><g class="shape" ><rect x="129.000000" y="339.000000" width="1469.000000" height="158.000000" stroke="#0D32B2" fill="#1d3557" class=" stroke-B1" style="stroke-width:2;" /></g><text x="863.500000" y="326.000000" fill="#f4f4f0" class="text" style="text-anchor:middle;font-size:28px">Phase 2 — Quality (4% → 64%)</text></g><g class="cGhhc2Uz"><g class="shape" ><rect x="10.000000" y="674.000000" width="1312.000000" height="142.000000" stroke="#0D32B2" fill="#1d3557" class=" stroke-B1" style="stroke-width:2;" /></g><text x="666.000000" y="661.000000" fill="#f4f4f0" class="text" style="text-anchor:middle;font-size:28px">Phase 3 — Type Safety (20% → 80%)</text></g><g class="cGhhc2U0"><g class="shape" ><rect x="111.000000" y="977.000000" width="1201.000000" height="142.000000" stroke="#0D32B2" fill="#1d3557" class=" stroke-B1" style="stroke-width:2;" /></g><text x="711.500000" y="964.000000" fill="#f4f4f0" class="text" style="text-anchor:middle;font-size:28px">Phase 4 — Release &amp; Polish (80% → 20%)</text></g><g class="bTE="><g class="shape" ><rect x="2384.000000" y="58.000000" width="66.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="2417.000000" y="96.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m1</text></g><g class="bTM="><g class="shape" ><rect x="2384.000000" y="385.000000" width="66.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="2417.000000" y="423.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m3</text></g><g class="bTg="><g class="shape" ><rect x="2118.000000" y="58.000000" width="66.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="2151.000000" y="96.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m8</text></g><g class="bTk="><g class="shape" ><rect x="2217.000000" y="385.000000" width="66.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="2250.000000" y="423.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m9</text></g><g class="bTI="><g class="shape" ><rect x="2258.000000" y="58.000000" width="66.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="2291.000000" y="96.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m2</text></g><g class="bTU="><g class="shape" ><rect x="1595.000000" y="58.000000" width="66.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="1628.000000" y="96.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m5</text></g><g class="bTEy"><g class="shape" ><rect x="1782.000000" y="385.000000" width="75.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="1819.500000" y="423.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m12</text></g><g class="bTY="><g class="shape" ><rect x="1722.000000" y="58.000000" width="66.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="1755.000000" y="96.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m6</text></g><g class="bTEw"><g class="shape" ><rect x="1848.000000" y="58.000000" width="75.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="1885.500000" y="96.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m10</text></g><g class="bTEx"><g class="shape" ><rect x="1983.000000" y="58.000000" width="75.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="2020.500000" y="96.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m11</text></g><g class="bTc="><g class="shape" ><rect x="2020.000000" y="385.000000" width="66.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="2053.000000" y="423.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m7</text></g><g class="bTEz"><g class="shape" ><rect x="2149.000000" y="712.000000" width="75.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="2186.500000" y="750.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m13</text></g><g class="bTE0"><g class="shape" ><rect x="2477.000000" y="712.000000" width="76.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="2515.000000" y="750.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m14</text></g><g class="bTQ="><g class="shape" ><rect x="2522.000000" y="385.000000" width="67.000000" height="66.000000" stroke="#0D32B2" fill="#F7F8FE" class=" stroke-B1 fill-B6" style="stroke-width:2;" /></g><text x="2555.500000" y="423.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px">m4</text></g><g class="cGhhc2UxLm0x"><g class="shape" ><rect x="391.000000" y="50.000000" width="275.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="528.500000" y="88.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="528.500000" dy="0.000000">M1: CI Workflow</tspan><tspan x="528.500000" dy="18.500000">test + lint + vet + race + coverage</tspan></text></g><g class="cGhhc2UxLm0y"><g class="shape" ><rect x="726.000000" y="50.000000" width="256.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="854.000000" y="88.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="854.000000" dy="0.000000">M2: LastEventIDFromRequest</tspan><tspan x="854.000000" dy="18.500000">Validate untrusted header</tspan></text></g><g class="cGhhc2UyLm0z"><g class="shape" ><rect x="159.000000" y="377.000000" width="235.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="276.500000" y="415.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="276.500000" dy="0.000000">M3: Fuzz Tests</tspan><tspan x="276.500000" dy="18.500000">WriteEvent + ParseEventID</tspan></text></g><g class="cGhhc2UyLm00"><g class="shape" ><rect x="454.000000" y="377.000000" width="238.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="573.000000" y="415.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="573.000000" dy="0.000000">M4: Integration Test</tspan><tspan x="573.000000" dy="18.500000">Real http.Server round-trip</tspan></text></g><g class="cGhhc2UyLm03"><g class="shape" ><rect x="752.000000" y="377.000000" width="205.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="854.500000" y="415.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="854.500000" dy="0.000000">M7: Test Cleanup</tspan><tspan x="854.500000" dy="18.500000">stdlib + modernization</tspan></text></g><g class="cGhhc2UyLm04"><g class="shape" ><rect x="1017.000000" y="377.000000" width="195.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="1114.500000" y="415.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="1114.500000" dy="0.000000">M8: Heartbeat Dedup</tspan><tspan x="1114.500000" dy="18.500000">Constant extraction</tspan></text></g><g class="cGhhc2UyLm05"><g class="shape" ><rect x="1272.000000" y="369.000000" width="296.000000" height="98.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="1420.000000" y="407.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="1420.000000" dy="0.000000">M9: Edge-Case Tests</tspan><tspan x="1420.000000" dy="17.666667">double-Close, BroadcastAfterClose,</tspan><tspan x="1420.000000" dy="17.666667">WriteRetry, unicode</tspan></text></g><g class="cGhhc2UzLm01"><g class="shape" ><rect x="40.000000" y="704.000000" width="227.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="153.500000" y="742.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="153.500000" dy="0.000000">M5: Event.Retry → uint</tspan><tspan x="153.500000" dy="18.500000">Make negative impossible</tspan></text></g><g class="cGhhc2UzLm02"><g class="shape" ><rect x="327.000000" y="704.000000" width="307.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="480.500000" y="742.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="480.500000" dy="0.000000">M6: EventStore.EventsAfter(EventID)</tspan><tspan x="480.500000" dy="18.500000">Lose the stringly-typed boundary</tspan></text></g><g class="cGhhc2UzLm0xMA=="><g class="shape" ><rect x="694.000000" y="704.000000" width="320.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="854.000000" y="742.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="854.000000" dy="0.000000">M10: Stream.Close → io.Closer</tspan><tspan x="854.000000" dy="18.500000">Return error for interface conformance</tspan></text></g><g class="cGhhc2UzLm0xMQ=="><g class="shape" ><rect x="1074.000000" y="704.000000" width="218.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="1183.000000" y="742.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="1183.000000" dy="0.000000">M11: example/ Directory</tspan><tspan x="1183.000000" dy="18.500000">Runnable server + client</tspan></text></g><g class="cGhhc2U0Lm0xMg=="><g class="shape" ><rect x="141.000000" y="1007.000000" width="226.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="254.000000" y="1045.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="254.000000" dy="0.000000">M12: Tag v0.1.0</tspan><tspan x="254.000000" dy="18.500000">First release + pkg.go.dev</tspan></text></g><g class="cGhhc2U0Lm0xMw=="><g class="shape" ><rect x="427.000000" y="1007.000000" width="251.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="552.500000" y="1045.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="552.500000" dy="0.000000">M13: FEATURES.md Precision</tspan><tspan x="552.500000" dy="18.500000">Fix line refs + counts</tspan></text></g><g class="cGhhc2U0Lm0xNA=="><g class="shape" ><rect x="738.000000" y="1007.000000" width="233.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="854.500000" y="1045.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="854.500000" dy="0.000000">M14: README Polish</tspan><tspan x="854.500000" dy="18.500000">Struct match + drop policy</tspan></text></g><g class="cGhhc2U0Lm0xNQ=="><g class="shape" ><rect x="1031.000000" y="1007.000000" width="251.000000" height="82.000000" stroke="#0D32B2" fill="#EDF0FD" class=" stroke-B1 fill-B5" style="stroke-width:2;" /></g><text x="1156.500000" y="1045.500000" fill="#0A0F25" class="text-bold fill-N1" style="text-anchor:middle;font-size:16px"><tspan x="1156.500000" dy="0.000000">M15: Verify URLs + Build Tags</tspan><tspan x="1156.500000" dy="18.500000">Spec URL + CONTRIBUTING</tspan></text></g><g class="KG0xIC0mZ3Q7IG0zKVswXQ=="><marker id="mk-d2-96235881-3488378134" markerWidth="10.000000" markerHeight="12.000000" refX="7.000000" refY="6.000000" viewBox="0.000000 0.000000 10.000000 12.000000" orient="auto" markerUnits="userSpaceOnUse"> <polygon points="0.000000,0.000000 10.000000,6.000000 0.000000,12.000000" fill="#0D32B2" class="connection fill-B1" stroke-width="2" /> </marker><path d="M 2417.000000 126.000000 C 2417.000000 170.399994 2417.000000 195.699997 2417.000000 216.250000 C 2417.000000 236.800003 2417.000000 332.200012 2417.000000 381.000000" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="2417.000000" y="260.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px">runs fuzz in CI</text></g><g class="KG04IC0mZ3Q7IG05KVswXQ=="><path d="M 2150.500000 126.000000 C 2150.500000 170.399994 2150.500000 195.699997 2150.500000 216.250000 C 2150.500000 236.800003 2163.699951 332.200012 2213.671571 382.171575" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="2154.500000" y="263.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px"><tspan x="2154.500000" dy="0.000000">heartbeat constant</tspan><tspan x="2154.500000" dy="18.500000">before edge tests</tspan></text></g><g class="KG0yIC0mZ3Q7IG05KVswXQ=="><path d="M 2291.000000 126.000000 C 2291.000000 170.399994 2291.000000 195.699997 2291.000000 216.250000 C 2291.000000 236.800003 2285.399902 332.200012 2264.562194 381.317671" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="2290.000000" y="254.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px"><tspan x="2290.000000" dy="0.000000">security test</tspan><tspan x="2290.000000" dy="18.500000">before edge suite</tspan></text></g><g class="KG01IC0mZ3Q7IG0xMilbMF0="><path d="M 1627.500000 126.000000 C 1627.500000 170.399994 1627.500000 195.699997 1627.500000 216.250000 C 1627.500000 236.800003 1658.500000 335.000000 1778.945517 397.165428" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="1647.500000" y="304.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px">API must stabilize</text></g><g class="KG02IC0mZ3Q7IG0xMilbMF0="><path d="M 1754.500000 126.000000 C 1754.500000 170.399994 1754.500000 195.699997 1754.500000 216.250000 C 1754.500000 236.800003 1763.300049 332.200012 1796.281201 381.671798" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="1756.500000" y="265.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px">before tagging</text></g><g class="KG0xMCAtJmd0OyBtMTIpWzBd"><path d="M 1885.000000 126.000000 C 1885.000000 170.399994 1885.000000 195.699997 1885.000000 216.250000 C 1885.000000 236.800003 1876.199951 332.200012 1843.218799 381.671798" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="1882.500000" y="265.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px">before tagging</text></g><g class="KG0xMSAtJmd0OyBtMTIpWzBd"><path d="M 2020.000000 126.000000 C 2020.000000 170.399994 2020.000000 195.699997 2020.000000 216.250000 C 2020.000000 236.800003 1987.449951 335.092010 1860.835736 397.687283" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="1998.500000" y="299.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px"><tspan x="1998.500000" dy="0.000000">examples ship</tspan><tspan x="1998.500000" dy="18.500000">with release</tspan></text></g><g class="KG03IC0mZ3Q7IG0xMylbMF0="><path d="M 2053.250000 453.000000 C 2053.250000 503.799988 2053.250000 530.700012 2053.250000 551.250000 C 2053.250000 571.799988 2072.448975 667.000000 2145.937795 716.757391" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="2060.000000" y="603.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px"><tspan x="2060.000000" dy="0.000000">test changes</tspan><tspan x="2060.000000" dy="18.500000">reflected in docs</tspan></text></g><g class="KG05IC0mZ3Q7IG0xMylbMF0="><path d="M 2249.500000 453.000000 C 2249.500000 503.799988 2249.500000 530.700012 2249.500000 551.250000 C 2249.500000 571.799988 2241.500000 665.599976 2211.770931 708.707148" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="2248.500000" y="584.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px"><tspan x="2248.500000" dy="0.000000">new tests</tspan><tspan x="2248.500000" dy="18.500000">documented</tspan></text></g><g class="KG0zIC0mZ3Q7IG0xNClbMF0="><path d="M 2417.000000 453.000000 C 2417.000000 503.799988 2417.000000 530.700012 2417.000000 551.250000 C 2417.000000 571.799988 2429.399902 665.599976 2476.078912 709.267374" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="2420.000000" y="590.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px"><tspan x="2420.000000" dy="0.000000">fuzz confidence</tspan><tspan x="2420.000000" dy="18.500000">for README claims</tspan></text></g><g class="KG00IC0mZ3Q7IG0xNClbMF0="><path d="M 2555.500000 453.000000 C 2555.500000 503.799988 2555.500000 530.700012 2555.500000 551.250000 C 2555.500000 571.799988 2550.300049 665.599976 2531.136226 708.349964" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="2554.500000" y="589.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px">integration proof</text></g><g class="KHBoYXNlMSAtJmd0OyBwaGFzZTIpWzBd"><path d="M 854.000000 163.500000 C 854.000000 232.699997 854.000000 260.100006 854.000000 294.500000" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="854.000000" y="236.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px">foundation gates quality</text></g><g class="KHBoYXNlMiAtJmd0OyBwaGFzZTMpWzBd"><path d="M 854.000000 498.500000 C 854.000000 567.700012 854.000000 595.099976 854.000000 629.500000" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="854.000000" y="571.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px">quality gates API</text></g><g class="KHBoYXNlMyAtJmd0OyBwaGFzZTQpWzBd"><path d="M 854.000000 817.500000 C 854.000000 880.299988 854.000000 904.500000 854.000000 932.500000" stroke="#0D32B2" fill="none" class="connection stroke-B1" style="stroke-width:2;" marker-end="url(#mk-d2-96235881-3488378134)" mask="url(#d2-96235881)" /><text x="854.500000" y="882.000000" fill="#676C7E" class="text-italic fill-N2" style="text-anchor:middle;font-size:16px">API gates release</text></g><mask id="d2-96235881" maskUnits="userSpaceOnUse" x="-91" y="-121" width="2803" height="1341">
+<rect x="-91" y="-121" width="2803" height="1341" fill="white"></rect>
+<rect x="2370.000000" y="244.000000" width="94" height="21" fill="black"></rect>
+<rect x="2089.000000" y="247.000000" width="131" height="37" fill="black"></rect>
+<rect x="2231.000000" y="238.000000" width="118" height="37" fill="black"></rect>
+<rect x="1587.000000" y="288.000000" width="121" height="21" fill="black"></rect>
+<rect x="1706.000000" y="249.000000" width="101" height="21" fill="black"></rect>
+<rect x="1832.000000" y="249.000000" width="101" height="21" fill="black"></rect>
+<rect x="1950.000000" y="283.000000" width="97" height="37" fill="black"></rect>
+<rect x="2004.000000" y="587.000000" width="112" height="37" fill="black"></rect>
+<rect x="2205.000000" y="568.000000" width="87" height="37" fill="black"></rect>
+<rect x="2357.000000" y="574.000000" width="126" height="37" fill="black"></rect>
+<rect x="2495.000000" y="573.000000" width="119" height="21" fill="black"></rect>
+<rect x="771.000000" y="220.000000" width="166" height="21" fill="black"></rect>
+<rect x="797.000000" y="555.000000" width="114" height="21" fill="black"></rect>
+<rect x="796.000000" y="866.000000" width="117" height="21" fill="black"></rect>
+</mask></svg></svg>
+
+</div>
+
+<div class="callout callout-warning">
+  <strong>Critical path:</strong> M1 (CI) &rarr; M3 (Fuzz) &rarr; M5/M6 (Type Safety) &rarr; M12 (v0.1.0). Everything else can be parallelized within each phase.
+</div>
+</section>
+
+<section id="findings">
+<h2><span class="num">05</span>Key Findings from Deep Review</h2>
+
+<div class="issue issue-critical">
+  <span class="severity severity-critical">Fixed on spot</span>
+  <h3>splitLines does not handle lone CR per SSE spec</h3>
+  <div class="where">event.go:160 (splitLines) &mdash; FIXED in this review</div>
+  <p>The SSE spec mandates that CR (<code>\r</code>), LF (<code>\n</code>), and CRLF (<code>\r\n</code>) are all valid line endings. The original code only split on <code>\n</code> and stripped a preceding <code>\r</code>. A lone <code>\r</code> without <code>\n</code> was passed through unsplit, corrupting the wire format. <strong>Fixed:</strong> <code>splitLines</code> now handles all three line-ending styles per spec. Existing tests pass; a new <code>TestWriteEvent_LoneCarriageReturn</code> test is planned (F9.4).</p>
+</div>
+
+<div class="issue issue-critical">
+  <span class="severity severity-critical">Security</span>
+  <h3>LastEventIDFromRequest bypasses ParseEventID validation</h3>
+  <div class="where">stream.go:201 (LastEventIDFromRequest)</div>
+  <p>The <code>ParseEventID</code> function exists specifically to reject <code>\n</code>/<code>\r</code> in event IDs (which corrupt the SSE wire format). But <code>LastEventIDFromRequest</code> reads from the untrusted <code>Last-Event-ID</code> HTTP header using <code>NewEventID</code> (no validation). A malicious client can send <code>Last-Event-ID: foo\nbar</code> and get back an <code>EventID</code> containing a newline. If that ID is ever written back to the wire (e.g., echoed in a diagnostic event), it injects additional SSE fields. <strong>Fix (M2):</strong> validate via <code>ParseEventID</code>, return zero EventID on invalid input.</p>
+</div>
+
+<div class="issue issue-important">
+  <span class="severity severity-important">Duplication</span>
+  <h3>Heartbeat string duplicated between WriteHeartbeat and Stream.Heartbeat</h3>
+  <div class="where">event.go:142 and stream.go:164</div>
+  <p>The string <code>": heartbeat\n\n"</code> appears in both <code>WriteHeartbeat</code> and <code>Stream.Heartbeat</code>. Changing one without the other creates a split brain. <strong>Fix (M8):</strong> extract <code>heartbeatFrame</code> constant, use <code>WriteHeartbeat</code> in <code>Stream.Heartbeat</code>.</p>
+</div>
+
+<div class="issue issue-important">
+  <span class="severity severity-important">Type Safety</span>
+  <h3>Event.Retry is int, allowing negative values</h3>
+  <div class="where">event.go:90 (Retry field)</div>
+  <p><code>Retry int</code> allows negative values. The SSE spec says retry is milliseconds (a positive integer). <code>WriteEvent</code> only writes retry when <code>&gt; 0</code>, so negatives are silently skipped, but the type doesn't prevent the impossible state. <strong>Fix (M5):</strong> change to <code>uint</code>.</p>
+</div>
+
+<div class="issue issue-important">
+  <span class="severity severity-important">Type Safety</span>
+  <h3>EventStore.EventsAfter takes string, not EventID</h3>
+  <div class="where">replay.go:13 (EventsAfter interface)</div>
+  <p>The <code>EventStore</code> interface uses <code>string</code> for the <code>lastID</code> parameter, losing the branded <code>EventID</code> type safety. <code>Replay</code> calls <code>store.EventsAfter(lastID.Get())</code> &mdash; the <code>.Get()</code> unwrap is the leak. <strong>Fix (M6):</strong> change to <code>EventsAfter(lastID EventID)</code>.</p>
+</div>
+
+<div class="issue issue-nice">
+  <span class="severity severity-nice">Code Quality</span>
+  <h3>Test helpers reinvent the standard library</h3>
+  <div class="where">stream_test.go:317-334 (contains/startsWith), broadcaster_test.go:414 (itoa)</div>
+  <p>Hand-rolled <code>contains()</code> (O(n&sup2;) recursive) and <code>itoa()</code> (custom integer-to-string) reimplement <code>strings.Contains</code> and <code>strconv.Itoa</code>. <strong>Fix (M7):</strong> replace with stdlib, delete helpers.</p>
+</div>
+
+<div class="issue issue-nice">
+  <span class="severity severity-nice">Coverage Gap</span>
+  <h3>WriteRetry has 0% test coverage</h3>
+  <div class="where">event.go:150 (WriteRetry) &mdash; 0.0% coverage</div>
+  <p>The exported <code>WriteRetry</code> function is never called by any test. <strong>Fix (M9/F9.3):</strong> add <code>TestWriteRetry</code>.</p>
+</div>
+
+<div class="issue issue-nice">
+  <span class="severity severity-nice">Fragility</span>
+  <h3>errorResponseWriter relies on nil-method-call semantics</h3>
+  <div class="where">replay_test.go:152-161</div>
+  <p>The <code>writer</code> field is nil-initialized. <code>errorWriter.Write</code> works on a nil pointer because it never dereferences the receiver, but the wiring is fragile and confusing. <strong>Fix (M7/F7.5):</strong> initialize <code>writer: &amp;errorWriter{}</code>.</p>
+</div>
+
+</section>
+
+<section id="strengths">
+<h2><span class="num">&diams;</span>Strengths to Preserve</h2>
+<p>This library does many things exceptionally well. These patterns should be maintained, not changed:</p>
+
+<div class="strengths">
+  <div class="strength"><div class="check">+</div><div class="text"><strong>Allocation-free hot path</strong><span><code>WriteEvent</code> uses direct byte appends, not <code>fmt.Fprintf</code>. Benchmarks confirm 0 allocs on the fan-out path. This is the right call for a transport library.</span></div></div>
+  <div class="strength"><div class="check">+</div><div class="text"><strong>Branded EventID type</strong><span>Using <code>go-branded-id</code> phantom types prevents cross-assignment with other string IDs. This is exactly the kind of type safety the AGENTS.md philosophy demands.</span></div></div>
+  <div class="strength"><div class="check">+</div><div class="text"><strong>Clean Broadcaster/fanOut split</strong><span>The public <code>Broadcaster[T]</code> wraps the unexported transport-agnostic <code>fanOut[T]</code>. Good composition, no leaky abstractions.</span></div></div>
+  <div class="strength"><div class="check">+</div><div class="text"><strong>Non-blocking broadcast with documented drop policy</strong><span>The <code>select { case ch &larr; msg: default: }</code> pattern prevents head-of-line blocking. The drop policy is documented and intentional.</span></div></div>
+  <div class="strength"><div class="check">+</div><div class="text"><strong>Excellent concurrency documentation</strong><span>AGENTS.md documents three critical concurrency invariants with precise explanations. This is the gold standard for concurrent Go library docs.</span></div></div>
+  <div class="strength"><div class="check">+</div><div class="text"><strong>Race-tested</strong><span>Multiple race tests with <code>-race</code>. 95.9% coverage with real concurrent scenarios.</span></div></div>
+  <div class="strength"><div class="check">+</div><div class="text"><strong>Hermetic Nix flake</strong><span><code>flake.nix</code> provides fully reproducible build/test/lint/format. Zero setup friction.</span></div></div>
+</div>
+</section>
+
+  </main>
+</div>
+
+<footer class="footer">
+  Generated 2026-07-23 21:40 &middot; Pareto planning based on full-codebase review of go-sse @ commit d49fa82
+</footer>
+
+</body>
+</html>
