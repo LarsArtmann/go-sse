@@ -38,3 +38,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Security
 
 - `LastEventIDFromRequest` validates header input with `ParseEventID`, preventing SSE wire-format injection via crafted `Last-Event-ID` headers
+
+[Unreleased]: https://github.com/larsartmann/go-sse/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/larsartmann/go-sse/releases/tag/v0.1.0
