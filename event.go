@@ -155,14 +155,15 @@ func WriteRetry(w io.Writer, ms int) error {
 
 // splitLines splits a string into lines for SSE data field formatting.
 // Each line in the SSE spec must be prefixed with "data: ".
-// Fast path: if the data contains no newline, returns a single-element
+// Per the SSE spec, CR (\r), LF (\n), and CRLF (\r\n) are all valid line endings.
+// Fast path: if the data contains no CR or LF, returns a single-element
 // slice without allocating a backing array.
 func splitLines(s string) []string {
 	if s == "" {
 		return []string{""}
 	}
 
-	if !strings.Contains(s, "\n") {
+	if !strings.ContainsAny(s, "\n\r") {
 		return []string{s}
 	}
 
@@ -170,15 +171,23 @@ func splitLines(s string) []string {
 
 	start := 0
 
-	for i := range len(s) {
-		if s[i] == '\n' {
-			line := s[start:i]
-			if len(line) > 0 && line[len(line)-1] == '\r' {
-				line = line[:len(line)-1]
+	for i := 0; i < len(s); {
+		switch s[i] {
+		case '\r':
+			lines = append(lines, s[start:i])
+			i++
+
+			if i < len(s) && s[i] == '\n' {
+				i++ // CRLF: consume both characters as one line break
 			}
 
-			lines = append(lines, line)
-			start = i + 1
+			start = i
+		case '\n':
+			lines = append(lines, s[start:i])
+			i++
+			start = i
+		default:
+			i++
 		}
 	}
 
