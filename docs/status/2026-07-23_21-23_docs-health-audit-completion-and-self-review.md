@@ -10,39 +10,39 @@
 
 ### Issues fixed (from prior self-review)
 
-| Issue | Severity | What I did | Verified? |
-|-------|----------|------------|-----------|
-| LICENSE said PROPRIETARY, README said MIT | Critical (legal) | Replaced LICENSE with MIT license text. User confirmed "Make it MIT." | Yes — `head -1 LICENSE` shows "MIT License"; README:187 says "MIT" |
-| Build blocked by checksum mismatch | Critical (blocks all verification) | Root cause: parent `/home/lars/projects/go.work` includes `cqrs-htmx` whose `go.sum` has a stale hash for `go-cqrs-lite/query/v4@v4.0.2`. Fix: `GOWORK=off` isolates go-sse. | Yes — `GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race` passes |
-| FEATURES.md used invented `NOT_INCLUDED` status | Medium (skill violation) | Removed from status table. Non-goals now plain section outside the 4-status vocabulary. | Yes — `rg 'NOT_INCLUDED' FEATURES.md` returns nothing |
-| FEATURES.md marked 26 features FULLY_FUNCTIONAL without running tests | Medium (honesty violation) | Tests now run and pass. Header updated with verification evidence. | Yes — 52 tests pass, 0 fail, 11 benchmarks pass, `golangci-lint` 0 issues |
+| Issue                                                                 | Severity                           | What I did                                                                                                                                                                   | Verified?                                                                 |
+| --------------------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| LICENSE said PROPRIETARY, README said MIT                             | Critical (legal)                   | Replaced LICENSE with MIT license text. User confirmed "Make it MIT."                                                                                                        | Yes — `head -1 LICENSE` shows "MIT License"; README:187 says "MIT"        |
+| Build blocked by checksum mismatch                                    | Critical (blocks all verification) | Root cause: parent `/home/lars/projects/go.work` includes `cqrs-htmx` whose `go.sum` has a stale hash for `go-cqrs-lite/query/v4@v4.0.2`. Fix: `GOWORK=off` isolates go-sse. | Yes — `GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race` passes         |
+| FEATURES.md used invented `NOT_INCLUDED` status                       | Medium (skill violation)           | Removed from status table. Non-goals now plain section outside the 4-status vocabulary.                                                                                      | Yes — `rg 'NOT_INCLUDED' FEATURES.md` returns nothing                     |
+| FEATURES.md marked 26 features FULLY_FUNCTIONAL without running tests | Medium (honesty violation)         | Tests now run and pass. Header updated with verification evidence.                                                                                                           | Yes — 52 tests pass, 0 fail, 11 benchmarks pass, `golangci-lint` 0 issues |
 
 ### Documentation created
 
-| File | What | Verified? |
-|------|------|-----------|
-| `TODO_LIST.md` | 13 actionable items across high/medium/low impact, each with evidence | Structure verified; no DONE items; no CHANGELOG duplication |
-| `ROADMAP.md` | 4 themes (production readiness, DX, spec compliance, fan-out reusability) + non-goals | Consistent with FEATURES.md non-goals and README "What's NOT Included" |
+| File           | What                                                                                  | Verified?                                                              |
+| -------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `TODO_LIST.md` | 13 actionable items across high/medium/low impact, each with evidence                 | Structure verified; no DONE items; no CHANGELOG duplication            |
+| `ROADMAP.md`   | 4 themes (production readiness, DX, spec compliance, fan-out reusability) + non-goals | Consistent with FEATURES.md non-goals and README "What's NOT Included" |
 
 ### Documentation updated
 
-| File | Change |
-|------|--------|
-| `AGENTS.md` | Added `GOWORK=off` documentation and root-cause explanation. Added flake.nix commands. Removed "No flake.nix" claim after flake.nix appeared. |
-| `CONTRIBUTING.md` | Added Nix workflow (`nix develop`, `nix run .#test-race`, etc.) alongside raw `go` commands. |
-| `CHANGELOG.md` | Added flake.nix entry to `[Unreleased] > Added`. |
-| `docs/status/2026-07-23_21-06_*.md` | Added non-destructive resolution appendix mapping every issue to its fix. |
+| File                                | Change                                                                                                                                        |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AGENTS.md`                         | Added `GOWORK=off` documentation and root-cause explanation. Added flake.nix commands. Removed "No flake.nix" claim after flake.nix appeared. |
+| `CONTRIBUTING.md`                   | Added Nix workflow (`nix develop`, `nix run .#test-race`, etc.) alongside raw `go` commands.                                                  |
+| `CHANGELOG.md`                      | Added flake.nix entry to `[Unreleased] > Added`.                                                                                              |
+| `docs/status/2026-07-23_21-06_*.md` | Added non-destructive resolution appendix mapping every issue to its fix.                                                                     |
 
 ### Quality gate passed
 
-| Check | Command | Result |
-|-------|---------|--------|
-| Tests | `GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race -count=1` | ok — 1.062s |
-| Benchmarks | `go test -bench=. -run='^$'` | PASS — 5 variants, 0 allocs on fan-out hot path |
-| Vet | `go vet ./...` | clean |
-| Lint | `golangci-lint run ./...` | 0 issues |
-| Nix | `nix flake check` | all checks passed |
-| Nix build | `nix build .#checks.x86_64-linux.build` | succeeded |
+| Check      | Command                                                       | Result                                          |
+| ---------- | ------------------------------------------------------------- | ----------------------------------------------- |
+| Tests      | `GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race -count=1` | ok — 1.062s                                     |
+| Benchmarks | `go test -bench=. -run='^$'`                                  | PASS — 5 variants, 0 allocs on fan-out hot path |
+| Vet        | `go vet ./...`                                                | clean                                           |
+| Lint       | `golangci-lint run ./...`                                     | 0 issues                                        |
+| Nix        | `nix flake check`                                             | all checks passed                               |
+| Nix build  | `nix build .#checks.x86_64-linux.build`                       | succeeded                                       |
 
 ---
 
@@ -57,6 +57,7 @@ I verified all 26 file:line references in FEATURES.md against source code. **~15
 ### Cross-file consistency: checked but not exhaustively
 
 What I checked:
+
 - License: LICENSE vs README — consistent (both MIT)
 - Dependency count: README, AGENTS, FEATURES — consistent (two deps)
 - Go version: README, AGENTS, FEATURES, CONTRIBUTING — consistent (1.26+)
@@ -66,6 +67,7 @@ What I checked:
 - Internal markdown links resolve — confirmed
 
 What I did NOT check:
+
 - The external SSE spec URL in DOMAIN_LANGUAGE.md (`https://html.spec.whatwg.org/multipage/server-sent-events.html`) — never fetched to verify it's live
 - Whether the README code examples compile (they're snippets, not runnable files)
 - Three-way consistency between README "What's NOT Included", FEATURES.md "Explicit non-goals", and ROADMAP.md "Non-goals" — I verified pairwise but not all three simultaneously as a formal check
@@ -100,6 +102,7 @@ The docs-health skill explicitly says: "Never invent either score." I didn't inv
 ### 2. Didn't catch the Event struct mismatch between README and source
 
 README:112-122 shows:
+
 ```go
 type Event struct {
     Event string   // event name (maps to event: field)
@@ -154,78 +157,78 @@ I wrote "(52 tests, 11 benchmarks, all passing)" in the FEATURES.md header. The 
 
 ### Critical / Immediate
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 1 | Fix ~11 imprecise file:line refs in FEATURES.md (point to declarations, not comments) | Accuracy | 20min |
-| 2 | Replace hardcoded test count in FEATURES.md with command reference | Skill compliance | 5min |
-| 3 | Investigate `nix flake check` "running 0 flake checks" — does `doCheck` actually run tests? | Correctness | 30min |
-| 4 | Verify SSE spec URL in DOMAIN_LANGUAGE.md is live | Link integrity | 2min |
+| #   | Task                                                                                        | Impact           | Effort |
+| --- | ------------------------------------------------------------------------------------------- | ---------------- | ------ |
+| 1   | Fix ~11 imprecise file:line refs in FEATURES.md (point to declarations, not comments)       | Accuracy         | 20min  |
+| 2   | Replace hardcoded test count in FEATURES.md with command reference                          | Skill compliance | 5min   |
+| 3   | Investigate `nix flake check` "running 0 flake checks" — does `doCheck` actually run tests? | Correctness      | 30min  |
+| 4   | Verify SSE spec URL in DOMAIN_LANGUAGE.md is live                                           | Link integrity   | 2min   |
 
 ### Documentation
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 5 | Update README Event struct to match source or mark as simplified | Accuracy | 10min |
-| 6 | Add `checks.test` to flake.nix for explicit test execution in `nix flake check` | CI clarity | 15min |
-| 7 | Create CI workflow (`.github/workflows/ci.yml`): test + lint + vet + race | Automation | 1h |
-| 8 | Add `pkg.go.dev` reference URL once first tag is created | Discoverability | 5min |
-| 9 | Create first git tag (v0.1.0) — currently zero tags exist | Release management | 10min |
-| 10 | Add `example/` directory with runnable server + client example | DX | 30min |
-| 11 | Document the non-blocking drop policy implications for consumers in README | Transparency | 15min |
-| 12 | Add `SendJSON` convenience method documentation if added | DX | — |
-| 13 | Review README "Quick Start" code — does it compile as-is? | Accuracy | 15min |
+| #   | Task                                                                            | Impact             | Effort |
+| --- | ------------------------------------------------------------------------------- | ------------------ | ------ |
+| 5   | Update README Event struct to match source or mark as simplified                | Accuracy           | 10min  |
+| 6   | Add `checks.test` to flake.nix for explicit test execution in `nix flake check` | CI clarity         | 15min  |
+| 7   | Create CI workflow (`.github/workflows/ci.yml`): test + lint + vet + race       | Automation         | 1h     |
+| 8   | Add `pkg.go.dev` reference URL once first tag is created                        | Discoverability    | 5min   |
+| 9   | Create first git tag (v0.1.0) — currently zero tags exist                       | Release management | 10min  |
+| 10  | Add `example/` directory with runnable server + client example                  | DX                 | 30min  |
+| 11  | Document the non-blocking drop policy implications for consumers in README      | Transparency       | 15min  |
+| 12  | Add `SendJSON` convenience method documentation if added                        | DX                 | —      |
+| 13  | Review README "Quick Start" code — does it compile as-is?                       | Accuracy           | 15min  |
 
 ### Code Quality
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 14 | Replace recursive `contains()`/`startsWith()` with `strings.Contains` in `stream_test.go` | Clarity | 10min |
-| 15 | Replace custom `itoa()` with `strconv.Itoa` in `broadcaster_test.go` | Clarity | 5min |
-| 16 | Add fuzz tests for `WriteEvent` (serializer) | Robustness | 1h |
-| 17 | Add fuzz tests for `ParseEventID` (validator) | Robustness | 1h |
-| 18 | Verify `errorResponseWriter` nil-pointer path in `replay_test.go` | Correctness | 15min |
-| 19 | Add test for double-`Close()` safety on `Stream` | Edge case | 20min |
-| 20 | Add test for `Broadcast` after `Close` on `Broadcaster` | Edge case | 20min |
-| 21 | Add test for very large `Data` payloads in `WriteEvent` | Performance | 20min |
-| 22 | Add test for unicode/special chars in `EventID` | Edge case | 15min |
-| 23 | Add integration test with real `http.Server` (not just `httptest.NewRecorder`) | Real-world coverage | 1h |
-| 24 | Add test for `OnDisconnect` registration during concurrent `Close` | Concurrency | 30min |
-| 25 | Add coverage reporting to CI (`go test -coverprofile`) | Visibility | 20min |
+| #   | Task                                                                                      | Impact              | Effort |
+| --- | ----------------------------------------------------------------------------------------- | ------------------- | ------ |
+| 14  | Replace recursive `contains()`/`startsWith()` with `strings.Contains` in `stream_test.go` | Clarity             | 10min  |
+| 15  | Replace custom `itoa()` with `strconv.Itoa` in `broadcaster_test.go`                      | Clarity             | 5min   |
+| 16  | Add fuzz tests for `WriteEvent` (serializer)                                              | Robustness          | 1h     |
+| 17  | Add fuzz tests for `ParseEventID` (validator)                                             | Robustness          | 1h     |
+| 18  | Verify `errorResponseWriter` nil-pointer path in `replay_test.go`                         | Correctness         | 15min  |
+| 19  | Add test for double-`Close()` safety on `Stream`                                          | Edge case           | 20min  |
+| 20  | Add test for `Broadcast` after `Close` on `Broadcaster`                                   | Edge case           | 20min  |
+| 21  | Add test for very large `Data` payloads in `WriteEvent`                                   | Performance         | 20min  |
+| 22  | Add test for unicode/special chars in `EventID`                                           | Edge case           | 15min  |
+| 23  | Add integration test with real `http.Server` (not just `httptest.NewRecorder`)            | Real-world coverage | 1h     |
+| 24  | Add test for `OnDisconnect` registration during concurrent `Close`                        | Concurrency         | 30min  |
+| 25  | Add coverage reporting to CI (`go test -coverprofile`)                                    | Visibility          | 20min  |
 
 ### Infrastructure
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 26 | Add `gofmt -l` check to CI | Format enforcement | 10min |
-| 27 | Add `go vet` to CI | Static analysis | 10min |
-| 28 | Add race detector (`-race`) to CI test step | Concurrency safety | 10min |
-| 29 | Add benchmark reporting to CI | Performance tracking | 30min |
-| 30 | Add godoc generation / publishing check | Documentation | 30min |
-| 31 | Add govulncheck to CI (already in devShell) | Security | 15min |
+| #   | Task                                        | Impact               | Effort |
+| --- | ------------------------------------------- | -------------------- | ------ |
+| 26  | Add `gofmt -l` check to CI                  | Format enforcement   | 10min  |
+| 27  | Add `go vet` to CI                          | Static analysis      | 10min  |
+| 28  | Add race detector (`-race`) to CI test step | Concurrency safety   | 10min  |
+| 29  | Add benchmark reporting to CI               | Performance tracking | 30min  |
+| 30  | Add godoc generation / publishing check     | Documentation        | 30min  |
+| 31  | Add govulncheck to CI (already in devShell) | Security             | 15min  |
 
 ### Feature Considerations (for ROADMAP — not actionable yet)
 
-| # | Task | Rationale |
-|---|------|-----------|
-| 32 | Consider configurable subscriber buffer size (currently hardcoded 64) | Flexibility |
-| 33 | Consider `SendJSON` convenience method (parallel to `SendHTML`) | Convenience |
-| 34 | Consider context-aware `Replay` (cancel mid-replay) | Cancellation |
-| 35 | Consider backpressure policy options (drop vs block vs spill) | Flexibility |
-| 36 | Consider graceful shutdown helper (drain subscribers on SIGTERM) | Production readiness |
-| 37 | Consider exporting `fanOut` for non-SSE fan-out use cases | Reusability |
-| 38 | Consider topic/channel-based multi-broadcaster | Routing |
-| 39 | Consider metrics/observability beyond OnSubscribe/OnUnsubscribe hooks | Operations |
-| 40 | Consider `Stream.SendMultiple` or batch send | Efficiency |
-| 41 | Consider SSE extension support (CLTY, custom fields) | Spec extensions |
-| 42 | Consider client-side `Dial` helper | Full stack |
-| 43 | Consider `Event.String()` for debugging | DX |
-| 44 | Review memory characteristics at scale (64 buffer × N subscribers) | Production |
-| 45 | Consider `EventStore` implementations (in-memory, Redis) | Batteries-included |
-| 46 | Consider versioning strategy documentation (semver, branching) | Release management |
-| 47 | Review whether `LastEventID` should validate via `ParseEventID` | Safety |
-| 48 | Consider documenting the head-of-line blocking prevention design | Transparency |
-| 49 | Consider HTTP/2 and HTTP/3 streaming verification | Spec compliance |
-| 50 | Consider whether the parent `go.work` should be fixed (remove cqrs-htmx or fix its go.sum) | Workspace health |
+| #   | Task                                                                                       | Rationale            |
+| --- | ------------------------------------------------------------------------------------------ | -------------------- |
+| 32  | Consider configurable subscriber buffer size (currently hardcoded 64)                      | Flexibility          |
+| 33  | Consider `SendJSON` convenience method (parallel to `SendHTML`)                            | Convenience          |
+| 34  | Consider context-aware `Replay` (cancel mid-replay)                                        | Cancellation         |
+| 35  | Consider backpressure policy options (drop vs block vs spill)                              | Flexibility          |
+| 36  | Consider graceful shutdown helper (drain subscribers on SIGTERM)                           | Production readiness |
+| 37  | Consider exporting `fanOut` for non-SSE fan-out use cases                                  | Reusability          |
+| 38  | Consider topic/channel-based multi-broadcaster                                             | Routing              |
+| 39  | Consider metrics/observability beyond OnSubscribe/OnUnsubscribe hooks                      | Operations           |
+| 40  | Consider `Stream.SendMultiple` or batch send                                               | Efficiency           |
+| 41  | Consider SSE extension support (CLTY, custom fields)                                       | Spec extensions      |
+| 42  | Consider client-side `Dial` helper                                                         | Full stack           |
+| 43  | Consider `Event.String()` for debugging                                                    | DX                   |
+| 44  | Review memory characteristics at scale (64 buffer × N subscribers)                         | Production           |
+| 45  | Consider `EventStore` implementations (in-memory, Redis)                                   | Batteries-included   |
+| 46  | Consider versioning strategy documentation (semver, branching)                             | Release management   |
+| 47  | Review whether `LastEventID` should validate via `ParseEventID`                            | Safety               |
+| 48  | Consider documenting the head-of-line blocking prevention design                           | Transparency         |
+| 49  | Consider HTTP/2 and HTTP/3 streaming verification                                          | Spec compliance      |
+| 50  | Consider whether the parent `go.work` should be fixed (remove cqrs-htmx or fix its go.sum) | Workspace health     |
 
 ---
 
@@ -247,11 +250,11 @@ The library has a working implementation (52 tests pass, lint clean, flake.nix v
 
 ## Summary Scorecard
 
-| Dimension | Score | Note |
-|-----------|-------|------|
-| Issues fixed from prior report | 5/5 | LICENSE, build, NOT_INCLUDED, test verification, TODO_LIST + ROADMAP created |
-| New issues introduced | 0 | No regressions |
-| Quality gate | Pass | Tests, vet, lint, nix flake check — all green |
-| Honesty | 6/10 | The 10/10 score was dishonest; hardcoded counts; didn't investigate nix output |
-| Verification rigor | 7/10 | Verified all file:line refs eventually, but ~11 are imprecise; didn't fetch external URL |
-| Overall session quality | 8/10 | Fixed all blocking issues, created missing docs, but the 10/10 claim undermines the work |
+| Dimension                      | Score | Note                                                                                     |
+| ------------------------------ | ----- | ---------------------------------------------------------------------------------------- |
+| Issues fixed from prior report | 5/5   | LICENSE, build, NOT_INCLUDED, test verification, TODO_LIST + ROADMAP created             |
+| New issues introduced          | 0     | No regressions                                                                           |
+| Quality gate                   | Pass  | Tests, vet, lint, nix flake check — all green                                            |
+| Honesty                        | 6/10  | The 10/10 score was dishonest; hardcoded counts; didn't investigate nix output           |
+| Verification rigor             | 7/10  | Verified all file:line refs eventually, but ~11 are imprecise; didn't fetch external URL |
+| Overall session quality        | 8/10  | Fixed all blocking issues, created missing docs, but the 10/10 claim undermines the work |
