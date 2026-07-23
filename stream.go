@@ -161,7 +161,7 @@ func (s *Stream) Heartbeat(ctx context.Context, interval time.Duration) {
 		case <-ticker.C:
 			s.mu.Lock()
 
-			_, err := s.w.Write([]byte(": heartbeat\n\n"))
+			err := WriteHeartbeat(s.w)
 			if err == nil && s.fw != nil {
 				s.fw.Flush()
 			}

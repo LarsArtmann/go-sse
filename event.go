@@ -135,11 +135,15 @@ func WriteEvent(w io.Writer, evt Event) error {
 	return nil
 }
 
+// heartbeatFrame is the SSE comment frame used for keep-alive pings.
+// Browsers ignore comment lines, but they reset idle timers on reverse proxies.
+var heartbeatFrame = []byte(": heartbeat\n\n")
+
 // WriteHeartbeat writes a comment frame (SSE comment line).
 // Browsers ignore it, but it keeps the connection alive through
 // ALB/Nginx/Cloudflare idle timeouts.
 func WriteHeartbeat(w io.Writer) error {
-	_, err := w.Write([]byte(": heartbeat\n\n"))
+	_, err := w.Write(heartbeatFrame)
 
 	return err //nolint:wrapcheck // raw write error is already actionable
 }
