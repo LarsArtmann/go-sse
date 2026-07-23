@@ -6,12 +6,12 @@ Honest inventory of what `go-sse` does and its real status. Verified by running 
 
 Only 4 statuses are used. Non-goals (below) are listed outside this system because they have no code to assess.
 
-| Status               | Meaning                                                                    |
-| -------------------- | -------------------------------------------------------------------------- |
-| FULLY_FUNCTIONAL     | Code present AND working (tests pass or exercised).                        |
-| PARTIALLY_FUNCTIONAL | Ships but has known gaps, edge-case bugs, or missing pieces.               |
-| BROKEN               | Code exists but does not work / is disabled / fails.                       |
-| PLANNED              | Designed or documented but **no code exists yet**.                         |
+| Status               | Meaning                                                      |
+| -------------------- | ------------------------------------------------------------ |
+| FULLY_FUNCTIONAL     | Code present AND working (tests pass or exercised).          |
+| PARTIALLY_FUNCTIONAL | Ships but has known gaps, edge-case bugs, or missing pieces. |
+| BROKEN               | Code exists but does not work / is disabled / fails.         |
+| PLANNED              | Designed or documented but **no code exists yet**.           |
 
 ## Wire format & serialization
 

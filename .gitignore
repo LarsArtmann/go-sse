@@ -53,6 +53,10 @@ vendor/
 go.work
 go.work.sum
 /go-sse
+
+## Nix
+.envrc
+.direnv/
 # <<< buildflow-managed (.gitignore) <<<
 
 ## Nix
