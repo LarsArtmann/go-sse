@@ -282,6 +282,22 @@ func TestLastEventIDFromRequest(t *testing.T) {
 	}
 }
 
+func TestLastEventIDFromRequest_MaliciousInputTreatedAsEmpty(t *testing.T) {
+	t.Parallel()
+
+	cases := []string{"evt\nmalicious", "evt\rmalicious", "evt\r\nmalicious", "\n", "\r"}
+
+	for _, header := range cases {
+		r := httptest.NewRequest(http.MethodGet, "/events", nil)
+		r.Header.Set("Last-Event-ID", header)
+
+		id := sse.LastEventIDFromRequest(r)
+		if !id.IsZero() {
+			t.Errorf("Last-Event-ID %q should be rejected as zero, got %q", header, id.Get())
+		}
+	}
+}
+
 func TestStream_SendHeartbeatRaceSafety(t *testing.T) {
 	t.Parallel()
 

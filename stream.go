@@ -185,19 +185,27 @@ func (s *Stream) OnDisconnect(fn func()) {
 }
 
 // LastEventIDFromRequest extracts the Last-Event-ID header from an HTTP request,
-// returning the branded [EventID]. This is the SSE reconnection mechanism: when a
-// client reconnects after a connection drop, the browser sends the ID of the last
-// event it received.
+// validating it with [ParseEventID]. Malformed values (containing newlines or
+// carriage returns that would corrupt the SSE wire format) are treated as if
+// no Last-Event-ID was sent — the returned [EventID] is zero.
+//
+// This is the SSE reconnection mechanism: when a client reconnects after a
+// connection drop, the browser sends the ID of the last event it received.
 //
 // Use this to replay missed events:
 //
 //	lastID := sse.LastEventIDFromRequest(r)
 //	if !lastID.IsZero() {
-//	    events := store.EventsAfter(lastID.String())
+//	    events := store.EventsAfter(lastID)
 //	    for _, evt := range events {
 //	        stream.Send(evt)
 //	    }
 //	}
 func LastEventIDFromRequest(r *http.Request) EventID {
-	return NewEventID(r.Header.Get("Last-Event-ID"))
+	id, err := ParseEventID(r.Header.Get("Last-Event-ID"))
+	if err != nil {
+		return EventID{}
+	}
+
+	return id
 }
