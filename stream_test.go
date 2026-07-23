@@ -38,7 +38,7 @@ func TestNewStream_SetsHeadersAndStatus(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/events", nil)
 
 	stream := sse.NewStream(w, r)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	if w.Code != http.StatusOK {
 		t.Errorf("status: got %d, want %d", w.Code, http.StatusOK)
@@ -56,7 +56,7 @@ func TestStream_Send(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/events", nil)
 
 	stream := sse.NewStream(w, r)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	err := stream.Send(sse.Event{Event: "update", Data: "<div>new</div>"})
 	if err != nil {
@@ -76,7 +76,7 @@ func TestStream_SendMultiple(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/events", nil)
 
 	stream := sse.NewStream(w, r)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	_ = stream.Send(sse.Event{Event: "e1", Data: "d1"})
 	_ = stream.Send(sse.Event{Event: "e2", Data: "d2"})
@@ -98,7 +98,7 @@ func TestStream_SendHTML(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/events", nil)
 
 	stream := sse.NewStream(w, r)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	err := stream.SendHTML("update", "<ul><li>item</li></ul>")
 	if err != nil {
@@ -121,7 +121,7 @@ func TestStream_Context(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(ctx)
 
 	stream := sse.NewStream(w, r)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	if stream.Context() != ctx {
 		t.Error("Context mismatch")
@@ -137,7 +137,7 @@ func TestStream_ContextCancellation(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(ctx)
 
 	stream := sse.NewStream(w, r)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	cancel()
 
@@ -214,7 +214,7 @@ func TestStream_OnDisconnect(t *testing.T) {
 	called := false
 	stream.OnDisconnect(func() { called = true })
 
-	stream.Close()
+	_ = stream.Close()
 
 	if !called {
 		t.Fatal("OnDisconnect callback not called")
@@ -234,7 +234,7 @@ func TestStream_OnDisconnectMultipleInOrder(t *testing.T) {
 	stream.OnDisconnect(func() { order = append(order, 2) })
 	stream.OnDisconnect(func() { order = append(order, 3) })
 
-	stream.Close()
+	_ = stream.Close()
 
 	if len(order) != 3 || order[0] != 1 || order[1] != 2 || order[2] != 3 {
 		t.Errorf("order: %v", order)
@@ -249,7 +249,7 @@ func TestStream_LastEventID(t *testing.T) {
 	r.Header.Set("Last-Event-ID", "evt-99")
 
 	stream := sse.NewStream(w, r)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	if id := stream.LastEventID(); id.Get() != "evt-99" {
 		t.Errorf("LastEventID: got %q", id.Get())
@@ -263,7 +263,7 @@ func TestStream_LastEventID_Empty(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/events", nil)
 
 	stream := sse.NewStream(w, r)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	if id := stream.LastEventID(); !id.IsZero() {
 		t.Errorf("LastEventID: expected zero, got %q", id.Get())
@@ -326,7 +326,7 @@ func TestStream_SendHeartbeatRaceSafety(t *testing.T) {
 		}()
 
 		wg.Wait()
-		stream.Close()
+		_ = stream.Close()
 	}
 }
 

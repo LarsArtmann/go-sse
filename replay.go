@@ -10,7 +10,7 @@ type EventStore interface {
 	// EventsAfter returns events with IDs strictly after the given lastID.
 	// Returns an empty slice if no events are found or lastID is unknown.
 	// The returned slice must be ordered by event ID (ascending).
-	EventsAfter(lastID string) []Event
+	EventsAfter(lastID EventID) []Event
 }
 
 // Replay sends all events from the store after the given lastEventID
@@ -19,7 +19,7 @@ type EventStore interface {
 //
 // Returns the number of events replayed, or an error if writing fails.
 func Replay(stream *Stream, store EventStore, lastID EventID) (int, error) {
-	events := store.EventsAfter(lastID.Get())
+	events := store.EventsAfter(lastID)
 
 	for i, evt := range events {
 		err := stream.Send(evt)

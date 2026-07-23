@@ -86,8 +86,8 @@ type Event struct {
 
 	// Retry is an optional reconnection time in milliseconds.
 	// Instructs the browser to wait this long before reconnecting
-	// after a connection drop.
-	Retry int
+	// after a connection drop. A zero value means "no retry field emitted".
+	Retry uint
 }
 
 // WriteEvent writes a single SSE event to the writer in the standard
@@ -116,7 +116,7 @@ func WriteEvent(w io.Writer, evt Event) error {
 
 	if evt.Retry > 0 {
 		buf = append(buf, 'r', 'e', 't', 'r', 'y', ':', ' ')
-		buf = strconv.AppendInt(buf, int64(evt.Retry), base10)
+		buf = strconv.AppendUint(buf, uint64(evt.Retry), base10)
 		buf = append(buf, '\n')
 	}
 
@@ -137,13 +137,13 @@ func WriteEvent(w io.Writer, evt Event) error {
 
 // heartbeatFrame is the SSE comment frame used for keep-alive pings.
 // Browsers ignore comment lines, but they reset idle timers on reverse proxies.
-var heartbeatFrame = []byte(": heartbeat\n\n")
+const heartbeatFrame = ": heartbeat\n\n"
 
 // WriteHeartbeat writes a comment frame (SSE comment line).
 // Browsers ignore it, but it keeps the connection alive through
 // ALB/Nginx/Cloudflare idle timeouts.
 func WriteHeartbeat(w io.Writer) error {
-	_, err := w.Write(heartbeatFrame)
+	_, err := w.Write([]byte(heartbeatFrame))
 
 	return err //nolint:wrapcheck // raw write error is already actionable
 }
@@ -151,7 +151,7 @@ func WriteHeartbeat(w io.Writer) error {
 // WriteRetry writes the SSE retry field, telling the browser how many
 // milliseconds to wait before reconnecting after a connection drop.
 // Per the SSE spec, this is sent once and persists until overwritten.
-func WriteRetry(w io.Writer, ms int) error {
+func WriteRetry(w io.Writer, ms uint) error {
 	_, err := fmt.Fprintf(w, "retry: %d\n\n", ms)
 
 	return err //nolint:wrapcheck // raw write error is already actionable

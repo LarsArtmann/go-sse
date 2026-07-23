@@ -13,13 +13,13 @@ type memoryStore struct {
 	events []sse.Event
 }
 
-func (m *memoryStore) EventsAfter(lastID string) []sse.Event {
-	if lastID == "" {
+func (m *memoryStore) EventsAfter(lastID sse.EventID) []sse.Event {
+	if lastID.IsZero() {
 		return m.events
 	}
 
 	for i, evt := range m.events {
-		if evt.ID.Get() == lastID {
+		if evt.ID.Get() == lastID.Get() {
 			if i+1 < len(m.events) {
 				return m.events[i+1:]
 			}
@@ -38,7 +38,7 @@ func TestReplay_AfterGivenID(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/events", nil)
 
 	stream := sse.NewStream(w, r)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	store := &memoryStore{
 		events: []sse.Event{
@@ -83,7 +83,7 @@ func TestReplay_EmptyAfterLastEvent(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/events", nil)
 
 	stream := sse.NewStream(w, r)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	store := &memoryStore{
 		events: []sse.Event{
@@ -108,7 +108,7 @@ func TestReplay_NoLastID(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/events", nil)
 
 	stream := sse.NewStream(w, r)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	store := &memoryStore{
 		events: []sse.Event{
@@ -134,7 +134,7 @@ func TestReplay_WriteError(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/events", nil)
 
 	stream := sse.NewStream(w, r)
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	store := &memoryStore{
 		events: []sse.Event{

@@ -48,6 +48,9 @@ type Stream struct {
 
 type flusher interface{ Flush() }
 
+// Compile-time check that [Stream] satisfies [io.Closer].
+var _ io.Closer = (*Stream)(nil)
+
 // SetHeaders sets the response headers required for Server-Sent Events:
 // text/event-stream content type, no caching, and keep-alive connection.
 // Call this before writing the initial status code.
@@ -117,7 +120,8 @@ func (s *Stream) Context() context.Context {
 
 // Close flushes any buffered data and fires any registered OnDisconnect callbacks.
 // Call this (typically via defer) when done with the stream.
-func (s *Stream) Close() {
+// Returns nil — close is always successful; the error return satisfies [io.Closer].
+func (s *Stream) Close() error {
 	s.mu.Lock()
 	if s.fw != nil {
 		s.fw.Flush()
@@ -130,6 +134,8 @@ func (s *Stream) Close() {
 	for _, fn := range callbacks {
 		fn()
 	}
+
+	return nil
 }
 
 // LastEventID returns the Last-Event-ID header from the connection request.
