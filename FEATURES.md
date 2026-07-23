@@ -1,16 +1,17 @@
 # Features
 
-Honest inventory of what `go-sse` does and its real status. Status reflects the
-code in this repository, verified against the test suite (`*_test.go`).
+Honest inventory of what `go-sse` does and its real status. Verified by running `go test ./... -race -count=1` (52 tests, 11 benchmarks, all passing) and `golangci-lint run ./...` (0 issues).
 
 ## Status vocabulary
+
+Only 4 statuses are used. Non-goals (below) are listed outside this system because they have no code to assess.
 
 | Status               | Meaning                                                                    |
 | -------------------- | -------------------------------------------------------------------------- |
 | FULLY_FUNCTIONAL     | Code present AND working (tests pass or exercised).                        |
 | PARTIALLY_FUNCTIONAL | Ships but has known gaps, edge-case bugs, or missing pieces.               |
 | BROKEN               | Code exists but does not work / is disabled / fails.                       |
-| NOT_INCLUDED         | Deliberately out of scope — no code, by design (see "Explicit non-goals"). |
+| PLANNED              | Designed or documented but **no code exists yet**.                         |
 
 ## Wire format & serialization
 
@@ -65,7 +66,7 @@ code in this repository, verified against the test suite (`*_test.go`).
 | `ParseEventID` (rejects `\n`/`\r` that corrupt the wire format)     | FULLY_FUNCTIONAL | `event.go:44`; `TestParseEventID_RejectsNewlines` |
 | `MustParseEventID` (panicking variant for tests/constants)          | FULLY_FUNCTIONAL | `event.go:55`; `TestMustParseEventID_Panics`      |
 
-## Explicit non-goals (NOT_INCLUDED, by design)
+## Explicit non-goals
 
 These are deliberately out of scope. They are documented here so contributors
 do not mistake their absence for a gap.

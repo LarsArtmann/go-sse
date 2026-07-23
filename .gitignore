@@ -54,3 +54,7 @@ go.work
 go.work.sum
 /go-sse
 # <<< buildflow-managed (.gitignore) <<<
+
+## Nix
+result
+result-*

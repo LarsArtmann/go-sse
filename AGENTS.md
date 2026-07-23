@@ -7,12 +7,14 @@ Server-Sent Events transport library for Go. Single package (`sse`), flat layout
 No `flake.nix`, `Makefile`, or CI config. Use raw `go` tooling (from `CONTRIBUTING.md`):
 
 ```bash
-GOEXPERIMENT=jsonv2 go test ./... -race -count=1   # tests
-GOEXPERIMENT=jsonv2 go vet ./...                    # vet
-golangci-lint run ./...                             # lint
+GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race -count=1   # tests
+GOWORK=off GOEXPERIMENT=jsonv2 go vet ./...                    # vet
+GOWORK=off GOEXPERIMENT=jsonv2 golangci-lint run ./...         # lint
 ```
 
 **`GOEXPERIMENT=jsonv2` is required** to build, transitively via `go-branded-id`. Without it, compilation fails. Always prefix build/test/vet commands with it.
+
+**`GOWORK=off` is required in this environment.** A parent `/home/lars/projects/go.work` includes sibling projects (cqrs-htmx, etc.). One sibling (`cqrs-htmx`) has a stale checksum in its `go.sum` for `go-cqrs-lite/query/v4@v4.0.2`, which causes a `SECURITY ERROR` checksum mismatch when workspace mode resolves the combined module graph. `GOWORK=off` isolates go-sse to its own (valid) `go.mod`/`go.sum`. The `go.work` file is gitignored and does not exist in a fresh clone — external contributors do not need this flag.
 
 ## Dependencies
 
