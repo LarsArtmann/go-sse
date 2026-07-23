@@ -130,7 +130,7 @@ func TestReplay_NoLastID(t *testing.T) {
 func TestReplay_WriteError(t *testing.T) {
 	t.Parallel()
 
-	w := &errorResponseWriter{ResponseWriter: httptest.NewRecorder()}
+	w := &errorResponseWriter{ResponseWriter: httptest.NewRecorder(), writer: &errorWriter{}}
 	r := httptest.NewRequest(http.MethodGet, "/events", nil)
 
 	stream := sse.NewStream(w, r)

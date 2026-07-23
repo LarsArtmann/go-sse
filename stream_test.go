@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -82,11 +83,11 @@ func TestStream_SendMultiple(t *testing.T) {
 	_ = stream.Send(sse.Event{Event: "e2", Data: "d2"})
 
 	body := w.Body.String()
-	if !contains(body, "event: e1\ndata: d1\n\n") {
+	if !strings.Contains(body, "event: e1\ndata: d1\n\n") {
 		t.Errorf("missing e1: %q", body)
 	}
 
-	if !contains(body, "event: e2\ndata: d2\n\n") {
+	if !strings.Contains(body, "event: e2\ndata: d2\n\n") {
 		t.Errorf("missing e2: %q", body)
 	}
 }
@@ -114,16 +115,13 @@ func TestStream_SendHTML(t *testing.T) {
 func TestStream_Context(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
+	r := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(t.Context())
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(ctx)
 
 	stream := sse.NewStream(w, r)
 	defer func() { _ = stream.Close() }()
 
-	if stream.Context() != ctx {
+	if stream.Context() != r.Context() {
 		t.Error("Context mismatch")
 	}
 }
@@ -173,7 +171,7 @@ func TestStream_Heartbeat(t *testing.T) {
 		t.Fatal("Heartbeat did not stop")
 	}
 
-	if !contains(w.Body.String(), ": heartbeat\n\n") {
+	if !strings.Contains(w.Body.String(), ": heartbeat\n\n") {
 		t.Errorf("missing heartbeat in body: %q", w.Body.String())
 	}
 }
@@ -328,23 +326,4 @@ func TestStream_SendHeartbeatRaceSafety(t *testing.T) {
 		wg.Wait()
 		_ = stream.Close()
 	}
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr ||
-		(len(s) > len(substr) && (startsWith(s, substr) || contains(s[1:], substr))))
-}
-
-func startsWith(s, prefix string) bool {
-	if len(s) < len(prefix) {
-		return false
-	}
-
-	for i := range len(prefix) {
-		if s[i] != prefix[i] {
-			return false
-		}
-	}
-
-	return true
 }

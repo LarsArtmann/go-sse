@@ -1,6 +1,7 @@
 package sse_test
 
 import (
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -142,13 +143,11 @@ func TestBroadcaster_ConcurrentSafety(t *testing.T) {
 	for range goroutines {
 		ch := b.Subscribe()
 
-		wg.Add(1)
-		go func(c <-chan sse.Event) {
-			defer wg.Done()
-			defer b.Unsubscribe(c)
+		wg.Go(func() {
+			defer b.Unsubscribe(ch)
 
-			<-c
-		}(ch)
+			<-ch
+		})
 	}
 
 	b.Broadcast(sse.Event{Event: "test", Data: "concurrent"})
@@ -170,9 +169,7 @@ func TestBroadcaster_BroadcastUnsubscribeRace(t *testing.T) {
 	var wg sync.WaitGroup
 
 	for range 8 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			for {
 				select {
 				case <-stop:
@@ -181,19 +178,17 @@ func TestBroadcaster_BroadcastUnsubscribeRace(t *testing.T) {
 					b.Broadcast(sse.Event{Event: "hammer", Data: "x"})
 				}
 			}
-		}()
+		})
 	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		defer close(stop)
 
 		for range 2000 {
 			ch := b.Subscribe()
 			b.Unsubscribe(ch)
 		}
-	}()
+	})
 
 	wg.Wait()
 }
@@ -290,14 +285,12 @@ func TestBroadcaster_ConcurrentHookCount(t *testing.T) {
 	const cycles = 100
 
 	for range goroutines {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			for range cycles {
 				ch := b.Subscribe()
 				b.Unsubscribe(ch)
 			}
-		}()
+		})
 	}
 
 	wg.Wait()
@@ -377,7 +370,7 @@ func drain[T any](tb testing.TB, ch <-chan T) {
 
 func BenchmarkBroadcasterFanOut(b *testing.B) {
 	for _, subs := range []int{1, 10, 100, 1000} {
-		b.Run(itoa(subs), func(b *testing.B) {
+		b.Run(strconv.Itoa(subs), func(b *testing.B) {
 			bc := sse.NewBroadcaster[sse.Event]()
 			defer bc.Close()
 
@@ -391,7 +384,7 @@ func BenchmarkBroadcasterFanOut(b *testing.B) {
 			b.ReportAllocs()
 			b.ResetTimer()
 
-			for range b.N {
+			for b.Loop() {
 				bc.Broadcast(evt)
 			}
 		})
@@ -405,25 +398,8 @@ func BenchmarkSubscribeUnsubscribe(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 
-	for range b.N {
+	for b.Loop() {
 		ch := bc.Subscribe()
 		bc.Unsubscribe(ch)
 	}
-}
-
-func itoa(value int) string {
-	if value == 0 {
-		return "0"
-	}
-
-	var buf [20]byte
-	pos := len(buf)
-
-	for value > 0 {
-		pos--
-		buf[pos] = byte('0' + value%10)
-		value /= 10
-	}
-
-	return string(buf[pos:])
 }
