@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"strings"
 	"testing"
 
 	"github.com/larsartmann/go-sse"
@@ -274,6 +275,84 @@ func TestMustParseEventID_Panics(t *testing.T) {
 	}()
 
 	sse.MustParseEventID("bad\nvalue")
+}
+
+func TestWriteRetry(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	err := sse.WriteRetry(&buf, 3000)
+	if err != nil {
+		t.Fatalf("WriteRetry: %v", err)
+	}
+
+	want := "retry: 3000\n\n"
+	if buf.String() != want {
+		t.Errorf("got %q, want %q", buf.String(), want)
+	}
+}
+
+func TestWriteRetry_WriteError(t *testing.T) {
+	t.Parallel()
+
+	err := sse.WriteRetry(&errorWriter{}, 3000)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestWriteEvent_LoneCarriageReturn(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	err := sse.WriteEvent(&buf, sse.Event{Data: "line1\rline2"})
+	if err != nil {
+		t.Fatalf("WriteEvent: %v", err)
+	}
+
+	want := "data: line1\ndata: line2\n\n"
+	if buf.String() != want {
+		t.Errorf("got %q, want %q", buf.String(), want)
+	}
+}
+
+func TestWriteEvent_NegativeRetryIsUint(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	// Retry is uint; the > 0 guard means zero-value emits nothing.
+	err := sse.WriteEvent(&buf, sse.Event{Data: "x"})
+	if err != nil {
+		t.Fatalf("WriteEvent: %v", err)
+	}
+
+	if strings.Contains(buf.String(), "retry:") {
+		t.Errorf("zero Retry should not emit retry field: %q", buf.String())
+	}
+}
+
+func TestParseEventID_Unicode(t *testing.T) {
+	t.Parallel()
+
+	cases := []string{
+		"\u65e5\u672c\u8a9e",
+		"\U0001f31e",
+		"caf\u00e9-m\u00fcnchen-123",
+	}
+
+	for _, input := range cases {
+		id, err := sse.ParseEventID(input)
+		if err != nil {
+			t.Errorf("ParseEventID(%q): unexpected error: %v", input, err)
+		}
+
+		if id.Get() != input {
+			t.Errorf("ParseEventID(%q): got %q", input, id.Get())
+		}
+	}
 }
 
 type errorWriter struct{}

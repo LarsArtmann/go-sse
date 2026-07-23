@@ -327,3 +327,15 @@ func TestStream_SendHeartbeatRaceSafety(t *testing.T) {
 		_ = stream.Close()
 	}
 }
+
+func TestStream_DoubleCloseSafety(t *testing.T) {
+	t.Parallel()
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/events", nil)
+
+	stream := sse.NewStream(w, r)
+
+	_ = stream.Close()
+	_ = stream.Close() // must not panic
+}

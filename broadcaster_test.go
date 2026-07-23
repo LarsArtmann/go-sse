@@ -338,6 +338,16 @@ func TestBroadcaster_SubscribeAfterClose(t *testing.T) {
 	}
 }
 
+func TestBroadcaster_BroadcastAfterClose(t *testing.T) {
+	t.Parallel()
+
+	b := sse.NewBroadcaster[sse.Event]()
+
+	b.Close()
+
+	b.Broadcast(sse.Event{Event: "after-close", Data: "x"}) // must not panic
+}
+
 func TestBroadcaster_GenericWithString(t *testing.T) {
 	t.Parallel()
 
