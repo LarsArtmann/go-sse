@@ -36,7 +36,7 @@ type Stream struct {
 	w            io.Writer
 	r            *http.Request
 	fw           flusher
-	ctx          context.Context
+	ctx          context.Context //nolint:containedctx // SSE stream lifecycle is the request lifecycle; exposing context is the standard pattern for connection-bound objects
 	onDisconnect []func()
 
 	// mu guards every write to w and every flush against concurrent access.
@@ -90,7 +90,8 @@ func (s *Stream) Send(event Event) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if err := WriteEvent(s.w, event); err != nil {
+	err := WriteEvent(s.w, event)
+	if err != nil {
 		return err
 	}
 

@@ -22,7 +22,8 @@ func Replay(stream *Stream, store EventStore, lastID EventID) (int, error) {
 	events := store.EventsAfter(lastID.Get())
 
 	for i, evt := range events {
-		if err := stream.Send(evt); err != nil {
+		err := stream.Send(evt)
+		if err != nil {
 			return i, errorfamily.Wrapf(err, errorfamily.Transient,
 				"sse.replay_failed",
 				"replay after %q (sent %d of %d)", lastID.Get(), i, len(events))

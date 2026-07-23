@@ -122,7 +122,8 @@ func WriteEvent(w io.Writer, evt Event) error {
 
 	buf = append(buf, '\n')
 
-	if _, err := w.Write(buf); err != nil {
+	_, err := w.Write(buf)
+	if err != nil {
 		return errorfamily.Wrapf(
 			err,
 			errorfamily.Transient,

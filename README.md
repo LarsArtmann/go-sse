@@ -1,6 +1,6 @@
 # go-sse
 
-Zero-dependency Server-Sent Events transport for Go. Wire format, connection management, fan-out broadcasting, and reconnection replay — nothing else.
+Server-Sent Events transport for Go — wire format, connection management, fan-out broadcasting, and reconnection replay. Two small dependencies (`go-branded-id`, `go-error-family`), no framework or payload-format opinions.
 
 ## Why
 
@@ -8,13 +8,13 @@ Every Go project that serves SSE reinvents the same four pieces: event serializa
 
 ## What's Included
 
-| Component | What it does |
-|-----------|-------------|
-| `Event`, `EventID` | SSE wire-format types — event name, data, id, retry |
-| `WriteEvent` | Allocation-minimized SSE serializer (handles multi-line data, CRLF) |
-| `Stream` | Single SSE connection — headers, send, heartbeat, context, Last-Event-ID |
-| `Broadcaster[T]` | Generic subscriber fan-out — subscribe, broadcast, close, hooks |
-| `EventStore` + `Replay` | Reconnection replay — missed events sent on reconnect |
+| Component               | What it does                                                             |
+| ----------------------- | ------------------------------------------------------------------------ |
+| `Event`, `EventID`      | SSE wire-format types — event name, data, id, retry                      |
+| `WriteEvent`            | Allocation-minimized SSE serializer (handles multi-line data, CRLF)      |
+| `Stream`                | Single SSE connection — headers, send, heartbeat, context, Last-Event-ID |
+| `Broadcaster[T]`        | Generic subscriber fan-out — subscribe, broadcast, close, hooks          |
+| `EventStore` + `Replay` | Reconnection replay — missed events sent on reconnect                    |
 
 ## What's NOT Included
 
