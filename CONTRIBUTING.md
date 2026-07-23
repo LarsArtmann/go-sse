@@ -27,8 +27,13 @@ Without Nix, use raw `go` tooling:
     golangci-lint run ./...
 
 `GOEXPERIMENT=jsonv2` is required to build (transitive dependency via
-`go-branded-id`). Without it, compilation fails. The `flake.nix` devShell
-sets this automatically.
+`go-branded-id`). Without it, compilation fails. This environment variable
+enables the `goexperiment.jsonv2` build tag. The `flake.nix` devShell sets
+both `GOEXPERIMENT=jsonv2` and `GOWORK=off` automatically; in non-Nix
+environments you must set them yourself.
+
+If a parent `go.work` includes sibling projects with checksum conflicts,
+also set `GOWORK=off` to isolate this module's dependency graph.
 
 ## Reporting Issues
 

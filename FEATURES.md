@@ -1,6 +1,6 @@
 # Features
 
-Honest inventory of what `go-sse` does and its real status. Verified by running `go test ./... -race -count=1` (52 tests, 11 benchmarks, all passing) and `golangci-lint run ./...` (0 issues).
+Honest inventory of what `go-sse` does and its real status. Verified by running `go test ./... -race -count=1` (all passing, 97.4% coverage) and `golangci-lint run ./...` (0 issues). See test inventory with `go test ./... -v`.
 
 ## Status vocabulary
 
@@ -15,56 +15,66 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 
 ## Wire format & serialization
 
-| Feature                                                          | Status           | Evidence                                                |
-| ---------------------------------------------------------------- | ---------------- | ------------------------------------------------------- |
-| SSE event serialization (`event`/`data`/`id`/`retry`)            | FULLY_FUNCTIONAL | `event.go:96` (`WriteEvent`); `event_test.go`           |
-| Multi-line `data:` splitting (per spec)                          | FULLY_FUNCTIONAL | `event.go:159` (`splitLines`); `event_test.go`          |
-| CRLF handling in `data`                                          | FULLY_FUNCTIONAL | `event.go:175`; `TestWriteEvent_CRLFInData`             |
-| Allocation-minimized writer (byte appends, no `fmt` on hot path) | FULLY_FUNCTIONAL | `event.go:96`                                           |
-| Heartbeat comment frames                                         | FULLY_FUNCTIONAL | `event.go:140` (`WriteHeartbeat`); `TestWriteHeartbeat` |
-| Retry directive                                                  | FULLY_FUNCTIONAL | `event.go:149` (`WriteRetry`); `TestWriteEvent_Retry`   |
+| Feature                                                          | Status           | Evidence                                                       |
+| ---------------------------------------------------------------- | ---------------- | -------------------------------------------------------------- |
+| SSE event serialization (`event`/`data`/`id`/`retry`)            | FULLY_FUNCTIONAL | `WriteEvent` in `event.go`; `event_test.go`                    |
+| Multi-line `data:` splitting (LF, CRLF, and lone CR per spec)    | FULLY_FUNCTIONAL | `splitLines` in `event.go`; `TestWriteEvent_CRLFInData`, `TestWriteEvent_LoneCarriageReturn` |
+| Allocation-minimized writer (byte appends, no `fmt` on hot path) | FULLY_FUNCTIONAL | `WriteEvent` in `event.go`                                     |
+| Heartbeat comment frames                                         | FULLY_FUNCTIONAL | `WriteHeartbeat` in `event.go`; `TestWriteHeartbeat`           |
+| Retry directive (`uint`, rejects negative at compile time)       | FULLY_FUNCTIONAL | `WriteRetry` in `event.go`; `TestWriteRetry`, `TestWriteEvent_Retry` |
 
 ## Connection management (`Stream`)
 
-| Feature                                                              | Status           | Evidence                                                           |
-| -------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------ |
-| Stream lifecycle: SSE headers + `200 OK` on creation                 | FULLY_FUNCTIONAL | `stream.go:67` (`NewStream`); `stream_test.go`                     |
-| Send event + flush                                                   | FULLY_FUNCTIONAL | `stream.go:89` (`Send`); `TestStream_Send`                         |
-| Concurrent-safe writes (mutex-serialized `Send`/`Heartbeat`/`Close`) | FULLY_FUNCTIONAL | `stream.go:46`; `TestStream_SendHeartbeatRaceSafety` (race-tested) |
-| Heartbeat goroutine (proxy keep-alive)                               | FULLY_FUNCTIONAL | `stream.go:152`; `TestStream_Heartbeat`                            |
-| `Last-Event-ID` header extraction                                    | FULLY_FUNCTIONAL | `stream.go:137`; `TestStream_LastEventID`                          |
-| `OnDisconnect` callbacks (ordered)                                   | FULLY_FUNCTIONAL | `stream.go:180`; `TestStream_OnDisconnectMultipleInOrder`          |
-| `SendHTML` convenience                                               | FULLY_FUNCTIONAL | `stream.go:106`; `TestStream_SendHTML`                             |
-| Request-context cancellation                                         | FULLY_FUNCTIONAL | `stream.go:113`; `TestStream_ContextCancellation`                  |
+| Feature                                                              | Status           | Evidence                                                                      |
+| -------------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------- |
+| Stream lifecycle: SSE headers + `200 OK` on creation                 | FULLY_FUNCTIONAL | `NewStream` in `stream.go`; `stream_test.go`                                  |
+| Send event + flush                                                   | FULLY_FUNCTIONAL | `Stream.Send` in `stream.go`; `TestStream_Send`                               |
+| Concurrent-safe writes (mutex-serialized `Send`/`Heartbeat`/`Close`) | FULLY_FUNCTIONAL | `Stream.mu` in `stream.go`; `TestStream_SendHeartbeatRaceSafety` (race-tested) |
+| Heartbeat goroutine (proxy keep-alive)                               | FULLY_FUNCTIONAL | `Stream.Heartbeat` in `stream.go`; `TestStream_Heartbeat`                     |
+| `Last-Event-ID` header extraction (validated via `ParseEventID`)     | FULLY_FUNCTIONAL | `LastEventIDFromRequest` in `stream.go`; `TestLastEventIDFromRequest_MaliciousInputTreatedAsEmpty` |
+| `OnDisconnect` callbacks (ordered)                                   | FULLY_FUNCTIONAL | `Stream.OnDisconnect` in `stream.go`; `TestStream_OnDisconnectMultipleInOrder` |
+| `SendHTML` convenience                                               | FULLY_FUNCTIONAL | `Stream.SendHTML` in `stream.go`; `TestStream_SendHTML`                       |
+| Request-context cancellation                                         | FULLY_FUNCTIONAL | `Stream.Context` in `stream.go`; `TestStream_ContextCancellation`             |
+| `io.Closer` interface compliance                                     | FULLY_FUNCTIONAL | `Stream.Close` in `stream.go`; `TestStream_DoubleCloseSafety`                 |
 
 ## Fan-out (`Broadcaster[T]` / `fanOut[T]`)
 
 | Feature                                              | Status           | Evidence                                                                   |
 | ---------------------------------------------------- | ---------------- | -------------------------------------------------------------------------- |
-| Generic fan-out over any message type                | FULLY_FUNCTIONAL | `broadcaster.go:23`; `TestBroadcaster_GenericWithString`                   |
-| Subscribe / Unsubscribe                              | FULLY_FUNCTIONAL | `fanout.go:39`, `fanout.go:63`; `TestBroadcaster_Subscribe`                |
-| O(1) unsubscribe via channel pointer identity        | FULLY_FUNCTIONAL | `fanout.go:149` (`channelPtr`); `TestBroadcaster_BroadcastUnsubscribeRace` |
-| Non-blocking broadcast (drops to slow consumers)     | FULLY_FUNCTIONAL | `fanout.go:89`; `TestBroadcaster_DropsOnFullBuffer`                        |
-| `OnSubscribe` / `OnUnsubscribe` hooks                | FULLY_FUNCTIONAL | `fanout.go:131`, `fanout.go:141`; `TestBroadcaster_OnSubscribeHook`        |
-| Graceful `Close` (closes all channels)               | FULLY_FUNCTIONAL | `fanout.go:116`; `TestBroadcaster_Close`                                   |
-| Subscribe-after-close returns closed channel (no-op) | FULLY_FUNCTIONAL | `fanout.go:43`; `TestBroadcaster_SubscribeAfterClose`                      |
+| Generic fan-out over any message type                | FULLY_FUNCTIONAL | `Broadcaster[T]` in `broadcaster.go`; `TestBroadcaster_GenericWithString`  |
+| Subscribe / Unsubscribe                              | FULLY_FUNCTIONAL | `fanOut.Subscribe`, `fanOut.Unsubscribe` in `fanout.go`; `TestBroadcaster_Subscribe` |
+| O(1) unsubscribe via channel pointer identity        | FULLY_FUNCTIONAL | `channelPtr` in `fanout.go`; `TestBroadcaster_BroadcastUnsubscribeRace`    |
+| Non-blocking broadcast (drops to slow consumers)     | FULLY_FUNCTIONAL | `fanOut.Broadcast` in `fanout.go`; `TestBroadcaster_DropsOnFullBuffer`     |
+| Broadcast after Close is safe (no panic)             | FULLY_FUNCTIONAL | `TestBroadcaster_BroadcastAfterClose`                                      |
+| `OnSubscribe` / `OnUnsubscribe` hooks                | FULLY_FUNCTIONAL | `fanOut.OnSubscribe`, `fanOut.OnUnsubscribe` in `fanout.go`; `TestBroadcaster_OnSubscribeHook` |
+| Graceful `Close` (closes all channels)               | FULLY_FUNCTIONAL | `fanOut.Close` in `fanout.go`; `TestBroadcaster_Close`                     |
+| Subscribe-after-close returns closed channel (no-op) | FULLY_FUNCTIONAL | `fanOut.Subscribe` in `fanout.go`; `TestBroadcaster_SubscribeAfterClose`   |
 | Concurrent-safety (race-tested)                      | FULLY_FUNCTIONAL | `TestBroadcaster_ConcurrentSafety`, `TestBroadcaster_ConcurrentHookCount`  |
 
 ## Reconnection replay
 
 | Feature                                                    | Status           | Evidence                                                         |
 | ---------------------------------------------------------- | ---------------- | ---------------------------------------------------------------- |
-| `EventStore` interface (consumer-implemented)              | FULLY_FUNCTIONAL | `replay.go:9`                                                    |
-| `Replay` function (replays missed events after a given ID) | FULLY_FUNCTIONAL | `replay.go:21`; `TestReplay_AfterGivenID`, `TestReplay_NoLastID` |
-| Write-failure error propagation                            | FULLY_FUNCTIONAL | `replay.go:26`; `TestReplay_WriteError`                          |
+| `EventStore` interface (consumer-implemented, takes `EventID`) | FULLY_FUNCTIONAL | `replay.go`                                                      |
+| `Replay` function (replays missed events after a given ID) | FULLY_FUNCTIONAL | `Replay` in `replay.go`; `TestReplay_AfterGivenID`, `TestReplay_NoLastID` |
+| Write-failure error propagation                            | FULLY_FUNCTIONAL | `Replay` in `replay.go`; `TestReplay_WriteError`                 |
 
 ## Type safety
 
 | Feature                                                             | Status           | Evidence                                          |
 | ------------------------------------------------------------------- | ---------------- | ------------------------------------------------- |
-| Branded `EventID` (prevents cross-assignment with other string IDs) | FULLY_FUNCTIONAL | `event.go:26`; `TestEventID_IsZero`               |
-| `ParseEventID` (rejects `\n`/`\r` that corrupt the wire format)     | FULLY_FUNCTIONAL | `event.go:44`; `TestParseEventID_RejectsNewlines` |
-| `MustParseEventID` (panicking variant for tests/constants)          | FULLY_FUNCTIONAL | `event.go:55`; `TestMustParseEventID_Panics`      |
+| Branded `EventID` (prevents cross-assignment with other string IDs) | FULLY_FUNCTIONAL | `event.go`; `TestEventID_IsZero`                  |
+| `ParseEventID` (rejects `\n`/`\r` that corrupt the wire format)     | FULLY_FUNCTIONAL | `ParseEventID` in `event.go`; `TestParseEventID_RejectsNewlines`, `TestParseEventID_Unicode` |
+| `MustParseEventID` (panicking variant for tests/constants)          | FULLY_FUNCTIONAL | `MustParseEventID` in `event.go`; `TestMustParseEventID_Panics` |
+
+## Testing infrastructure
+
+| Feature                  | Status           | Evidence                          |
+| ------------------------ | ---------------- | --------------------------------- |
+| Fuzz tests               | FULLY_FUNCTIONAL | `FuzzWriteEvent`, `FuzzParseEventID` in `fuzz_test.go` |
+| Integration tests        | FULLY_FUNCTIONAL | `TestIntegration_DirectSendAndHeaders`, `TestIntegration_BroadcasterFanOut` in `integration_test.go` |
+| Race detector tests      | FULLY_FUNCTIONAL | `TestStream_SendHeartbeatRaceSafety`, `TestBroadcaster_BroadcastUnsubscribeRace` |
+| CI pipeline              | FULLY_FUNCTIONAL | `.github/workflows/ci.yml`        |
 
 ## Explicit non-goals
 

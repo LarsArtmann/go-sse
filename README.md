@@ -1,5 +1,7 @@
 # go-sse
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/larsartmann/go-sse.svg)](https://pkg.go.dev/github.com/larsartmann/go-sse)
+
 Server-Sent Events transport for Go — wire format, connection management, fan-out broadcasting, and reconnection replay. Two small dependencies (`go-branded-id`, `go-error-family`), no framework or payload-format opinions.
 
 ## Why
@@ -94,7 +96,7 @@ Implement the `EventStore` interface with whatever backing store you use (in-mem
 ```go
 type YourStore struct{}
 
-func (s *YourStore) EventsAfter(lastID string) []sse.Event {
+func (s *YourStore) EventsAfter(lastID sse.EventID) []sse.Event {
     // Return events with IDs strictly after lastID, ordered ascending
 }
 ```
@@ -118,7 +120,7 @@ type Event struct {
     Event string   // event name (maps to event: field)
     Data  string   // payload (multi-line data splits into data: per line)
     ID    EventID  // event identifier (maps to id: field)
-    Retry int      // reconnection interval in milliseconds
+    Retry uint     // reconnection interval in milliseconds (0 = omit)
 }
 
 type EventID = brandid.ID[eventBrand, string] // branded — prevents cross-assignment
@@ -168,7 +170,7 @@ b.OnUnsubscribe(func() { ... })     // disconnection callback
 
 ```go
 type EventStore interface {
-    EventsAfter(lastID string) []Event
+    EventsAfter(lastID EventID) []Event
 }
 
 n, err := sse.Replay(stream, store, lastEventID)
@@ -181,6 +183,20 @@ n, err := sse.Replay(stream, store, lastEventID)
 - **Channel pointer identity**: `Unsubscribe` uses `reflect.ValueOf(ch).Pointer()` for O(1) lookup. No subscriber IDs to manage.
 - **Branded EventID**: `EventID` uses `go-branded-id` to prevent accidental cross-assignment with other string-typed IDs in your codebase.
 - **Zero allocation on fast path**: `WriteEvent` uses direct byte appends. No `fmt.Fprintf` on the SSE hot path.
+
+## Non-Blocking Drop Policy
+
+`Broadcaster.Broadcast` never blocks. Each subscriber has a 64-message buffer; if
+it's full, new events are silently dropped for that subscriber. This prevents
+one slow consumer from stalling the entire fan-out.
+
+**Implications:**
+
+- A subscriber processing events slower than they arrive will lose messages.
+- There is no per-message acknowledgment or retry in the transport layer.
+- Consumers needing guaranteed delivery must implement application-level
+  reconnection with `Last-Event-ID` + `Replay` to recover missed events.
+- The drop is per-subscriber: fast consumers are unaffected by slow ones.
 
 ## License
 
