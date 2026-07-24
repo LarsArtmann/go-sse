@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** `Stream.SendHTML` renamed to `Stream.SendData` — the method sends any raw string, not just HTML; the old name was misleading. This is a mechanical rename: `SendHTML("evt", html)` → `SendData("evt", html)`.
+- `EventStore.EventsAfter` now returns `([]Event, error)` instead of `[]Event` — implementations can fail (database errors, etc.) and `Replay` propagates the error instead of silently treating failures as "no events".
+- `go.mod` directive changed from `go 1.26.4` to `go 1.26` (major.minor, per Go convention) across all LarsArtmann Go repos.
+- `TestBroadcaster_BroadcastMany_MixedSlowFast` rewritten to use deterministic channel synchronization instead of `time.Sleep` (eliminates CI flake risk).
+
 ### Added
 
 - `Broadcaster.BroadcastMany(msgs ...T)` — batch fan-out in a single locked pass; cheaper than looping `Broadcast` and preserves per-subscriber ordering across the batch

@@ -223,7 +223,10 @@ func (s *Stream) OnDisconnect(fn func()) {
 //
 //	lastID := sse.LastEventIDFromRequest(r)
 //	if !lastID.IsZero() {
-//	    events := store.EventsAfter(lastID)
+//	    events, err := store.EventsAfter(lastID)
+//	    if err != nil {
+//	        // handle store error
+//	    }
 //	    for _, evt := range events {
 //	        stream.Send(evt)
 //	    }

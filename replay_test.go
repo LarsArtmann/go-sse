@@ -13,22 +13,22 @@ type memoryStore struct {
 	events []sse.Event
 }
 
-func (m *memoryStore) EventsAfter(lastID sse.EventID) []sse.Event {
+func (m *memoryStore) EventsAfter(lastID sse.EventID) ([]sse.Event, error) {
 	if lastID.IsZero() {
-		return m.events
+		return m.events, nil
 	}
 
 	for i, evt := range m.events {
 		if evt.ID.Get() == lastID.Get() {
 			if i+1 < len(m.events) {
-				return m.events[i+1:]
+				return m.events[i+1:], nil
 			}
 
-			return nil
+			return nil, nil
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
 func TestReplay_AfterGivenID(t *testing.T) {
@@ -159,3 +159,33 @@ func (e *errorResponseWriter) Write(p []byte) (int, error) {
 }
 
 func (e *errorResponseWriter) Flush() {}
+
+// failingStore always returns an error from EventsAfter.
+type failingStore struct{}
+
+func (failingStore) EventsAfter(sse.EventID) ([]sse.Event, error) {
+	return nil, errors.New("store unavailable")
+}
+
+func TestReplay_StoreError(t *testing.T) {
+	t.Parallel()
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/events", nil)
+
+	stream := sse.NewStream(w, r)
+	defer func() { _ = stream.Close() }()
+
+	n, err := sse.Replay(stream, failingStore{}, sse.NewEventID(""))
+	if err == nil {
+		t.Fatal("expected error from failing store")
+	}
+
+	if n != 0 {
+		t.Errorf("expected 0 replayed on store error, got %d", n)
+	}
+
+	if !strings.Contains(err.Error(), "store unavailable") {
+		t.Errorf("error should wrap store failure: %v", err)
+	}
+}

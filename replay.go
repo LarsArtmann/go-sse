@@ -10,16 +10,23 @@ type EventStore interface {
 	// EventsAfter returns events with IDs strictly after the given lastID.
 	// Returns an empty slice if no events are found or lastID is unknown.
 	// The returned slice must be ordered by event ID (ascending).
-	EventsAfter(lastID EventID) []Event
+	// Returns an error if the underlying store is unavailable (e.g., database failure).
+	EventsAfter(lastID EventID) ([]Event, error)
 }
 
 // Replay sends all events from the store after the given lastEventID
 // through the stream. This is used for SSE reconnection: when a client
 // reconnects with a Last-Event-ID header, replay the events it missed.
 //
-// Returns the number of events replayed, or an error if writing fails.
+// Returns the number of events replayed, or an error if the store fails or
+// writing fails.
 func Replay(stream *Stream, store EventStore, lastID EventID) (int, error) {
-	events := store.EventsAfter(lastID)
+	events, err := store.EventsAfter(lastID)
+	if err != nil {
+		return 0, errorfamily.Wrapf(err, errorfamily.Rejection,
+			"sse.replay_store_failed",
+			"retrieve events after %q from store", lastID.Get())
+	}
 
 	for i, evt := range events {
 		err := stream.Send(evt)
