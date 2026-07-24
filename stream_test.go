@@ -388,6 +388,26 @@ func TestStream_SendJSON_MarshalError(t *testing.T) {
 	}
 }
 
+func TestStream_SendJSON_NilValue(t *testing.T) {
+	t.Parallel()
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/events", nil)
+
+	stream := sse.NewStream(w, r)
+	defer func() { _ = stream.Close() }()
+
+	err := stream.SendJSON("clear", nil)
+	if err != nil {
+		t.Fatalf("SendJSON(nil): %v", err)
+	}
+
+	want := "event: clear\ndata: null\n\n"
+	if w.Body.String() != want {
+		t.Errorf("got %q, want %q", w.Body.String(), want)
+	}
+}
+
 // failingResponseWriter is an http.ResponseWriter whose Write always errors,
 // simulating a client that has disconnected / a broken pipe.
 type failingResponseWriter struct {
@@ -438,6 +458,45 @@ func TestStream_SendCloseRace(t *testing.T) {
 
 		go func() {
 			defer wg.Done()
+			for range 50 {
+				_ = stream.Send(sse.Event{Event: "race", Data: "x"})
+			}
+		}()
+
+		go func() {
+			defer wg.Done()
+			_ = stream.Close()
+		}()
+
+		wg.Wait()
+	}
+}
+
+// TestStream_SendHeartbeatCloseRace verifies the three-way race between Send,
+// Heartbeat, and Close. All three share the stream mutex; this test ensures no
+// panic or data race when they overlap under tight timing.
+func TestStream_SendHeartbeatCloseRace(t *testing.T) {
+	t.Parallel()
+
+	for range 20 {
+		ctx, cancel := context.WithCancel(context.Background())
+		r := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(ctx)
+		w := httptest.NewRecorder()
+
+		stream := sse.NewStream(w, r)
+
+		var wg sync.WaitGroup
+		wg.Add(3)
+
+		go func() {
+			defer wg.Done()
+			stream.Heartbeat(ctx, time.Microsecond)
+		}()
+
+		go func() {
+			defer wg.Done()
+			defer cancel()
+
 			for range 50 {
 				_ = stream.Send(sse.Event{Event: "race", Data: "x"})
 			}
