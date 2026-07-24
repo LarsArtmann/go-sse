@@ -192,9 +192,11 @@ n, err := sse.Replay(stream, store, lastEventID)
 
 ## Non-Blocking Drop Policy
 
-`Broadcaster.Broadcast` never blocks. Each subscriber has a 64-message buffer; if
-it's full, new events are silently dropped for that subscriber. This prevents
-one slow consumer from stalling the entire fan-out.
+`Broadcaster.Broadcast` and `BroadcastMany` never block. Each subscriber has a
+64-message buffer; if it's full, new events are silently dropped for that
+subscriber. This prevents one slow consumer from stalling the entire fan-out.
+`BroadcastMany` acquires the read lock once for the entire batch, guaranteeing
+per-subscriber ordering across the batch.
 
 **Implications:**
 

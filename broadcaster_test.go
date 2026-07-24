@@ -454,9 +454,9 @@ func TestBroadcaster_BroadcastMany_MixedSlowFast(t *testing.T) {
 	// drain goroutine is scheduled. The slow subscriber's 64-deep buffer
 	// fills and overflows; the fast subscriber is actively drained.
 	for batch := range 20 {
-		events := make([]sse.Event, 10)
-		for i := range events {
-			events[i] = sse.Event{Data: strconv.Itoa(batch*10 + i)}
+		events := make([]sse.Event, 0, 10)
+		for i := range 10 {
+			events = append(events, sse.Event{Data: strconv.Itoa(batch*10 + i)})
 		}
 
 		b.BroadcastMany(events...)

@@ -59,5 +59,22 @@
 //	    sse.Replay(stream, store, lastID)
 //	}
 //
+// # Concurrency and Memory Model
+//
+// Each subscriber gets an independent buffered channel (capacity 64).
+// [Broadcaster.Broadcast] and [Broadcaster.BroadcastMany] are non-blocking: if a
+// subscriber's buffer is full, the event is silently dropped for that
+// subscriber only — fast consumers are never stalled by slow ones.
+//
+// [Broadcaster.BroadcastMany] acquires the read lock once for the entire batch,
+// guaranteeing per-subscriber ordering across the batch.
+//
+// [Stream.Send] and [Stream.Heartbeat] serialize on a mutex because
+// http.ResponseWriter is not safe for concurrent use. Both goroutines can write
+// safely. [Stream.Close] is safe to call concurrently with Send and Heartbeat.
+//
+// Consumers needing guaranteed delivery must implement application-level
+// reconnection with Last-Event-ID + [Replay].
+//
 // [SSE specification]: https://html.spec.whatwg.org/multipage/server-sent-events.html
 package sse

@@ -30,14 +30,14 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 | -------------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------- |
 | Stream lifecycle: SSE headers + `200 OK` on creation                 | FULLY_FUNCTIONAL | `NewStream` in `stream.go`; `stream_test.go`                                                       |
 | Send event + flush                                                   | FULLY_FUNCTIONAL | `Stream.Send` in `stream.go`; `TestStream_Send`                                                    |
-| Concurrent-safe writes (mutex-serialized `Send`/`Heartbeat`/`Close`) | FULLY_FUNCTIONAL | `Stream.mu` in `stream.go`; `TestStream_SendHeartbeatRaceSafety` (race-tested)                     |
+| Concurrent-safe writes (mutex-serialized `Send`/`Heartbeat`/`Close`) | FULLY_FUNCTIONAL | `Stream.mu` in `stream.go`; `TestStream_SendHeartbeatRaceSafety`, `TestStream_SendHeartbeatCloseRace` (race-tested) |
 | Heartbeat goroutine (proxy keep-alive)                               | FULLY_FUNCTIONAL | `Stream.Heartbeat` in `stream.go`; `TestStream_Heartbeat`                                          |
 | `Last-Event-ID` header extraction (validated via `ParseEventID`)     | FULLY_FUNCTIONAL | `LastEventIDFromRequest` in `stream.go`; `TestLastEventIDFromRequest_MaliciousInputTreatedAsEmpty` |
 | `OnDisconnect` callbacks (ordered)                                   | FULLY_FUNCTIONAL | `Stream.OnDisconnect` in `stream.go`; `TestStream_OnDisconnectMultipleInOrder`                     |
 | `SendHTML` convenience                                               | FULLY_FUNCTIONAL | `Stream.SendHTML` in `stream.go`; `TestStream_SendHTML`                                            |
-| `SendJSON` convenience (marshal + send)                              | FULLY_FUNCTIONAL | `Stream.SendJSON` in `stream.go`; `TestStream_SendJSON`, `TestStream_SendJSON_MarshalError`        |
+| `SendJSON` convenience (marshal + send)                              | FULLY_FUNCTIONAL | `Stream.SendJSON` in `stream.go`; `TestStream_SendJSON`, `TestStream_SendJSON_MarshalError`, `TestStream_SendJSON_NilValue` |
 | `Send` error on write failure (disconnected client)                  | FULLY_FUNCTIONAL | `Stream.Send` in `stream.go`; `TestStream_SendReturnsErrorOnWriteFailure`                          |
-| Concurrent `Send`+`Close` race safety                                | FULLY_FUNCTIONAL | `TestStream_SendCloseRace` (race-tested)                                                           |
+| Concurrent `Send`+`Close` race safety                                | FULLY_FUNCTIONAL | `TestStream_SendCloseRace`, `TestStream_SendHeartbeatCloseRace` (three-way race-tested)            |
 | Request-context cancellation                                         | FULLY_FUNCTIONAL | `Stream.Context` in `stream.go`; `TestStream_ContextCancellation`                                  |
 | `io.Closer` interface compliance                                     | FULLY_FUNCTIONAL | `Stream.Close` in `stream.go`; `TestStream_DoubleCloseSafety`                                      |
 
@@ -49,7 +49,7 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 | Subscribe / Unsubscribe                              | FULLY_FUNCTIONAL | `fanOut.Subscribe`, `fanOut.Unsubscribe` in `fanout.go`; `TestBroadcaster_Subscribe`                                   |
 | O(1) unsubscribe via channel pointer identity        | FULLY_FUNCTIONAL | `channelPtr` in `fanout.go`; `TestBroadcaster_BroadcastUnsubscribeRace`                                                |
 | Non-blocking broadcast (drops to slow consumers)     | FULLY_FUNCTIONAL | `fanOut.Broadcast` in `fanout.go`; `TestBroadcaster_DropsOnFullBuffer`                                                 |
-| Batch broadcast (`BroadcastMany`, single lock pass)  | FULLY_FUNCTIONAL | `fanOut.BroadcastMany` in `fanout.go`; `TestBroadcaster_BroadcastMany`, `TestBroadcaster_BroadcastMany_PreservesOrder` |
+| Batch broadcast (`BroadcastMany`, single lock pass)  | FULLY_FUNCTIONAL | `fanOut.BroadcastMany` in `fanout.go`; `TestBroadcaster_BroadcastMany`, `_PreservesOrder`, `_MixedSlowFast` |
 | Broadcast after Close is safe (no panic)             | FULLY_FUNCTIONAL | `TestBroadcaster_BroadcastAfterClose`                                                                                  |
 | `OnSubscribe` / `OnUnsubscribe` hooks                | FULLY_FUNCTIONAL | `fanOut.OnSubscribe`, `fanOut.OnUnsubscribe` in `fanout.go`; `TestBroadcaster_OnSubscribeHook`                         |
 | Graceful `Close` (closes all channels)               | FULLY_FUNCTIONAL | `fanOut.Close` in `fanout.go`; `TestBroadcaster_Close`                                                                 |
@@ -78,7 +78,7 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 | --------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------ |
 | Fuzz tests            | FULLY_FUNCTIONAL | `FuzzWriteEvent`, `FuzzParseEventID` in `fuzz_test.go`                                                       |
 | Integration tests     | FULLY_FUNCTIONAL | `TestIntegration_DirectSendAndHeaders`, `TestIntegration_BroadcasterFanOut` in `integration_test.go`         |
-| Race detector tests   | FULLY_FUNCTIONAL | `TestStream_SendHeartbeatRaceSafety`, `TestStream_SendCloseRace`, `TestBroadcaster_BroadcastUnsubscribeRace` |
+| Race detector tests   | FULLY_FUNCTIONAL | `TestStream_SendHeartbeatRaceSafety`, `TestStream_SendCloseRace`, `TestStream_SendHeartbeatCloseRace`, `TestBroadcaster_BroadcastUnsubscribeRace` |
 | Example tests (godoc) | FULLY_FUNCTIONAL | `ExampleWriteEvent`, `ExampleBroadcaster`, `ExampleParseEventID` in `example_test.go`                        |
 | Benchmarks            | FULLY_FUNCTIONAL | `BenchmarkBroadcasterFanOut` (1–10k subs), `BenchmarkBroadcastManyVsLoop` in `broadcaster_test.go`           |
 | CI pipeline           | FULLY_FUNCTIONAL | `.github/workflows/ci.yml`                                                                                   |

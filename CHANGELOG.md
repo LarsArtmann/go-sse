@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `Stream.SendJSON(eventName string, v any) error` — convenience counterpart to `SendHTML` that JSON-marshals the payload (returns the marshal error or the write error)
 - `Event.String()` — compact, human-readable representation for logging/debugging (omits empty fields); NOT the wire format
 - Go `Example` functions (`ExampleWriteEvent`, `ExampleBroadcaster`, `ExampleParseEventID`) rendered in godoc
-- Tests: `SendJSON` happy-path and marshal-error, `Send` returns error on write failure (disconnected client), concurrent `Send`+`Close` race safety, `BroadcastMany` delivery/ordering/empty, `Event.String` field-omission matrix
+- Tests: `SendJSON` happy-path, marshal-error, and nil-value; `Send` returns error on write failure (disconnected client); concurrent `Send`+`Close` race safety; three-way `Send`+`Heartbeat`+`Close` race safety; `BroadcastMany` delivery/ordering/empty/mixed-slow-fast; `Event.String` field-omission matrix
 - Benchmark: fan-out extended to 10,000 subscribers; `BenchmarkBroadcastManyVsLoop` quantifies the batch-API advantage
   - Fan-out is zero-allocation at all scales: 37 ns/op (1 sub) → 2.5 ms/op (10k subs)
   - `BroadcastMany(100 events, 1000 subs)` ≈ 1.16 ms vs 100× `Broadcast` ≈ 1.16 ms — equivalent in the uncontended case; the advantage is a single RLock pass and guaranteed per-subscriber batch ordering under contention
