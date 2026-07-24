@@ -27,12 +27,10 @@ func main() {
 	mux.HandleFunc("POST /broadcast", broadcastHandler(bc))
 
 	log.Printf("SSE server on http://localhost%s", addr)
-	log.Fatal(
-		http.ListenAndServe(
-			addr,
-			mux,
-		),
-	)
+	log.Fatal(http.ListenAndServe( //nolint:gosec // G114: intentional for example server
+		addr,
+		mux,
+	))
 }
 
 func eventsHandler(bc *sse.Broadcaster[sse.Event]) http.HandlerFunc {

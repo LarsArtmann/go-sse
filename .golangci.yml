@@ -1,7 +1,7 @@
 version: "2"
 run:
   timeout: 5m
-  go: 1.26.4
+  go: "1.26"
   build-tags:
     - goexperiment.arenas
     - goexperiment.goroutineleakprofile
@@ -133,7 +133,9 @@ linters:
         main:
           allow:
             - $gostd
-            - $module
+            - github.com/larsartmann/go-sse
+            - github.com/larsartmann/go-branded-id
+            - github.com/larsartmann/go-error-family
     exhaustruct:
       exclude:
         - os/exec.Cmd
