@@ -38,11 +38,7 @@ func TestSetHeaders(t *testing.T) {
 func TestNewStream_SetsHeadersAndStatus(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	_, w := newTestStream(t)
 
 	if w.Code != http.StatusOK {
 		t.Errorf("status: got %d, want %d", w.Code, http.StatusOK)
