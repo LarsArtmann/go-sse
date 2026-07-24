@@ -29,6 +29,8 @@ GOWORK=off GOEXPERIMENT=jsonv2 golangci-lint run ./...         # lint
 
 **`GOWORK=off` is required in this environment.** A parent `/home/lars/projects/go.work` includes sibling projects (cqrs-htmx, etc.). One sibling (`cqrs-htmx`) has a stale checksum in its `go.sum` for `go-cqrs-lite/query/v4@v4.0.2`, which causes a `SECURITY ERROR` checksum mismatch when workspace mode resolves the combined module graph. `GOWORK=off` isolates go-sse to its own (valid) `go.mod`/`go.sum`. The `go.work` file is gitignored and does not exist in a fresh clone — external contributors do not need this flag. (The `flake.nix` devShell sets `GOWORK=off` automatically.)
 
+**`buildflow` needs direnv (`.envrc`), not just the devShell.** `buildflow` is a system binary that inherits the parent shell's environment — it does **not** read the `flake.nix` devShell and does **not** support env configuration in `.buildflow.yml`. The devShell's `GOEXPERIMENT`/`GOWORK` `mkShell` attributes only apply inside `nix develop`; they do not reach tools launched from a normal shell. The project's `.envrc` (`use flake` + explicit `export GOEXPERIMENT=jsonv2` / `export GOWORK=off`) is what propagates them to `buildflow`, `gopls`, and direct `go` invocations via direnv. **Symptom of a missing or un-`direnv allow`ed `.envrc`:** `buildflow`'s `go-fix`, `test-race`, and `govalid-generate` fail with `imports encoding/json/v2: build constraints exclude all Go files`. `.envrc` is gitignored (buildflow-managed); each contributor creates it locally — copy the pattern from `dnsblockd` if absent.
+
 ## Dependencies
 
 Only two, both `github.com/larsartmann/*`:
