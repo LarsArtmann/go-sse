@@ -44,6 +44,11 @@ The unexported `fanOut[T]` is transport-agnostic. Explore:
 - Topic/channel-based multi-broadcaster routing
 - Whether the split into Broadcaster (SSE) + fanOut (generic) should become a public type boundary
 
+> **Decision (v0.1.x):** Keep `fanOut[T]` unexported. No consumer needs it
+> yet, and exporting commits to API stability prematurely. Revisit when a
+> concrete non-SSE use case emerges. The generic `Broadcaster[T]` already
+> serves the "fan-out any type" need for SSE consumers.
+
 ## Non-goals
 
 Things we are deliberately NOT pursuing and why:

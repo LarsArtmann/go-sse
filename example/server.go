@@ -28,7 +28,10 @@ func main() {
 
 	log.Printf("SSE server on http://localhost%s", addr)
 	log.Fatal(
-		http.ListenAndServe(addr, mux), //nolint:gosec // example server; production should set timeouts
+		http.ListenAndServe(
+			addr,
+			mux,
+		),
 	)
 }
 

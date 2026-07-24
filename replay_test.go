@@ -1,6 +1,7 @@
 package sse_test
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
