@@ -363,6 +363,74 @@ func TestBroadcaster_GenericWithString(t *testing.T) {
 	}
 }
 
+func TestBroadcaster_BroadcastMany(t *testing.T) {
+	t.Parallel()
+
+	b := sse.NewBroadcaster[sse.Event]()
+
+	ch1 := b.Subscribe()
+	ch2 := b.Subscribe()
+	defer b.Unsubscribe(ch1)
+	defer b.Unsubscribe(ch2)
+
+	events := []sse.Event{
+		{Event: "a", Data: "1"},
+		{Event: "b", Data: "2"},
+		{Event: "c", Data: "3"},
+	}
+	b.BroadcastMany(events...)
+
+	for i, want := range events {
+		if got := <-ch1; got != want {
+			t.Errorf("ch1[%d]: got %v, want %v", i, got, want)
+		}
+
+		if got := <-ch2; got != want {
+			t.Errorf("ch2[%d]: got %v, want %v", i, got, want)
+		}
+	}
+}
+
+func TestBroadcaster_BroadcastMany_PreservesOrder(t *testing.T) {
+	t.Parallel()
+
+	b := sse.NewBroadcaster[sse.Event]()
+
+	ch := b.Subscribe()
+	defer b.Unsubscribe(ch)
+
+	// Stay within the 64-deep subscriber buffer so all events are delivered
+	// (BroadcastMany is non-blocking: events beyond the buffer are dropped).
+	const n = 50
+	events := make([]sse.Event, 0, n)
+	for i := range n {
+		events = append(events, sse.Event{Data: strconv.Itoa(i)})
+	}
+
+	b.BroadcastMany(events...)
+
+	for i, want := range events {
+		got := <-ch
+		if got != want {
+			t.Errorf("event %d: got %v, want %v", i, got, want)
+		}
+	}
+}
+
+func TestBroadcaster_BroadcastMany_Empty(t *testing.T) {
+	t.Parallel()
+
+	b := sse.NewBroadcaster[sse.Event]()
+	ch := b.Subscribe()
+	defer b.Unsubscribe(ch)
+
+	b.BroadcastMany() // no-op, must not panic or block
+
+	if b.SubscriberCount() != 1 {
+		t.Errorf("subscriber count: got %d, want 1", b.SubscriberCount())
+	}
+}
+
 // --- Benchmarks ---
 
 func drain[T any](tb testing.TB, ch <-chan T) {
@@ -379,7 +447,7 @@ func drain[T any](tb testing.TB, ch <-chan T) {
 }
 
 func BenchmarkBroadcasterFanOut(b *testing.B) {
-	for _, subs := range []int{1, 10, 100, 1000} {
+	for _, subs := range []int{1, 10, 100, 1000, 10000} {
 		b.Run(strconv.Itoa(subs), func(b *testing.B) {
 			bc := sse.NewBroadcaster[sse.Event]()
 			defer bc.Close()
@@ -412,4 +480,50 @@ func BenchmarkSubscribeUnsubscribe(b *testing.B) {
 		ch := bc.Subscribe()
 		bc.Unsubscribe(ch)
 	}
+}
+
+// BenchmarkBroadcastManyVsLoop compares a single BroadcastMany(100) call against
+// 100 individual Broadcast calls, demonstrating the single-lock-acquisition
+// advantage of the batch API.
+func BenchmarkBroadcastManyVsLoop(b *testing.B) {
+	const subs = 100
+
+	events := make([]sse.Event, 0, 100)
+	for range 100 {
+		events = append(events, sse.Event{Event: "batch", Data: "payload"})
+	}
+
+	b.Run("BroadcastMany", func(b *testing.B) {
+		bc := sse.NewBroadcaster[sse.Event]()
+		defer bc.Close()
+
+		for range subs {
+			drain(b, bc.Subscribe())
+		}
+
+		b.ReportAllocs()
+		b.ResetTimer()
+
+		for b.Loop() {
+			bc.BroadcastMany(events...)
+		}
+	})
+
+	b.Run("BroadcastLoop", func(b *testing.B) {
+		bc := sse.NewBroadcaster[sse.Event]()
+		defer bc.Close()
+
+		for range subs {
+			drain(b, bc.Subscribe())
+		}
+
+		b.ReportAllocs()
+		b.ResetTimer()
+
+		for b.Loop() {
+			for _, evt := range events {
+				bc.Broadcast(evt)
+			}
+		}
+	})
 }

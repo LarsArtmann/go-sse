@@ -2,6 +2,7 @@ package sse_test
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -11,6 +12,8 @@ import (
 
 	"github.com/larsartmann/go-sse"
 )
+
+var errDisconnected = errors.New("client disconnected")
 
 func TestSetHeaders(t *testing.T) {
 	t.Parallel()
@@ -338,4 +341,113 @@ func TestStream_DoubleCloseSafety(t *testing.T) {
 
 	_ = stream.Close()
 	_ = stream.Close() // must not panic
+}
+
+func TestStream_SendJSON(t *testing.T) {
+	t.Parallel()
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/events", nil)
+
+	stream := sse.NewStream(w, r)
+	defer func() { _ = stream.Close() }()
+
+	type payload struct {
+		Name string `json:"name"`
+		N    int    `json:"n"`
+	}
+
+	err := stream.SendJSON("update", payload{Name: "go-sse", N: 7})
+	if err != nil {
+		t.Fatalf("SendJSON: %v", err)
+	}
+
+	want := `event: update` + "\n" + `data: {"name":"go-sse","n":7}` + "\n\n"
+	if w.Body.String() != want {
+		t.Errorf("got %q, want %q", w.Body.String(), want)
+	}
+}
+
+func TestStream_SendJSON_MarshalError(t *testing.T) {
+	t.Parallel()
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/events", nil)
+
+	stream := sse.NewStream(w, r)
+	defer func() { _ = stream.Close() }()
+
+	// Channels cannot be JSON-marshalled.
+	err := stream.SendJSON("bad", make(chan int))
+	if err == nil {
+		t.Fatal("expected marshal error, got nil")
+	}
+
+	if w.Body.Len() != 0 {
+		t.Errorf("nothing should be written on marshal failure, got %q", w.Body.String())
+	}
+}
+
+// failingResponseWriter is an http.ResponseWriter whose Write always errors,
+// simulating a client that has disconnected / a broken pipe.
+type failingResponseWriter struct {
+	header http.Header
+}
+
+func (f *failingResponseWriter) Header() http.Header {
+	if f.header == nil {
+		f.header = make(http.Header)
+	}
+
+	return f.header
+}
+
+func (f *failingResponseWriter) Write(_ []byte) (int, error) { return 0, errDisconnected }
+func (f *failingResponseWriter) WriteHeader(int)             {}
+
+var _ http.ResponseWriter = (*failingResponseWriter)(nil)
+
+func TestStream_SendReturnsErrorOnWriteFailure(t *testing.T) {
+	t.Parallel()
+
+	w := &failingResponseWriter{}
+	r := httptest.NewRequest(http.MethodGet, "/events", nil)
+
+	stream := sse.NewStream(w, r)
+	defer func() { _ = stream.Close() }()
+
+	err := stream.Send(sse.Event{Event: "update", Data: "hello"})
+	if err == nil {
+		t.Fatal("expected write error from disconnected client, got nil")
+	}
+}
+
+// TestStream_SendCloseRace verifies that concurrent Send and Close do not race
+// or panic. Only the Send+Heartbeat race was previously covered.
+func TestStream_SendCloseRace(t *testing.T) {
+	t.Parallel()
+
+	for range 20 {
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodGet, "/events", nil)
+
+		stream := sse.NewStream(w, r)
+
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		go func() {
+			defer wg.Done()
+			for range 50 {
+				_ = stream.Send(sse.Event{Event: "race", Data: "x"})
+			}
+		}()
+
+		go func() {
+			defer wg.Done()
+			_ = stream.Close()
+		}()
+
+		wg.Wait()
+	}
 }

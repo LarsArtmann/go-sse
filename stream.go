@@ -2,10 +2,13 @@ package sse
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"sync"
 	"time"
+
+	errorfamily "github.com/larsartmann/go-error-family"
 )
 
 // Stream manages a single Server-Sent Events connection.
@@ -109,6 +112,24 @@ func (s *Stream) Send(event Event) error {
 // The eventName must match the client's event listener.
 func (s *Stream) SendHTML(eventName, html string) error {
 	return s.Send(Event{Event: eventName, Data: html})
+}
+
+// SendJSON marshals v to JSON and sends it as the data payload of a named SSE
+// event. This is the convenience counterpart to [Stream.SendHTML] for the common
+// case where the payload is a JSON object. The marshalled bytes are sent as-is
+// (single-line); clients decode with JSON.parse on the data field.
+//
+// Returns the marshalling error if v cannot be encoded, or the write error if
+// the underlying connection fails.
+func (s *Stream) SendJSON(eventName string, v any) error {
+	payload, err := json.Marshal(v)
+	if err != nil {
+		return errorfamily.Wrapf(err, errorfamily.Rejection,
+			"sse.json_marshal_failed",
+			"marshal sse payload for event %q", eventName)
+	}
+
+	return s.Send(Event{Event: eventName, Data: string(payload)})
 }
 
 // Context returns the stream's context.Context. It is cancelled when the

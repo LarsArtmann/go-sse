@@ -90,6 +90,27 @@ func (f *fanOut[T]) Broadcast(msg T) {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
 
+	f.sendAllLocked(msg)
+}
+
+// BroadcastMany sends multiple messages to all active subscribers in a single
+// locked fan-out pass. Per-subscriber ordering is preserved across the batch,
+// and the read lock is acquired once instead of once per message — this is
+// meaningfully cheaper than calling Broadcast in a loop for large batches.
+// Like Broadcast, slow subscribers with full buffers have individual messages
+// dropped (non-blocking).
+func (f *fanOut[T]) BroadcastMany(msgs ...T) {
+	f.mu.RLock()
+	defer f.mu.RUnlock()
+
+	for _, msg := range msgs {
+		f.sendAllLocked(msg)
+	}
+}
+
+// sendAllLocked fans msg out to every subscriber. The caller must hold f.mu
+// (read or write) so that a concurrent Unsubscribe cannot close a channel mid-send.
+func (f *fanOut[T]) sendAllLocked(msg T) {
 	for _, ch := range f.subscribers {
 		select {
 		case ch <- msg:

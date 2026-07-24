@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `Broadcaster.BroadcastMany(msgs ...T)` — batch fan-out in a single locked pass; cheaper than looping `Broadcast` and preserves per-subscriber ordering across the batch
+- `Stream.SendJSON(eventName string, v any) error` — convenience counterpart to `SendHTML` that JSON-marshals the payload (returns the marshal error or the write error)
+- `Event.String()` — compact, human-readable representation for logging/debugging (omits empty fields); NOT the wire format
+- Go `Example` functions (`ExampleWriteEvent`, `ExampleBroadcaster`, `ExampleParseEventID`) rendered in godoc
+- Tests: `SendJSON` happy-path and marshal-error, `Send` returns error on write failure (disconnected client), concurrent `Send`+`Close` race safety, `BroadcastMany` delivery/ordering/empty, `Event.String` field-omission matrix
+- Benchmark: fan-out extended to 10,000 subscribers; `BenchmarkBroadcastManyVsLoop` quantifies the batch-API advantage
+
 ## [0.1.0] - 2026-07-23
 
 ### Added

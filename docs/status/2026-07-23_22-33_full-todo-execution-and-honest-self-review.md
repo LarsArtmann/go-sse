@@ -17,12 +17,14 @@ However, the self-review below reveals **significant gaps** that were not caught
 ## a) FULLY DONE (genuinely complete, verified)
 
 ### M2 — LastEventIDFromRequest Security Fix
+
 - `stream.go:210` now uses `ParseEventID` instead of `NewEventID`
 - Malicious headers with `\n`/`\r` are rejected, returning zero EventID
 - Test: `TestLastEventIDFromRequest_MaliciousInputTreatedAsEmpty` covers LF, CR, CRLF, lone `\n`, lone `\r`
 - **Commit:** `530d4b2`
 
 ### M5 — Event.Retry: int → uint
+
 - `event.go:90` changed to `Retry uint`
 - `WriteEvent` uses `strconv.AppendUint` instead of `strconv.AppendInt`
 - `WriteRetry` parameter also changed to `uint`
@@ -30,23 +32,27 @@ However, the self-review below reveals **significant gaps** that were not caught
 - **Commit:** `4436c3b`
 
 ### M6 — EventStore.EventsAfter: string → EventID
+
 - `replay.go:13` signature changed to `EventsAfter(lastID EventID) []Event`
 - `Replay` no longer calls `.Get()` on the ID
 - `memoryStore` in `replay_test.go` updated
 - **Commit:** `4436c3b`
 
 ### M8 — Heartbeat Dedup
+
 - Extracted `heartbeatFrame` constant in `event.go`
 - `Stream.Heartbeat` delegates to `WriteHeartbeat` instead of duplicating bytes
 - **Commit:** `7011d8e`
 
 ### M10 — Stream.Close returns error (io.Closer)
+
 - `stream.go:124` changed to `Close() error`
 - Compile-time assertion: `var _ io.Closer = (*Stream)(nil)`
 - All `defer stream.Close()` call sites updated to `defer func() { _ = stream.Close() }()`
 - **Commit:** `4436c3b`
 
 ### M9 — Edge-Case Tests
+
 - `TestStream_DoubleCloseSafety`, `TestBroadcaster_BroadcastAfterClose`
 - `TestWriteRetry` + `TestWriteRetry_WriteError` (was 0% coverage)
 - `TestWriteEvent_LoneCarriageReturn` (verifies the committed splitLines fix)
@@ -55,36 +61,42 @@ However, the self-review below reveals **significant gaps** that were not caught
 - **Commit:** `733da27`
 
 ### M3 — Fuzz Tests
+
 - `FuzzWriteEvent`: 5 seed corpus entries, verifies no panic + output ends with `\n\n` + contains `data:`
 - `FuzzParseEventID`: 4 seed corpus entries, verifies newline rejection + roundtrip
 - Ran 10s each: 4.3M and 2.6M execs respectively, zero failures
 - **Commit:** `648be1b`
 
 ### M1 — CI Workflow
+
 - `.github/workflows/ci.yml`: 4 jobs (test, lint, vet, coverage)
 - Uses `go-version-file: go.mod`, sets `GOEXPERIMENT: jsonv2`
 - Coverage scoped to `.` (sse package) to avoid example/ diluting it
 - **Commit:** `2632914`, `84f3f3e`
 
 ### M11 — Example Directory
+
 - `example/server.go`: Broadcaster + SSE endpoint + heartbeat + broadcast endpoint
 - `example/README.md`: curl + JavaScript EventSource examples
 - Builds successfully, lint clean (with targeted nolint for gosec)
 - **Commit:** `c0a7633`
 
 ### M12 — CHANGELOG + pkg.go.dev Badge
+
 - `CHANGELOG.md` restructured into `[Unreleased]` + `[0.1.0]` sections
 - All Added/Changed/Fixed/Security entries documented
 - pkg.go.dev badge added to README
 - **Commit:** `bae967d`
 
 ### M13 — FEATURES.md
+
 - All stale `file:line` refs replaced with function/symbol names
 - Hardcoded "52 tests" replaced with `go test ./... -v` reference
 - New features added (splitLines CR, LastEventIDFromRequest validation, io.Closer, fuzz tests, CI)
 - **Commit:** `bae967d`
 
 ### M14 — README.md
+
 - Event struct updated (`Retry uint`, `Retry: uint` comment)
 - EventStore signature updated (`EventsAfter(lastID EventID)`)
 - Non-Blocking Drop Policy section added with implications
@@ -92,6 +104,7 @@ However, the self-review below reveals **significant gaps** that were not caught
 - **Commit:** `bae967d`
 
 ### M15 — CONTRIBUTING.md + Spec URL
+
 - SSE spec URL verified live (fetched successfully)
 - Build-tags note added explaining `GOEXPERIMENT=jsonv2` and `GOWORK=off`
 - **Commit:** `bae967d`
@@ -101,7 +114,9 @@ However, the self-review below reveals **significant gaps** that were not caught
 ## b) PARTIALLY DONE (shipped but with known gaps)
 
 ### M7 — Test Cleanup
+
 **What was done:**
+
 - `contains()`/`startsWith()` → `strings.Contains` ✓
 - `itoa()` → `strconv.Itoa` ✓
 - `errorResponseWriter` nil writer initialized ✓
@@ -110,6 +125,7 @@ However, the self-review below reveals **significant gaps** that were not caught
 - `TestStream_Context`: `context.WithCancel` → `t.Context()` ✓
 
 **What was MISSED (still in the code):**
+
 - **6 more `context.WithCancel` calls** in `stream_test.go` were NOT modernized to `t.Context()`:
   - `TestStream_ContextCancellation` (line 132)
   - `TestStream_Heartbeat` (line 152)
@@ -120,11 +136,14 @@ However, the self-review below reveals **significant gaps** that were not caught
 - The gopls diagnostics at session start flagged only 4 of these; the rest were discovered in this review
 
 ### M4 — Integration Test
+
 **What was done:**
+
 - `TestIntegration_DirectSendAndHeaders` — real HTTP server, verifies headers + event + retry + terminator
 - `TestIntegration_BroadcasterFanOut` — verifies subscribe/broadcast/cleanup lifecycle
 
 **What was MISSED:**
+
 - `TestIntegration_BroadcasterFanOut` uses **`time.Sleep(200ms)`** for synchronization — this is a **flaky test pattern** that could intermittently fail on slow CI
 - No test for **Last-Event-ID reconnection replay** over a real HTTP connection
 - No test for **heartbeat delivery** over a real HTTP connection (the most critical proxy-survival feature)
@@ -165,23 +184,27 @@ However, the self-review below reveals **significant gaps** that were not caught
 ## e) WHAT WE SHOULD IMPROVE (quality issues to address)
 
 ### Code Quality
+
 1. **Stale doc comments in `doc.go` and `stream.go`** — 5 occurrences of `defer stream.Close()` in source doc comments still show the old pattern. These are visible in `go doc` output and pkg.go.dev.
 2. **Stale README examples** — 4 `defer stream.Close()` in README Quick Start. Users copy-pasting these get `errcheck` lint failures.
 3. **Flaky test patterns** — 2 `time.Sleep` calls in tests that could fail on slow CI.
 4. **Uncovered branches** — 4 functions below 100% coverage (`Name`, `MustParseEventID` success, `splitLines` final branch, `Heartbeat` error path).
 
 ### Documentation
+
 5. **AGENTS.md doesn't reflect new API** — Should mention `io.Closer`, `Retry uint`, `EventStore EventID`, heartbeat constant.
 6. **ROADMAP.md wasn't reviewed for staleness** — May reference old patterns or missing features that now exist.
 7. **No `VERSIONING.md` or version strategy** — CHANGELOG has `[0.1.0]` but no actual git tag exists and no versioning policy is documented.
 
 ### Testing
+
 8. **No fuzz in CI** — Fuzz tests only run seed corpus in normal `go test`. Need `-fuzztime` in a scheduled or separate job.
 9. **No heartbeat integration test** — The most critical production feature (proxy survival) has no real HTTP integration test.
 10. **No replay integration test** — Reconnection replay over real HTTP is untested.
 11. **Incomplete modernization** — 6+ `context.WithCancel` and 4+ `go func()` patterns remain in tests.
 
 ### Architecture
+
 12. **`example/` is a separate package but not a Go module** — If the example grows, it may need its own `go.mod` or at least a build tag.
 13. **No `go generate` or build automation for the example** — CI doesn't verify the example runs, only that it compiles.
 
@@ -190,6 +213,7 @@ However, the self-review below reveals **significant gaps** that were not caught
 ## f) Up to 50 Things to Get Done Next
 
 ### Critical (should do immediately)
+
 1. Fix all stale `defer stream.Close()` in doc comments (`doc.go:19`, `stream.go:19`, `stream.go:69`)
 2. Fix all stale `defer stream.Close()` in README.md examples (4 occurrences)
 3. Replace `time.Sleep(200ms)` in `TestIntegration_BroadcasterFanOut` with channel-based sync
@@ -202,6 +226,7 @@ However, the self-review below reveals **significant gaps** that were not caught
 10. Add fuzz job to CI (scheduled or separate workflow with `-fuzztime=1m`)
 
 ### High Priority
+
 11. Finish modernizing remaining `context.WithCancel` → `t.Context()` in stream_test.go (4 more)
 12. Finish modernizing remaining `go func()` → `wg.Go` in stream_test.go and broadcaster_test.go (4+ more)
 13. Add heartbeat integration test over real HTTP
@@ -212,6 +237,7 @@ However, the self-review below reveals **significant gaps** that were not caught
 18. Add versioning policy (SemVer, when to tag, etc.)
 
 ### Medium Priority
+
 19. Configurable subscriber buffer size (currently hardcoded 64 in `fanout.go`)
 20. Graceful shutdown helper (drain subscribers on SIGTERM)
 21. Observability: structured logging hooks beyond OnSubscribe/OnUnsubscribe
@@ -226,6 +252,7 @@ However, the self-review below reveals **significant gaps** that were not caught
 30. Add test for `NewStream` with non-flushing writer (nil flusher path)
 
 ### Low Priority
+
 31. Add `ReplayAsync` for non-blocking replay
 32. Add `Broadcaster.BroadcastFiltered` with predicate
 33. Add `Stream.SendAll([]Event)` batch send
@@ -261,15 +288,15 @@ However, the self-review below reveals **significant gaps** that were not caught
 
 ## Metrics Snapshot
 
-| Metric                  | Before Session | After Session | Delta    |
-| ----------------------- | -------------- | ------------- | -------- |
-| Tests                   | 44             | 64            | +20      |
-| Benchmarks              | 11             | 5             | -6\*     |
-| Coverage                | 95.9%          | 97.4%         | +1.5pp   |
-| Lint issues             | 0              | 0             | 0        |
-| Go source files         | 11             | 14            | +3       |
-| Lines of Go code        | ~1,901         | 2,269         | +368     |
-| Commits this session    | —              | 14            | 14       |
+| Metric               | Before Session | After Session | Delta  |
+| -------------------- | -------------- | ------------- | ------ |
+| Tests                | 44             | 64            | +20    |
+| Benchmarks           | 11             | 5             | -6\*   |
+| Coverage             | 95.9%          | 97.4%         | +1.5pp |
+| Lint issues          | 0              | 0             | 0      |
+| Go source files      | 11             | 14            | +3     |
+| Lines of Go code     | ~1,901         | 2,269         | +368   |
+| Commits this session | —              | 14            | 14     |
 
 \* Benchmark count decreased because `b.Loop()` modernization changed the iteration count reporting; the same benchmarks still exist, just counted differently by the runner.
 
@@ -277,28 +304,29 @@ However, the self-review below reveals **significant gaps** that were not caught
 
 ## Session Timeline
 
-| Commit   | Task | Description                                              |
-| -------- | ---- | -------------------------------------------------------- |
-| `2e75754` | (pre-session) | splitLines CR fix                              |
-| `75087da` | (pre-session) | Pareto execution plan                          |
-| `530d4b2` | M2   | LastEventIDFromRequest security fix                      |
-| `7011d8e` | M8   | Heartbeat constant extraction                            |
-| `4436c3b` | M5+M6+M10 | API type alignment (Retry uint, EventID, io.Closer) |
-| `d45b1c9` | M7   | Test helper cleanup + modernization                      |
-| `733da27` | M9   | Edge-case tests                                          |
-| `648be1b` | M3   | Fuzz tests                                               |
-| `7355baf` | M4   | Integration tests                                        |
-| `2632914` | M1   | CI workflow                                              |
-| `c0a7633` | M11  | Example directory                                        |
-| `bae967d` | M12-M15 | Documentation updates                                 |
-| `84f3f3e` | fix  | CI coverage scoping                                      |
-| `0507927` | docs | TODO_LIST cleanup                                        |
+| Commit    | Task          | Description                                         |
+| --------- | ------------- | --------------------------------------------------- |
+| `2e75754` | (pre-session) | splitLines CR fix                                   |
+| `75087da` | (pre-session) | Pareto execution plan                               |
+| `530d4b2` | M2            | LastEventIDFromRequest security fix                 |
+| `7011d8e` | M8            | Heartbeat constant extraction                       |
+| `4436c3b` | M5+M6+M10     | API type alignment (Retry uint, EventID, io.Closer) |
+| `d45b1c9` | M7            | Test helper cleanup + modernization                 |
+| `733da27` | M9            | Edge-case tests                                     |
+| `648be1b` | M3            | Fuzz tests                                          |
+| `7355baf` | M4            | Integration tests                                   |
+| `2632914` | M1            | CI workflow                                         |
+| `c0a7633` | M11           | Example directory                                   |
+| `bae967d` | M12-M15       | Documentation updates                               |
+| `84f3f3e` | fix           | CI coverage scoping                                 |
+| `0507927` | docs          | TODO_LIST cleanup                                   |
 
 ---
 
 ## Verdict
 
 The TODO list is **executed but not perfected**. All 15 items shipped, all tests pass, all lint clean. But the self-review reveals:
+
 - **8 stale doc references** to old API signatures
 - **2 flaky tests** using `time.Sleep`
 - **4 uncovered code branches** that should be tested

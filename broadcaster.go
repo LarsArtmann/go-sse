@@ -28,3 +28,12 @@ type Broadcaster[T any] struct {
 func NewBroadcaster[T any]() *Broadcaster[T] {
 	return &Broadcaster[T]{fanOut: newFanOut[T]()}
 }
+
+// BroadcastMany sends a batch of messages to all active subscribers in a single
+// locked fan-out pass. It is the batch variant of [Broadcaster.Broadcast]:
+// cheaper than looping Broadcast (one lock acquisition) and it preserves
+// per-subscriber ordering across the batch. Slow subscribers with full buffers
+// have individual messages dropped, exactly like Broadcast.
+func (b *Broadcaster[T]) BroadcastMany(msgs ...T) {
+	b.fanOut.BroadcastMany(msgs...)
+}

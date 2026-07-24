@@ -20,20 +20,21 @@ Before calling it production-grade, explore what production consumers need:
 
 Lower the barrier to adoption:
 
-- `example/` directory with a runnable server + client
 - Client-side `Dial` helper (currently server-only)
-- `Event.String()` for debugging
-- `SendJSON` convenience method (parallel to `SendHTML`)
 - Batteries-included `EventStore` implementations (in-memory, Redis)
+
+> Realized in 0.1.x: `example/` runnable server, `Event.String()` debug helper,
+> `SendJSON` convenience method, Go `Example` functions in godoc.
 
 ### 3. Spec compliance and extensibility
 
 Stay aligned with the SSE spec and explore extensions:
 
 - SSE extension fields (CLTY, custom fields)
-- Batch/multi-event send for efficiency
 - Full HTTP/2 and HTTP/3 streaming verification
 - Whether `LastEventID` should validate via `ParseEventID`
+
+> Realized in 0.1.x: batch/multi-event send via `Broadcaster.BroadcastMany`.
 
 ### 4. Reusability of the fan-out hub
 

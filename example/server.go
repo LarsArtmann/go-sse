@@ -27,7 +27,9 @@ func main() {
 	mux.HandleFunc("POST /broadcast", broadcastHandler(bc))
 
 	log.Printf("SSE server on http://localhost%s", addr)
-	log.Fatal(http.ListenAndServe(addr, mux)) //nolint:gosec // example server; production should set timeouts
+	log.Fatal(
+		http.ListenAndServe(addr, mux),
+	) //nolint:gosec // example server; production should set timeouts
 }
 
 func eventsHandler(bc *sse.Broadcaster[sse.Event]) http.HandlerFunc {

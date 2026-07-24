@@ -90,6 +90,53 @@ type Event struct {
 	Retry uint
 }
 
+// String returns a compact, human-readable representation of the event for
+// logging and debugging. It is NOT the SSE wire format — use [WriteEvent] for
+// that. The format omits empty fields so logs stay readable:
+//
+//	{event:update id:42 retry:3000 data:<div>new</div>}
+func (e Event) String() string {
+	var b strings.Builder
+
+	b.WriteByte('{')
+
+	if e.Event != "" {
+		b.WriteString("event:")
+		b.WriteString(e.Event)
+	}
+
+	if !e.ID.IsZero() {
+		if b.Len() > 1 {
+			b.WriteByte(' ')
+		}
+
+		b.WriteString("id:")
+		b.WriteString(e.ID.Get())
+	}
+
+	if e.Retry > 0 {
+		if b.Len() > 1 {
+			b.WriteByte(' ')
+		}
+
+		b.WriteString("retry:")
+		b.WriteString(strconv.FormatUint(uint64(e.Retry), base10))
+	}
+
+	if e.Data != "" {
+		if b.Len() > 1 {
+			b.WriteByte(' ')
+		}
+
+		b.WriteString("data:")
+		b.WriteString(e.Data)
+	}
+
+	b.WriteByte('}')
+
+	return b.String()
+}
+
 // WriteEvent writes a single SSE event to the writer in the standard
 // Server-Sent Events wire format. Uses direct byte appends instead of
 // fmt.Fprintf to minimize allocations on the SSE hot path.

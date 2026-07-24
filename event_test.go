@@ -362,3 +362,54 @@ func (e *errorWriter) Write(_ []byte) (int, error) {
 }
 
 var _ io.Writer = (*errorWriter)(nil)
+
+func TestEvent_String(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name string
+		evt  sse.Event
+		want string
+	}{
+		{
+			name: "all fields",
+			evt: sse.Event{
+				Event: "update",
+				Data:  "<div>new</div>",
+				ID:    sse.NewEventID("42"),
+				Retry: 3000,
+			},
+			want: "{event:update id:42 retry:3000 data:<div>new</div>}",
+		},
+		{
+			name: "data only",
+			evt:  sse.Event{Data: "hello"},
+			want: "{data:hello}",
+		},
+		{
+			name: "event name only",
+			evt:  sse.Event{Event: "ping"},
+			want: "{event:ping}",
+		},
+		{
+			name: "empty event",
+			evt:  sse.Event{},
+			want: "{}",
+		},
+		{
+			name: "id and retry only",
+			evt:  sse.Event{ID: sse.NewEventID("7"), Retry: 500},
+			want: "{id:7 retry:500}",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tc.evt.String(); got != tc.want {
+				t.Errorf("String(): got %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
