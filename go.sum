@@ -1,4 +1,4 @@
 github.com/larsartmann/go-branded-id v0.3.2 h1:Vbe5/LRuR2ycDFpDKuuuG8brBRYvSYcOU1nqV8IIZPI=
 github.com/larsartmann/go-branded-id v0.3.2/go.mod h1:xoQYcGTGrMqRYB8cMKHe2efq8S6stQGg3nW4DzXVWpA=
-github.com/larsartmann/go-error-family v0.8.0 h1:dBdOJ4VKINK/90JJqSJb5LwEW5fnU9wzU23rLp2FGp4=
-github.com/larsartmann/go-error-family v0.8.0/go.mod h1:JEvLiYWT8p9WrNXrD1Ow97DphYsB9Bksr2lNmwG3Vm4=
+github.com/larsartmann/go-error-family v0.9.0 h1:DpIAvgi5q6+HrGbMNc979yO/0rq/uFaQLvqt33GiEaE=
+github.com/larsartmann/go-error-family v0.9.0/go.mod h1:JEvLiYWT8p9WrNXrD1Ow97DphYsB9Bksr2lNmwG3Vm4=

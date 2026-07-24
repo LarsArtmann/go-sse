@@ -52,11 +52,7 @@ func TestNewStream_SetsHeadersAndStatus(t *testing.T) {
 func TestStream_Send(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, w := newTestStream(t)
 
 	err := stream.Send(sse.Event{Event: "update", Data: "<div>new</div>"})
 	if err != nil {
@@ -72,11 +68,7 @@ func TestStream_Send(t *testing.T) {
 func TestStream_SendMultiple(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, w := newTestStream(t)
 
 	_ = stream.Send(sse.Event{Event: "e1", Data: "d1"})
 	_ = stream.Send(sse.Event{Event: "e2", Data: "d2"})
@@ -94,11 +86,7 @@ func TestStream_SendMultiple(t *testing.T) {
 func TestStream_SendData(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, w := newTestStream(t)
 
 	err := stream.SendData("update", "<ul><li>item</li></ul>")
 	if err != nil {
@@ -256,11 +244,7 @@ func TestStream_LastEventID(t *testing.T) {
 func TestStream_LastEventID_Empty(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, _ := newTestStream(t)
 
 	if id := stream.LastEventID(); !id.IsZero() {
 		t.Errorf("LastEventID: expected zero, got %q", id.Get())
@@ -342,11 +326,7 @@ func TestStream_DoubleCloseSafety(t *testing.T) {
 func TestStream_SendJSON(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, w := newTestStream(t)
 
 	type payload struct {
 		Name string `json:"name"`
@@ -367,11 +347,7 @@ func TestStream_SendJSON(t *testing.T) {
 func TestStream_SendJSON_MarshalError(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, w := newTestStream(t)
 
 	// Channels cannot be JSON-marshalled.
 	err := stream.SendJSON("bad", make(chan int))
@@ -387,11 +363,7 @@ func TestStream_SendJSON_MarshalError(t *testing.T) {
 func TestStream_SendJSON_NilValue(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, w := newTestStream(t)
 
 	err := stream.SendJSON("clear", nil)
 	if err != nil {
