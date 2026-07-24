@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Go `Example` functions (`ExampleWriteEvent`, `ExampleBroadcaster`, `ExampleParseEventID`) rendered in godoc
 - Tests: `SendJSON` happy-path and marshal-error, `Send` returns error on write failure (disconnected client), concurrent `Send`+`Close` race safety, `BroadcastMany` delivery/ordering/empty, `Event.String` field-omission matrix
 - Benchmark: fan-out extended to 10,000 subscribers; `BenchmarkBroadcastManyVsLoop` quantifies the batch-API advantage
+  - Fan-out is zero-allocation at all scales: 37 ns/op (1 sub) → 2.5 ms/op (10k subs)
+  - `BroadcastMany(100 events, 1000 subs)` ≈ 1.16 ms vs 100× `Broadcast` ≈ 1.16 ms — equivalent in the uncontended case; the advantage is a single RLock pass and guaranteed per-subscriber batch ordering under contention
 
 ## [0.1.0] - 2026-07-23
 

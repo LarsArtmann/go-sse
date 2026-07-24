@@ -132,6 +132,10 @@ type EventID = brandid.ID[eventBrand, string] // branded — prevents cross-assi
 sse.WriteEvent(w, sse.Event{Event: "update", Data: "<div>new</div>"})
 sse.WriteHeartbeat(w)       // ": heartbeat\n\n"
 sse.WriteRetry(w, 5000)     // "retry: 5000\n\n"
+
+// Event.String() — compact debug representation (NOT the wire format)
+log.Printf("dropped event: %s", evt)
+// Output: event=update id=42 data=<div>new</div>
 ```
 
 ### Stream (single connection)
@@ -141,7 +145,8 @@ stream := sse.NewStream(w, r)     // sets headers + 200 OK
 defer stream.Close()
 
 stream.Send(sse.Event{...})        // write + flush
-stream.SendHTML("update", "<div>") // convenience
+stream.SendHTML("update", "<div>") // convenience: send raw HTML fragment
+stream.SendJSON("update", payload) // convenience: marshal JSON, send as data
 stream.Heartbeat(ctx, 15*time.Second)
 stream.LastEventID()               // Last-Event-ID header
 stream.Context()                   // cancelled on disconnect
@@ -157,6 +162,7 @@ ch := b.Subscribe()                 // returns <-chan sse.Event
 defer b.Unsubscribe(ch)             // closes the channel
 
 b.Broadcast(sse.Event{...})         // non-blocking, drops to slow consumers
+b.BroadcastMany(evt1, evt2, evt3)   // batch: single lock pass, preserves order
 b.SubscriberCount()
 b.Close()                           // closes all subscriber channels
 
