@@ -57,5 +57,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      # Scope coverage to the sse package only (.), excluding example/ which is
+      # demonstration code, not library logic under test.
       - run: go test . -coverprofile=coverage.out -covermode=atomic
       - run: go tool cover -func=coverage.out

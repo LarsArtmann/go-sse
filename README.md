@@ -145,7 +145,7 @@ stream := sse.NewStream(w, r)     // sets headers + 200 OK
 defer stream.Close()
 
 stream.Send(sse.Event{...})        // write + flush
-stream.SendHTML("update", "<div>") // convenience: send raw HTML fragment
+stream.SendData("update", "<div>") // convenience: send raw string data
 stream.SendJSON("update", payload) // convenience: marshal JSON, send as data
 stream.Heartbeat(ctx, 15*time.Second)
 stream.LastEventID()               // Last-Event-ID header

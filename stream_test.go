@@ -95,7 +95,7 @@ func TestStream_SendMultiple(t *testing.T) {
 	}
 }
 
-func TestStream_SendHTML(t *testing.T) {
+func TestStream_SendData(t *testing.T) {
 	t.Parallel()
 
 	w := httptest.NewRecorder()
@@ -104,9 +104,9 @@ func TestStream_SendHTML(t *testing.T) {
 	stream := sse.NewStream(w, r)
 	defer func() { _ = stream.Close() }()
 
-	err := stream.SendHTML("update", "<ul><li>item</li></ul>")
+	err := stream.SendData("update", "<ul><li>item</li></ul>")
 	if err != nil {
-		t.Fatalf("SendHTML: %v", err)
+		t.Fatalf("SendData: %v", err)
 	}
 
 	want := "event: update\ndata: <ul><li>item</li></ul>\n\n"

@@ -5,7 +5,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
-	"time"
 
 	"github.com/larsartmann/go-sse"
 )
@@ -440,30 +439,42 @@ func TestBroadcaster_BroadcastMany_MixedSlowFast(t *testing.T) {
 	fastCh := b.Subscribe()
 	slowCh := b.Subscribe()
 
+	const (
+		numBatches  = 20
+		batchSize   = 10
+		totalEvents = numBatches * batchSize // 200, well above the 64-deep buffer
+	)
+
 	var fastCount atomic.Int64
 
-	fastDone := make(chan struct{})
+	// Synchronization channel: the drain goroutine signals after each receive.
+	// Capacity equals totalEvents so no signal is lost between batches.
+	drained := make(chan struct{}, totalEvents)
+
 	go func() {
-		defer close(fastDone)
 		for range fastCh {
 			fastCount.Add(1)
+			drained <- struct{}{}
 		}
 	}()
 
-	// Send 20 batches of 10 events with brief pauses between batches so the
-	// drain goroutine is scheduled. The slow subscriber's 64-deep buffer
-	// fills and overflows; the fast subscriber is actively drained.
-	for batch := range 20 {
-		events := make([]sse.Event, 0, 10)
-		for i := range 10 {
-			events = append(events, sse.Event{Data: strconv.Itoa(batch*10 + i)})
+	// Send events in batches, deterministically waiting for the drain goroutine
+	// to process each batch before sending the next. No time.Sleep — the
+	// channel synchronization guarantees the fast subscriber keeps up.
+	for batch := range numBatches {
+		events := make([]sse.Event, 0, batchSize)
+		for i := range batchSize {
+			events = append(events, sse.Event{Data: strconv.Itoa(batch*batchSize + i)})
 		}
 
 		b.BroadcastMany(events...)
-		time.Sleep(time.Millisecond)
+
+		for range batchSize {
+			<-drained
+		}
 	}
 
-	// Count slow subscriber's buffered events (nobody drained during broadcast).
+	// Slow subscriber was never drained: buffer capped at exactly 64.
 	slowCount := 0
 
 drainSlow:
@@ -477,17 +488,13 @@ drainSlow:
 	}
 
 	b.Close() // closes fastCh → drain goroutine exits
-	<-fastDone
 
-	// Slow subscriber was never drained: buffer capped at exactly 64.
 	if slowCount != 64 {
 		t.Errorf("slow subscriber: got %d events, want exactly 64 (buffer size)", slowCount)
 	}
 
-	// Fast subscriber was actively drained: should have received strictly more
-	// than the buffer capacity (the pauses let the drain goroutine keep up).
-	if fast := int(fastCount.Load()); fast <= 64 {
-		t.Errorf("fast subscriber: got %d events, want > 64", fast)
+	if fast := int(fastCount.Load()); fast != totalEvents {
+		t.Errorf("fast subscriber: got %d events, want %d", fast, totalEvents)
 	}
 }
 

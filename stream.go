@@ -108,14 +108,14 @@ func (s *Stream) Send(event Event) error {
 	return nil
 }
 
-// SendHTML is a convenience method that sends an HTML fragment as a named SSE event.
-// The eventName must match the client's event listener.
-func (s *Stream) SendHTML(eventName, html string) error {
-	return s.Send(Event{Event: eventName, Data: html})
+// SendData is a convenience method that sends a raw string payload as a named
+// SSE event. The eventName must match the client's event listener.
+func (s *Stream) SendData(eventName, data string) error {
+	return s.Send(Event{Event: eventName, Data: data})
 }
 
 // SendJSON marshals v to JSON and sends it as the data payload of a named SSE
-// event. This is the convenience counterpart to [Stream.SendHTML] for the common
+// event. This is the convenience counterpart to [Stream.SendData] for the common
 // case where the payload is a JSON object. The marshalled bytes are sent as-is
 // (single-line); clients decode with JSON.parse on the data field.
 //
