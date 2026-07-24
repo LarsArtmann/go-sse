@@ -1,6 +1,6 @@
 module github.com/larsartmann/go-sse
 
-go 1.26.4
+go 1.26.5
 
 require (
 	github.com/larsartmann/go-branded-id v0.3.2
