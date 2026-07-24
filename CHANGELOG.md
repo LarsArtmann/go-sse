@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-24
+
 ### Changed
 
 - **Breaking:** `Stream.SendHTML` renamed to `Stream.SendData` — the method sends any raw string, not just HTML; the old name was misleading. This is a mechanical rename: `SendHTML("evt", html)` → `SendData("evt", html)`.
@@ -57,5 +59,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - `LastEventIDFromRequest` validates header input with `ParseEventID`, preventing SSE wire-format injection via crafted `Last-Event-ID` headers
 
-[Unreleased]: https://github.com/larsartmann/go-sse/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/larsartmann/go-sse/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/larsartmann/go-sse/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/larsartmann/go-sse/releases/tag/v0.1.0

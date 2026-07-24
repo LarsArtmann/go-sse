@@ -1,6 +1,6 @@
 # Features
 
-Honest inventory of what `go-sse` does and its real status. Verified by running `go test ./... -race -count=1` (all passing, 97.8% coverage) and `golangci-lint run ./...` (0 issues). See test inventory with `go test ./... -v`.
+Honest inventory of what `go-sse` does and its real status. Verified by running `go test ./... -race -count=1` (all passing, 97.9% coverage) and `golangci-lint run ./...` (0 issues). See test inventory with `go test ./... -v`.
 
 ## Status vocabulary
 

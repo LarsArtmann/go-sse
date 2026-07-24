@@ -23,7 +23,7 @@ Lower the barrier to adoption:
 - Client-side `Dial` helper (currently server-only)
 - Batteries-included `EventStore` implementations (in-memory, Redis)
 
-> Realized in 0.1.x: `example/` runnable server, `Event.String()` debug helper,
+> Realized in 0.2.0: `example/` runnable server, `Event.String()` debug helper,
 > `SendJSON` convenience method, Go `Example` functions in godoc.
 
 ### 3. Spec compliance and extensibility
@@ -34,7 +34,7 @@ Stay aligned with the SSE spec and explore extensions:
 - Full HTTP/2 and HTTP/3 streaming verification
 - Whether `LastEventID` should validate via `ParseEventID`
 
-> Realized in 0.1.x: batch/multi-event send via `Broadcaster.BroadcastMany`.
+> Realized in 0.2.0: batch/multi-event send via `Broadcaster.BroadcastMany`.
 
 ### 4. Reusability of the fan-out hub
 
@@ -44,7 +44,7 @@ The unexported `fanOut[T]` is transport-agnostic. Explore:
 - Topic/channel-based multi-broadcaster routing
 - Whether the split into Broadcaster (SSE) + fanOut (generic) should become a public type boundary
 
-> **Decision (v0.1.x):** Keep `fanOut[T]` unexported. No consumer needs it
+> **Decision (v0.2.0):** Keep `fanOut[T]` unexported. No consumer needs it
 > yet, and exporting commits to API stability prematurely. Revisit when a
 > concrete non-SSE use case emerges. The generic `Broadcaster[T]` already
 > serves the "fan-out any type" need for SSE consumers.
