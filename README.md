@@ -1,6 +1,8 @@
-# go-sse
+# [go-sse](https://pkg.go.dev/github.com/larsartmann/go-sse)
 
+[![CI](https://github.com/larsartmann/go-sse/actions/workflows/ci.yml/badge.svg)](https://github.com/larsartmann/go-sse/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/larsartmann/go-sse.svg)](https://pkg.go.dev/github.com/larsartmann/go-sse)
+[![Release](https://img.shields.io/github/v/release/larsartmann/go-sse.svg)](https://github.com/larsartmann/go-sse/releases)
 
 Server-Sent Events transport for Go — wire format, connection management, fan-out broadcasting, and reconnection replay. Two small dependencies (`go-branded-id`, `go-error-family`), no framework or payload-format opinions.
 
@@ -85,7 +87,9 @@ defer stream.Close()
 
 // Replay missed events
 if lastID := stream.LastEventID(); !lastID.IsZero() {
-    sse.Replay(stream, store, lastID)
+    if _, err := sse.Replay(stream, store, lastID); err != nil {
+        log.Printf("replay failed: %v", err)
+    }
 }
 
 // Then continue with live events...
@@ -96,7 +100,7 @@ Implement the `EventStore` interface with whatever backing store you use (in-mem
 ```go
 type YourStore struct{}
 
-func (s *YourStore) EventsAfter(lastID sse.EventID) []sse.Event {
+func (s *YourStore) EventsAfter(lastID sse.EventID) ([]sse.Event, error) {
     // Return events with IDs strictly after lastID, ordered ascending
 }
 ```
@@ -135,7 +139,7 @@ sse.WriteRetry(w, 5000)     // "retry: 5000\n\n"
 
 // Event.String() — compact debug representation (NOT the wire format)
 log.Printf("dropped event: %s", evt)
-// Output: event=update id=42 data=<div>new</div>
+// Output: {event:update id:42 retry:3000 data:<div>new</div>}
 ```
 
 ### Stream (single connection)
@@ -170,13 +174,13 @@ b.OnSubscribe(func() { ... })       // connection callback
 b.OnUnsubscribe(func() { ... })     // disconnection callback
 ```
 
-`Broadcaster` is generic — use `sse.NewBroadcaster[sse.Event]()` for standard SSE events, or `sse.NewBroadcaster[string]()` for raw string messages (useful for WebSocket fan-out).
+`Broadcaster` is generic — use `sse.NewBroadcaster[sse.Event]()` for standard SSE events, or `sse.NewBroadcaster[YourType]()` to fan out any message type.
 
 ### Replay (reconnection)
 
 ```go
 type EventStore interface {
-    EventsAfter(lastID EventID) []Event
+    EventsAfter(lastID EventID) ([]Event, error)
 }
 
 n, err := sse.Replay(stream, store, lastEventID)
@@ -205,6 +209,12 @@ per-subscriber ordering across the batch.
 - Consumers needing guaranteed delivery must implement application-level
   reconnection with `Last-Event-ID` + `Replay` to recover missed events.
 - The drop is per-subscriber: fast consumers are unaffected by slow ones.
+
+## Companion Libraries
+
+- [go-error-family](https://github.com/larsartmann/go-error-family) — structured error wrapping with severity categories (used by go-sse for error codes)
+- [go-branded-id](https://github.com/larsartmann/go-branded-id) — phantom-type branded IDs (used by go-sse for `EventID`)
+- [httputil](https://github.com/larsartmann/httputil) — HTTP middleware utilities (compression, client IP, capabilities) that pair naturally with SSE handlers
 
 ## License
 
