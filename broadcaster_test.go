@@ -5,6 +5,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/larsartmann/go-sse"
 )
@@ -428,6 +429,65 @@ func TestBroadcaster_BroadcastMany_Empty(t *testing.T) {
 
 	if b.SubscriberCount() != 1 {
 		t.Errorf("subscriber count: got %d, want 1", b.SubscriberCount())
+	}
+}
+
+func TestBroadcaster_BroadcastMany_MixedSlowFast(t *testing.T) {
+	t.Parallel()
+
+	b := sse.NewBroadcaster[sse.Event]()
+
+	fastCh := b.Subscribe()
+	slowCh := b.Subscribe()
+
+	var fastCount atomic.Int64
+
+	fastDone := make(chan struct{})
+	go func() {
+		defer close(fastDone)
+		for range fastCh {
+			fastCount.Add(1)
+		}
+	}()
+
+	// Send 20 batches of 10 events with brief pauses between batches so the
+	// drain goroutine is scheduled. The slow subscriber's 64-deep buffer
+	// fills and overflows; the fast subscriber is actively drained.
+	for batch := range 20 {
+		events := make([]sse.Event, 10)
+		for i := range events {
+			events[i] = sse.Event{Data: strconv.Itoa(batch*10 + i)}
+		}
+
+		b.BroadcastMany(events...)
+		time.Sleep(time.Millisecond)
+	}
+
+	// Count slow subscriber's buffered events (nobody drained during broadcast).
+	slowCount := 0
+
+drainSlow:
+	for {
+		select {
+		case <-slowCh:
+			slowCount++
+		default:
+			break drainSlow
+		}
+	}
+
+	b.Close() // closes fastCh → drain goroutine exits
+	<-fastDone
+
+	// Slow subscriber was never drained: buffer capped at exactly 64.
+	if slowCount != 64 {
+		t.Errorf("slow subscriber: got %d events, want exactly 64 (buffer size)", slowCount)
+	}
+
+	// Fast subscriber was actively drained: should have received strictly more
+	// than the buffer capacity (the pauses let the drain goroutine keep up).
+	if fast := int(fastCount.Load()); fast <= 64 {
+		t.Errorf("fast subscriber: got %d events, want > 64", fast)
 	}
 }
 
