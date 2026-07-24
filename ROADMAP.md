@@ -57,3 +57,4 @@ Things we are deliberately NOT pursuing and why:
 - **CQRS dispatch hooks / event bus integration:** Consumers build domain layers on top. Opinions about dispatch belong in the consumer, not the transport.
 - **Dashboard server / routes / HTML templates:** This is a library, not a framework or application.
 - **Payload-format opinions:** Strings, JSON, HTML fragments are all valid `data`. The library serializes whatever you give it.
+- **`Broadcaster.ServeSSE` handler:** A convenience handler would bake in opinions about heartbeat interval, replay behavior, and event-loop structure. These belong in the consumer's handler, not the library. The `example/` package shows the canonical pattern using `Stream` + `Broadcaster.Subscribe`.
