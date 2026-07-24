@@ -8,26 +8,26 @@ _PRO/CONTRA on splitting go-sse into `client` / `server` / `common` Go sub-modul
 
 The premise has a gap: **there is no client.** `doc.go`, `AGENTS.md`, and
 `ROADMAP.md:23` all confirm the library is server-only; a client-side `Dial` is
-explicitly a *future idea* under "Developer experience." So the real question is
+explicitly a _future idea_ under "Developer experience." So the real question is
 **"pre-split now for a client that doesn't exist yet"** — and the maintainer's
 own `fanOut` decision (`ROADMAP.md:47`) already shows they reject committing to
 API stability before a concrete use case appears.
 
-The honest framing: *is it worth paying multi-module tax today to prepare for a
-client that may never arrive?*
+The honest framing: _is it worth paying multi-module tax today to prepare for a
+client that may never arrive?_
 
 ---
 
 ## Current state
 
-| Aspect | Value |
-| --- | --- |
-| go.mod files | **1** (`github.com/larsartmann/go-sse`) |
-| Packages | **1** (`sse`, flat layout) |
-| Production source files | ~6 |
-| External deps | 2 (`go-branded-id`, `go-error-family`) |
-| `net/http` in production code | **only `stream.go`** — nowhere else |
-| Release | v0.2.0 (stable, tagged) |
+| Aspect                        | Value                                   |
+| ----------------------------- | --------------------------------------- |
+| go.mod files                  | **1** (`github.com/larsartmann/go-sse`) |
+| Packages                      | **1** (`sse`, flat layout)              |
+| Production source files       | ~6                                      |
+| External deps                 | 2 (`go-branded-id`, `go-error-family`)  |
+| `net/http` in production code | **only `stream.go`** — nowhere else     |
+| Release                       | v0.2.0 (stable, tagged)                 |
 
 That last row is the decisive finding. `event.go` (wire format), `fanout.go`
 (fan-out), `replay.go`, and `constants.go` are **already `net/http`-free**. The
@@ -40,16 +40,16 @@ conceptual seams exist; they're just not enforced by separate `go.mod` files.
 Audited the 8 sibling projects a workspace graph listed as `[direct]` consumers
 of `go-sse`. Ground truth is actual `.go` imports, not go.mod metadata:
 
-| Project | go.mod | Wire-format symbols | Server symbols | Consumer type |
-| --- | --- | --- | --- | --- |
-| cqrs-htmx | ✓ v0.2.0 | `Event`, `EventID`, `ContentType`, `EventConnected`, `EventHeartbeat`, `MustParseEventID`, `NewEventID`, `ParseEventID`, `WriteEvent` | `Stream`, `NewStream`, `SetHeaders`, `Broadcaster`, `NewBroadcaster`, `EventStore`, `Replay`, `LastEventIDFromRequest` | **Full-stack** (also re-exports go-sse as a facade) |
-| go-workflow-auditlog | (workspace) | `Event`, `ContentType`, `WriteEvent` | — | **Wire-only** |
-| project-discovery-sdk | (workspace) | — | `NewStream` | **Server-only** |
-| samber-do-auditlog | ✓ v0.2.0 | `Event`, `ContentType`, `WriteEvent` | — | **Wire-only** |
-| SwettySwipperWeb | ✗ | — | — | **Not a consumer** |
-| github-local-sync | ✗ | — | — | **Not a consumer** |
-| overview | ✗ | — | — | **Not a consumer** |
-| projects-management-automation | ✗ | — | — | **Not a consumer** |
+| Project                        | go.mod      | Wire-format symbols                                                                                                                   | Server symbols                                                                                                         | Consumer type                                       |
+| ------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| cqrs-htmx                      | ✓ v0.2.0    | `Event`, `EventID`, `ContentType`, `EventConnected`, `EventHeartbeat`, `MustParseEventID`, `NewEventID`, `ParseEventID`, `WriteEvent` | `Stream`, `NewStream`, `SetHeaders`, `Broadcaster`, `NewBroadcaster`, `EventStore`, `Replay`, `LastEventIDFromRequest` | **Full-stack** (also re-exports go-sse as a facade) |
+| go-workflow-auditlog           | (workspace) | `Event`, `ContentType`, `WriteEvent`                                                                                                  | —                                                                                                                      | **Wire-only**                                       |
+| project-discovery-sdk          | (workspace) | —                                                                                                                                     | `NewStream`                                                                                                            | **Server-only**                                     |
+| samber-do-auditlog             | ✓ v0.2.0    | `Event`, `ContentType`, `WriteEvent`                                                                                                  | —                                                                                                                      | **Wire-only**                                       |
+| SwettySwipperWeb               | ✗           | —                                                                                                                                     | —                                                                                                                      | **Not a consumer**                                  |
+| github-local-sync              | ✗           | —                                                                                                                                     | —                                                                                                                      | **Not a consumer**                                  |
+| overview                       | ✗           | —                                                                                                                                     | —                                                                                                                      | **Not a consumer**                                  |
+| projects-management-automation | ✗           | —                                                                                                                                     | —                                                                                                                      | **Not a consumer**                                  |
 
 **4 real consumers, not 8.** The other 4 carry no `.go` import of `go-sse`.
 
@@ -68,12 +68,12 @@ of `go-sse`. Ground truth is actual `.go` imports, not go.mod metadata:
 
 Their `live/server.go` files are near-identical (the `handleSSE` /
 `sendSnapshot` / `sendComplete` triplet) — a deliberate, repeated pattern in
-this ecosystem of taking the wire format and *declining* the server
+this ecosystem of taking the wire format and _declining_ the server
 scaffolding.
 
 ### What this refutes
 
-CONTRA #3 below claimed *"Nobody imports `common` alone."* That is **false**.
+CONTRA #3 below claimed _"Nobody imports `common` alone."_ That is **false**.
 Two production services do exactly that today. The `common` seam has real,
 independent customers — it is not hypothetical.
 
@@ -93,7 +93,7 @@ client/  → EventSource / Dial / decoder   ← DOES NOT EXIST
            deps: common, net/http (client side)
 ```
 
-The DAG is acyclic and clean — so a split is *technically trivial*. The
+The DAG is acyclic and clean — so a split is _technically trivial_. The
 question is whether it earns its keep.
 
 ---
@@ -101,7 +101,7 @@ question is whether it earns its keep.
 ## PRO
 
 1. **Role-focused API surface** — a client user sees only what they need; no
-   `Broadcaster`/`Stream` noise. Real ergonomic win *if* a client ever exists.
+   `Broadcaster`/`Stream` noise. Real ergonomic win _if_ a client ever exists.
 2. **Independent semver** — wire format (`common`) is frozen by the SSE spec
    (~unchanged in a decade); server-side can iterate on backpressure
    (ROADMAP theme 1) without bumping client. Genuine versioning isolation.
@@ -122,14 +122,14 @@ question is whether it earns its keep.
    overhead dwarfs the codebase.
 3. ~~**The `common` seam has zero composability payoff today**~~ — **REFUTED by
    the 2026-07-25 consumer audit.** Two production consumers
-   (`go-workflow-auditlog`, `samber-do-auditlog`) import `go-sse` *only* for the
+   (`go-workflow-auditlog`, `samber-do-auditlog`) import `go-sse` _only_ for the
    wire format (`Event` / `WriteEvent` / `ContentType`) and roll their own HTTP
    scaffolding around it. The "nobody imports `common` alone" claim was wrong;
    the seam has real independent customers. The residual point that survives:
-   `common` still *co-releases* with `server` today (one tag) — but that is a
+   `common` still _co-releases_ with `server` today (one tag) — but that is a
    release-process fact, not evidence the seam is unwanted.
 4. **No heavy deps to isolate** — the only non-stdlib weight is `net/http`,
-   confined to `stream.go` and *already* absent from the wire format. There's
+   confined to `stream.go` and _already_ absent from the wire format. There's
    no transitive-dep bloat to fix. **(Still true, and it is the main reason the
    wire-only consumers pay ~zero practical cost today: `net/http` is stdlib.)**
 5. **Release friction for a solo lib** — every wire-format tweak becomes a
@@ -145,16 +145,16 @@ question is whether it earns its keep.
 
 Using the `go-modularize` skill's "When NOT to Modularize" rubric:
 
-| Signal | Weight | For this project |
-| --- | --- | --- |
-| Small project (<10 pkgs, 1 domain) | **High** | 1 package (unchanged) |
-| All packages change together | ~~High~~ → **Medium** | still one package (co-releases today), but the audit reveals divergent change drivers: wire is spec-frozen, server iterates (ROADMAP backpressure); audiences differ (2 wire-only vs. 1 server-only vs. 1 full-stack). |
-| No external consumers of the seam | ~~Medium~~ → **Refuted** | 2 of 4 consumers are wire-only |
-| Prototype / spike | — | stable v0.2.0, not a spike |
+| Signal                             | Weight                   | For this project                                                                                                                                                                                                       |
+| ---------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Small project (<10 pkgs, 1 domain) | **High**                 | 1 package (unchanged)                                                                                                                                                                                                  |
+| All packages change together       | ~~High~~ → **Medium**    | still one package (co-releases today), but the audit reveals divergent change drivers: wire is spec-frozen, server iterates (ROADMAP backpressure); audiences differ (2 wire-only vs. 1 server-only vs. 1 full-stack). |
+| No external consumers of the seam  | ~~Medium~~ → **Refuted** | 2 of 4 consumers are wire-only                                                                                                                                                                                         |
+| Prototype / spike                  | —                        | stable v0.2.0, not a spike                                                                                                                                                                                             |
 
 **1 High + 1 Medium remain.** The "no lone consumers" signal collapsed under
 the audit; the co-change signal weakened. The balance shifted toward "a seam
-exists," but the *practical harm* to wire-only consumers today is still ~zero
+exists," but the _practical harm_ to wire-only consumers today is still ~zero
 (`net/http` is stdlib; `brandid`/`errorfamily` are genuinely used by
 `Event`/`WriteEvent`/`EventID`), which is what stays the hand from splitting now.
 
@@ -201,7 +201,7 @@ Re-open this analysis when **any** of these becomes true:
   ← still the strongest single signal.
 - **The server gains a non-stdlib dependency** (e.g. a Redis event store per
   ROADMAP theme 1) that the 2 wire-only consumers should never transitively
-  pull in. ← this is now a *live* trigger, not a hypothetical.
+  pull in. ← this is now a _live_ trigger, not a hypothetical.
 - A wire-only consumer asks to pin `common` and stop tracking server churn.
 - A third wire-only consumer appears (2 → 3 turns a coincidence into an archetype).
 
