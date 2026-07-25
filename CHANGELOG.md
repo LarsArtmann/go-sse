@@ -6,13 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Minimum Go version raised from `1.26.4` to `1.26.5`. Consumers must build with Go ≥ 1.26.5 and `GOEXPERIMENT=jsonv2` (the latter is already required transitively via `go-branded-id`).
+
 ## [0.2.0] - 2026-07-24
 
 ### Changed
 
 - **Breaking:** `Stream.SendHTML` renamed to `Stream.SendData` — the method sends any raw string, not just HTML; the old name was misleading. This is a mechanical rename: `SendHTML("evt", html)` → `SendData("evt", html)`.
 - `EventStore.EventsAfter` now returns `([]Event, error)` instead of `[]Event` — implementations can fail (database errors, etc.) and `Replay` propagates the error instead of silently treating failures as "no events".
-- `go.mod` directive changed from `go 1.26.4` to `go 1.26` (major.minor, per Go convention) across all LarsArtmann Go repos.
 - `TestBroadcaster_BroadcastMany_MixedSlowFast` rewritten to use deterministic channel synchronization instead of `time.Sleep` (eliminates CI flake risk).
 
 ### Added
