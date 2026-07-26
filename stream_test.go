@@ -1,6 +1,7 @@
 package sse_test
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"net/http"
@@ -14,6 +15,53 @@ import (
 )
 
 var errDisconnected = errors.New("client disconnected")
+
+// recordingResponseWriter is a concurrency-safe http.ResponseWriter that records
+// all writes and signals each one via wrote. httptest.ResponseRecorder is not
+// safe for concurrent use, so this type lets a test observe Heartbeat writes
+// from another goroutine without a data race.
+type recordingResponseWriter struct {
+	header http.Header
+	mu     sync.Mutex
+	body   bytes.Buffer
+	wrote  chan struct{}
+}
+
+func newRecordingResponseWriter() *recordingResponseWriter {
+	return &recordingResponseWriter{wrote: make(chan struct{}, 256)}
+}
+
+func (r *recordingResponseWriter) Header() http.Header {
+	if r.header == nil {
+		r.header = make(http.Header)
+	}
+
+	return r.header
+}
+
+func (r *recordingResponseWriter) Write(p []byte) (int, error) {
+	r.mu.Lock()
+	n, err := r.body.Write(p)
+	r.mu.Unlock()
+
+	if err == nil {
+		select {
+		case r.wrote <- struct{}{}:
+		default:
+		}
+	}
+
+	return n, err
+}
+
+func (r *recordingResponseWriter) WriteHeader(int) {}
+
+func (r *recordingResponseWriter) Body() string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	return r.body.String()
+}
 
 func TestSetHeaders(t *testing.T) {
 	t.Parallel()
@@ -138,7 +186,9 @@ func TestStream_Heartbeat(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	w := httptest.NewRecorder()
+	// recordingResponseWriter is concurrency-safe; httptest.ResponseRecorder is
+	// not, and the Heartbeat goroutine writes while the test reads.
+	w := newRecordingResponseWriter()
 	r := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(ctx)
 
 	stream := sse.NewStream(w, r)
@@ -149,7 +199,14 @@ func TestStream_Heartbeat(t *testing.T) {
 		stream.Heartbeat(ctx, 10*time.Millisecond)
 	}()
 
-	time.Sleep(50 * time.Millisecond)
+	// Wait deterministically for the first heartbeat write, then cancel — no
+	// time.Sleep, so the test never flakes under scheduler pressure.
+	select {
+	case <-w.wrote:
+	case <-time.After(2 * time.Second):
+		t.Fatal("Heartbeat did not write a frame within 2s")
+	}
+
 	cancel()
 
 	select {
@@ -158,8 +215,8 @@ func TestStream_Heartbeat(t *testing.T) {
 		t.Fatal("Heartbeat did not stop")
 	}
 
-	if !strings.Contains(w.Body.String(), ": heartbeat\n\n") {
-		t.Errorf("missing heartbeat in body: %q", w.Body.String())
+	if !strings.Contains(w.Body(), ": heartbeat\n\n") {
+		t.Errorf("missing heartbeat in body: %q", w.Body())
 	}
 }
 
