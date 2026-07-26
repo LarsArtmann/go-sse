@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
-- Minimum Go version raised from `1.26.4` to `1.26.5`. Consumers must build with Go ≥ 1.26.5 and `GOEXPERIMENT=jsonv2` (the latter is already required transitively via `go-branded-id`).
+- `go-error-family` dependency bumped from `v0.8.0` to `v0.9.0`.
 
 ## [0.2.0] - 2026-07-24
 

@@ -18,6 +18,7 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 | Feature                                                          | Status           | Evidence                                                                                     |
 | ---------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------- |
 | SSE event serialization (`event`/`data`/`id`/`retry`)            | FULLY_FUNCTIONAL | `WriteEvent` in `event.go`; `event_test.go`                                                  |
+| Content-type + event-name constants (`ContentType`, `EventConnected`, `EventHeartbeat`) | FULLY_FUNCTIONAL | `constants.go`; used by `example/server.go`                                                  |
 | Multi-line `data:` splitting (LF, CRLF, and lone CR per spec)    | FULLY_FUNCTIONAL | `splitLines` in `event.go`; `TestWriteEvent_CRLFInData`, `TestWriteEvent_LoneCarriageReturn` |
 | Allocation-minimized writer (byte appends, no `fmt` on hot path) | FULLY_FUNCTIONAL | `WriteEvent` in `event.go`                                                                   |
 | Heartbeat comment frames                                         | FULLY_FUNCTIONAL | `WriteHeartbeat` in `event.go`; `TestWriteHeartbeat`                                         |
@@ -29,6 +30,7 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 | Feature                                                              | Status           | Evidence                                                                                                                    |
 | -------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Stream lifecycle: SSE headers + `200 OK` on creation                 | FULLY_FUNCTIONAL | `NewStream` in `stream.go`; `stream_test.go`                                                                                |
+| `SetHeaders` (set SSE headers without writing status, for custom handlers) | FULLY_FUNCTIONAL | `SetHeaders` in `stream.go`; used internally by `NewStream`                                                                 |
 | Send event + flush                                                   | FULLY_FUNCTIONAL | `Stream.Send` in `stream.go`; `TestStream_Send`                                                                             |
 | Concurrent-safe writes (mutex-serialized `Send`/`Heartbeat`/`Close`) | FULLY_FUNCTIONAL | `Stream.mu` in `stream.go`; `TestStream_SendHeartbeatRaceSafety`, `TestStream_SendHeartbeatCloseRace` (race-tested)         |
 | Heartbeat goroutine (proxy keep-alive)                               | FULLY_FUNCTIONAL | `Stream.Heartbeat` in `stream.go`; `TestStream_Heartbeat`                                                                   |
