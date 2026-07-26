@@ -20,7 +20,7 @@ Before calling it production-grade, explore what production consumers need:
 
 Lower the barrier to adoption:
 
-- Client-side `Dial` helper (currently server-only)
+- Client-side `Dial` helper (the library is server-only today; deferred until a concrete client consumer exists, on the same don't-pre-build-for-imagined-consumers principle as the module-boundary decisions)
 - Batteries-included `EventStore` implementations (in-memory, Redis)
 
 > Realized in 0.2.0: `example/` runnable server, `Event.String()` debug helper,
@@ -36,18 +36,18 @@ Stay aligned with the SSE spec and explore extensions:
 
 > Realized in 0.2.0: batch/multi-event send via `Broadcaster.BroadcastMany`.
 
-### 4. Reusability of the fan-out hub
+### 4. Module boundaries and reusability
 
-The unexported `fanOut[T]` is transport-agnostic. Explore:
+The wire-format code (`event.go`) is already `net/http`-free; only `stream.go`
+touches HTTP, so the conceptual seams exist even though the package is flat.
+Two boundary questions have been examined:
 
-- Exporting it for non-SSE fan-out use cases
-- Topic/channel-based multi-broadcaster routing
-- Whether the split into Broadcaster (SSE) + fanOut (generic) should become a public type boundary
+- **Export the unexported `fanOut[T]` hub?** Resolved (v0.2.0): no. No consumer needs it yet, the generic `Broadcaster[T]` already serves "fan-out any type" for SSE consumers, and exporting would commit to API stability prematurely. Revisit when a concrete non-SSE use case emerges.
+- **Split into `common` (wire format) + `server` (Stream, Broadcaster, Replay)?** Analyzed 2026-07-25, deferred. A consumer audit found that **2 of 4 real consumers import go-sse wire-only** — they roll their own HTTP scaffolding around `WriteEvent`/`ContentType` and never touch `Stream`/`Broadcaster`/`Replay`. So the wire/server seam is exercised in production, not hypothetical. But `net/http` is stdlib and `brandid`/`errorfamily` are genuinely used by the wire path, so the flat layout costs wire-only consumers ~zero today, and all consumers are internal. The cheap hedge — keeping `event.go` functions strictly `io.Writer`-based — is already a contract being exercised in the wild. Re-open when a trigger fires: a `client/` is being written; the server gains a non-stdlib dependency wire-only consumers shouldn't transitively pull in (e.g. a Redis event store); a wire-only consumer asks to pin `common`; or a third wire-only consumer appears. Full analysis: [docs/brainstorming/2026-07-25_client-server-common-submodule-split.md](docs/brainstorming/2026-07-25_client-server-common-submodule-split.md).
 
-> **Decision (v0.2.0):** Keep `fanOut[T]` unexported. No consumer needs it
-> yet, and exporting commits to API stability prematurely. Revisit when a
-> concrete non-SSE use case emerges. The generic `Broadcaster[T]` already
-> serves the "fan-out any type" need for SSE consumers.
+Still-open raw idea:
+
+- Topic/channel-based multi-broadcaster routing (multiple named fan-out hubs behind one entry point). No consumer has asked for this yet.
 
 ## Non-goals
 
