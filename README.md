@@ -46,7 +46,7 @@ broadcaster := sse.NewBroadcaster[sse.Event]()
 // SSE endpoint
 mux.HandleFunc("GET /events", func(w http.ResponseWriter, r *http.Request) {
     stream := sse.NewStream(w, r)
-    defer stream.Close()
+    defer func() { _ = stream.Close() }()
 
     ch := broadcaster.Subscribe()
     defer broadcaster.Unsubscribe(ch)
@@ -71,7 +71,7 @@ broadcaster.Broadcast(sse.Event{Event: "update", Data: "<div>new</div>"})
 
 ```go
 stream := sse.NewStream(w, r)
-defer stream.Close()
+defer func() { _ = stream.Close() }()
 
 // Prevents Nginx/Cloudflare/AWS ALB from killing idle connections
 go stream.Heartbeat(stream.Context(), 15*time.Second)
@@ -83,7 +83,7 @@ When a browser reconnects after a drop, it sends the `Last-Event-ID` header.
 
 ```go
 stream := sse.NewStream(w, r)
-defer stream.Close()
+defer func() { _ = stream.Close() }()
 
 // Replay missed events
 if lastID := stream.LastEventID(); !lastID.IsZero() {
@@ -146,7 +146,7 @@ log.Printf("dropped event: %s", evt)
 
 ```go
 stream := sse.NewStream(w, r)     // sets headers + 200 OK
-defer stream.Close()
+defer func() { _ = stream.Close() }()
 
 stream.Send(sse.Event{...})        // write + flush
 stream.SendData("update", "<div>") // convenience: send raw string data

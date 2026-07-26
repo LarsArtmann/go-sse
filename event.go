@@ -246,9 +246,5 @@ func splitLines(s string) []string {
 		lines = append(lines, s[start:])
 	}
 
-	if len(lines) == 0 {
-		return []string{""}
-	}
-
 	return lines
 }

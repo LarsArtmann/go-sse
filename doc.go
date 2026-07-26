@@ -16,7 +16,7 @@
 //	// SSE endpoint
 //	mux.HandleFunc("GET /events", func(w http.ResponseWriter, r *http.Request) {
 //	    stream := sse.NewStream(w, r)
-//	    defer stream.Close()
+//	    defer func() { _ = stream.Close() }()
 //
 //	    ch := broadcaster.Subscribe()
 //	    defer broadcaster.Unsubscribe(ch)

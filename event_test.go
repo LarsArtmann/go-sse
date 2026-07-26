@@ -289,6 +289,15 @@ func TestMustParseEventID_Panics(t *testing.T) {
 	sse.MustParseEventID("bad\nvalue")
 }
 
+func TestMustParseEventID_Valid(t *testing.T) {
+	t.Parallel()
+
+	id := sse.MustParseEventID("evt-42")
+	if id.Get() != "evt-42" {
+		t.Errorf("got %q, want evt-42", id.Get())
+	}
+}
+
 func TestWriteRetry(t *testing.T) {
 	t.Parallel()
 

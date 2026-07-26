@@ -19,7 +19,7 @@ import (
 //
 //	func handleEvents(w http.ResponseWriter, r *http.Request) {
 //	    stream := sse.NewStream(w, r)
-//	    defer stream.Close()
+//	    defer func() { _ = stream.Close() }()
 //
 //	    ch := broadcaster.Subscribe()
 //	    defer broadcaster.Unsubscribe(ch)
@@ -69,7 +69,9 @@ func SetHeaders(w http.ResponseWriter) {
 // and writes the 200 OK status code.
 //
 // The stream is cancelled when the request context is done (client disconnects).
-// Callers should defer stream.Close() to ensure cleanup.
+// Callers should defer cleanup. Stream satisfies io.Closer; use
+//	defer func() { _ = stream.Close() }()
+// so the error return is handled (always nil — handling it keeps errcheck happy).
 func NewStream(w http.ResponseWriter, r *http.Request) *Stream {
 	SetHeaders(w)
 	w.WriteHeader(http.StatusOK)

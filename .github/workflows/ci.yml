@@ -71,3 +71,31 @@ jobs:
       # demonstration code, not library logic under test.
       - run: go test . -coverprofile=coverage.out -covermode=atomic
       - run: go tool cover -func=coverage.out
+
+  vulncheck:
+    name: Vulncheck
+    runs-on: ubuntu-latest
+    env:
+      GOEXPERIMENT: jsonv2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go install golang.org/x/vuln/cmd/govulncheck@latest
+      - run: govulncheck ./...
+
+  fuzz:
+    name: Fuzz
+    runs-on: ubuntu-latest
+    env:
+      GOEXPERIMENT: jsonv2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      # Each fuzz target gets its own run: -fuzz matches exactly one target,
+      # so one invocation per target with -fuzztime=1m each.
+      - run: go test . -fuzz=FuzzWriteEvent -fuzztime=1m
+      - run: go test . -fuzz=FuzzParseEventID -fuzztime=1m

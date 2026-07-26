@@ -245,6 +245,31 @@ func TestStream_HeartbeatStopsOnCancel(t *testing.T) {
 	}
 }
 
+// TestStream_HeartbeatExitsOnWriteError covers the write-failure exit path:
+// when the underlying writer errors, Heartbeat must return instead of looping.
+func TestStream_HeartbeatExitsOnWriteError(t *testing.T) {
+	t.Parallel()
+
+	w := &failingResponseWriter{}
+	r := httptest.NewRequest(http.MethodGet, "/events", nil)
+
+	stream := sse.NewStream(w, r)
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		stream.Heartbeat(t.Context(), time.Millisecond)
+	}()
+
+	// failingResponseWriter.Write always errors, so the first tick's
+	// WriteHeartbeat fails and Heartbeat returns — proving the error-exit path.
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("Heartbeat did not exit after write error")
+	}
+}
+
 func TestStream_OnDisconnect(t *testing.T) {
 	t.Parallel()
 
