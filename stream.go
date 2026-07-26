@@ -70,7 +70,9 @@ func SetHeaders(w http.ResponseWriter) {
 //
 // The stream is cancelled when the request context is done (client disconnects).
 // Callers should defer cleanup. Stream satisfies io.Closer; use
+//
 //	defer func() { _ = stream.Close() }()
+//
 // so the error return is handled (always nil — handling it keeps errcheck happy).
 func NewStream(w http.ResponseWriter, r *http.Request) *Stream {
 	SetHeaders(w)

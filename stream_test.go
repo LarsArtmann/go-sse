@@ -164,7 +164,7 @@ func TestStream_Context(t *testing.T) {
 func TestStream_ContextCancellation(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(ctx)
@@ -184,7 +184,7 @@ func TestStream_ContextCancellation(t *testing.T) {
 func TestStream_Heartbeat(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 
 	// recordingResponseWriter is concurrency-safe; httptest.ResponseRecorder is
 	// not, and the Heartbeat goroutine writes while the test reads.
@@ -223,7 +223,7 @@ func TestStream_Heartbeat(t *testing.T) {
 func TestStream_HeartbeatStopsOnCancel(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(ctx)
@@ -365,28 +365,25 @@ func TestStream_SendHeartbeatRaceSafety(t *testing.T) {
 	t.Parallel()
 
 	for range 20 {
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithCancel(t.Context())
 		r := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(ctx)
 		w := httptest.NewRecorder()
 
 		stream := sse.NewStream(w, r)
 
 		var wg sync.WaitGroup
-		wg.Add(2)
 
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			stream.Heartbeat(ctx, time.Microsecond)
-		}()
+		})
 
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			defer cancel()
 
 			for range 10 {
 				_ = stream.Send(sse.Event{Event: "ping", Data: "x"})
 			}
-		}()
+		})
 
 		wg.Wait()
 		_ = stream.Close()
@@ -504,19 +501,16 @@ func TestStream_SendCloseRace(t *testing.T) {
 		stream := sse.NewStream(w, r)
 
 		var wg sync.WaitGroup
-		wg.Add(2)
 
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			for range 50 {
 				_ = stream.Send(sse.Event{Event: "race", Data: "x"})
 			}
-		}()
+		})
 
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			_ = stream.Close()
-		}()
+		})
 
 		wg.Wait()
 	}
@@ -529,33 +523,29 @@ func TestStream_SendHeartbeatCloseRace(t *testing.T) {
 	t.Parallel()
 
 	for range 20 {
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithCancel(t.Context())
 		r := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(ctx)
 		w := httptest.NewRecorder()
 
 		stream := sse.NewStream(w, r)
 
 		var wg sync.WaitGroup
-		wg.Add(3)
 
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			stream.Heartbeat(ctx, time.Microsecond)
-		}()
+		})
 
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			defer cancel()
 
 			for range 50 {
 				_ = stream.Send(sse.Event{Event: "race", Data: "x"})
 			}
-		}()
+		})
 
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			_ = stream.Close()
-		}()
+		})
 
 		wg.Wait()
 	}
