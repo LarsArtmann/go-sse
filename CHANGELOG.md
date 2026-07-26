@@ -6,9 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- CI `govulncheck` job and `fuzz` job (`FuzzWriteEvent`, `FuzzParseEventID` at 1m each).
+- Integration tests: heartbeat comment-frame delivery over a real HTTP round-trip; `Last-Event-ID` reconnection replay over a real HTTP round-trip.
+- Unit tests covering `eventBrand.Name()`, the `MustParseEventID` success path, and the `Stream.Heartbeat` write-error exit path.
+
 ### Changed
 
 - `go-error-family` dependency bumped from `v0.8.0` to `v0.9.0`.
+- Test coverage raised to 100% of statements (removed an unreachable dead branch in `splitLines`).
+- Test modernization: `context.WithCancel(context.Background())` → `context.WithCancel(t.Context())`; `wg.Add` + `go func()` + `defer wg.Done()` → `wg.Go` in race tests.
+- Doc/source/README examples now use `defer func() { _ = stream.Close() }()` (`Stream` satisfies `io.Closer`) instead of `defer stream.Close()`.
+
+### Fixed
+
+- Flaky tests: `TestIntegration_BroadcasterFanOut` and `TestStream_Heartbeat` no longer use `time.Sleep` — both wait deterministically on channel signals.
 
 ## [0.2.0] - 2026-07-24
 

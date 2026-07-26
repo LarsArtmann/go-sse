@@ -51,7 +51,7 @@ func (r *recordingResponseWriter) Write(p []byte) (int, error) {
 		}
 	}
 
-	return n, err
+	return n, err //nolint:wrapcheck // bytes.Buffer.Write never errors
 }
 
 func (r *recordingResponseWriter) WriteHeader(int) {}
