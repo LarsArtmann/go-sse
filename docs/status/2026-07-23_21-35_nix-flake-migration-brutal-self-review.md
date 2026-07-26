@@ -165,3 +165,13 @@ The host has a **repo-wide `go-cqrs-lite/command/v4@v4.0.2` checksum corruption*
 2. **Should this repo stay on the manual 4-input flake-parts pattern indefinitely, or do you want me to propose a `go-standard` "library mode" upstream in `go-nix-helpers` and migrate all 4 sibling libraries (go-sse, go-branded-id, go-error-family, go-ndjson) to it?** That's an ecosystem-direction call I can't make alone — it touches a shared module other repos consume.
 
 3. **Do you want a real CI workflow (`.github/workflows/ci.yml` with `nix flake check`) added now, or is CI handled elsewhere (e.g., a central monorepo CI, Hercules-CI, or BuildFlow)?** I saw BuildFlow-managed `.gitignore` markers and a `workflow-audit-log` ignore, suggesting BuildFlow may own CI — but no CI config exists in-repo, so I don't know where verification is supposed to run.
+
+---
+
+## Resolution (2026-07-26)
+
+| Item | Claim in report | Resolution |
+| ---- | --------------- | ---------- |
+| Q1 | Global checksum corruption — fix or leave? | `GOWORK=off` is the documented permanent workaround. The `go.work` is gitignored and absent in fresh clones. Documented in `AGENTS.md` "Commands" section. |
+| Q2 | `go-standard` library mode upstream? | Deferred — ecosystem decision. The manual flake-parts pattern remains; no `go-standard` library mode has been proposed. |
+| Q3 | CI workflow — add now or handled elsewhere? | Added: `.github/workflows/ci.yml` exists with test, lint, vet, and coverage jobs. Uses `golangci-lint` v2.12.2 via action v7. |

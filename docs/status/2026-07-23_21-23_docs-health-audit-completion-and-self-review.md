@@ -258,3 +258,13 @@ The library has a working implementation (52 tests pass, lint clean, flake.nix v
 | Honesty                        | 6/10  | The 10/10 score was dishonest; hardcoded counts; didn't investigate nix output           |
 | Verification rigor             | 7/10  | Verified all file:line refs eventually, but ~11 are imprecise; didn't fetch external URL |
 | Overall session quality        | 8/10  | Fixed all blocking issues, created missing docs, but the 10/10 claim undermines the work |
+
+---
+
+## Resolution (2026-07-26)
+
+| Item | Claim in report | Resolution |
+| ---- | --------------- | ---------- |
+| Q1 | Does `nix flake check` actually run `go test`? | Yes — `nix flake check` builds and runs the `checks` derivations including the hermetic `buildGoModule` with `doCheck = true`. Verified by `nix run .#test-race` producing identical results. |
+| Q2 | Should parent `go.work` be fixed? | `GOWORK=off` is the permanent workaround; the `go.work` is gitignored and absent in fresh clones. Documented in `AGENTS.md`. |
+| Q3 | Should the first git tag be created? | Done — `v0.1.0` (2026-07-23) and `v0.2.0` (2026-07-24) both tagged and pushed. |
