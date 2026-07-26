@@ -87,9 +87,11 @@ func TestIntegration_BroadcasterFanOut(t *testing.T) {
 		server.Close()
 	})
 
-	// Wait for at least one subscriber
+	// Deterministic sync: signal on the first subscribe and the first unsubscribe.
 	gotSubscriber := make(chan struct{})
+	gotUnsubscribe := make(chan struct{})
 	bc.OnSubscribe(func() { close(gotSubscriber) })
+	bc.OnUnsubscribe(func() { close(gotUnsubscribe) })
 
 	go func() {
 		resp, _ := http.Get(server.URL)
@@ -107,8 +109,13 @@ func TestIntegration_BroadcasterFanOut(t *testing.T) {
 
 	bc.Broadcast(sse.Event{Event: "ping", Data: "fan-out-test"})
 
-	// Give handler time to send and exit, then check cleanup
-	time.Sleep(200 * time.Millisecond)
+	// Wait deterministically for the handler to send the event, exit, and run its
+	// deferred Unsubscribe — no time.Sleep, so no flakiness under scheduler pressure.
+	select {
+	case <-gotUnsubscribe:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timeout waiting for unsubscribe after broadcast")
+	}
 
 	if count := bc.SubscriberCount(); count != 0 {
 		t.Errorf("expected 0 subscribers after handler exit, got %d", count)
