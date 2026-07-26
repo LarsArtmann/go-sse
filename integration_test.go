@@ -1,6 +1,8 @@
 package sse_test
 
 import (
+	"bufio"
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -119,5 +121,132 @@ func TestIntegration_BroadcasterFanOut(t *testing.T) {
 
 	if count := bc.SubscriberCount(); count != 0 {
 		t.Errorf("expected 0 subscribers after handler exit, got %d", count)
+	}
+}
+
+// TestIntegration_HeartbeatDelivery verifies that SSE comment-frame heartbeats
+// are delivered over a real HTTP round-trip — the proxy-survival path that keeps
+// idle connections alive through Nginx/Cloudflare/AWS ALB idle timeouts.
+func TestIntegration_HeartbeatDelivery(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		stream := sse.NewStream(w, r)
+		defer func() { _ = stream.Close() }()
+
+		// Emit keep-alive comment frames on a tight cadence so the client observes
+		// several within the test's deadline.
+		go stream.Heartbeat(r.Context(), 20*time.Millisecond)
+
+		<-r.Context().Done()
+	}))
+	t.Cleanup(func() {
+		server.CloseClientConnections()
+		server.Close()
+	})
+
+	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
+	t.Cleanup(cancel)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
+	if err != nil {
+		t.Fatalf("NewRequest: %v", err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("Do: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = io.Copy(io.Discard, resp.Body)
+		_ = resp.Body.Close()
+	})
+
+	// Read the stream line-by-line and count heartbeat comment frames received
+	// over the wire. Three frames proves the keep-alive path works end-to-end;
+	// the context deadline turns a silent failure into a clear test error.
+	reader := bufio.NewReader(resp.Body)
+
+	const want = 3
+
+	var heartbeats int
+
+	for heartbeats < want {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			t.Fatalf("read heartbeat %d: %v (expected %d comment frames over the wire)", heartbeats+1, err, want)
+		}
+
+		if line == ": heartbeat\n" {
+			heartbeats++
+		}
+	}
+}
+
+// TestIntegration_LastEventIDReconnectionReplay verifies the core SSE
+// reconnection use case over a real HTTP round-trip: the client reconnects with
+// a Last-Event-ID header and the server replays exactly the events it missed.
+func TestIntegration_LastEventIDReconnectionReplay(t *testing.T) {
+	t.Parallel()
+
+	store := &memoryStore{
+		events: []sse.Event{
+			{Event: "item", Data: "first", ID: sse.NewEventID("1")},
+			{Event: "item", Data: "second", ID: sse.NewEventID("2")},
+			{Event: "item", Data: "third", ID: sse.NewEventID("3")},
+			{Event: "item", Data: "fourth", ID: sse.NewEventID("4")},
+		},
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		stream := sse.NewStream(w, r)
+		defer func() { _ = stream.Close() }()
+
+		// Reconnect scenario: replay every event strictly after the Last-Event-ID.
+		if _, err := sse.Replay(stream, store, stream.LastEventID()); err != nil {
+			return
+		}
+	}))
+	t.Cleanup(func() {
+		server.CloseClientConnections()
+		server.Close()
+	})
+
+	// Client reconnects claiming it last received event "2" → server replays 3 and 4.
+	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
+	t.Cleanup(cancel)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
+	if err != nil {
+		t.Fatalf("NewRequest: %v", err)
+	}
+
+	req.Header.Set("Last-Event-ID", "2")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("Do: %v", err)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("ReadAll: %v", err)
+	}
+
+	_ = resp.Body.Close()
+
+	output := string(body)
+
+	// Events 3 and 4 must be replayed; 1 and 2 must NOT appear (already received).
+	for _, want := range []string{"id: 3\n", "data: third\n", "id: 4\n", "data: fourth\n"} {
+		if !strings.Contains(output, want) {
+			t.Errorf("missing replayed fragment %q in %q", want, output)
+		}
+	}
+
+	for _, mustNot := range []string{"data: first", "data: second"} {
+		if strings.Contains(output, mustNot) {
+			t.Errorf("already-received event %q must not be replayed: %q", mustNot, output)
+		}
 	}
 }
