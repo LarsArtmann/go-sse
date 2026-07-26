@@ -174,7 +174,12 @@ func TestIntegration_HeartbeatDelivery(t *testing.T) {
 	for heartbeats < want {
 		line, err := reader.ReadString('\n')
 		if err != nil {
-			t.Fatalf("read heartbeat %d: %v (expected %d comment frames over the wire)", heartbeats+1, err, want)
+			t.Fatalf(
+				"read heartbeat %d: %v (expected %d comment frames over the wire)",
+				heartbeats+1,
+				err,
+				want,
+			)
 		}
 
 		if line == ": heartbeat\n" {
