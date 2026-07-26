@@ -340,14 +340,14 @@ The work is a solid **B+**: shipped everything, verified it works, but left qual
 
 The questions (§g) are all answered; the quality debt is now tracked in `TODO_LIST.md`.
 
-| Item | Claim in report | Resolution |
-| ---- | --------------- | ---------- |
-| §g Q1 | Should I create git tag v0.1.0? | Done — `v0.1.0` tagged (2026-07-23), then `v0.2.0` tagged (2026-07-24). Both on origin. |
-| §g Q2 | Breaking API changes warrant different version? | Treated as initial release (zero prior tags, zero consumers at the time). Correct call. |
-| §g Q3 | `GOEXPERIMENT=jsonv2` hard requirement | Kept; documented in README, CONTRIBUTING, AGENTS.md. |
-| §d.1–2 | 2 flaky tests using `time.Sleep` | **Still open** — tracked in `TODO_LIST.md` "High impact" |
-| §d.3–6 | 4 uncovered code branches | **Still open** — tracked in `TODO_LIST.md` "Medium impact" |
-| §c.1–2 | 8 stale `defer stream.Close()` doc references | **Still open** — tracked in `TODO_LIST.md` "Low impact" |
-| §c.5 / §e.8–10 | Incomplete test modernization (context, go func) | **Still open** — tracked in `TODO_LIST.md` "Low impact" |
+| Item           | Claim in report                                  | Resolution                                                                              |
+| -------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| §g Q1          | Should I create git tag v0.1.0?                  | Done — `v0.1.0` tagged (2026-07-23), then `v0.2.0` tagged (2026-07-24). Both on origin. |
+| §g Q2          | Breaking API changes warrant different version?  | Treated as initial release (zero prior tags, zero consumers at the time). Correct call. |
+| §g Q3          | `GOEXPERIMENT=jsonv2` hard requirement           | Kept; documented in README, CONTRIBUTING, AGENTS.md.                                    |
+| §d.1–2         | 2 flaky tests using `time.Sleep`                 | **Still open** — tracked in `TODO_LIST.md` "High impact"                                |
+| §d.3–6         | 4 uncovered code branches                        | **Still open** — tracked in `TODO_LIST.md` "Medium impact"                              |
+| §c.1–2         | 8 stale `defer stream.Close()` doc references    | **Still open** — tracked in `TODO_LIST.md` "Low impact"                                 |
+| §c.5 / §e.8–10 | Incomplete test modernization (context, go func) | **Still open** — tracked in `TODO_LIST.md` "Low impact"                                 |
 
 The library subsequently shipped `v0.2.0` with `BroadcastMany`, `SendJSON`, `Event.String`, and `EventsAfter` error propagation. Coverage rose to 97.9% with 94 tests.

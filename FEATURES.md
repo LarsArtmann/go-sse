@@ -15,33 +15,33 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 
 ## Wire format & serialization
 
-| Feature                                                          | Status           | Evidence                                                                                     |
-| ---------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------- |
-| SSE event serialization (`event`/`data`/`id`/`retry`)            | FULLY_FUNCTIONAL | `WriteEvent` in `event.go`; `event_test.go`                                                  |
+| Feature                                                                                 | Status           | Evidence                                                                                     |
+| --------------------------------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------- |
+| SSE event serialization (`event`/`data`/`id`/`retry`)                                   | FULLY_FUNCTIONAL | `WriteEvent` in `event.go`; `event_test.go`                                                  |
 | Content-type + event-name constants (`ContentType`, `EventConnected`, `EventHeartbeat`) | FULLY_FUNCTIONAL | `constants.go`; used by `example/server.go`                                                  |
-| Multi-line `data:` splitting (LF, CRLF, and lone CR per spec)    | FULLY_FUNCTIONAL | `splitLines` in `event.go`; `TestWriteEvent_CRLFInData`, `TestWriteEvent_LoneCarriageReturn` |
-| Allocation-minimized writer (byte appends, no `fmt` on hot path) | FULLY_FUNCTIONAL | `WriteEvent` in `event.go`                                                                   |
-| Heartbeat comment frames                                         | FULLY_FUNCTIONAL | `WriteHeartbeat` in `event.go`; `TestWriteHeartbeat`                                         |
-| Retry directive (`uint`, rejects negative at compile time)       | FULLY_FUNCTIONAL | `WriteRetry` in `event.go`; `TestWriteRetry`, `TestWriteEvent_Retry`                         |
-| `Event.String()` debug representation (omits empty fields)       | FULLY_FUNCTIONAL | `Event.String` in `event.go`; `TestEvent_String`                                             |
+| Multi-line `data:` splitting (LF, CRLF, and lone CR per spec)                           | FULLY_FUNCTIONAL | `splitLines` in `event.go`; `TestWriteEvent_CRLFInData`, `TestWriteEvent_LoneCarriageReturn` |
+| Allocation-minimized writer (byte appends, no `fmt` on hot path)                        | FULLY_FUNCTIONAL | `WriteEvent` in `event.go`                                                                   |
+| Heartbeat comment frames                                                                | FULLY_FUNCTIONAL | `WriteHeartbeat` in `event.go`; `TestWriteHeartbeat`                                         |
+| Retry directive (`uint`, rejects negative at compile time)                              | FULLY_FUNCTIONAL | `WriteRetry` in `event.go`; `TestWriteRetry`, `TestWriteEvent_Retry`                         |
+| `Event.String()` debug representation (omits empty fields)                              | FULLY_FUNCTIONAL | `Event.String` in `event.go`; `TestEvent_String`                                             |
 
 ## Connection management (`Stream`)
 
-| Feature                                                              | Status           | Evidence                                                                                                                    |
-| -------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Stream lifecycle: SSE headers + `200 OK` on creation                 | FULLY_FUNCTIONAL | `NewStream` in `stream.go`; `stream_test.go`                                                                                |
+| Feature                                                                    | Status           | Evidence                                                                                                                    |
+| -------------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Stream lifecycle: SSE headers + `200 OK` on creation                       | FULLY_FUNCTIONAL | `NewStream` in `stream.go`; `stream_test.go`                                                                                |
 | `SetHeaders` (set SSE headers without writing status, for custom handlers) | FULLY_FUNCTIONAL | `SetHeaders` in `stream.go`; used internally by `NewStream`                                                                 |
-| Send event + flush                                                   | FULLY_FUNCTIONAL | `Stream.Send` in `stream.go`; `TestStream_Send`                                                                             |
-| Concurrent-safe writes (mutex-serialized `Send`/`Heartbeat`/`Close`) | FULLY_FUNCTIONAL | `Stream.mu` in `stream.go`; `TestStream_SendHeartbeatRaceSafety`, `TestStream_SendHeartbeatCloseRace` (race-tested)         |
-| Heartbeat goroutine (proxy keep-alive)                               | FULLY_FUNCTIONAL | `Stream.Heartbeat` in `stream.go`; `TestStream_Heartbeat`                                                                   |
-| `Last-Event-ID` header extraction (validated via `ParseEventID`)     | FULLY_FUNCTIONAL | `LastEventIDFromRequest` in `stream.go`; `TestLastEventIDFromRequest_MaliciousInputTreatedAsEmpty`                          |
-| `OnDisconnect` callbacks (ordered)                                   | FULLY_FUNCTIONAL | `Stream.OnDisconnect` in `stream.go`; `TestStream_OnDisconnectMultipleInOrder`                                              |
-| `SendData` convenience                                               | FULLY_FUNCTIONAL | `Stream.SendData` in `stream.go`; `TestStream_SendData`                                                                     |
-| `SendJSON` convenience (marshal + send)                              | FULLY_FUNCTIONAL | `Stream.SendJSON` in `stream.go`; `TestStream_SendJSON`, `TestStream_SendJSON_MarshalError`, `TestStream_SendJSON_NilValue` |
-| `Send` error on write failure (disconnected client)                  | FULLY_FUNCTIONAL | `Stream.Send` in `stream.go`; `TestStream_SendReturnsErrorOnWriteFailure`                                                   |
-| Concurrent `Send`+`Close` race safety                                | FULLY_FUNCTIONAL | `TestStream_SendCloseRace`, `TestStream_SendHeartbeatCloseRace` (three-way race-tested)                                     |
-| Request-context cancellation                                         | FULLY_FUNCTIONAL | `Stream.Context` in `stream.go`; `TestStream_ContextCancellation`                                                           |
-| `io.Closer` interface compliance                                     | FULLY_FUNCTIONAL | `Stream.Close` in `stream.go`; `TestStream_DoubleCloseSafety`                                                               |
+| Send event + flush                                                         | FULLY_FUNCTIONAL | `Stream.Send` in `stream.go`; `TestStream_Send`                                                                             |
+| Concurrent-safe writes (mutex-serialized `Send`/`Heartbeat`/`Close`)       | FULLY_FUNCTIONAL | `Stream.mu` in `stream.go`; `TestStream_SendHeartbeatRaceSafety`, `TestStream_SendHeartbeatCloseRace` (race-tested)         |
+| Heartbeat goroutine (proxy keep-alive)                                     | FULLY_FUNCTIONAL | `Stream.Heartbeat` in `stream.go`; `TestStream_Heartbeat`                                                                   |
+| `Last-Event-ID` header extraction (validated via `ParseEventID`)           | FULLY_FUNCTIONAL | `LastEventIDFromRequest` in `stream.go`; `TestLastEventIDFromRequest_MaliciousInputTreatedAsEmpty`                          |
+| `OnDisconnect` callbacks (ordered)                                         | FULLY_FUNCTIONAL | `Stream.OnDisconnect` in `stream.go`; `TestStream_OnDisconnectMultipleInOrder`                                              |
+| `SendData` convenience                                                     | FULLY_FUNCTIONAL | `Stream.SendData` in `stream.go`; `TestStream_SendData`                                                                     |
+| `SendJSON` convenience (marshal + send)                                    | FULLY_FUNCTIONAL | `Stream.SendJSON` in `stream.go`; `TestStream_SendJSON`, `TestStream_SendJSON_MarshalError`, `TestStream_SendJSON_NilValue` |
+| `Send` error on write failure (disconnected client)                        | FULLY_FUNCTIONAL | `Stream.Send` in `stream.go`; `TestStream_SendReturnsErrorOnWriteFailure`                                                   |
+| Concurrent `Send`+`Close` race safety                                      | FULLY_FUNCTIONAL | `TestStream_SendCloseRace`, `TestStream_SendHeartbeatCloseRace` (three-way race-tested)                                     |
+| Request-context cancellation                                               | FULLY_FUNCTIONAL | `Stream.Context` in `stream.go`; `TestStream_ContextCancellation`                                                           |
+| `io.Closer` interface compliance                                           | FULLY_FUNCTIONAL | `Stream.Close` in `stream.go`; `TestStream_DoubleCloseSafety`                                                               |
 
 ## Fan-out (`Broadcaster[T]` / `fanOut[T]`)
 

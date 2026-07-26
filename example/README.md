@@ -44,15 +44,15 @@ id: 1770000000000000000
 
 ```html
 <script>
-  const es = new EventSource("http://localhost:8080/events");
+	const es = new EventSource("http://localhost:8080/events");
 
-  es.addEventListener("connected", (e) => {
-    console.log("connected, last event:", e.lastEventId);
-  });
+	es.addEventListener("connected", (e) => {
+		console.log("connected, last event:", e.lastEventId);
+	});
 
-  es.addEventListener("message", (e) => {
-    console.log("message:", e.data);
-  });
+	es.addEventListener("message", (e) => {
+		console.log("message:", e.data);
+	});
 </script>
 ```
 
