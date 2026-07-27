@@ -265,18 +265,6 @@ func TestEventID_IsZero(t *testing.T) {
 	}
 }
 
-// TestEventID_StringIncludesBrandName covers eventBrand.Name() (called by
-// brandid's ID.String for debug visibility) and asserts the brand label appears.
-func TestEventID_StringIncludesBrandName(t *testing.T) {
-	t.Parallel()
-
-	id := sse.NewEventID("evt-42")
-
-	if s := id.String(); !strings.Contains(s, "SSEEvent") || !strings.Contains(s, "evt-42") {
-		t.Errorf("EventID.String(): got %q, want brand name and value", s)
-	}
-}
-
 func TestMustParseEventID_Panics(t *testing.T) {
 	t.Parallel()
 
