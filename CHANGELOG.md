@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `KeyedLines(key, value string) string` — prefixes every line of a multi-line value with `key `, producing the newline-joined string for `Event.Data`. Building block for keyed-data-line SSE protocols (DataStar, htmx extensions, etc.).
+- `Stream.SendLines(eventName string, lines ...string) error` — convenience method that joins variadic arguments with `\n` into `Event.Data`, then delegates to `Send`. Composes with `KeyedLines` for multi-key events.
+
 ## [0.2.1] - 2026-07-26
 
 ### Added

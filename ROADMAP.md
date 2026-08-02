@@ -25,6 +25,12 @@ Lower the barrier to adoption:
 
 > Realized in 0.2.0: `example/` runnable server, `Event.String()` debug helper,
 > `SendJSON` convenience method, Go `Example` functions in godoc.
+>
+> Realized in 0.3.0: `KeyedLines` + `SendLines` + `WriteKeyedLines` +
+> `SendKeyed` + `JSONSignals` — general-purpose keyed-data-line helpers that
+> make the library a first-class SSE backend for [DataStar](https://data-star.dev)
+> and similar keyed-data-line protocols, without coupling the library to any
+> specific framework.
 
 ### 3. Spec compliance and extensibility
 

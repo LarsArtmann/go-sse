@@ -68,3 +68,43 @@ func FuzzParseEventID(f *testing.F) {
 		}
 	})
 }
+
+func FuzzKeyedLines(f *testing.F) {
+	f.Add("elements", "<div>")
+	f.Add("selector", "#feed")
+	f.Add("elements", "<div>\n  <span>Hello</span>\n</div>")
+	f.Add("signals", `{"progress":50}`)
+	f.Add("", "")
+	f.Add("k", "multi\r\nline\rhtml")
+
+	f.Fuzz(func(t *testing.T, key, value string) {
+		result := sse.KeyedLines(key, value)
+
+		// Empty value must produce empty output — never a partial data line.
+		if value == "" {
+			if result != "" {
+				t.Errorf("KeyedLines(%q, %q): expected empty output, got %q", key, value, result)
+			}
+
+			return
+		}
+
+		// Every line in the result must start with the key prefix.
+		for _, line := range strings.Split(result, "\n") {
+			if !strings.HasPrefix(line, key) {
+				t.Errorf("KeyedLines(%q, ...): line %q does not start with key", key, line)
+			}
+		}
+
+		// The result must round-trip through WriteEvent without error.
+		var buf bytes.Buffer
+		if err := sse.WriteEvent(&buf, sse.Event{Event: "test", Data: result}); err != nil {
+			t.Fatalf("WriteEvent with KeyedLines result: %v", err)
+		}
+
+		output := buf.String()
+		if !strings.HasSuffix(output, "\n\n") {
+			t.Errorf("WriteEvent output must end with \\n\\n: %q", output)
+		}
+	})
+}

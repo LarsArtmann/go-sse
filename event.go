@@ -230,6 +230,10 @@ func WriteRetry(w io.Writer, ms uint) error {
 //
 // Returns "" when value is empty (no data line emitted).
 //
+// Line endings in value (LF, CRLF, and lone CR) are normalized to LF by the
+// underlying [splitLines] — Windows-style CRLF in HTML fragments is handled
+// correctly without producing empty or doubled data lines.
+//
 // [DataStar]: https://data-star.dev
 func KeyedLines(key, value string) string {
 	if value == "" {
@@ -238,8 +242,16 @@ func KeyedLines(key, value string) string {
 
 	lines := splitLines(value)
 
+	// Grow hint accounts for each line's key prefix (len(key) + space) and
+	// the "\n" separator between lines. Counting the separator for all lines
+	// (including the last) is a safe upper bound — at most 1 byte over-allocated.
+	const (
+		keyValueSepWidth = 1 // " " between key and value
+		newlineWidth     = 1 // "\n" between lines
+	)
+
 	var b strings.Builder
-	b.Grow(len(value) + (len(key)+1)*len(lines))
+	b.Grow(len(value) + len(lines)*(len(key)+keyValueSepWidth+newlineWidth))
 
 	for i, line := range lines {
 		if i > 0 {

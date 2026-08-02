@@ -228,7 +228,9 @@ mux.HandleFunc("GET /events", func(w http.ResponseWriter, r *http.Request) {
     defer func() { _ = stream.Close() }()
 
     // Patch elements: morph a feed div with multi-line HTML
-    html := `<div id="feed">` + "\n" + `  <span>1</span>` + "\n" + `</div>`
+    html := `<div id="feed">
+  <span>1</span>
+</div>`
 
     _ = stream.SendLines("datastar-patch-elements",
         "selector #feed",
