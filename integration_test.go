@@ -255,3 +255,55 @@ func TestIntegration_LastEventIDReconnectionReplay(t *testing.T) {
 		}
 	}
 }
+
+// TestIntegration_DataStarWireFormat verifies that a DataStar patch-elements
+// event composed via SendLines + KeyedLines produces the exact wire bytes that
+// DataStar's JS client expects, over a real HTTP round-trip.
+func TestIntegration_DataStarWireFormat(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		stream := sse.NewStream(w, r)
+		defer func() { _ = stream.Close() }()
+
+		html := "<div id=\"feed\">\n  <span>1</span>\n</div>"
+
+		_ = stream.SendLines("datastar-patch-elements",
+			"selector #feed",
+			"mode inner",
+			sse.KeyedLines("elements", html),
+		)
+	}))
+	t.Cleanup(func() {
+		server.CloseClientConnections()
+		server.Close()
+	})
+
+	resp, err := http.Get(server.URL)
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("ReadAll: %v", err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	const want = "event: datastar-patch-elements\n" +
+		"data: selector #feed\n" +
+		"data: mode inner\n" +
+		"data: elements <div id=\"feed\">\n" +
+		"data: elements   <span>1</span>\n" +
+		"data: elements </div>\n" +
+		"\n"
+
+	if string(body) != want {
+		t.Errorf("wire format mismatch:\ngot:\n%s\nwant:\n%s", body, want)
+	}
+
+	if ct := resp.Header.Get("Content-Type"); ct != sse.ContentType {
+		t.Errorf("Content-Type: got %q, want %q", ct, sse.ContentType)
+	}
+}

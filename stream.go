@@ -157,6 +157,22 @@ func (s *Stream) SendLines(eventName string, lines ...string) error {
 	return s.Send(Event{Event: eventName, Data: strings.Join(lines, "\n")})
 }
 
+// SendKeyed sends a single-key SSE event, prefixing every line of value with
+// "key ". This is the stream counterpart to [WriteKeyedLines] — convenience
+// for the most common DataStar pattern (e.g., patch-signals with a single
+// "signals" key).
+//
+// For events with multiple keyed data lines, use [SendLines] with [KeyedLines]:
+//
+//	stream.SendLines("datastar-patch-elements",
+//	    "selector #feed",
+//	    "mode inner",
+//	    sse.KeyedLines("elements", html),
+//	)
+func (s *Stream) SendKeyed(eventName, key, value string) error {
+	return s.Send(Event{Event: eventName, Data: KeyedLines(key, value)})
+}
+
 // Context returns the stream's context.Context. It is cancelled when the
 // client disconnects. Use ctx.Done() in select statements to detect
 // disconnection, or ctx.Err() to check the cancellation reason.

@@ -229,6 +229,8 @@ func WriteRetry(w io.Writer, ms uint) error {
 //	}
 //
 // Returns "" when value is empty (no data line emitted).
+// An empty key is a no-op — each line gets just a space prefix. This is a
+// caller bug (keyed data lines require a key), not a valid pattern.
 //
 // Line endings in value (LF, CRLF, and lone CR) are normalized to LF by the
 // underlying [splitLines] — Windows-style CRLF in HTML fragments is handled
@@ -264,6 +266,23 @@ func KeyedLines(key, value string) string {
 	}
 
 	return b.String()
+}
+
+// WriteKeyedLines writes a single-key SSE event to the writer, prefixing every
+// line of value with "key ". This is the wire-only counterpart to
+// [Stream.SendKeyed] — for consumers that use [WriteEvent] directly without
+// a [Stream] (e.g., custom HTTP scaffolding).
+//
+// For events with multiple keyed data lines (e.g., DataStar patch-elements with
+// selector + mode + elements), compose [KeyedLines] calls into [Event.Data]
+// and use [WriteEvent] directly:
+//
+//	sse.WriteEvent(w, sse.Event{
+//	    Event: "datastar-patch-elements",
+//	    Data:  "selector #feed\nmode inner\n" + sse.KeyedLines("elements", html),
+//	})
+func WriteKeyedLines(w io.Writer, eventType, key, value string) error {
+	return WriteEvent(w, Event{Event: eventType, Data: KeyedLines(key, value)})
 }
 
 // splitLines splits a string into lines for SSE data field formatting.

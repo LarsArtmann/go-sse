@@ -452,6 +452,21 @@ func TestKeyedLines_EmptyValue(t *testing.T) {
 	}
 }
 
+func TestKeyedLines_EmptyKey(t *testing.T) {
+	t.Parallel()
+
+	// Empty key prefixes each line with just a space — this is the literal
+	// behavior (no key to write, only the separator). It is documented rather
+	// than special-cased because an empty key is a caller bug, not a valid
+	// keyed-data-line pattern. The test pins the behavior so it never changes
+	// accidentally.
+	got := sse.KeyedLines("", "hello\nworld")
+	want := " hello\n world"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
 func TestKeyedLines_CRLFInValue(t *testing.T) {
 	t.Parallel()
 
@@ -488,4 +503,116 @@ func TestKeyedLines_ProducesCorrectWireFormat(t *testing.T) {
 	if buf.String() != want {
 		t.Errorf("got:\n%s\nwant:\n%s", buf.String(), want)
 	}
+}
+
+func TestWriteKeyedLines_SingleLine(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	err := sse.WriteKeyedLines(&buf, "datastar-patch-signals", "signals", `{"progress":50}`)
+	if err != nil {
+		t.Fatalf("WriteKeyedLines: %v", err)
+	}
+
+	want := "event: datastar-patch-signals\n" +
+		"data: signals {\"progress\":50}\n" +
+		"\n"
+
+	if buf.String() != want {
+		t.Errorf("got %q, want %q", buf.String(), want)
+	}
+}
+
+func TestWriteKeyedLines_MultiLine(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	err := sse.WriteKeyedLines(&buf, "datastar-patch-elements", "elements", "<div>\n</div>")
+	if err != nil {
+		t.Fatalf("WriteKeyedLines: %v", err)
+	}
+
+	want := "event: datastar-patch-elements\n" +
+		"data: elements <div>\n" +
+		"data: elements </div>\n" +
+		"\n"
+
+	if buf.String() != want {
+		t.Errorf("got %q, want %q", buf.String(), want)
+	}
+}
+
+func TestWriteKeyedLines_EmptyValue(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	err := sse.WriteKeyedLines(&buf, "test", "key", "")
+	if err != nil {
+		t.Fatalf("WriteKeyedLines: %v", err)
+	}
+
+	// Empty value → KeyedLines returns "" → WriteEvent emits a bare "data: \n".
+	want := "event: test\ndata: \n\n"
+
+	if buf.String() != want {
+		t.Errorf("got %q, want %q", buf.String(), want)
+	}
+}
+
+func TestWriteKeyedLines_CRLFInValue(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	err := sse.WriteKeyedLines(&buf, "evt", "k", "a\r\nb")
+	if err != nil {
+		t.Fatalf("WriteKeyedLines: %v", err)
+	}
+
+	// CRLF is normalized to LF by splitLines inside KeyedLines.
+	want := "event: evt\ndata: k a\ndata: k b\n\n"
+
+	if buf.String() != want {
+		t.Errorf("got %q, want %q", buf.String(), want)
+	}
+}
+
+func TestWriteKeyedLines_WriteError(t *testing.T) {
+	t.Parallel()
+
+	err := sse.WriteKeyedLines(&errorWriter{}, "evt", "k", "v")
+	if err == nil {
+		t.Fatal("expected error from errorWriter")
+	}
+}
+
+func BenchmarkKeyedLines(b *testing.B) {
+	singleLine := "<div>hello</div>"
+
+	var multiLineBuilder strings.Builder
+	multiLineBuilder.WriteString("<div id=\"feed\">\n")
+	for range 100 {
+		multiLineBuilder.WriteString("  <article>\n    <h3>Title</h3>\n    <p>Body text</p>\n  </article>\n")
+	}
+	multiLineBuilder.WriteString("</div>")
+	multiLineHTML := multiLineBuilder.String()
+
+	b.Run("single_line", func(b *testing.B) {
+		b.ReportAllocs()
+
+		for range b.N {
+			_ = sse.KeyedLines("elements", singleLine)
+		}
+	})
+
+	b.Run("multi_line_100", func(b *testing.B) {
+		b.ReportAllocs()
+
+		for range b.N {
+			_ = sse.KeyedLines("elements", multiLineHTML)
+		}
+	})
 }

@@ -71,6 +71,14 @@
 //	    sse.KeyedLines("elements", html),
 //	)
 //
+// For single-key events (e.g., patch-signals), use the convenience helpers:
+//
+//	stream.SendKeyed("datastar-patch-signals", "signals", `{"progress":50}`)
+//	sse.WriteKeyedLines(w, "datastar-patch-signals", "signals", `{"progress":50}`)
+//
+// WriteKeyedLines is the wire-only variant (no net/http) for consumers that
+// manage their own HTTP scaffolding around WriteEvent.
+//
 // # Reconnection
 //
 // When a browser reconnects after a drop, it sends the Last-Event-ID header

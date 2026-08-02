@@ -176,6 +176,45 @@ func TestStream_SendLines(t *testing.T) {
 	}
 }
 
+func TestStream_SendKeyed(t *testing.T) {
+	t.Parallel()
+
+	stream, w := newTestStream(t)
+
+	err := stream.SendKeyed("datastar-patch-signals", "signals", `{"progress":50}`)
+	if err != nil {
+		t.Fatalf("SendKeyed: %v", err)
+	}
+
+	want := "event: datastar-patch-signals\n" +
+		"data: signals {\"progress\":50}\n" +
+		"\n"
+
+	if w.Body.String() != want {
+		t.Errorf("got %q, want %q", w.Body.String(), want)
+	}
+}
+
+func TestStream_SendKeyed_MultiLine(t *testing.T) {
+	t.Parallel()
+
+	stream, w := newTestStream(t)
+
+	err := stream.SendKeyed("datastar-patch-elements", "elements", "<div>\n</div>")
+	if err != nil {
+		t.Fatalf("SendKeyed: %v", err)
+	}
+
+	want := "event: datastar-patch-elements\n" +
+		"data: elements <div>\n" +
+		"data: elements </div>\n" +
+		"\n"
+
+	if w.Body.String() != want {
+		t.Errorf("got %q, want %q", w.Body.String(), want)
+	}
+}
+
 func TestStream_Context(t *testing.T) {
 	t.Parallel()
 

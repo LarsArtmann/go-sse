@@ -10,6 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - `KeyedLines(key, value string) string` — prefixes every line of a multi-line value with `key `, producing the newline-joined string for `Event.Data`. Building block for keyed-data-line SSE protocols (DataStar, htmx extensions, etc.).
 - `Stream.SendLines(eventName string, lines ...string) error` — convenience method that joins variadic arguments with `\n` into `Event.Data`, then delegates to `Send`. Composes with `KeyedLines` for multi-key events.
+- `WriteKeyedLines(w io.Writer, eventType, key, value string) error` — wire-only helper (no `net/http` dependency) for consumers that use `WriteEvent` directly. Single-key convenience counterpart to `KeyedLines`.
+- `Stream.SendKeyed(eventName, key, value string) error` — stream convenience for the most common single-key DataStar pattern (e.g., `patch-signals` with one `signals` key).
+- `FuzzKeyedLines` fuzz test — panic-safety with arbitrary key/value inputs.
+- `BenchmarkKeyedLines` — single-line and 100-line variants measuring allocation behavior.
+- DataStar wire-format integration test — HTTP round-trip asserting exact wire bytes.
 
 ## [0.2.1] - 2026-07-26
 
