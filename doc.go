@@ -48,6 +48,29 @@
 // Multi-line data is split so each line gets its own "data:" prefix, as
 // required by the [SSE specification].
 //
+// # Keyed Data Lines (DataStar)
+//
+// Some SSE protocols — most notably [DataStar] — use keyed data lines, where
+// each "data:" line carries a "key value" pair and multi-line values repeat
+// the key prefix:
+//
+//	event: datastar-patch-elements
+//	data: selector #feed
+//	data: mode inner
+//	data: elements <div>
+//	data: elements   <span>1</span>
+//	data: elements </div>
+//
+// [KeyedLines] builds the prefixed string for multi-line values; [Stream.SendLines]
+// sends an event from multiple data-line arguments. Together they produce the
+// wire format above:
+//
+//	stream.SendLines("datastar-patch-elements",
+//	    "selector #feed",
+//	    "mode inner",
+//	    sse.KeyedLines("elements", html),
+//	)
+//
 // # Reconnection
 //
 // When a browser reconnects after a drop, it sends the Last-Event-ID header
@@ -77,4 +100,5 @@
 // reconnection with Last-Event-ID + [Replay].
 //
 // [SSE specification]: https://html.spec.whatwg.org/multipage/server-sent-events.html
+// [DataStar]: https://data-star.dev
 package sse

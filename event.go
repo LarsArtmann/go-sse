@@ -239,7 +239,7 @@ func KeyedLines(key, value string) string {
 	lines := splitLines(value)
 
 	var b strings.Builder
-	b.Grow(len(value) + (len(key)+2)*len(lines))
+	b.Grow(len(value) + (len(key)+1)*len(lines))
 
 	for i, line := range lines {
 		if i > 0 {

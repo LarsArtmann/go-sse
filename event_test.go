@@ -471,7 +471,7 @@ func TestKeyedLines_ProducesCorrectWireFormat(t *testing.T) {
 
 	err := sse.WriteEvent(&buf, sse.Event{
 		Event: "datastar-patch-elements",
-		Data: "selector #feed\nmode inner\n" + sse.KeyedLines("elements", html),
+		Data:  "selector #feed\nmode inner\n" + sse.KeyedLines("elements", html),
 	})
 	if err != nil {
 		t.Fatalf("WriteEvent: %v", err)
