@@ -137,6 +137,8 @@ sse.WriteEvent(w, sse.Event{Event: "update", Data: "<div>new</div>"})
 sse.WriteHeartbeat(w)       // ": heartbeat\n\n"
 sse.WriteRetry(w, 5000)     // "retry: 5000\n\n"
 
+sse.KeyedLines("elements", html) // prefix each line with "elements " (DataStar pattern)
+
 // Event.String() — compact debug representation (NOT the wire format)
 log.Printf("dropped event: %s", evt)
 // Output: {event:update id:42 retry:3000 data:<div>new</div>}
@@ -151,6 +153,7 @@ defer func() { _ = stream.Close() }()
 stream.Send(sse.Event{...})        // write + flush
 stream.SendData("update", "<div>") // convenience: send raw string data
 stream.SendJSON("update", payload) // convenience: marshal JSON, send as data
+stream.SendLines("event", "k1 v1", "k2 v2") // convenience: multi-line data lines
 stream.Heartbeat(ctx, 15*time.Second)
 stream.LastEventID()               // Last-Event-ID header
 stream.Context()                   // cancelled on disconnect
@@ -209,6 +212,51 @@ per-subscriber ordering across the batch.
 - Consumers needing guaranteed delivery must implement application-level
   reconnection with `Last-Event-ID` + `Replay` to recover missed events.
 - The drop is per-subscriber: fast consumers are unaffected by slow ones.
+
+## Framework Integration: DataStar
+
+[DataStar](https://data-star.dev) is a hypermedia library that uses SSE as its
+primary transport. go-sse supports it out of the box — the `KeyedLines` helper
+and `SendLines` method handle DataStar's keyed-data-line wire format, where
+multi-line values repeat the key prefix on each line.
+
+### Serving DataStar SSE events
+
+```go
+mux.HandleFunc("GET /events", func(w http.ResponseWriter, r *http.Request) {
+    stream := sse.NewStream(w, r)
+    defer func() { _ = stream.Close() }()
+
+    // Patch elements: morph a feed div with multi-line HTML
+    html := `<div id="feed">` + "\n" + `  <span>1</span>` + "\n" + `</div>`
+
+    _ = stream.SendLines("datastar-patch-elements",
+        "selector #feed",
+        "mode inner",
+        sse.KeyedLines("elements", html),
+    )
+
+    // Patch signals: update client-side reactive state
+    _ = stream.SendLines("datastar-patch-signals",
+        sse.KeyedLines("signals", `{"progress": 50}`),
+    )
+})
+```
+
+### What go-sse provides for DataStar
+
+| DataStar requirement           | go-sse support                                        |
+| ------------------------------ | ----------------------------------------------------- |
+| `text/event-stream` + headers  | `NewStream` sets all required headers automatically   |
+| `event: datastar-*` field      | `Event.Event`                                         |
+| `data: key value` multi-line   | `KeyedLines` + `SendLines`                            |
+| `id:` / `retry:` fields        | `Event.ID` / `Event.Retry`                            |
+| `Last-Event-ID` reconnection   | `Stream.LastEventID()` + `Replay`                     |
+| Heartbeat (proxy keep-alive)   | `Stream.Heartbeat`                                    |
+
+go-sse has no DataStar-specific types or event-name constants — it remains a
+transport library. `KeyedLines` is a general SSE utility (keyed data lines are
+used by many protocols); DataStar is the most prominent consumer.
 
 ## Companion Libraries
 

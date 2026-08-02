@@ -44,7 +44,7 @@ Four layers, each in its own file, composable independently:
 
 | Layer             | File                           | Role                                                                |
 | ----------------- | ------------------------------ | ------------------------------------------------------------------- |
-| Wire format       | `event.go`                     | `Event`, `EventID`, `WriteEvent`, `WriteHeartbeat`, `WriteRetry`    |
+| Wire format       | `event.go`                     | `Event`, `EventID`, `WriteEvent`, `WriteHeartbeat`, `WriteRetry`, `KeyedLines` |
 | Single connection | `stream.go`                    | `Stream` — headers, mutex-guarded send, heartbeat, disconnect hooks |
 | Fan-out           | `broadcaster.go` + `fanout.go` | `Broadcaster[T]` (public) embeds `fanOut[T]` (unexported hub)       |
 | Reconnection      | `replay.go`                    | `EventStore` interface + `Replay` function                          |
@@ -78,6 +78,8 @@ Four layers, each in its own file, composable independently:
 - **Go 1.26 idioms in use:** integer range loops (`for i := range len(s)`, `for range 65`).
 - **Tests:** external package `sse_test`, every test starts with `t.Parallel()`, `httptest` for stream tests, `bytes.Buffer` for serialization, `errorWriter`/`errorResponseWriter` fakes for failure paths. Race tests exist (`TestBroadcaster_BroadcastUnsubscribeRace`).
 - **`splitLines`** (event.go) handles the SSE multi-line `data:` requirement and CRLF stripping; the no-newline fast path returns a single-element slice without allocating a backing array.
+- **`KeyedLines`** (event.go) prefixes each line of a multi-line value with `key `, producing the newline-joined string for `Event.Data`. This is the building block for keyed-data-line protocols like DataStar (`data: elements <div>` / `data: elements </div>`). It delegates to `splitLines` for line splitting. Returns `""` for empty input (no data line emitted).
+- **`Stream.SendLines`** (stream.go) is a convenience wrapper around `Send` that joins variadic string arguments with `\n` into `Event.Data`. Composes with `KeyedLines` for the DataStar pattern: each `KeyedLines` result (which may contain embedded `\n`) is one argument, and `splitLines` in `WriteEvent` handles the final split.
 
 ## What This Library Is NOT
 

@@ -58,3 +58,28 @@ func ExampleParseEventID() {
 
 	// Output: evt-99
 }
+
+// ExampleKeyedLines demonstrates the keyed-data-line pattern used by DataStar
+// and similar SSE protocols. Each line of a multi-line value is prefixed with
+// the key, producing the wire format DataStar expects.
+func ExampleKeyedLines() {
+	var buf bytes.Buffer
+
+	html := "<div id=\"feed\">\n  <span>1</span>\n</div>"
+
+	_ = sse.WriteEvent(&buf, sse.Event{
+		Event: "datastar-patch-elements",
+		Data: "selector #feed\nmode inner\n" +
+			sse.KeyedLines("elements", html),
+	})
+
+	fmt.Print(buf.String())
+
+	// Output:
+	// event: datastar-patch-elements
+	// data: selector #feed
+	// data: mode inner
+	// data: elements <div id="feed">
+	// data: elements   <span>1</span>
+	// data: elements </div>
+}

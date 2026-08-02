@@ -147,6 +147,35 @@ func TestStream_SendData(t *testing.T) {
 	}
 }
 
+func TestStream_SendLines(t *testing.T) {
+	t.Parallel()
+
+	stream, w := newTestStream(t)
+
+	html := "<div>\n  <span>hi</span>\n</div>"
+
+	err := stream.SendLines("datastar-patch-elements",
+		"selector #feed",
+		"mode inner",
+		sse.KeyedLines("elements", html),
+	)
+	if err != nil {
+		t.Fatalf("SendLines: %v", err)
+	}
+
+	want := "event: datastar-patch-elements\n" +
+		"data: selector #feed\n" +
+		"data: mode inner\n" +
+		"data: elements <div>\n" +
+		"data: elements   <span>hi</span>\n" +
+		"data: elements </div>\n" +
+		"\n"
+
+	if w.Body.String() != want {
+		t.Errorf("got %q, want %q", w.Body.String(), want)
+	}
+}
+
 func TestStream_Context(t *testing.T) {
 	t.Parallel()
 
