@@ -79,6 +79,28 @@
 // WriteKeyedLines is the wire-only variant (no net/http) for consumers that
 // manage their own HTTP scaffolding around WriteEvent.
 //
+// # DataStar Retry and Reconnection
+//
+// DataStar has two independent retry layers:
+//
+//  1. SSE protocol retry: the "retry:" field (set via [Event.Retry] or
+//     [WriteRetry]) tells the browser's EventSource how long to wait before
+//     reconnecting after a connection drop. go-sse supports this through
+//     [Event.Retry] and [WriteRetry].
+//
+//  2. DataStar client retry: the @get() action's retry, retryInterval,
+//     retryScaler, retryMaxWait, retryMaxCount options control automatic
+//     re-execution of the fetch action when the request itself fails (network
+//     errors, 4xx/5xx responses).
+//
+// These layers are independent. For most use cases:
+//
+//   - Set [Event.Retry] to control browser-level reconnection timing.
+//   - Use [Stream.LastEventID] and [Replay] to recover missed events on
+//     reconnection (go-sse handles the SSE protocol side).
+//   - Let DataStar's client-side retry options handle transient fetch failures
+//     (the browser will re-issue the @get() automatically).
+//
 // # Reconnection
 //
 // When a browser reconnects after a drop, it sends the Last-Event-ID header
