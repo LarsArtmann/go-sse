@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	datastarAddr  = ":8081"
+	datastarAddr  = ":8765"
 	progressStep  = 10
 	maxProgress   = 100
 	progressDelay = 500 * time.Millisecond
