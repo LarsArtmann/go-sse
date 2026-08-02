@@ -10,51 +10,51 @@
 
 ### Core API additions
 
-| Export | File | Tests | Status |
-|--------|------|-------|--------|
-| `KeyedLines` Grow fix (named constants) | `event.go` | `TestKeyedLines_*` (existing) | DONE |
-| `KeyedLines` CRLF doc comment | `event.go` | — | DONE |
-| `KeyedLines` empty-key behavior defined + tested | `event.go` | `TestKeyedLines_EmptyKey` | DONE |
-| `WriteKeyedLines(w, eventType, key, value)` | `event.go` | `TestWriteKeyedLines_{SingleLine,MultiLine,EmptyValue,CRLFInValue,WriteError}` | DONE |
-| `Stream.SendKeyed(eventName, key, value)` | `stream.go` | `TestStream_SendKeyed`, `TestStream_SendKeyed_MultiLine` | DONE |
+| Export                                           | File        | Tests                                                                          | Status |
+| ------------------------------------------------ | ----------- | ------------------------------------------------------------------------------ | ------ |
+| `KeyedLines` Grow fix (named constants)          | `event.go`  | `TestKeyedLines_*` (existing)                                                  | DONE   |
+| `KeyedLines` CRLF doc comment                    | `event.go`  | —                                                                              | DONE   |
+| `KeyedLines` empty-key behavior defined + tested | `event.go`  | `TestKeyedLines_EmptyKey`                                                      | DONE   |
+| `WriteKeyedLines(w, eventType, key, value)`      | `event.go`  | `TestWriteKeyedLines_{SingleLine,MultiLine,EmptyValue,CRLFInValue,WriteError}` | DONE   |
+| `Stream.SendKeyed(eventName, key, value)`        | `stream.go` | `TestStream_SendKeyed`, `TestStream_SendKeyed_MultiLine`                       | DONE   |
 
 ### Testing
 
-| Test | File | Status |
-|------|------|--------|
-| `FuzzKeyedLines` | `fuzz_test.go` | DONE (6 seed corpus entries, round-trips through WriteEvent) |
-| `BenchmarkKeyedLines` | `event_test.go` | DONE (single-line: 47ns/op 2 allocs; 100-line: 11µs/op 11 allocs) |
-| `TestIntegration_DataStarWireFormat` | `integration_test.go` | DONE (HTTP round-trip, asserts exact wire bytes) |
+| Test                                 | File                  | Status                                                            |
+| ------------------------------------ | --------------------- | ----------------------------------------------------------------- |
+| `FuzzKeyedLines`                     | `fuzz_test.go`        | DONE (6 seed corpus entries, round-trips through WriteEvent)      |
+| `BenchmarkKeyedLines`                | `event_test.go`       | DONE (single-line: 47ns/op 2 allocs; 100-line: 11µs/op 11 allocs) |
+| `TestIntegration_DataStarWireFormat` | `integration_test.go` | DONE (HTTP round-trip, asserts exact wire bytes)                  |
 
 ### Documentation
 
-| Doc | Change | Status |
-|-----|--------|--------|
-| `CHANGELOG.md` | `[Unreleased]` entries for all new exports | DONE |
-| `TODO_LIST.md` | DataStar follow-up items added | DONE |
-| `ROADMAP.md` | "Realized in 0.3.0" callout for DataStar helpers | DONE |
-| `README.md` | Fixed DataStar example (raw string literal), added `WriteKeyedLines`/`SendKeyed` to API surface and compatibility table | DONE |
-| `FEATURES.md` | Added rows for `WriteKeyedLines`, `SendKeyed`, `FuzzKeyedLines`, DataStar integration test, `BenchmarkKeyedLines` | DONE |
-| `AGENTS.md` | Updated architecture table, added convention bullets for `WriteKeyedLines` and `SendKeyed` | DONE |
-| `doc.go` | Added single-key example, DataStar retry/reconnect semantics section | DONE |
-| `docs/guides/migrating-from-datastar-sdk.md` | Full migration guide (243 lines) — maps every DataStar SDK operation to go-sse | DONE |
+| Doc                                          | Change                                                                                                                  | Status |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------ |
+| `CHANGELOG.md`                               | `[Unreleased]` entries for all new exports                                                                              | DONE   |
+| `TODO_LIST.md`                               | DataStar follow-up items added                                                                                          | DONE   |
+| `ROADMAP.md`                                 | "Realized in 0.3.0" callout for DataStar helpers                                                                        | DONE   |
+| `README.md`                                  | Fixed DataStar example (raw string literal), added `WriteKeyedLines`/`SendKeyed` to API surface and compatibility table | DONE   |
+| `FEATURES.md`                                | Added rows for `WriteKeyedLines`, `SendKeyed`, `FuzzKeyedLines`, DataStar integration test, `BenchmarkKeyedLines`       | DONE   |
+| `AGENTS.md`                                  | Updated architecture table, added convention bullets for `WriteKeyedLines` and `SendKeyed`                              | DONE   |
+| `doc.go`                                     | Added single-key example, DataStar retry/reconnect semantics section                                                    | DONE   |
+| `docs/guides/migrating-from-datastar-sdk.md` | Full migration guide (243 lines) — maps every DataStar SDK operation to go-sse                                          | DONE   |
 
 ### Example
 
-| File | Status |
-|------|--------|
+| File                       | Status                                                                       |
+| -------------------------- | ---------------------------------------------------------------------------- |
 | `example/datastar/main.go` | DONE (compiles, HTML page + SSE endpoint, smoke-tested wire format via HTTP) |
 
 ### Verification
 
-| Check | Result |
-|-------|--------|
-| `go test ./... -race -count=1` | PASS |
-| `go vet ./...` | CLEAN |
-| `golangci-lint run ./...` (48 linters) | 0 issues |
-| `golangci-lint fmt ./...` | CLEAN |
-| Coverage | 99.5% of library statements |
-| Wire format smoke test | Verified byte-for-byte against DataStar spec via HTTP fetch |
+| Check                                  | Result                                                      |
+| -------------------------------------- | ----------------------------------------------------------- |
+| `go test ./... -race -count=1`         | PASS                                                        |
+| `go vet ./...`                         | CLEAN                                                       |
+| `golangci-lint run ./...` (48 linters) | 0 issues                                                    |
+| `golangci-lint fmt ./...`              | CLEAN                                                       |
+| Coverage                               | 99.5% of library statements                                 |
+| Wire format smoke test                 | Verified byte-for-byte against DataStar spec via HTTP fetch |
 
 ---
 
@@ -65,6 +65,7 @@
 **What works:** Server compiles, runs, serves HTML, produces correct SSE wire format (verified via HTTP fetch — both `datastar-patch-signals` and `datastar-patch-elements` events).
 
 **What's NOT verified:**
+
 - **No real browser test.** The DataStar JS client (v1.0.2) was never loaded against the server. The wire format matches the spec, but browser-side DOM patching is unconfirmed.
 - **`data-bind:style` attribute unverified.** The progress bar uses `data-bind:style` with a template literal. I did not confirm this is a valid DataStar v1.0.2 attribute. The correct attribute may be `data-style` or `data-attr:style`. This is a **potential bug** — the progress bar visual may not work.
 - **Template literal escaping is fragile.** The HTML uses Go string concatenation to embed backticks: `` data-bind:style="` + "`" + `width: {{$progress}}%` + "`" + ` ``. This is correct Go but ugly and error-prone.
@@ -91,29 +92,29 @@
 
 ### Deliberately skipped (YAGNI / non-goals justification)
 
-| Task | Reason |
-|------|--------|
-| Task 37: `JSONSignals` helper | `json.Marshal()` + `SendKeyed("datastar-patch-signals", "signals", string(jsonBytes))` is already one line. Adding a wrapper saves zero lines while expanding API surface and introducing a JSON dependency in `event.go`. |
-| Tasks 19-20: `KeyedLinesBuilder` | Fluent builder for 2-3 keyed lines is over-engineering. String concatenation with `KeyedLines` is clear and sufficient. No consumer has asked for this. |
-| Task 21: `KeyedLinesMulti(map)` | Same YAGNI. No consumer needs it. Can compose multiple `KeyedLines` calls with `\n`. |
-| Tasks 23-29: `Event.DataLines()`, `WithID`, `WithRetry`, `Validate`, `WriteEventBytes`, `SendRaw`, `SendLinesf`, `SetRetry` | All speculative API expansion with no consumer demand. Violates the library's minimal-surface philosophy. |
-| Tasks 33-34: Additional example directories | One example is sufficient until adoption signals demand more. |
+| Task                                                                                                                        | Reason                                                                                                                                                                                                                     |
+| --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Task 37: `JSONSignals` helper                                                                                               | `json.Marshal()` + `SendKeyed("datastar-patch-signals", "signals", string(jsonBytes))` is already one line. Adding a wrapper saves zero lines while expanding API surface and introducing a JSON dependency in `event.go`. |
+| Tasks 19-20: `KeyedLinesBuilder`                                                                                            | Fluent builder for 2-3 keyed lines is over-engineering. String concatenation with `KeyedLines` is clear and sufficient. No consumer has asked for this.                                                                    |
+| Task 21: `KeyedLinesMulti(map)`                                                                                             | Same YAGNI. No consumer needs it. Can compose multiple `KeyedLines` calls with `\n`.                                                                                                                                       |
+| Tasks 23-29: `Event.DataLines()`, `WithID`, `WithRetry`, `Validate`, `WriteEventBytes`, `SendRaw`, `SendLinesf`, `SetRetry` | All speculative API expansion with no consumer demand. Violates the library's minimal-surface philosophy.                                                                                                                  |
+| Tasks 33-34: Additional example directories                                                                                 | One example is sufficient until adoption signals demand more.                                                                                                                                                              |
 
 ### Deferred to user decisions (Q1/Q2/Q3 — resolved autonomously, may need confirmation)
 
-| Decision | What I decided | Why | Risk |
-|----------|---------------|------|------|
-| Q1: DataStar subpackage? | **No** — core-only | ROADMAP.md lists "Payload-format opinions" as a non-goal. A `datastar/` subpackage with typed builders would couple the library to a specific framework. | User may disagree — they may want typed builders. |
-| Q2: Release version? | **0.3.0 minor** (not tagged) | New exported API = minor bump per semver. | User may want patch (0.2.2). |
-| Q3: Example templ vs HTML? | **Raw HTML** | Zero dependencies, consistent with `example/server.go`. | User may prefer templ. |
+| Decision                   | What I decided               | Why                                                                                                                                                      | Risk                                              |
+| -------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Q1: DataStar subpackage?   | **No** — core-only           | ROADMAP.md lists "Payload-format opinions" as a non-goal. A `datastar/` subpackage with typed builders would couple the library to a specific framework. | User may disagree — they may want typed builders. |
+| Q2: Release version?       | **0.3.0 minor** (not tagged) | New exported API = minor bump per semver.                                                                                                                | User may want patch (0.2.2).                      |
+| Q3: Example templ vs HTML? | **Raw HTML**                 | Zero dependencies, consistent with `example/server.go`.                                                                                                  | User may prefer templ.                            |
 
 ### Blocked on real browser verification
 
-| Task | Status |
-|------|--------|
-| Task 32: Manual browser test of example | NOT STARTED — no browser available in CLI environment |
-| Task 35: Point real DataStar JS client at server | NOT STARTED — requires browser |
-| Task 36: CI headless browser test | NOT STARTED — requires browser infrastructure |
+| Task                                             | Status                                                |
+| ------------------------------------------------ | ----------------------------------------------------- |
+| Task 32: Manual browser test of example          | NOT STARTED — no browser available in CLI environment |
+| Task 35: Point real DataStar JS client at server | NOT STARTED — requires browser                        |
+| Task 36: CI headless browser test                | NOT STARTED — requires browser infrastructure         |
 
 ---
 

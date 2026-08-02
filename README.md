@@ -249,14 +249,14 @@ mux.HandleFunc("GET /events", func(w http.ResponseWriter, r *http.Request) {
 
 ### What go-sse provides for DataStar
 
-| DataStar requirement           | go-sse support                                        |
-| ------------------------------ | ----------------------------------------------------- |
-| `text/event-stream` + headers  | `NewStream` sets all required headers automatically   |
-| `event: datastar-*` field      | `Event.Event`                                         |
-| `data: key value` multi-line   | `KeyedLines` + `SendLines` + `WriteKeyedLines` + `SendKeyed` |
-| `id:` / `retry:` fields        | `Event.ID` / `Event.Retry`                            |
-| `Last-Event-ID` reconnection   | `Stream.LastEventID()` + `Replay`                     |
-| Heartbeat (proxy keep-alive)   | `Stream.Heartbeat`                                    |
+| DataStar requirement          | go-sse support                                               |
+| ----------------------------- | ------------------------------------------------------------ |
+| `text/event-stream` + headers | `NewStream` sets all required headers automatically          |
+| `event: datastar-*` field     | `Event.Event`                                                |
+| `data: key value` multi-line  | `KeyedLines` + `SendLines` + `WriteKeyedLines` + `SendKeyed` |
+| `id:` / `retry:` fields       | `Event.ID` / `Event.Retry`                                   |
+| `Last-Event-ID` reconnection  | `Stream.LastEventID()` + `Replay`                            |
+| Heartbeat (proxy keep-alive)  | `Stream.Heartbeat`                                           |
 
 go-sse has no DataStar-specific types or event-name constants — it remains a
 transport library. `KeyedLines` is a general SSE utility (keyed data lines are

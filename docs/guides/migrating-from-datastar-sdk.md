@@ -9,14 +9,14 @@ This guide maps every common DataStar SDK operation to its go-sse equivalent.
 
 ## Why migrate?
 
-| Concern | DataStar Go SDK | go-sse |
-| ------- | --------------- | ------ |
-| Scope | DataStar-specific typed builders | General SSE transport |
-| Dependencies | `bytebufferpool`, `http.ResponseController`, DataStar runtime | Two small same-author modules |
-| Wire format | Hidden behind typed API | Explicit — you see every `data:` line |
-| Framework coupling | Tied to DataStar event names | `KeyedLines` is general; DataStar is one consumer |
-| Replay / reconnection | Not provided | `EventStore` + `Replay` + `LastEventID` |
-| Heartbeat / keep-alive | Not provided | `Stream.Heartbeat` (proxy survival) |
+| Concern                | DataStar Go SDK                                               | go-sse                                            |
+| ---------------------- | ------------------------------------------------------------- | ------------------------------------------------- |
+| Scope                  | DataStar-specific typed builders                              | General SSE transport                             |
+| Dependencies           | `bytebufferpool`, `http.ResponseController`, DataStar runtime | Two small same-author modules                     |
+| Wire format            | Hidden behind typed API                                       | Explicit — you see every `data:` line             |
+| Framework coupling     | Tied to DataStar event names                                  | `KeyedLines` is general; DataStar is one consumer |
+| Replay / reconnection  | Not provided                                                  | `EventStore` + `Replay` + `LastEventID`           |
+| Heartbeat / keep-alive | Not provided                                                  | `Stream.Heartbeat` (proxy survival)               |
 
 ## Quick reference
 

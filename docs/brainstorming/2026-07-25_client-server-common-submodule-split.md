@@ -7,11 +7,12 @@ _PRO/CONTRA on splitting go-sse into `client` / `server` / `common` Go sub-modul
 ## Premise check (read this first)
 
 The premise has a gap: **there is no client.** `doc.go`, `AGENTS.md`, and
-`ROADMAP.md:23` all confirm the library is server-only; a client-side `Dial` is
-explicitly a _future idea_ under "Developer experience." So the real question is
-**"pre-split now for a client that doesn't exist yet"** — and the maintainer's
-own `fanOut` decision (`ROADMAP.md:47`) already shows they reject committing to
-API stability before a concrete use case appears.
+`ROADMAP.md` ("Developer experience") all confirm the library is server-only;
+a client-side `Dial` is explicitly a _future idea_ under that theme. So the
+real question is **"pre-split now for a client that doesn't exist yet"** — and
+the maintainer's own `fanOut` decision (ROADMAP "Parked decisions") already
+shows they reject committing to API stability before a concrete use case
+appears.
 
 The honest framing: _is it worth paying multi-module tax today to prepare for a
 client that may never arrive?_
@@ -165,8 +166,8 @@ exists," but the _practical harm_ to wire-only consumers today is still ~zero
 Two questions, two different answers:
 
 **1. Three-way `client` / `server` / `common` split? — Still NO.**
-No client exists (`ROADMAP.md:23` lists `Dial` as a future idea). Pre-splitting
-for a client that may never arrive remains premature.
+No client exists (ROADMAP "Developer experience" lists `Dial` as a future
+idea). Pre-splitting for a client that may never arrive remains premature.
 
 **2. Two-way `common` / `server` split? — The case is now real, but not yet
 urgent.** The audit proves the `common` seam has real customers (2 wire-only
@@ -213,7 +214,7 @@ and welcomed when it comes.
 
 ## References
 
-- `ROADMAP.md` — themes 1 (production readiness), 2 (dev experience, client Dial)
+- `ROADMAP.md` — themes 1 (production readiness), 2 (developer experience / client Dial), 4 (parked decisions / module boundaries)
 - `AGENTS.md` — "What This Library Is NOT", Broadcaster vs fanOut split
 - `go-modularize` skill — Direction Neutrality, When NOT to Modularize
 - Consumer audit (2026-07-25), verifiable at:

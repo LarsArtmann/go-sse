@@ -47,9 +47,18 @@
           monospace;
       }
 
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      html { scroll-behavior: smooth; }
-      section[id], [id] { scroll-margin-top: 60px; }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      section[id],
+      [id] {
+        scroll-margin-top: 60px;
+      }
 
       body {
         background: var(--surface);
@@ -60,7 +69,10 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
-      :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
 
       .top-bar {
         background: var(--text);
@@ -76,201 +88,495 @@
         align-items: center;
       }
 
-      .layout { display: flex; gap: 2.5rem; padding: 2rem; }
-      .sidebar {
-        width: 220px; flex-shrink: 0; position: sticky; top: 1rem;
-        align-self: flex-start; height: calc(100vh - 2rem); overflow-y: auto; display: none;
+      .layout {
+        display: flex;
+        gap: 2.5rem;
+        padding: 2rem;
       }
-      .sidebar nav { display: flex; flex-direction: column; gap: 0; }
+      .sidebar {
+        width: 220px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 1rem;
+        align-self: flex-start;
+        height: calc(100vh - 2rem);
+        overflow-y: auto;
+        display: none;
+      }
+      .sidebar nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
       .sidebar .label {
-        font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent);
-        margin-bottom: 0.75rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--text);
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--accent);
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 2px solid var(--text);
       }
       .sidebar a {
-        font-size: 0.86rem; color: var(--text); text-decoration: none;
-        padding: 0.5rem 0.75rem; border-left: 4px solid transparent; font-weight: 600;
-        transition: all 0.15s ease; line-height: 1.4;
+        font-size: 0.86rem;
+        color: var(--text);
+        text-decoration: none;
+        padding: 0.5rem 0.75rem;
+        border-left: 4px solid transparent;
+        font-weight: 600;
+        transition: all 0.15s ease;
+        line-height: 1.4;
       }
-      .sidebar a:hover, .sidebar a.active {
+      .sidebar a:hover,
+      .sidebar a.active {
         border-left-color: var(--accent);
         background: color-mix(in srgb, var(--accent) 8%, transparent);
         color: var(--accent);
       }
-      .main { flex: 1; min-width: 0; }
-
-      h1, h2, h3, h4 {
-        font-family: var(--font-heading); font-weight: 900; letter-spacing: -0.02em; color: var(--text);
+      .main {
+        flex: 1;
+        min-width: 0;
       }
-      h1 { font-size: clamp(1.9rem, 4.5vw, 2.8rem); line-height: 1.05; margin: 0 0 0.6rem; }
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: var(--font-heading);
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        color: var(--text);
+      }
+      h1 {
+        font-size: clamp(1.9rem, 4.5vw, 2.8rem);
+        line-height: 1.05;
+        margin: 0 0 0.6rem;
+      }
       h2 {
-        font-size: 1.5rem; margin: 2.5rem 0 1rem; padding-bottom: 0.4rem;
-        border-bottom: 3px solid var(--text); display: flex; align-items: baseline; gap: 0.7rem;
+        font-size: 1.5rem;
+        margin: 2.5rem 0 1rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 3px solid var(--text);
+        display: flex;
+        align-items: baseline;
+        gap: 0.7rem;
       }
-      h2 .num { font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent); font-weight: 700; }
-      h3 { font-size: 1.15rem; margin: 0 0 0.4rem; font-weight: 700; }
-      h4 { font-size: 1rem; margin: 0 0 0.3rem; font-weight: 700; }
-      p { margin: 0 0 1rem; }
-      ul, ol { margin: 0 0 1rem 1.4rem; }
-      li { margin: 0.3rem 0; }
+      h2 .num {
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      h3 {
+        font-size: 1.15rem;
+        margin: 0 0 0.4rem;
+        font-weight: 700;
+      }
+      h4 {
+        font-size: 1rem;
+        margin: 0 0 0.3rem;
+        font-weight: 700;
+      }
+      p {
+        margin: 0 0 1rem;
+      }
+      ul,
+      ol {
+        margin: 0 0 1rem 1.4rem;
+      }
+      li {
+        margin: 0.3rem 0;
+      }
 
-      .hero { padding: 1.5rem 0 2rem; margin-bottom: 1.5rem; border-bottom: 3px solid var(--text); }
+      .hero {
+        padding: 1.5rem 0 2rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 3px solid var(--text);
+      }
       .eyebrow {
-        font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.16em; color: var(--accent); margin-bottom: 0.9rem;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--accent);
+        margin-bottom: 0.9rem;
       }
-      .subtitle { font-size: 1.1rem; color: var(--text-muted); max-width: 70ch; margin: 0 0 1rem; }
-      .meta { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+      .subtitle {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        max-width: 70ch;
+        margin: 0 0 1rem;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
       .tag {
-        display: inline-block; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700;
-        letter-spacing: 0.04em; padding: 0.25rem 0.6rem; background: var(--surface-sunken);
-        color: var(--text); border: 1px solid var(--border-strong);
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        padding: 0.25rem 0.6rem;
+        background: var(--surface-sunken);
+        color: var(--text);
+        border: 1px solid var(--border-strong);
       }
-      .tag.amber { background: var(--warning); border-color: var(--warning); }
-      .tag.teal { background: var(--solution); border-color: var(--solution); color: var(--surface); }
-
-      .scorecard, .stat-grid {
-        display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0;
-        margin: 1.5rem 0 2rem; border: 3px solid var(--text);
+      .tag.amber {
+        background: var(--warning);
+        border-color: var(--warning);
       }
-      .score-card, .stat-card {
-        padding: 1.3rem 1rem; text-align: center; border-right: 3px solid var(--text);
-        background: var(--surface-raised);
-      }
-      .score-card:last-child { border-right: none; }
-      .score {
-        font-family: var(--font-heading); font-size: 2.6rem; font-weight: 900;
-        line-height: 1; letter-spacing: -0.04em;
-      }
-      .score-card .label {
-        font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.12em; margin-top: 0.5rem;
-      }
-      .score-good { background: var(--solution); color: var(--surface); }
-      .score-warn { background: var(--warning); color: var(--text); }
-      .score-bad { background: var(--problem); color: var(--surface); }
-
-      .card {
-        background: var(--surface-raised); border: 2px solid var(--text); padding: 1.2rem 1.4rem;
-        margin-bottom: 1rem; border-left: 8px solid var(--border-strong);
-      }
-      .card-problem { border-left-color: var(--problem); }
-      .card-solution { border-left-color: var(--solution); }
-      .card-warning { border-left-color: var(--warning); }
-
-      .issue {
-        background: var(--surface-raised); border: 2px solid var(--text); padding: 1.2rem 1.4rem;
-        margin-bottom: 1rem; border-left: 8px solid var(--border-strong);
-      }
-      .issue-critical { border-left-color: var(--problem); }
-      .issue-important { border-left-color: var(--warning); }
-      .issue-nice { border-left-color: var(--solution); }
-      .issue h3 { margin-bottom: 0.3rem; }
-      .issue .where {
-        font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-faint);
-        margin: 0.2rem 0 0.6rem;
-      }
-      .issue p:last-child { margin-bottom: 0; }
-
-      .severity {
-        display: inline-block; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700;
-        letter-spacing: 0.1em; text-transform: uppercase; padding: 0.22rem 0.6rem; margin-bottom: 0.6rem;
+      .tag.teal {
+        background: var(--solution);
+        border-color: var(--solution);
         color: var(--surface);
       }
-      .severity-critical { background: var(--problem); }
-      .severity-important { background: var(--warning); color: var(--text); }
-      .severity-nice { background: var(--solution); }
+
+      .scorecard,
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0;
+        margin: 1.5rem 0 2rem;
+        border: 3px solid var(--text);
+      }
+      .score-card,
+      .stat-card {
+        padding: 1.3rem 1rem;
+        text-align: center;
+        border-right: 3px solid var(--text);
+        background: var(--surface-raised);
+      }
+      .score-card:last-child {
+        border-right: none;
+      }
+      .score {
+        font-family: var(--font-heading);
+        font-size: 2.6rem;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -0.04em;
+      }
+      .score-card .label {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-top: 0.5rem;
+      }
+      .score-good {
+        background: var(--solution);
+        color: var(--surface);
+      }
+      .score-warn {
+        background: var(--warning);
+        color: var(--text);
+      }
+      .score-bad {
+        background: var(--problem);
+        color: var(--surface);
+      }
+
+      .card {
+        background: var(--surface-raised);
+        border: 2px solid var(--text);
+        padding: 1.2rem 1.4rem;
+        margin-bottom: 1rem;
+        border-left: 8px solid var(--border-strong);
+      }
+      .card-problem {
+        border-left-color: var(--problem);
+      }
+      .card-solution {
+        border-left-color: var(--solution);
+      }
+      .card-warning {
+        border-left-color: var(--warning);
+      }
+
+      .issue {
+        background: var(--surface-raised);
+        border: 2px solid var(--text);
+        padding: 1.2rem 1.4rem;
+        margin-bottom: 1rem;
+        border-left: 8px solid var(--border-strong);
+      }
+      .issue-critical {
+        border-left-color: var(--problem);
+      }
+      .issue-important {
+        border-left-color: var(--warning);
+      }
+      .issue-nice {
+        border-left-color: var(--solution);
+      }
+      .issue h3 {
+        margin-bottom: 0.3rem;
+      }
+      .issue .where {
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        color: var(--text-faint);
+        margin: 0.2rem 0 0.6rem;
+      }
+      .issue p:last-child {
+        margin-bottom: 0;
+      }
+
+      .severity {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.22rem 0.6rem;
+        margin-bottom: 0.6rem;
+        color: var(--surface);
+      }
+      .severity-critical {
+        background: var(--problem);
+      }
+      .severity-important {
+        background: var(--warning);
+        color: var(--text);
+      }
+      .severity-nice {
+        background: var(--solution);
+      }
 
       .badge {
-        display: inline-block; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700;
-        letter-spacing: 0.06em; text-transform: uppercase; padding: 0.2rem 0.55rem;
-        border: 1px solid var(--text); color: var(--text);
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0.2rem 0.55rem;
+        border: 1px solid var(--text);
+        color: var(--text);
       }
-      .badge-fixed { background: var(--solution); color: var(--surface); }
-      .badge-na { background: var(--surface-sunken); color: var(--text-muted); }
+      .badge-fixed {
+        background: var(--solution);
+        color: var(--surface);
+      }
+      .badge-na {
+        background: var(--surface-sunken);
+        color: var(--text-muted);
+      }
 
       .callout {
-        margin: 0.8rem 0 0; padding: 0.8rem 1rem; border: 1px solid var(--border-strong);
-        border-left: 4px solid var(--border-strong); background: var(--surface-sunken); font-size: 0.92rem;
+        margin: 0.8rem 0 0;
+        padding: 0.8rem 1rem;
+        border: 1px solid var(--border-strong);
+        border-left: 4px solid var(--border-strong);
+        background: var(--surface-sunken);
+        font-size: 0.92rem;
       }
-      .callout strong { display: inline-block; margin-right: 0.4rem; }
-      .callout-teal, .callout-solution {
+      .callout strong {
+        display: inline-block;
+        margin-right: 0.4rem;
+      }
+      .callout-teal,
+      .callout-solution {
         border-left-color: var(--solution);
         background: color-mix(in srgb, var(--solution) 10%, var(--surface-raised));
       }
-      .callout-amber, .callout-warning {
+      .callout-amber,
+      .callout-warning {
         border-left-color: var(--warning);
         background: color-mix(in srgb, var(--warning) 18%, var(--surface-raised));
       }
 
-      .strengths { display: grid; gap: 0.5rem; margin: 1rem 0 1.5rem; }
+      .strengths {
+        display: grid;
+        gap: 0.5rem;
+        margin: 1rem 0 1.5rem;
+      }
       .strength {
-        display: grid; grid-template-columns: auto 1fr; gap: 0.9rem; padding: 0.75rem 0;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.9rem;
+        padding: 0.75rem 0;
         border-bottom: 2px solid var(--border);
       }
       .strength .check {
-        font-family: var(--font-mono); font-weight: 900; color: var(--solution);
-        font-size: 1.3rem; line-height: 1.3;
+        font-family: var(--font-mono);
+        font-weight: 900;
+        color: var(--solution);
+        font-size: 1.3rem;
+        line-height: 1.3;
       }
-      .strength .text strong { display: block; margin-bottom: 0.15rem; }
-      .strength .text span { color: var(--text-muted); font-size: 0.92rem; }
+      .strength .text strong {
+        display: block;
+        margin-bottom: 0.15rem;
+      }
+      .strength .text span {
+        color: var(--text-muted);
+        font-size: 0.92rem;
+      }
 
-      .table-wrap { overflow-x: auto; }
+      .table-wrap {
+        overflow-x: auto;
+      }
       table {
-        width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: 0.92rem;
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0 1.5rem;
+        font-size: 0.92rem;
         border: 2px solid var(--text);
       }
       th {
-        text-align: left; padding: 0.6rem 0.9rem; background: var(--text); color: var(--surface);
-        font-family: var(--font-mono); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em;
-        text-transform: uppercase; border-right: 1px solid var(--border-strong);
+        text-align: left;
+        padding: 0.6rem 0.9rem;
+        background: var(--text);
+        color: var(--surface);
+        font-family: var(--font-mono);
+        font-size: 0.66rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border-right: 1px solid var(--border-strong);
       }
-      th:last-child { border-right: none; }
-      td { padding: 0.6rem 0.9rem; border-top: 1px solid var(--border); border-right: 1px solid var(--border); }
-      td:last-child { border-right: none; }
-      tr:nth-child(even) td { background: var(--surface-sunken); }
-      table.compare td.yes { color: var(--solution); font-weight: 700; }
-      table.compare td.no { color: var(--problem); font-weight: 700; }
-      code { font-family: var(--font-mono); }
-      p code, li code, td code { font-size: 0.88em; background: var(--surface-sunken); padding: 0.1rem 0.35rem; }
+      th:last-child {
+        border-right: none;
+      }
+      td {
+        padding: 0.6rem 0.9rem;
+        border-top: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+      }
+      td:last-child {
+        border-right: none;
+      }
+      tr:nth-child(even) td {
+        background: var(--surface-sunken);
+      }
+      table.compare td.yes {
+        color: var(--solution);
+        font-weight: 700;
+      }
+      table.compare td.no {
+        color: var(--problem);
+        font-weight: 700;
+      }
+      code {
+        font-family: var(--font-mono);
+      }
+      p code,
+      li code,
+      td code {
+        font-size: 0.88em;
+        background: var(--surface-sunken);
+        padding: 0.1rem 0.35rem;
+      }
 
       pre {
-        background: var(--text); color: var(--surface); padding: 1rem 1.2rem; margin: 1rem 0;
-        font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.65; overflow-x: auto;
+        background: var(--text);
+        color: var(--surface);
+        padding: 1rem 1.2rem;
+        margin: 1rem 0;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        line-height: 1.65;
+        overflow-x: auto;
         border: 2px solid var(--text);
       }
-      .tok-keyword { color: var(--warning); }
-      .tok-type { color: var(--warning); }
-      .tok-string { color: #95e1d3; }
-      .tok-comment { color: rgba(244, 244, 240, 0.45); font-style: italic; }
-      .tok-func { color: #6eb5ff; }
-      .tok-number { color: var(--warning); }
-      .tok-attr { color: var(--warning); }
-      .tok-punct { color: rgba(244, 244, 240, 0.7); }
+      .tok-keyword {
+        color: var(--warning);
+      }
+      .tok-type {
+        color: var(--warning);
+      }
+      .tok-string {
+        color: #95e1d3;
+      }
+      .tok-comment {
+        color: rgba(244, 244, 240, 0.45);
+        font-style: italic;
+      }
+      .tok-func {
+        color: #6eb5ff;
+      }
+      .tok-number {
+        color: var(--warning);
+      }
+      .tok-attr {
+        color: var(--warning);
+      }
+      .tok-punct {
+        color: rgba(244, 244, 240, 0.7);
+      }
 
       .migration-step {
-        display: grid; grid-template-columns: 56px 1fr; gap: 1rem; margin: 1rem 0; padding: 1.1rem;
-        background: var(--surface-raised); border: 2px solid var(--text); border-left: 6px solid var(--accent);
+        display: grid;
+        grid-template-columns: 56px 1fr;
+        gap: 1rem;
+        margin: 1rem 0;
+        padding: 1.1rem;
+        background: var(--surface-raised);
+        border: 2px solid var(--text);
+        border-left: 6px solid var(--accent);
       }
       .migration-num {
-        font-family: var(--font-mono); font-weight: 900; font-size: 1.8rem; color: var(--accent); line-height: 1;
+        font-family: var(--font-mono);
+        font-weight: 900;
+        font-size: 1.8rem;
+        color: var(--accent);
+        line-height: 1;
       }
-      .migration-content h4 { margin-bottom: 0.2rem; }
-      .migration-content p { margin-bottom: 0; color: var(--text-muted); font-size: 0.94rem; }
+      .migration-content h4 {
+        margin-bottom: 0.2rem;
+      }
+      .migration-content p {
+        margin-bottom: 0;
+        color: var(--text-muted);
+        font-size: 0.94rem;
+      }
 
       .footer {
-        margin-top: 2rem; padding-top: 1rem; border-top: 3px solid var(--text);
-        font-size: 0.82rem; color: var(--text-muted); font-family: var(--font-mono);
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 3px solid var(--text);
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
       }
 
-      @media (min-width: 1024px) { .sidebar { display: block; } }
+      @media (min-width: 1024px) {
+        .sidebar {
+          display: block;
+        }
+      }
       @media (max-width: 768px) {
-        .layout { flex-direction: column; padding: 1rem; }
-        .top-bar { padding: 0.6rem 1rem; flex-wrap: wrap; gap: 0.3rem; }
-        .scorecard, .stat-grid { grid-template-columns: repeat(2, 1fr); }
-        .score-card:nth-child(2) { border-right: none; }
-        .score-card:nth-child(1), .score-card:nth-child(2) { border-bottom: 3px solid var(--text); }
-        .migration-step { grid-template-columns: 1fr; }
+        .layout {
+          flex-direction: column;
+          padding: 1rem;
+        }
+        .top-bar {
+          padding: 0.6rem 1rem;
+          flex-wrap: wrap;
+          gap: 0.3rem;
+        }
+        .scorecard,
+        .stat-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .score-card:nth-child(2) {
+          border-right: none;
+        }
+        .score-card:nth-child(1),
+        .score-card:nth-child(2) {
+          border-bottom: 3px solid var(--text);
+        }
+        .migration-step {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
@@ -300,9 +606,10 @@
           <div class="eyebrow">NIX FLAKE MIGRATION &middot; 2026-07-23</div>
           <h1>go-sse &rarr; Nix flake build automation</h1>
           <p class="subtitle">
-            go-sse had no flake.nix, no formatter, and no hermetic checks. This proposal documents the
-            migration to the standard LarsArtmann Go library flake stack: flake-parts + treefmt-nix +
-            systems, with a hermetic buildGoModule check that vendors the public dependencies.
+            go-sse had no flake.nix, no formatter, and no hermetic checks. This proposal documents
+            the migration to the standard LarsArtmann Go library flake stack: flake-parts +
+            treefmt-nix + systems, with a hermetic buildGoModule check that vendors the public
+            dependencies.
           </p>
           <div class="meta">
             <span class="tag amber">Type: library (no main)</span>
@@ -344,12 +651,13 @@
             The one material difference from the leaf libraries: go-sse has dependencies, so its
             hermetic check cannot use a bare <code>runCommand</code> + <code>go build</code> (that
             needs network). Instead <code>checks.build</code> uses <code>buildGoModule</code> with a
-            <code>vendorHash</code>, making <code>nix flake check</code> fully reproducible and offline.
+            <code>vendorHash</code>, making <code>nix flake check</code> fully reproducible and
+            offline.
           </div>
           <p>
-            <code>nix flake check</code> passes (format + build). The devShell enters cleanly with the
-            correct environment. The public dependencies resolve through the Go module proxy, so no
-            <code>mkPreparedSource</code> / <code>GOPRIVATE</code> machinery is required.
+            <code>nix flake check</code> passes (format + build). The devShell enters cleanly with
+            the correct environment. The public dependencies resolve through the Go module proxy, so
+            no <code>mkPreparedSource</code> / <code>GOPRIVATE</code> machinery is required.
           </p>
         </section>
 
@@ -358,20 +666,23 @@
           <p>
             The <code>nix-flake-migration</code> skill recommends the shared
             <code>flakeModules.go-standard</code> module for LarsArtmann Go projects. That module is
-            built around a binary: it sets <code>apps.default = lib.getExe config.packages.default</code>,
-            <code>meta.mainProgram</code>, and version-injection ldflags. go-sse is a pure library with
-            no <code>main</code> package, so go-standard would emit an app that points at a
+            built around a binary: it sets
+            <code>apps.default = lib.getExe config.packages.default</code>,
+            <code>meta.mainProgram</code>, and version-injection ldflags. go-sse is a pure library
+            with no <code>main</code> package, so go-standard would emit an app that points at a
             non-existent executable.
           </p>
 
           <div class="issue issue-important">
             <span class="severity severity-important">Justified exception</span>
             <h3>go-standard assumes a binary; this is a library</h3>
-            <div class="where">flakeModules.go-standard &middot; apps.default / meta.mainProgram</div>
+            <div class="where">
+              flakeModules.go-standard &middot; apps.default / meta.mainProgram
+            </div>
             <p>
-              Adopted the manual 4-input flake-parts pattern instead. It is the established convention
-              for every pure-library repo in this ecosystem, and it gives full control over the
-              library-appropriate shape: no <code>packages.default</code>, no overlay, no
+              Adopted the manual 4-input flake-parts pattern instead. It is the established
+              convention for every pure-library repo in this ecosystem, and it gives full control
+              over the library-appropriate shape: no <code>packages.default</code>, no overlay, no
               <code>mainProgram</code>. The tradeoff is ~130 more lines than a 20-line go-standard
               flake, but those lines are exactly the library-specific structure go-standard cannot
               express.
@@ -384,28 +695,40 @@
               <div class="check">+</div>
               <div class="text">
                 <strong>Hermetic compile + test check</strong>
-                <span>buildGoModule vendors go-branded-id and go-error-family via vendorHash; nix flake check is offline-reproducible.</span>
+                <span
+                  >buildGoModule vendors go-branded-id and go-error-family via vendorHash; nix flake
+                  check is offline-reproducible.</span
+                >
               </div>
             </div>
             <div class="strength">
               <div class="check">+</div>
               <div class="text">
                 <strong>treefmt with gofumpt, goimports, golines, nixfmt</strong>
-                <span>Single formatter (<code>nix fmt</code>) and a format check, matching the sibling libraries.</span>
+                <span
+                  >Single formatter (<code>nix fmt</code>) and a format check, matching the sibling
+                  libraries.</span
+                >
               </div>
             </div>
             <div class="strength">
               <div class="check">+</div>
               <div class="text">
                 <strong>Pinned, environment-correct devShell</strong>
-                <span>Go 1.26, GOEXPERIMENT=jsonv2, GOWORK=off, GOTOOLCHAIN=local baked in as attributes, not shell exports.</span>
+                <span
+                  >Go 1.26, GOEXPERIMENT=jsonv2, GOWORK=off, GOTOOLCHAIN=local baked in as
+                  attributes, not shell exports.</span
+                >
               </div>
             </div>
             <div class="strength">
               <div class="check">+</div>
               <div class="text">
                 <strong>Dev apps with GOEXPERIMENT</strong>
-                <span>test, test-race, build, vet, lint, coverage, clean; each exports GOEXPERIMENT=jsonv2 (required transitively via go-branded-id).</span>
+                <span
+                  >test, test-race, build, vet, lint, coverage, clean; each exports
+                  GOEXPERIMENT=jsonv2 (required transitively via go-branded-id).</span
+                >
               </div>
             </div>
           </div>
@@ -413,7 +736,9 @@
 
         <section id="commands">
           <h2><span class="num">02</span>Before / after commands</h2>
-          <p>Raw <code>go</code> tooling (from CONTRIBUTING.md) maps directly onto flake outputs.</p>
+          <p>
+            Raw <code>go</code> tooling (from CONTRIBUTING.md) maps directly onto flake outputs.
+          </p>
           <div class="table-wrap">
             <table class="compare">
               <thead>
@@ -466,8 +791,9 @@
             <strong>Note on the global module cache</strong>
             <code>nix run .#vet</code> / <code>.#build</code> run against the live working tree and
             inherit the host Go environment. They currently surface a pre-existing, repo-wide
-            <code>go-cqrs-lite/command/v4@v4.0.2</code> checksum-mismatch corruption (it affects plain
-            <code>go vet</code> too, with no nix involvement). The hermetic <code>nix flake check</code>
+            <code>go-cqrs-lite/command/v4@v4.0.2</code> checksum-mismatch corruption (it affects
+            plain <code>go vet</code> too, with no nix involvement). The hermetic
+            <code>nix flake check</code>
             is unaffected because buildGoModule vendors only go-sse's declared deps. Fixing the host
             cache is out of scope for this migration.
           </div>
@@ -476,7 +802,7 @@
         <section id="flake">
           <h2><span class="num">03</span>The flake.nix</h2>
           <p>The complete, working flake (176 lines). Key structure annotated inline.</p>
-<pre><code><span class="tok-punct">{</span>
+          <pre><code><span class="tok-punct">{</span>
   <span class="tok-attr">description</span> <span class="tok-punct">=</span> <span class="tok-string">"Server-Sent Events transport for Go (wire format, fan-out, replay)"</span><span class="tok-punct">;</span>
 
   <span class="tok-attr">inputs</span> <span class="tok-punct">=</span> <span class="tok-punct">{</span>
@@ -526,21 +852,52 @@
             The <code>nix-private-go-repos</code> skill was invoked to evaluate whether
             <code>mkPreparedSource</code> + <code>GOPRIVATE</code> handling is required. It is not.
           </p>
-          <div class="dep-tree" style="background: var(--surface-sunken); border: 2px solid var(--text); padding: 1rem 1.2rem; margin: 1rem 0; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.7; white-space: pre; overflow-x: auto;">
-<span style="color: var(--accent); font-weight: 700;">go-sse</span>
-<span style="color: rgba(17,17,17,0.5);">├──</span> github.com/larsartmann/go-branded-id   <span style="color: var(--solution); font-weight: 700;">PUBLIC</span> (proxy hash in go.sum)
-<span style="color: rgba(17,17,17,0.5);">└──</span> github.com/larsartmann/go-error-family <span style="color: var(--solution); font-weight: 700;">PUBLIC</span> (proxy hash in go.sum)
+          <div
+            class="dep-tree"
+            style="
+              background: var(--surface-sunken);
+              border: 2px solid var(--text);
+              padding: 1rem 1.2rem;
+              margin: 1rem 0;
+              font-family: var(--font-mono);
+              font-size: 0.82rem;
+              line-height: 1.7;
+              white-space: pre;
+              overflow-x: auto;
+            "
+          >
+            <span style="color: var(--accent); font-weight: 700">go-sse</span>
+            <span style="color: rgba(17, 17, 17, 0.5)">├──</span>
+            github.com/larsartmann/go-branded-id
+            <span style="color: var(--solution); font-weight: 700">PUBLIC</span> (proxy hash in
+            go.sum)
+            <span style="color: rgba(17, 17, 17, 0.5)">└──</span>
+            github.com/larsartmann/go-error-family
+            <span style="color: var(--solution); font-weight: 700">PUBLIC</span> (proxy hash in
+            go.sum)
           </div>
           <ul>
-            <li>Both deps resolve from the public Go module proxy (<code>go mod download</code> with <code>GOPRIVATE=none</code> succeeds).</li>
-            <li>Neither is in the host's global <code>GOPRIVATE</code> list (which covers <code>go-cqrs-lite</code>, <code>go-finding</code>, <code>go-structure-linter</code>, <code>go-commit</code>).</li>
-            <li>Therefore: no <code>deps</code> map, no <code>git+ssh</code> flake inputs, no <code>GOPRIVATE</code> in devShells. <code>vendorHash</code> alone makes the build hermetic.</li>
+            <li>
+              Both deps resolve from the public Go module proxy (<code>go mod download</code> with
+              <code>GOPRIVATE=none</code> succeeds).
+            </li>
+            <li>
+              Neither is in the host's global <code>GOPRIVATE</code> list (which covers
+              <code>go-cqrs-lite</code>, <code>go-finding</code>, <code>go-structure-linter</code>,
+              <code>go-commit</code>).
+            </li>
+            <li>
+              Therefore: no <code>deps</code> map, no <code>git+ssh</code> flake inputs, no
+              <code>GOPRIVATE</code> in devShells. <code>vendorHash</code> alone makes the build
+              hermetic.
+            </li>
           </ul>
           <div class="callout callout-teal">
             <strong>If a dep ever goes private</strong>
-            Add it as a <code>git+ssh</code> <code>flake = false</code> input and move the flake to the
-            <code>go-standard</code> module (or manual <code>mkPreparedSource</code>) with a non-empty
-            <code>deps</code> map. The skill's gotcha table covers the mixed-casing GOPRIVATE fix.
+            Add it as a <code>git+ssh</code> <code>flake = false</code> input and move the flake to
+            the <code>go-standard</code> module (or manual <code>mkPreparedSource</code>) with a
+            non-empty <code>deps</code> map. The skill's gotcha table covers the mixed-casing
+            GOPRIVATE fix.
           </div>
         </section>
 
@@ -549,13 +906,28 @@
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>Command</th><th>Result</th></tr>
+                <tr>
+                  <th>Command</th>
+                  <th>Result</th>
+                </tr>
               </thead>
               <tbody>
-                <tr><td><code>nix flake check</code></td><td class="yes">all checks passed (format + build, hermetic)</td></tr>
-                <tr><td><code>nix build .#checks.x86_64-linux.build</code></td><td class="yes">builds; runs go test ./... offline</td></tr>
-                <tr><td><code>nix develop</code></td><td class="yes">go 1.26.4, GOEXPERIMENT=jsonv2, GOWORK=off</td></tr>
-                <tr><td><code>nix fmt</code></td><td class="yes">only flake.nix reformatted; no .go changes</td></tr>
+                <tr>
+                  <td><code>nix flake check</code></td>
+                  <td class="yes">all checks passed (format + build, hermetic)</td>
+                </tr>
+                <tr>
+                  <td><code>nix build .#checks.x86_64-linux.build</code></td>
+                  <td class="yes">builds; runs go test ./... offline</td>
+                </tr>
+                <tr>
+                  <td><code>nix develop</code></td>
+                  <td class="yes">go 1.26.4, GOEXPERIMENT=jsonv2, GOWORK=off</td>
+                </tr>
+                <tr>
+                  <td><code>nix fmt</code></td>
+                  <td class="yes">only flake.nix reformatted; no .go changes</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -570,28 +942,83 @@
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>Item</th><th>Status</th><th>Notes</th></tr>
+                <tr>
+                  <th>Item</th>
+                  <th>Status</th>
+                  <th>Notes</th>
+                </tr>
               </thead>
               <tbody>
-                <tr><td>nix flake check passes</td><td><span class="badge badge-fixed">Done</span></td><td>format + build, hermetic</td></tr>
-                <tr><td>nix build produces expected output</td><td><span class="badge badge-fixed">Done</span></td><td>checks.build = buildGoModule</td></tr>
-                <tr><td>nix develop enters devShell</td><td><span class="badge badge-fixed">Done</span></td><td>correct env vars</td></tr>
-                <tr><td>nix fmt formats all files</td><td><span class="badge badge-fixed">Done</span></td><td>gofumpt/golines/goimports/nixfmt</td></tr>
-                <tr><td>go_1_26 pinned</td><td><span class="badge badge-fixed">Done</span></td><td>goPkg = pkgs.go_1_26</td></tr>
-                <tr><td>checks.format + checks.build defined</td><td><span class="badge badge-fixed">Done</span></td><td></td></tr>
-                <tr><td>just removed from devShell</td><td><span class="badge badge-fixed">Done</span></td><td>never present</td></tr>
-                <tr><td>meta.maintainers populated</td><td><span class="badge badge-fixed">Done</span></td><td></td></tr>
-                <tr><td>overlays.default exported</td><td><span class="badge badge-na">N/A</span></td><td>pure library, no package to expose</td></tr>
-                <tr><td>mainProgram set</td><td><span class="badge badge-na">N/A</span></td><td>no binary; library</td></tr>
-                <tr><td>packages.default defined</td><td><span class="badge badge-na">N/A</span></td><td>library; checks.build is the artifact</td></tr>
-                <tr><td>go-standard module (3 inputs)</td><td><span class="badge badge-na">N/A</span></td><td>go-standard assumes a binary</td></tr>
+                <tr>
+                  <td>nix flake check passes</td>
+                  <td><span class="badge badge-fixed">Done</span></td>
+                  <td>format + build, hermetic</td>
+                </tr>
+                <tr>
+                  <td>nix build produces expected output</td>
+                  <td><span class="badge badge-fixed">Done</span></td>
+                  <td>checks.build = buildGoModule</td>
+                </tr>
+                <tr>
+                  <td>nix develop enters devShell</td>
+                  <td><span class="badge badge-fixed">Done</span></td>
+                  <td>correct env vars</td>
+                </tr>
+                <tr>
+                  <td>nix fmt formats all files</td>
+                  <td><span class="badge badge-fixed">Done</span></td>
+                  <td>gofumpt/golines/goimports/nixfmt</td>
+                </tr>
+                <tr>
+                  <td>go_1_26 pinned</td>
+                  <td><span class="badge badge-fixed">Done</span></td>
+                  <td>goPkg = pkgs.go_1_26</td>
+                </tr>
+                <tr>
+                  <td>checks.format + checks.build defined</td>
+                  <td><span class="badge badge-fixed">Done</span></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>just removed from devShell</td>
+                  <td><span class="badge badge-fixed">Done</span></td>
+                  <td>never present</td>
+                </tr>
+                <tr>
+                  <td>meta.maintainers populated</td>
+                  <td><span class="badge badge-fixed">Done</span></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>overlays.default exported</td>
+                  <td><span class="badge badge-na">N/A</span></td>
+                  <td>pure library, no package to expose</td>
+                </tr>
+                <tr>
+                  <td>mainProgram set</td>
+                  <td><span class="badge badge-na">N/A</span></td>
+                  <td>no binary; library</td>
+                </tr>
+                <tr>
+                  <td>packages.default defined</td>
+                  <td><span class="badge badge-na">N/A</span></td>
+                  <td>library; checks.build is the artifact</td>
+                </tr>
+                <tr>
+                  <td>go-standard module (3 inputs)</td>
+                  <td><span class="badge badge-na">N/A</span></td>
+                  <td>go-standard assumes a binary</td>
+                </tr>
               </tbody>
             </table>
           </div>
         </section>
 
         <footer class="footer">
-          <p>Generated 2026-07-23 &middot; go-sse nix flake migration &middot; All build claims verified via nix flake check on Nix 2.34.8</p>
+          <p>
+            Generated 2026-07-23 &middot; go-sse nix flake migration &middot; All build claims
+            verified via nix flake check on Nix 2.34.8
+          </p>
         </footer>
       </main>
     </div>
@@ -605,21 +1032,30 @@
         var ids = Array.from(links).map(function (l) {
           return l.getAttribute("href").slice(1);
         });
-        var sections = ids.map(function (id) { return document.getElementById(id); }).filter(Boolean);
+        var sections = ids
+          .map(function (id) {
+            return document.getElementById(id);
+          })
+          .filter(Boolean);
         if (!sections.length) return;
         var observer = new IntersectionObserver(
           function (entries) {
             entries.forEach(function (entry) {
               if (entry.isIntersecting) {
                 links.forEach(function (link) {
-                  link.classList.toggle("active", link.getAttribute("href") === "#" + entry.target.id);
+                  link.classList.toggle(
+                    "active",
+                    link.getAttribute("href") === "#" + entry.target.id,
+                  );
                 });
               }
             });
           },
-          { rootMargin: "-80px 0px -60% 0px", threshold: 0 }
+          { rootMargin: "-80px 0px -60% 0px", threshold: 0 },
         );
-        sections.forEach(function (s) { observer.observe(s); });
+        sections.forEach(function (s) {
+          observer.observe(s);
+        });
       })();
     </script>
   </body>

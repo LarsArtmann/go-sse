@@ -6,8 +6,8 @@
 
 <!-- Bullet list of specific changes -->
 
-- 
-- 
+-
+-
 
 ## Verification
 

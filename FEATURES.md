@@ -15,17 +15,17 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 
 ## Wire format & serialization
 
-| Feature                                                                                 | Status           | Evidence                                                                                     |
-| --------------------------------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------- |
-| SSE event serialization (`event`/`data`/`id`/`retry`)                                   | FULLY_FUNCTIONAL | `WriteEvent` in `event.go`; `event_test.go`                                                  |
-| Content-type + event-name constants (`ContentType`, `EventConnected`, `EventHeartbeat`) | FULLY_FUNCTIONAL | `constants.go`; used by `example/server.go`                                                  |
-| Multi-line `data:` splitting (LF, CRLF, and lone CR per spec)                           | FULLY_FUNCTIONAL | `splitLines` in `event.go`; `TestWriteEvent_CRLFInData`, `TestWriteEvent_LoneCarriageReturn` |
-| Allocation-minimized writer (byte appends, no `fmt` on hot path)                        | FULLY_FUNCTIONAL | `WriteEvent` in `event.go`                                                                   |
-| Heartbeat comment frames                                                                | FULLY_FUNCTIONAL | `WriteHeartbeat` in `event.go`; `TestWriteHeartbeat`                                         |
-| Retry directive (`uint`, rejects negative at compile time)                              | FULLY_FUNCTIONAL | `WriteRetry` in `event.go`; `TestWriteRetry`, `TestWriteEvent_Retry`                         |
-| `Event.String()` debug representation (omits empty fields)                              | FULLY_FUNCTIONAL | `Event.String` in `event.go`; `TestEvent_String`                                             |
-| `KeyedLines` (keyed data-line helper for DataStar and similar protocols)               | FULLY_FUNCTIONAL | `KeyedLines` in `event.go`; `TestKeyedLines_*`, `ExampleKeyedLines`, `FuzzKeyedLines`, `BenchmarkKeyedLines` |
-| `WriteKeyedLines` (wire-only single-key helper, no `net/http`)                         | FULLY_FUNCTIONAL | `WriteKeyedLines` in `event.go`; `TestWriteKeyedLines_*`                                     |
+| Feature                                                                                 | Status           | Evidence                                                                                                     |
+| --------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| SSE event serialization (`event`/`data`/`id`/`retry`)                                   | FULLY_FUNCTIONAL | `WriteEvent` in `event.go`; `event_test.go`                                                                  |
+| Content-type + event-name constants (`ContentType`, `EventConnected`, `EventHeartbeat`) | FULLY_FUNCTIONAL | `constants.go`; used by `example/server.go`                                                                  |
+| Multi-line `data:` splitting (LF, CRLF, and lone CR per spec)                           | FULLY_FUNCTIONAL | `splitLines` in `event.go`; `TestWriteEvent_CRLFInData`, `TestWriteEvent_LoneCarriageReturn`                 |
+| Allocation-minimized writer (byte appends, no `fmt` on hot path)                        | FULLY_FUNCTIONAL | `WriteEvent` in `event.go`                                                                                   |
+| Heartbeat comment frames                                                                | FULLY_FUNCTIONAL | `WriteHeartbeat` in `event.go`; `TestWriteHeartbeat`                                                         |
+| Retry directive (`uint`, rejects negative at compile time)                              | FULLY_FUNCTIONAL | `WriteRetry` in `event.go`; `TestWriteRetry`, `TestWriteEvent_Retry`                                         |
+| `Event.String()` debug representation (omits empty fields)                              | FULLY_FUNCTIONAL | `Event.String` in `event.go`; `TestEvent_String`                                                             |
+| `KeyedLines` (keyed data-line helper for DataStar and similar protocols)                | FULLY_FUNCTIONAL | `KeyedLines` in `event.go`; `TestKeyedLines_*`, `ExampleKeyedLines`, `FuzzKeyedLines`, `BenchmarkKeyedLines` |
+| `WriteKeyedLines` (wire-only single-key helper, no `net/http`)                          | FULLY_FUNCTIONAL | `WriteKeyedLines` in `event.go`; `TestWriteKeyedLines_*`                                                     |
 
 ## Connection management (`Stream`)
 
@@ -40,8 +40,8 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 | `OnDisconnect` callbacks (ordered)                                         | FULLY_FUNCTIONAL | `Stream.OnDisconnect` in `stream.go`; `TestStream_OnDisconnectMultipleInOrder`                                              |
 | `SendData` convenience                                                     | FULLY_FUNCTIONAL | `Stream.SendData` in `stream.go`; `TestStream_SendData`                                                                     |
 | `SendJSON` convenience (marshal + send)                                    | FULLY_FUNCTIONAL | `Stream.SendJSON` in `stream.go`; `TestStream_SendJSON`, `TestStream_SendJSON_MarshalError`, `TestStream_SendJSON_NilValue` |
-| `SendLines` convenience (multi-line data lines, DataStar-compatible)       | FULLY_FUNCTIONAL | `Stream.SendLines` in `stream.go`; `TestStream_SendLines`                                                                    |
-| `SendKeyed` convenience (single-key DataStar pattern)                       | FULLY_FUNCTIONAL | `Stream.SendKeyed` in `stream.go`; `TestStream_SendKeyed`, `TestStream_SendKeyed_MultiLine`                                  |
+| `SendLines` convenience (multi-line data lines, DataStar-compatible)       | FULLY_FUNCTIONAL | `Stream.SendLines` in `stream.go`; `TestStream_SendLines`                                                                   |
+| `SendKeyed` convenience (single-key DataStar pattern)                      | FULLY_FUNCTIONAL | `Stream.SendKeyed` in `stream.go`; `TestStream_SendKeyed`, `TestStream_SendKeyed_MultiLine`                                 |
 | `Send` error on write failure (disconnected client)                        | FULLY_FUNCTIONAL | `Stream.Send` in `stream.go`; `TestStream_SendReturnsErrorOnWriteFailure`                                                   |
 | Concurrent `Send`+`Close` race safety                                      | FULLY_FUNCTIONAL | `TestStream_SendCloseRace`, `TestStream_SendHeartbeatCloseRace` (three-way race-tested)                                     |
 | Request-context cancellation                                               | FULLY_FUNCTIONAL | `Stream.Context` in `stream.go`; `TestStream_ContextCancellation`                                                           |

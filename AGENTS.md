@@ -42,12 +42,12 @@ Only two, both `github.com/larsartmann/*`:
 
 Four layers, each in its own file, composable independently:
 
-| Layer             | File                           | Role                                                                |
-| ----------------- | ------------------------------ | ------------------------------------------------------------------- |
+| Layer             | File                           | Role                                                                                              |
+| ----------------- | ------------------------------ | ------------------------------------------------------------------------------------------------- |
 | Wire format       | `event.go`                     | `Event`, `EventID`, `WriteEvent`, `WriteHeartbeat`, `WriteRetry`, `KeyedLines`, `WriteKeyedLines` |
-| Single connection | `stream.go`                    | `Stream` — headers, mutex-guarded send, heartbeat, disconnect hooks, `SendLines`, `SendKeyed` |
-| Fan-out           | `broadcaster.go` + `fanout.go` | `Broadcaster[T]` (public) embeds `fanOut[T]` (unexported hub)       |
-| Reconnection      | `replay.go`                    | `EventStore` interface + `Replay` function                          |
+| Single connection | `stream.go`                    | `Stream` — headers, mutex-guarded send, heartbeat, disconnect hooks, `SendLines`, `SendKeyed`     |
+| Fan-out           | `broadcaster.go` + `fanout.go` | `Broadcaster[T]` (public) embeds `fanOut[T]` (unexported hub)                                     |
+| Reconnection      | `replay.go`                    | `EventStore` interface + `Replay` function                                                        |
 
 **Data flow:** `Broadcaster.Broadcast(evt)` → non-blocking `select` send into each subscriber's buffered channel → handler's `select` loop reads channel → `stream.Send(evt)` → `WriteEvent` → `ResponseWriter.Write` + `Flush`.
 

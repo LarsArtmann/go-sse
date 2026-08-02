@@ -10,21 +10,21 @@
 
 ### a) FULLY DONE
 
-| Item | Evidence |
-|------|----------|
-| `KeyedLines(key, value string) string` — wire-format helper | `event.go`; `TestKeyedLines_SingleLine`, `_MultiLine`, `_EmptyValue`, `_CRLFInValue`, `_ProducesCorrectWireFormat` |
-| `Stream.SendLines(eventName string, lines ...string) error` — multi-line convenience method | `stream.go`; `TestStream_SendLines` |
-| Godoc example (`ExampleKeyedLines`) — compile-tested | `example_test.go` |
-| `doc.go` "Keyed Data Lines (DataStar)" section | `doc.go` |
-| README "Framework Integration: DataStar" section with compatibility table | `README.md` |
-| `FEATURES.md` — two new FULLY_FUNCTIONAL rows | `FEATURES.md` |
-| `AGENTS.md` — architecture table + conventions updated | `AGENTS.md` |
-| All tests pass with race detector | `go test ./... -race -count=1` → ok |
-| `go vet` clean | `go vet ./...` → no output |
-| `golangci-lint` clean (48 enabled linters) | `golangci-lint run ./...` → 0 issues |
-| `golangci-lint fmt` applied | auto-formatted |
-| New code 100% covered (overall 99.5%, uncovered = pre-existing `eventBrand.Name()` + `example/`) | `go tool cover` |
-| Auto-committed by git daemon | commits `2c93590`, `e4e3b77`, `562a480` |
+| Item                                                                                             | Evidence                                                                                                           |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `KeyedLines(key, value string) string` — wire-format helper                                      | `event.go`; `TestKeyedLines_SingleLine`, `_MultiLine`, `_EmptyValue`, `_CRLFInValue`, `_ProducesCorrectWireFormat` |
+| `Stream.SendLines(eventName string, lines ...string) error` — multi-line convenience method      | `stream.go`; `TestStream_SendLines`                                                                                |
+| Godoc example (`ExampleKeyedLines`) — compile-tested                                             | `example_test.go`                                                                                                  |
+| `doc.go` "Keyed Data Lines (DataStar)" section                                                   | `doc.go`                                                                                                           |
+| README "Framework Integration: DataStar" section with compatibility table                        | `README.md`                                                                                                        |
+| `FEATURES.md` — two new FULLY_FUNCTIONAL rows                                                    | `FEATURES.md`                                                                                                      |
+| `AGENTS.md` — architecture table + conventions updated                                           | `AGENTS.md`                                                                                                        |
+| All tests pass with race detector                                                                | `go test ./... -race -count=1` → ok                                                                                |
+| `go vet` clean                                                                                   | `go vet ./...` → no output                                                                                         |
+| `golangci-lint` clean (48 enabled linters)                                                       | `golangci-lint run ./...` → 0 issues                                                                               |
+| `golangci-lint fmt` applied                                                                      | auto-formatted                                                                                                     |
+| New code 100% covered (overall 99.5%, uncovered = pre-existing `eventBrand.Name()` + `example/`) | `go tool cover`                                                                                                    |
+| Auto-committed by git daemon                                                                     | commits `2c93590`, `e4e3b77`, `562a480`                                                                            |
 
 ### Design Decisions Made
 
@@ -36,25 +36,25 @@
 
 ### b) PARTIALLY DONE
 
-| Item | What's missing |
-|------|----------------|
-| Documentation | README, doc.go, FEATURES.md, AGENTS.md all updated — **but CHANGELOG.md `[Unreleased]` is empty**, TODO_LIST.md and ROADMAP.md not touched |
-| Test coverage of new code | Unit tests + godoc example exist — **but no integration test (HTTP round-trip), no fuzz test, no benchmark** |
+| Item                      | What's missing                                                                                                                             |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Documentation             | README, doc.go, FEATURES.md, AGENTS.md all updated — **but CHANGELOG.md `[Unreleased]` is empty**, TODO_LIST.md and ROADMAP.md not touched |
+| Test coverage of new code | Unit tests + godoc example exist — **but no integration test (HTTP round-trip), no fuzz test, no benchmark**                               |
 
 ---
 
 ### c) NOT STARTED
 
-| Item | Why it matters |
-|------|----------------|
-| **CHANGELOG.md `[Unreleased]`** | Project convention — every change gets a changelog entry. The `[Unreleased]` section is currently empty. |
-| **Runnable DataStar example server** (`example/datastar.go`) | The project ships `example/server.go` for generic SSE. A DataStar example would let users `go run` a real DataStar-compatible server and point a browser at it. High value for adoption. |
-| **Integration test for DataStar wire format** | `integration_test.go` has HTTP round-trip tests for broadcaster + replay. No test sends a `KeyedLines`-composed event through `httptest.NewServer` and asserts the raw bytes match what DataStar's JS client expects. |
-| **Fuzz test for `KeyedLines`** | `fuzz_test.go` has `FuzzWriteEvent` and `FuzzParseEventID`. `KeyedLines` is new string manipulation on the hot path — it should be fuzzed for panic-safety with arbitrary key/value inputs. |
-| **Benchmark for `KeyedLines`** | `broadcaster_test.go` has benchmarks. `KeyedLines` is on the per-event hot path. No `BenchmarkKeyedLines` exists. |
-| **`WriteKeyedLines` standalone function** | `WriteEvent` is `io.Writer`-based (no `net/http`). Wire-only consumers (2 of 4 real consumers per ROADMAP) would need to compose `WriteEvent` + `KeyedLines` manually. A `WriteKeyedLines(w io.Writer, eventType, key, value string)` would complete the wire-only API surface. |
-| **TODO_LIST.md update** | No entry for the DataStar work. |
-| **ROADMAP.md update** | DataStar integration is now "realized" but not noted in the "Realized in" callouts. |
+| Item                                                         | Why it matters                                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CHANGELOG.md `[Unreleased]`**                              | Project convention — every change gets a changelog entry. The `[Unreleased]` section is currently empty.                                                                                                                                                                        |
+| **Runnable DataStar example server** (`example/datastar.go`) | The project ships `example/server.go` for generic SSE. A DataStar example would let users `go run` a real DataStar-compatible server and point a browser at it. High value for adoption.                                                                                        |
+| **Integration test for DataStar wire format**                | `integration_test.go` has HTTP round-trip tests for broadcaster + replay. No test sends a `KeyedLines`-composed event through `httptest.NewServer` and asserts the raw bytes match what DataStar's JS client expects.                                                           |
+| **Fuzz test for `KeyedLines`**                               | `fuzz_test.go` has `FuzzWriteEvent` and `FuzzParseEventID`. `KeyedLines` is new string manipulation on the hot path — it should be fuzzed for panic-safety with arbitrary key/value inputs.                                                                                     |
+| **Benchmark for `KeyedLines`**                               | `broadcaster_test.go` has benchmarks. `KeyedLines` is on the per-event hot path. No `BenchmarkKeyedLines` exists.                                                                                                                                                               |
+| **`WriteKeyedLines` standalone function**                    | `WriteEvent` is `io.Writer`-based (no `net/http`). Wire-only consumers (2 of 4 real consumers per ROADMAP) would need to compose `WriteEvent` + `KeyedLines` manually. A `WriteKeyedLines(w io.Writer, eventType, key, value string)` would complete the wire-only API surface. |
+| **TODO_LIST.md update**                                      | No entry for the DataStar work.                                                                                                                                                                                                                                                 |
+| **ROADMAP.md update**                                        | DataStar integration is now "realized" but not noted in the "Realized in" callouts.                                                                                                                                                                                             |
 
 ---
 
@@ -71,7 +71,8 @@ Nothing. No broken code, no failing tests, no data loss, no incorrect wire forma
 **Original:** `b.Grow(len(value) + (len(key)+2)*len(lines))`
 **Changed to:** `b.Grow(len(value) + (len(key)+1)*len(lines))`
 
-The `+2` was changed to `+1` to satisfy the `mnd` (magic number) linter, which flagged the literal `2`. The `+1` is functionally correct (key + space), but I didn't document *why* I changed it — I just did it to make the linter pass. A better fix would have been either:
+The `+2` was changed to `+1` to satisfy the `mnd` (magic number) linter, which flagged the literal `2`. The `+1` is functionally correct (key + space), but I didn't document _why_ I changed it — I just did it to make the linter pass. A better fix would have been either:
+
 - A named constant: `const spaceSep = 1; b.Grow(len(value) + (len(key)+spaceSep)*len(lines))`
 - A `//nolint:mnd` comment with justification
 
