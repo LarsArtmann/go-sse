@@ -5,6 +5,7 @@ import (
 	"encoding/json/v2"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -134,6 +135,26 @@ func (s *Stream) SendJSON(eventName string, v any) error {
 	}
 
 	return s.Send(Event{Event: eventName, Data: string(payload)})
+}
+
+// SendLines sends an SSE event with multiple data lines. Each argument becomes
+// a separate "data:" line in the wire format. This is the convenience
+// counterpart to [Stream.Send] for protocols with keyed data lines (e.g.,
+// [DataStar]), where each line carries a "key value" pair.
+//
+// Lines containing embedded newlines are split further by [WriteEvent], so
+// [KeyedLines] results (which contain \n between prefixed lines) compose
+// cleanly:
+//
+//	stream.SendLines("datastar-patch-elements",
+//	    "selector #feed",
+//	    "mode inner",
+//	    sse.KeyedLines("elements", html),
+//	)
+//
+// [DataStar]: https://data-star.dev
+func (s *Stream) SendLines(eventName string, lines ...string) error {
+	return s.Send(Event{Event: eventName, Data: strings.Join(lines, "\n")})
 }
 
 // Context returns the stream's context.Context. It is cancelled when the

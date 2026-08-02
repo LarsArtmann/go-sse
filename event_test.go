@@ -422,3 +422,70 @@ func TestEvent_String(t *testing.T) {
 		})
 	}
 }
+
+func TestKeyedLines_SingleLine(t *testing.T) {
+	t.Parallel()
+
+	got := sse.KeyedLines("selector", "#feed")
+	want := "selector #feed"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestKeyedLines_MultiLine(t *testing.T) {
+	t.Parallel()
+
+	got := sse.KeyedLines("elements", "<div>\n  <span>hi</span>\n</div>")
+	want := "elements <div>\nelements   <span>hi</span>\nelements </div>"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestKeyedLines_EmptyValue(t *testing.T) {
+	t.Parallel()
+
+	got := sse.KeyedLines("elements", "")
+	if got != "" {
+		t.Errorf("got %q, want empty string", got)
+	}
+}
+
+func TestKeyedLines_CRLFInValue(t *testing.T) {
+	t.Parallel()
+
+	got := sse.KeyedLines("elements", "<div>\r\n</div>")
+	want := "elements <div>\nelements </div>"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestKeyedLines_ProducesCorrectWireFormat(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	html := "<div id=\"feed\">\n  <span>1</span>\n</div>"
+
+	err := sse.WriteEvent(&buf, sse.Event{
+		Event: "datastar-patch-elements",
+		Data: "selector #feed\nmode inner\n" + sse.KeyedLines("elements", html),
+	})
+	if err != nil {
+		t.Fatalf("WriteEvent: %v", err)
+	}
+
+	want := "event: datastar-patch-elements\n" +
+		"data: selector #feed\n" +
+		"data: mode inner\n" +
+		"data: elements <div id=\"feed\">\n" +
+		"data: elements   <span>1</span>\n" +
+		"data: elements </div>\n" +
+		"\n"
+
+	if buf.String() != want {
+		t.Errorf("got:\n%s\nwant:\n%s", buf.String(), want)
+	}
+}

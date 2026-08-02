@@ -204,6 +204,56 @@ func WriteRetry(w io.Writer, ms uint) error {
 	return err //nolint:wrapcheck // raw write error is already actionable
 }
 
+// KeyedLines prefixes every line of value with "key ", producing the
+// newline-joined string that [WriteEvent] splits into individual "data:" lines.
+//
+// This is the building block for SSE protocols that use keyed data lines —
+// most notably [DataStar], whose wire format repeats a key prefix on each line
+// for multi-line values:
+//
+//	data: elements <div>
+//	data: elements   <span>Hello</span>
+//	data: elements </div>
+//
+// Producing that output:
+//
+//	html := "<div>\n  <span>Hello</span>\n</div>"
+//	sse.KeyedLines("elements", html)
+//	// → "elements <div>\nelements   <span>Hello</span>\nelements </div>"
+//
+// Assign the result to [Event.Data] alongside other keyed lines:
+//
+//	evt := sse.Event{
+//	    Event: "datastar-patch-elements",
+//	    Data:  "selector #feed\nmode inner\n" + sse.KeyedLines("elements", html),
+//	}
+//
+// Returns "" when value is empty (no data line emitted).
+//
+// [DataStar]: https://data-star.dev
+func KeyedLines(key, value string) string {
+	if value == "" {
+		return ""
+	}
+
+	lines := splitLines(value)
+
+	var b strings.Builder
+	b.Grow(len(value) + (len(key)+2)*len(lines))
+
+	for i, line := range lines {
+		if i > 0 {
+			b.WriteByte('\n')
+		}
+
+		b.WriteString(key)
+		b.WriteByte(' ')
+		b.WriteString(line)
+	}
+
+	return b.String()
+}
+
 // splitLines splits a string into lines for SSE data field formatting.
 // Each line in the SSE spec must be prefixed with "data: ".
 // Per the SSE spec, CR (\r), LF (\n), and CRLF (\r\n) are all valid line endings.
