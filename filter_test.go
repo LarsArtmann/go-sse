@@ -1,6 +1,7 @@
 package sse_test
 
 import (
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -136,19 +137,89 @@ func TestSubscribeFilter_BufferOnlyFillsWithMatching(t *testing.T) {
 	}
 }
 
-func TestSubscribeFilter_ConcurrentRace(t *testing.T) {
+func TestSubscribeFilter_BroadcastManyRespectsPredicates(t *testing.T) {
 	t.Parallel()
 
 	b := sse.NewBroadcaster[sse.Event]()
 
-	var stop atomic.Bool
+	onlyMsg := b.SubscribeFilter(func(evt sse.Event) bool {
+		return evt.Event == "message"
+	})
+	defer b.Unsubscribe(onlyMsg)
+
+	all := b.Subscribe()
+	defer b.Unsubscribe(all)
+
+	b.BroadcastMany(
+		sse.Event{Event: "message", Data: "msg1"},
+		sse.Event{Event: "reaction", Data: "react1"},
+		sse.Event{Event: "message", Data: "msg2"},
+		sse.Event{Event: "reaction", Data: "react2"},
+	)
+
+	// Unfiltered subscriber gets all 4 in order
+	for i, want := range []string{"msg1", "react1", "msg2", "react2"} {
+		evt := <-all
+		if evt.Data != want {
+			t.Errorf("unfiltered[%d]: expected %s, got %s", i, want, evt.Data)
+		}
+	}
+
+	// Filtered subscriber gets only the 2 "message" events in order
+	got := <-onlyMsg
+	if got.Data != "msg1" {
+		t.Fatalf("filtered first: expected msg1, got %s", got.Data)
+	}
+
+	got = <-onlyMsg
+	if got.Data != "msg2" {
+		t.Fatalf("filtered second: expected msg2, got %s", got.Data)
+	}
+
+	select {
+	case extra := <-onlyMsg:
+		t.Errorf("filtered should not receive more after BroadcastMany, got %v", extra)
+	default:
+	}
+}
+
+func TestSubscribeFilter_ConcurrentRace(t *testing.T) {
+	t.Parallel()
+
+	b := sse.NewBroadcaster[sse.Event]()
+	defer b.Close()
+
+	// Persistent filtered subscriber: only "match" events
+	filtered := b.SubscribeFilter(func(evt sse.Event) bool {
+		return evt.Event == "match"
+	})
+
+	// Collector goroutine: drain and verify every received event is "match"
+	var received atomic.Int64
+	var wrong atomic.Int64
+
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+
+		for evt := range filtered {
+			received.Add(1)
+			if evt.Event != "match" {
+				wrong.Add(1)
+			}
+		}
+	}()
+
+	const broadcastsPerGoroutine = 2000
+	const numBroadcasters = 4
 
 	var wg sync.WaitGroup
 
-	// Broadcasters: mix of matching and non-matching events
-	for range 4 {
+	// Concurrent broadcasters: mix of match and skip
+	for range numBroadcasters {
 		wg.Go(func() {
-			for i := 0; !stop.Load(); i++ {
+			for i := range broadcastsPerGoroutine {
 				if i%2 == 0 {
 					b.Broadcast(sse.Event{Event: "match", Data: "x"})
 				} else {
@@ -158,9 +229,9 @@ func TestSubscribeFilter_ConcurrentRace(t *testing.T) {
 		})
 	}
 
-	// Subscriber churn: subscribe/unsubscribe with filters
+	// Subscriber churn: subscribe/unsubscribe with filters concurrently
 	wg.Go(func() {
-		for !stop.Load() {
+		for range 500 {
 			ch := b.SubscribeFilter(func(evt sse.Event) bool {
 				return evt.Event == "match"
 			})
@@ -168,7 +239,64 @@ func TestSubscribeFilter_ConcurrentRace(t *testing.T) {
 		}
 	})
 
-	// Let it run briefly
-	stop.Store(true)
 	wg.Wait()
+
+	// Close the persistent subscriber and wait for the collector to finish
+	b.Unsubscribe(filtered)
+	<-done
+
+	// Correctness: every received event must be "match"
+	if wrong.Load() > 0 {
+		t.Errorf("filtered subscriber received %d non-matching events out of %d total",
+			wrong.Load(), received.Load())
+	}
+
+	// Sanity: with 4 broadcasters × 1000 "match" events each, we expect ~4000
+	if received.Load() == 0 {
+		t.Error("filtered subscriber should have received at least some events")
+	}
+}
+
+// BenchmarkSubscribeFilter_PredicateOverhead measures the cost of the predicate
+// function call in the broadcast hot path. Compares unfiltered (nil predicate,
+// branch-not-taken) against filtered (always-true predicate, function called)
+// at 1, 100, and 1000 subscribers to isolate per-subscriber overhead.
+func BenchmarkSubscribeFilter_PredicateOverhead(b *testing.B) {
+	evt := sse.Event{Event: "bench", Data: "payload"}
+
+	for _, subs := range []int{1, 100, 1000} {
+		b.Run(strconv.Itoa(subs)+"subs/unfiltered", func(b *testing.B) {
+			bc := sse.NewBroadcaster[sse.Event]()
+			defer bc.Close()
+
+			for range subs {
+				drain(b, bc.Subscribe())
+			}
+
+			b.ReportAllocs()
+			b.ResetTimer()
+
+			for b.Loop() {
+				bc.Broadcast(evt)
+			}
+		})
+
+		b.Run(strconv.Itoa(subs)+"subs/filtered", func(b *testing.B) {
+			bc := sse.NewBroadcaster[sse.Event]()
+			defer bc.Close()
+
+			pred := func(sse.Event) bool { return true }
+
+			for range subs {
+				drain(b, bc.SubscribeFilter(pred))
+			}
+
+			b.ReportAllocs()
+			b.ResetTimer()
+
+			for b.Loop() {
+				bc.Broadcast(evt)
+			}
+		})
+	}
 }

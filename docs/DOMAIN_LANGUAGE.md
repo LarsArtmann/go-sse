@@ -22,8 +22,12 @@ docs aligned.
 | fanOut        | The unexported, transport-agnostic subscriber hub. Owns the subscriber map, channel pointer identity, and non-blocking send.       | `fanOut[T]` (`fanout.go:17`)                 |
 | Subscriber    | A buffered channel (depth 64) registered with the `fanOut` that receives broadcast messages.                                       | `fanOut[T].Subscribe` (`fanout.go:39`)       |
 | Drop policy   | Non-blocking broadcast: when a subscriber's buffer is full, the message is silently dropped for that subscriber. By design.        | `fanOut[T].Broadcast` (`fanout.go:89`)       |
+| Predicate     | A `func(T) bool` checked before the non-blocking send during fan-out. When non-nil on a subscriber, only matching messages enter the buffer. Must be pure, fast, non-blocking. | `subscriber[T].pred` (`fanout.go:72`) |
+| SubscribeFilter | Predicate-based subscription: creates a subscriber whose channel receives only messages matching the predicate. `Subscribe()` is `SubscribeFilter(nil)`. | `fanOut[T].SubscribeFilter` (`fanout.go:142`) |
 | Replay        | Sending missed events (those after a given `Last-Event-ID`) to a reconnecting client before resuming live delivery.                | `Replay` (`replay.go:21`)                    |
 | EventStore    | Consumer-implemented interface that returns events strictly after a given id, ascending. Backs `Replay`.                           | `EventStore` (`replay.go:9`)                 |
+| FilteredEventStore | An `EventStore` that additionally supports pushing a predicate into its retrieval query, so the replay budget is spent on matching events only. | `FilteredEventStore` (`replay.go:25`) |
+| ReplayFiltered | Replays only events matching a predicate. Uses `FilteredEventStore` (efficient path) when available; falls back to `EventsAfter` + post-filter (correct path). | `ReplayFiltered` (`replay.go:70`) |
 | Branded ID    | A phantom-type-wrapped string (`brandid.ID[eventBrand, string]`) that prevents accidental cross-assignment with other string IDs.  | `EventID` (`event.go:26`)                    |
 
 ## Bounded context
