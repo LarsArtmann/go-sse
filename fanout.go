@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"sync"
+	"time"
 )
 
 // defaultSubscriberBuffer is the per-subscriber channel capacity. Broadcasts
@@ -11,6 +12,12 @@ import (
 // 64 is large enough to absorb short bursts without dropping under normal
 // fan-out, while bounding memory per subscriber.
 const defaultSubscriberBuffer = 64
+
+// drainPollInterval is how often [fanOut.shutdownLocked] re-checks whether
+// all subscriber buffers have been drained while waiting for consumers to
+// catch up. Short enough that an idle consumer registers a drain promptly,
+// long enough to avoid burning CPU.
+const drainPollInterval = time.Millisecond
 
 // Option configures a Broadcaster at construction time. Use the helpers
 // ([WithBufferSize]) rather than constructing an Option literal directly.
@@ -22,16 +29,42 @@ type Option[T any] func(*fanOut[T])
 //
 // Larger buffers absorb longer consumer slow-downs before drops begin; smaller
 // buffers reduce memory per subscriber at the cost of earlier drops. The
-// setting applies to subscribers created after NewBroadcaster returns; it is
-// read once and not changed later.
-//
-//	func NewBroadcaster[T any](opts ...Option[T]) signature uses generics.
+// setting is read at construction time and not changed later.
 func WithBufferSize[T any](size int) Option[T] {
 	return func(f *fanOut[T]) {
 		if size > 0 {
 			f.bufferSize = size
 		}
 	}
+}
+
+// BroadcasterHealth is a snapshot of a [Broadcaster]'s lifecycle state,
+// returned by [Broadcaster.Health]. It is the structured-status counterpart
+// to the unstructured boolean [Broadcaster.SubscriberCount]; consumers wire
+// it into health checks (k8s liveness/readiness, load balancer probes,
+// on-call dashboards) without depending on the unexported internals.
+type BroadcasterHealth struct {
+	// Closed is true after [Broadcaster.Close] or a successful
+	// [Broadcaster.Shutdown]. A closed broadcaster rejects new
+	// subscribers (Subscribe returns a closed channel) and silently
+	// drops broadcasts.
+	Closed bool
+
+	// Draining is true while [Broadcaster.Shutdown] is waiting for
+	// subscriber buffers to drain. During draining, new Subscribe
+	// calls return a closed channel so no new work piles up; existing
+	// subscribers are still alive and will be closed once the drain
+	// completes (or the context is cancelled).
+	Draining bool
+
+	// SubscriberCount is the number of currently registered subscribers.
+	// Does not count subscribers that disconnected during a drain.
+	SubscriberCount int
+
+	// BufferSize is the per-subscriber channel capacity, in events.
+	// Defaults to [defaultSubscriberBuffer] (64). Configurable via
+	// [WithBufferSize] at construction time.
+	BufferSize int
 }
 
 // subscriber wraps a subscriber channel with an optional predicate.
@@ -49,6 +82,7 @@ type fanOut[T any] struct {
 	mu            sync.RWMutex
 	subscribers   map[uintptr]*subscriber[T]
 	bufferSize    int
+	draining      bool // true while Shutdown is in progress; rejects new Subscribe
 	onSubscribe   func()
 	onUnsubscribe func()
 }
@@ -85,7 +119,8 @@ func (f *fanOut[T]) effectiveBufferSize() int {
 // full.
 //
 // Call [Broadcaster.Unsubscribe] when the client disconnects to prevent memory leaks.
-// After [Broadcaster.Close], Subscribe returns a closed channel (no-op).
+// After [Broadcaster.Close] or during [Broadcaster.Shutdown], Subscribe returns
+// a closed channel (no-op).
 func (f *fanOut[T]) Subscribe() <-chan T {
 	return f.SubscribeFilter(nil)
 }
@@ -99,14 +134,15 @@ func (f *fanOut[T]) Subscribe() <-chan T {
 // broadcast, not once per event globally.
 //
 // Call [Broadcaster.Unsubscribe] when the client disconnects to prevent memory leaks.
-// After [Broadcaster.Close], SubscribeFilter returns a closed channel (no-op).
+// After [Broadcaster.Close] or during [Broadcaster.Shutdown], SubscribeFilter
+// returns a closed channel (no-op).
 func (f *fanOut[T]) SubscribeFilter(pred func(T) bool) <-chan T {
 	ch := make(chan T, f.effectiveBufferSize())
 
 	f.mu.Lock()
-	if f.subscribers == nil {
+	if f.subscribers == nil || f.draining {
 		f.mu.Unlock()
-		close(ch) // already closed — return a closed channel
+		close(ch) // already closed or shutting down — return a closed channel
 
 		return ch
 	}
@@ -150,6 +186,9 @@ func (f *fanOut[T]) Unsubscribe(ch <-chan T) {
 // cannot close a channel that this loop is about to send on — sending to a
 // closed channel would panic. Because sends use a non-blocking select, no
 // goroutine blocks here, and the lock is held only for the brief fan-out.
+//
+// After [Broadcaster.Close] or during [Broadcaster.Shutdown], broadcasts
+// are silently dropped.
 func (f *fanOut[T]) Broadcast(msg T) {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
@@ -206,50 +245,65 @@ func (f *fanOut[T]) Close() {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
+	f.closeLocked()
+}
+
+// closeLocked closes every active subscriber and marks the hub closed.
+// The caller must hold f.mu (write).
+func (f *fanOut[T]) closeLocked() {
 	for key, sub := range f.subscribers {
 		delete(f.subscribers, key)
 		close(sub.ch)
 	}
 
-	f.subscribers = nil // marks as closed
+	f.subscribers = nil
 }
 
-// drainLocked waits for every active subscriber's channel to be empty (the
-// consumer caught up and read everything) or for ctx to be cancelled. The
-// caller must hold f.mu; this function releases it before blocking, then
-// re-acquires it to close the subscribers and mark the hub closed.
+// Shutdown gracefully drains the broadcaster: it stops accepting new
+// subscribers, waits for every active subscriber's buffer to be empty
+// (consumers caught up), then closes all subscriber channels and marks
+// the hub as closed. Returns nil on a clean drain.
 //
-// On success, all subscriber channels are closed and f.subscribers is set
-// to nil (the closed sentinel). On context cancellation, the function returns
-// ctx.Err() without closing anything; subsequent Subscribe calls still
-// return live channels.
-func (f *fanOut[T]) drainLocked(ctx context.Context) error {
+// If ctx is cancelled before the drain completes, Shutdown returns
+// ctx.Err() without closing anything. The broadcaster remains in
+// "draining" state; the caller can either retry with a fresh context
+// or call [Close] to abandon the drain and shut down immediately.
+//
+// While Shutdown is in progress, Subscribe returns a closed channel
+// (no new work piles up). Existing subscribers continue to receive
+// broadcasts until the drain completes or the context is cancelled.
+//
+// Shutdown is safe to call from multiple goroutines; only the first
+// call's drain takes effect, and subsequent calls return nil once
+// the hub is already closed.
+func (f *fanOut[T]) Shutdown(ctx context.Context) error {
+	f.mu.Lock()
 	if f.subscribers == nil {
-		return nil // already closed — nothing to drain
+		// Already closed (via Close or a prior successful Shutdown).
+		f.mu.Unlock()
+
+		return nil
 	}
 
-	// Snapshot the subscriber set under the lock; we need to wait outside it.
+	// Snapshot the subscriber set; we need to wait outside the lock.
 	subs := make([]*subscriber[T], 0, len(f.subscribers))
 	for _, sub := range f.subscribers {
 		subs = append(subs, sub)
 	}
 
+	// Mark draining so new Subscribe calls return a closed channel.
+	f.draining = true
+
 	f.mu.Unlock()
-	defer f.mu.Lock()
+
+	// Wait for each snapshot subscriber's buffer to empty, or ctx to fire.
+	ticker := time.NewTicker(drainPollInterval)
+	defer ticker.Stop()
 
 	for {
-		// If a subscriber disconnected while we were waiting, len(f.subscribers)
-		// shrank but our snapshot still holds a reference to the (now-closed)
-		// channel. Drain check below tolerates closed channels: a receive on a
-		// closed, empty channel returns the zero value with ok=false, which
-		// our len() check would not see — but we also re-acquire the lock to
-		// verify the live subscriber set. See Shutdown test.
 		allDrained := true
 
 		for _, sub := range subs {
-			// Use len() to avoid a blocking receive. Channels report their
-			// current buffered length; a subscriber with len == 0 has
-			// consumed everything that was sent.
 			if len(sub.ch) > 0 {
 				allDrained = false
 
@@ -258,56 +312,53 @@ func (f *fanOut[T]) drainLocked(ctx context.Context) error {
 		}
 
 		if allDrained {
-			// Re-acquire the lock (via the defer) and close everything.
 			break
 		}
 
 		select {
 		case <-ctx.Done():
+			// Drain deadline exceeded. Leave draining=true so Subscribe
+			// continues to reject new subscribers; the caller can either
+			// retry Shutdown with a fresh context or call Close.
 			return ctx.Err()
-		case <-afterBriefDelay():
-			// Re-check drain status. Polling is required because the
-			// consumer's reads are not observable from here.
+		case <-ticker.C:
 		}
 	}
 
-	// Lock is held by the deferred f.mu.Lock() above. Close the snapshot.
-	for _, sub := range subs {
-		// The channel might have been closed by Unsubscribe in the meantime;
-		// that's fine — closing an already-closed channel would panic, so
-		// check first.
-		select {
-		case _, ok := <-sub.ch:
-			if !ok {
-				continue // already closed by Unsubscribe
-			}
-		default:
-		}
+	// Drain complete. Re-acquire the lock to close any subscribers that
+	// haven't already been closed by Unsubscribe. A subscriber that
+	// disconnected during the drain is no longer in f.subscribers (it
+	// was removed by Unsubscribe), so closing the snapshot would close
+	// an already-closed channel. We tolerate that by checking the map.
+	f.mu.Lock()
+	defer f.mu.Unlock()
 
-		close(sub.ch)
+	for _, sub := range subs {
+		if _, stillTracked := f.subscribers[channelPtr(sub.ch)]; stillTracked {
+			delete(f.subscribers, channelPtr(sub.ch))
+			close(sub.ch)
+		}
 	}
 
 	f.subscribers = nil
+	f.draining = false
 
 	return nil
 }
 
-// afterBriefDelay returns a channel that fires after a short poll interval.
-// The poll is intentionally short so drain latency is bounded but not so
-// short that it dominates CPU when there are many slow consumers.
-func afterBriefDelay() <-chan struct{} {
-	ch := make(chan struct{})
+// Health returns a snapshot of the broadcaster's lifecycle state. It is
+// safe to call concurrently with any other method. The returned struct
+// is a value type so it cannot accidentally mutate the broadcaster.
+func (f *fanOut[T]) Health() BroadcasterHealth {
+	f.mu.RLock()
+	defer f.mu.RUnlock()
 
-	go func() {
-		defer close(ch)
-		// 1ms is a balance: long enough to avoid burning CPU, short enough
-		// that consumer reads register promptly.
-		t := time.NewTimer(time.Millisecond)
-		defer t.Stop()
-		<-t.C
-	}()
-
-	return ch
+	return BroadcasterHealth{
+		Closed:          f.subscribers == nil,
+		Draining:        f.draining,
+		SubscriberCount: len(f.subscribers),
+		BufferSize:      f.effectiveBufferSize(),
+	}
 }
 
 // OnSubscribe registers a callback fired after each successful Subscribe.
