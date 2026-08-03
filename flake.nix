@@ -40,7 +40,7 @@
           goPkg = pkgs.go_1_26;
           buildGoModule = pkgs.buildGoModule.override { go = goPkg; };
           version = self.rev or self.dirtyRev or "dev";
-          vendorHash = "sha256-pu25vX8Vo31Ei2nNRzUomG9/ADdB3EFamTO0D+Z5QB4=";
+          vendorHash = "sha256-TzgUuZw7DdKK4uSM/6wTU31yvMp8TyWtFp+1JP7l7Gg=";
 
           # go-sse is a pure library (no `main` package), so we do not publish a
           # binary `packages.default` or an overlay. Instead, buildGoModule is used
