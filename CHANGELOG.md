@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `Stream.SendKeyed(eventName, key, value string) error` — stream convenience for the most common single-key DataStar pattern (e.g., `patch-signals` with one `signals` key).
 - `FuzzKeyedLines` fuzz test — panic-safety with arbitrary key/value inputs.
 - `BenchmarkKeyedLines` — single-line and 100-line variants measuring allocation behavior.
+- `BenchmarkSubscribeFilter_PredicateOverhead` — measures per-subscriber predicate call overhead at 1/100/1000 subscribers (unfiltered vs filtered).
+- `TestSubscribeFilter_BroadcastManyRespectsPredicates` — verifies BroadcastMany honors subscriber predicates.
+- `TestIntegration_SubscribeFilter` — HTTP round-trip verifying non-matching events never reach the client.
 - DataStar wire-format integration test — HTTP round-trip asserting exact wire bytes.
 - `Broadcaster.Shutdown(ctx context.Context) error` — graceful shutdown that stops accepting new subscribers, waits for every active subscriber's buffer to drain (consumers catch up), then closes all channels. Returns a wrapped context error (`sse.shutdown_drain_deadline_exceeded`) if the deadline fires before the drain completes; the caller can retry with a fresh context or fall back to `Close`. Preserves `errors.Is(err, context.Canceled)` / `context.DeadlineExceeded` for existing context-aware code.
 - `Broadcaster.Health() BroadcasterHealth` — value-type snapshot of `Closed`, `Draining`, `SubscriberCount`, and `BufferSize`. Cheap (read-lock + struct copy) and safe from any goroutine, including health-check loops.

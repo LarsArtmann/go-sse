@@ -90,10 +90,10 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 | Feature               | Status           | Evidence                                                                                                                                          |
 | --------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Fuzz tests            | FULLY_FUNCTIONAL | `FuzzWriteEvent`, `FuzzParseEventID`, `FuzzKeyedLines` in `fuzz_test.go`                                                                          |
-| Integration tests     | FULLY_FUNCTIONAL | `TestIntegration_DirectSendAndHeaders`, `TestIntegration_BroadcasterFanOut`, `TestIntegration_DataStarWireFormat` in `integration_test.go`        |
-| Race detector tests   | FULLY_FUNCTIONAL | `TestStream_SendHeartbeatRaceSafety`, `TestStream_SendCloseRace`, `TestStream_SendHeartbeatCloseRace`, `TestBroadcaster_BroadcastUnsubscribeRace` |
+| Integration tests     | FULLY_FUNCTIONAL | `TestIntegration_DirectSendAndHeaders`, `TestIntegration_BroadcasterFanOut`, `TestIntegration_DataStarWireFormat`, `TestIntegration_SubscribeFilter` in `integration_test.go` |
+| Race detector tests   | FULLY_FUNCTIONAL | `TestStream_SendHeartbeatRaceSafety`, `TestStream_SendCloseRace`, `TestStream_SendHeartbeatCloseRace`, `TestBroadcaster_BroadcastUnsubscribeRace`, `TestSubscribeFilter_ConcurrentRace` |
 | Example tests (godoc) | FULLY_FUNCTIONAL | `ExampleWriteEvent`, `ExampleBroadcaster`, `ExampleBroadcaster_SubscribeFilter`, `ExampleParseEventID` in `example_test.go`                                                             |
-| Benchmarks            | FULLY_FUNCTIONAL | `BenchmarkBroadcasterFanOut` (1–10k subs), `BenchmarkBroadcastManyVsLoop` in `broadcaster_test.go`; `BenchmarkKeyedLines` in `event_test.go`      |
+| Benchmarks            | FULLY_FUNCTIONAL | `BenchmarkBroadcasterFanOut` (1–10k subs), `BenchmarkBroadcastManyVsLoop` in `broadcaster_test.go`; `BenchmarkKeyedLines` in `event_test.go`; `BenchmarkSubscribeFilter_PredicateOverhead` in `filter_test.go` |
 | CI pipeline           | FULLY_FUNCTIONAL | `.github/workflows/ci.yml`                                                                                                                        |
 
 ## Explicit non-goals
