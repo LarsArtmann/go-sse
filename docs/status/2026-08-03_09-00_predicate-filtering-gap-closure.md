@@ -211,3 +211,23 @@ I documented the contract as "a panicking predicate will crash the broadcaster g
 | Commits this session | 4 (auto-committed by daemon) |
 | Commits ahead of origin | 4 |
 | Verification | `go test -race` pass, `golangci-lint` 0 issues, `nix flake check` pass |
+
+---
+
+## Resolution (2026-08-03)
+
+Open items from section c and section f are tracked in TODO_LIST.md.
+
+| Item | Resolution |
+|------|------------|
+| §d.1 Stale DOMAIN_LANGUAGE line refs (Subscribe, Broadcast) | FIXED — all line refs replaced with symbol-only references (maintenance-free) |
+| §d.2 `_ = i` code smell in `filter_test.go` | FIXED — changed to `for range 10` |
+| §c.1 ReplayFiltered HTTP integration test | Still open — TODO_LIST "Predicate filtering correctness gaps" |
+| §c.2 Shutdown + filtered subscribers test | Still open — TODO_LIST |
+| §c.3 Panic contract doc on ReplayFiltered | Still open — TODO_LIST |
+| §c.4 v0.4.0 release | Still open — TODO_LIST "Release" |
+| §c.5 cqrs-htmx JournalSSEStore FilteredEventStore | Cross-project — ROADMAP §2 (developer experience) |
+| §c.6 Push to origin | User decision — 5+ commits ahead of origin/master |
+| Q1: DiscordSync migration | Still open — cross-project decision |
+| Q2: Cut v0.4.0 now or after cqrs-htmx? | Still open — TODO_LIST |
+| Q3: Predicate panic policy | "Let it crash" adopted; ReplayFiltered doc still needed (TODO_LIST) |

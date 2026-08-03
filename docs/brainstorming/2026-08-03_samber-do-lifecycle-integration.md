@@ -229,3 +229,22 @@ Until then, Option C (primitives + documented pattern) is the correct shape.
 - `TODO_LIST.md` — "Graceful-shutdown helper" (the drain primitive this analysis depends on)
 - `docs/brainstorming/2026-07-25_client-server-common-submodule-split.md` — wire-only consumer evidence (2 of 4 consumers), module boundary principles
 - `samber-do-best-practices` skill — canonical patterns, DO-1 → DO-6 anti-patterns
+
+---
+
+## Resolution (2026-08-03)
+
+**Option C adopted and shipped.** The core primitives this analysis recommended
+are live:
+
+- `Broadcaster.Shutdown(ctx context.Context) error` — drain respecting deadline (commit `af9bfa6`)
+- `Broadcaster.Health() BroadcasterHealth` — structured status snapshot (commit `af9bfa6`)
+- `BroadcasterHealth` struct exported for health-check wiring (commit `af9bfa6`)
+
+No `di/` subpackage was shipped. Consumers write ~10 lines of adapter in their
+composition root, per the samber/do-canonical pattern. The trigger criteria
+above (section "Trigger criteria for revisiting") remain the re-open conditions
+for Option B.
+
+The `datastar/` directory is no longer empty — it is `example/datastar/main.go`,
+a runnable DataStar-compatible SSE server.

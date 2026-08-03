@@ -218,3 +218,15 @@ The "Realized in" callout pattern was removed entirely in the 2026-08-03 ROADMAP
 restructure (completed-work history now lives exclusively in CHANGELOG.md). This
 task will never execute. No replacement needed — CHANGELOG `[Unreleased]` already
 documents the DataStar additions.
+
+**Plan executed in Waves 1–4** (commits `7cbb01d` through `c8ae9a0`). Shipped:
+`KeyedLines`, `SendLines`, `WriteKeyedLines`, `SendKeyed`, `FuzzKeyedLines`,
+`BenchmarkKeyedLines`, `TestIntegration_DataStarWireFormat`, `example/datastar/`,
+migration guide. Phase 0 blocked tasks resolved: Q1 = no subpackage (core-only),
+Q2 = v0.3.0 tagged empty (real release is v0.4.0), Q3 = raw HTML. YAGNI-rejected:
+`JSONSignals`, `KeyedLinesBuilder`, `KeyedLinesMulti`, `Event.DataLines`,
+`WithID`/`WithRetry`, `Validate`, `WriteEventBytes`, `SendRaw`, `SendLinesf`,
+`SetRetry` — no consumer has asked for these.
+
+**Still open:** browser verification of example (TODO_LIST); CI headless browser
+test (TODO_LIST, blocked).

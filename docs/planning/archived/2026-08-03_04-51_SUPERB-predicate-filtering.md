@@ -1,7 +1,7 @@
 # Predicate-Based Filtering for go-sse
 
 > Created: 2026-08-03 04:51
-> Status: PLANNING
+> Status: EXECUTED — all tasks shipped (commits `231ff07` through `85923d6`)
 
 ## Problem
 
@@ -260,3 +260,15 @@ func ReplayFiltered(stream *Stream, store EventStore, lastID EventID, pred func(
 | Allocation overhead of *subscriber[T] | NEGLIGIBLE | One alloc per Subscribe call (per connection), not per event |
 | cqrs-htmx compatibility | NONE | Type aliases pass through; SubscribeFilter is additive |
 | DiscordSync integration | FUTURE | Separate follow-up: extend JournalSSEStore with EventsAfterFiltered |
+
+---
+
+## Resolution (2026-08-03)
+
+All 32 detailed tasks (D1–D32) executed. Every API in the "API Summary" above is
+live and tested. The plan was executed across two sessions:
+
+- **Core + tests:** commits `231ff07` through `74154cb` (fanout.go refactor, replay.go additions, 12 tests)
+- **Gap closure:** commits `20b4a9e` through `85923d6` (broadcaster.go docs, FEATURES, README, DOMAIN_LANGUAGE, strengthened race test, integration test, benchmark)
+
+Remaining follow-ups (TestIntegration_ReplayFiltered, Shutdown+filtered test, panic doc on ReplayFiltered) are tracked in TODO_LIST.md.
