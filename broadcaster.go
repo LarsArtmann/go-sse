@@ -18,6 +18,25 @@ import (
 //	// Push from anywhere:
 //	broadcaster.Broadcast(sse.Event{Event: "update", Data: "<div>new</div>"})
 //
+// # Filtered Subscriptions
+//
+// [Broadcaster.SubscribeFilter] subscribes with a predicate: only messages for
+// which the predicate returns true are delivered to the subscriber's channel.
+// The predicate is checked before the non-blocking send, so irrelevant messages
+// never enter the subscriber's buffer. This is useful for per-channel,
+// per-tenant, or per-event-type routing without multiple broadcasters.
+//
+//	// Deliver only "message" events
+//	ch := broadcaster.SubscribeFilter(func(evt sse.Event) bool {
+//	    return evt.Event == "message"
+//	})
+//	defer broadcaster.Unsubscribe(ch)
+//
+// The predicate is called inside the fan-out loop under the read lock — it must
+// be pure, fast, and non-blocking. A panicking predicate will crash the
+// broadcaster goroutine (do not recover; fix the predicate). Subscribe() with
+// no filter is equivalent to SubscribeFilter(nil).
+//
 // # Backpressure and Drop Policy
 //
 // Broadcast is non-blocking. If a subscriber's channel buffer is full (default
