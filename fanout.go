@@ -11,12 +11,20 @@ import (
 // fan-out, while bounding memory per subscriber.
 const defaultSubscriberBuffer = 64
 
+// subscriber wraps a subscriber channel with an optional predicate.
+// When pred is nil, all events are delivered (the default unfiltered case).
+// When pred is non-nil, only events for which pred(msg) returns true are sent.
+type subscriber[T any] struct {
+	ch   chan T
+	pred func(T) bool // nil = all events
+}
+
 // fanOut is the transport-agnostic subscriber hub shared by [Broadcaster].
 // It provides thread-safe fan-out with O(1) unsubscribe via channel pointer
 // identity and non-blocking broadcast (drops to slow consumers).
 type fanOut[T any] struct {
 	mu            sync.RWMutex
-	subscribers   map[uintptr]chan T
+	subscribers   map[uintptr]*subscriber[T]
 	onSubscribe   func()
 	onUnsubscribe func()
 }
@@ -24,7 +32,7 @@ type fanOut[T any] struct {
 func newFanOut[T any]() *fanOut[T] {
 	return &fanOut[T]{
 		mu:            sync.RWMutex{},
-		subscribers:   make(map[uintptr]chan T),
+		subscribers:   make(map[uintptr]*subscriber[T]),
 		onSubscribe:   nil,
 		onUnsubscribe: nil,
 	}
@@ -37,6 +45,20 @@ func newFanOut[T any]() *fanOut[T] {
 // Call [Broadcaster.Unsubscribe] when the client disconnects to prevent memory leaks.
 // After [Broadcaster.Close], Subscribe returns a closed channel (no-op).
 func (f *fanOut[T]) Subscribe() <-chan T {
+	return f.SubscribeFilter(nil)
+}
+
+// SubscribeFilter creates a new subscriber channel that receives only broadcast
+// messages for which pred returns true. When pred is nil, all events are
+// delivered (identical to [Subscribe]).
+//
+// The predicate is called inside the fan-out loop under the read lock — it must
+// be pure, fast, and non-blocking. It is called once per subscriber per
+// broadcast, not once per event globally.
+//
+// Call [Broadcaster.Unsubscribe] when the client disconnects to prevent memory leaks.
+// After [Broadcaster.Close], SubscribeFilter returns a closed channel (no-op).
+func (f *fanOut[T]) SubscribeFilter(pred func(T) bool) <-chan T {
 	ch := make(chan T, defaultSubscriberBuffer)
 
 	f.mu.Lock()
@@ -47,7 +69,7 @@ func (f *fanOut[T]) Subscribe() <-chan T {
 		return ch
 	}
 
-	f.subscribers[channelPtr(ch)] = ch
+	f.subscribers[channelPtr(ch)] = &subscriber[T]{ch: ch, pred: pred}
 	onSub := f.onSubscribe
 	f.mu.Unlock()
 
@@ -64,10 +86,10 @@ func (f *fanOut[T]) Unsubscribe(ch <-chan T) {
 	f.mu.Lock()
 	key := channelPtr(ch)
 
-	sender, ok := f.subscribers[key]
+	sub, ok := f.subscribers[key]
 	if ok {
 		delete(f.subscribers, key)
-		close(sender)
+		close(sub.ch)
 	}
 
 	onUnsub := f.onUnsubscribe
@@ -111,9 +133,13 @@ func (f *fanOut[T]) BroadcastMany(msgs ...T) {
 // sendAllLocked fans msg out to every subscriber. The caller must hold f.mu
 // (read or write) so that a concurrent Unsubscribe cannot close a channel mid-send.
 func (f *fanOut[T]) sendAllLocked(msg T) {
-	for _, ch := range f.subscribers {
+	for _, sub := range f.subscribers {
+		if sub.pred != nil && !sub.pred(msg) {
+			continue
+		}
+
 		select {
-		case ch <- msg:
+		case sub.ch <- msg:
 		default:
 		}
 	}
@@ -138,9 +164,9 @@ func (f *fanOut[T]) Close() {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	for key, ch := range f.subscribers {
+	for key, sub := range f.subscribers {
 		delete(f.subscribers, key)
-		close(ch)
+		close(sub.ch)
 	}
 
 	f.subscribers = nil // marks as closed
