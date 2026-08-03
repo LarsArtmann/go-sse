@@ -239,7 +239,7 @@ n, err := sse.ReplayFiltered(stream, store, lastEventID, pred) // filtered repla
 - **Channel pointer identity**: `Unsubscribe` uses `reflect.ValueOf(ch).Pointer()` for O(1) lookup. No subscriber IDs to manage.
 - **Branded EventID**: `EventID` uses `go-branded-id` to prevent accidental cross-assignment with other string-typed IDs in your codebase.
 - **Zero allocation on fast path**: `WriteEvent` uses direct byte appends. No `fmt.Fprintf` on the SSE hot path.
-- **Predicate under read lock**: `SubscribeFilter` predicates run inside the fan-out loop under the read lock. This is intentional — the predicate must be pure, fast, and non-blocking. A panicking predicate crashes the broadcaster (do not recover; fix the predicate).
+- **Predicate under read lock**: `SubscribeFilter` predicates run inside the fan-out loop under the read lock. This is intentional — the predicate must be pure, fast, and non-blocking. A panicking predicate is recovered and treated as a non-match (the event is skipped for that subscriber). One broken predicate cannot crash the broadcaster.
 
 ## Non-Blocking Drop Policy
 

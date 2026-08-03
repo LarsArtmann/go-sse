@@ -126,7 +126,9 @@
 //	defer broadcaster.Unsubscribe(ch)
 //
 // The predicate is called inside the fan-out loop under the read lock — it must
-// be pure, fast, and non-blocking.
+// be pure, fast, and non-blocking. A panicking predicate is recovered and
+// treated as a non-match (the event is skipped for that subscriber); one broken
+// predicate cannot crash the broadcaster.
 //
 // For filtered reconnection replay, use [ReplayFiltered] with a
 // [FilteredEventStore]. The predicate is pushed into the store query so the

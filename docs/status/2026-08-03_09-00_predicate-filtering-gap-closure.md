@@ -197,6 +197,8 @@ The predicate filtering API is shipped, tested, and documented. But no consumer 
 
 I documented the contract as "a panicking predicate will crash the broadcaster goroutine (do not recover; fix the predicate)" — consistent with Go's philosophy and the existing `MustParseEventID` pattern. But there's an alternative: wrap the predicate call in a `defer/recover` that logs and removes the offending subscriber. This would make one bad predicate non-fatal to other subscribers. I chose "let it crash" because it's simpler and honest, but this is a philosophy decision that affects the library's fault-tolerance contract. Is "let it crash" the right call, or do you want a `SubscribeFilterSafe` variant with recover?
 
+> **Update 2026-08-03 (commit `b666ed5`, v0.4.0):** **REVERSED — panics are now recovered.** The user's directive was "we should NEVER panic!" `safePredCall[T]` in `fanout.go` wraps every predicate call in `defer/recover`; a panicking predicate returns `false` (treated as non-match) and the event is skipped for that subscriber. This applies to both `SubscribeFilter`'s fan-out path and `ReplayFiltered`'s fallback path. No `SubscribeFilterSafe` variant was needed — recovery is now the default and only behavior. The "let it crash" contract documented above is **false as of v0.4.0**; the README, AGENTS.md, doc.go, broadcaster.go, and replay.go all document the recovery contract.
+
 ---
 
 ## Session metrics
