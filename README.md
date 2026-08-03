@@ -29,6 +29,7 @@ Every Go project that serves SSE reinvents the same four pieces: event serializa
 - No WebSocket support
 - No event bus integration
 - No opinion about your payload format (strings, JSON, HTML fragments — all fine)
+- No `Broadcaster.ServeSSE` convenience handler (would bake in heartbeat, replay, and event-loop opinions; the `example/` package shows the canonical pattern)
 
 ## Install
 
