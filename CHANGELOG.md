@@ -18,11 +18,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `FuzzKeyedLines` fuzz test — panic-safety with arbitrary key/value inputs.
 - `BenchmarkKeyedLines` — single-line and 100-line variants measuring allocation behavior.
 - DataStar wire-format integration test — HTTP round-trip asserting exact wire bytes.
+- `Broadcaster.Shutdown(ctx context.Context) error` — graceful shutdown that stops accepting new subscribers, waits for every active subscriber's buffer to drain (consumers catch up), then closes all channels. Returns a wrapped context error (`sse.shutdown_drain_deadline_exceeded`) if the deadline fires before the drain completes; the caller can retry with a fresh context or fall back to `Close`. Preserves `errors.Is(err, context.Canceled)` / `context.DeadlineExceeded` for existing context-aware code.
+- `Broadcaster.Health() BroadcasterHealth` — value-type snapshot of `Closed`, `Draining`, `SubscriberCount`, and `BufferSize`. Cheap (read-lock + struct copy) and safe from any goroutine, including health-check loops.
+- `Option[T any]` and `WithBufferSize[T any](size int) Option[T]` — functional options for `NewBroadcaster`. Pass `WithBufferSize[T](256)` (or any positive integer) to override the per-subscriber channel capacity from the default 64. Non-positive values are silently ignored.
+- `NewBroadcaster[T any](opts ...Option[T])` — variadic constructor accepting `Option` values. Existing zero-arg call sites are unchanged.
+- `BroadcasterHealth` struct — exported for consumers wiring structured health checks (k8s liveness/readiness, load balancer probes).
+- 13 new tests in `lifecycle_test.go` covering Shutdown (empty, drains, context cancel, rejects new subs during drain, idempotent, after close, concurrent unsubscribe), Health (initial, during operation, after close, buffer size), and `WithBufferSize` (applies, non-positive ignored).
 
 ### Changed
 
 - `replay_test.go` and `replay_filter_test.go` now use the existing `newTestStream` helper from `testhelpers_test.go` instead of duplicating the stream-setup boilerplate. The shared `errorResponseWriter` test fake moved from `replay_test.go` to `testhelpers_test.go` so any test file can use it; `newTestFailingStream(t)` was added to the helpers for write-failure paths.
 - `filter_test.go` adopts the Go 1.26 `sync.WaitGroup.Go` helper in `TestSubscribeFilter_ConcurrentRace` instead of the manual `wg.Add` / `defer wg.Done` pair.
+- `fanOut` now tracks a `draining` flag alongside the existing `subscribers = nil` closed sentinel, so `Shutdown` can reject new subscribers during a drain without conflating "shutting down" with "closed".
 
 ## [0.2.1] - 2026-07-26
 

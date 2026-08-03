@@ -26,8 +26,10 @@ questions with multiple viable answers, not yet bounded enough to be tasks:
 - Backpressure policy options beyond drop-on-full (block vs spill)
 - Observability: metrics/structured logging beyond the OnSubscribe/OnUnsubscribe hooks
 
-Bounded work extracted from this theme has moved to TODO_LIST.md:
-graceful-shutdown helper, configurable subscriber buffer size, scale profiling.
+Bounded work extracted from this theme has moved to TODO_LIST.md. As of the
+last update: graceful-shutdown helper (`Broadcaster.Shutdown(ctx)`) and
+configurable subscriber buffer (`WithBufferSize[T]`) have shipped; only the
+scale profile remains open.
 
 ## 2. Developer experience
 
@@ -59,7 +61,7 @@ Unexamined ideas — too early for a theme, not analyzed enough to be a parked
 decision. Promoted to a numbered theme when bounded; dropped if ruled out.
 
 - Topic/channel-based multi-broadcaster routing (multiple named fan-out hubs behind one entry point). No consumer has asked for this yet. The predicate-based filtering approach (`SubscribeFilter` + `ReplayFiltered`) solves the real consumer need (DiscordSync's per-channel/per-guild filtering) without the complexity of named hubs or wildcard matching. Revisit if a consumer needs true multi-hub routing rather than predicate filtering on a single hub.
-- Optional `di/` subpackage providing samber/do v2 lifecycle adapters (`Shutdowner`, `Healthchecker`) for `Broadcaster` and `Stream`. See [docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md](docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md).
+- Optional `di/` subpackage providing samber/do v2 lifecycle adapters (`Shutdowner`, `Healthchecker`) for `Broadcaster` and `Stream`. See [docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md](docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md). The brainstorming doc's Option C (core primitives + documented pattern) was adopted: `Shutdown(ctx)` and `Health()` ship in core, the samber/do adapter is left to consumer composition roots. Revisit if a concrete consumer asks for a go-sse-provided adapter (Option B trigger).
 
 ## Non-goals
 

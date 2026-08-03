@@ -46,7 +46,7 @@ Four layers, each in its own file, composable independently:
 | ----------------- | ------------------------------ | ------------------------------------------------------------------------------------------------- |
 | Wire format       | `event.go`                     | `Event`, `EventID`, `WriteEvent`, `WriteHeartbeat`, `WriteRetry`, `KeyedLines`, `WriteKeyedLines` |
 | Single connection | `stream.go`                    | `Stream` — headers, mutex-guarded send, heartbeat, disconnect hooks, `SendLines`, `SendKeyed`     |
-| Fan-out           | `broadcaster.go` + `fanout.go` | `Broadcaster[T]` (public) embeds `fanOut[T]` (unexported hub). `SubscribeFilter` for predicate-based filtering. |
+| Fan-out           | `broadcaster.go` + `fanout.go` | `Broadcaster[T]` (public) embeds `fanOut[T]` (unexported hub). `SubscribeFilter` for predicate-based filtering. `Shutdown(ctx)` + `Health()` for graceful lifecycle. `WithBufferSize[T]` for configurable subscriber capacity. |
 | Reconnection      | `replay.go`                    | `EventStore` interface + `Replay` function. `FilteredEventStore` + `ReplayFiltered` for predicate-aware replay. |
 
 **Data flow:** `Broadcaster.Broadcast(evt)` → non-blocking `select` send into each subscriber's buffered channel → handler's `select` loop reads channel → `stream.Send(evt)` → `WriteEvent` → `ResponseWriter.Write` + `Flush`.
@@ -60,6 +60,16 @@ Four layers, each in its own file, composable independently:
 1. **`Stream.mu` serializes ALL writes** to the underlying `ResponseWriter`. `Send`, `Heartbeat`, and `Close` all acquire it because `http.ResponseWriter` is not safe for concurrent use. Any new write path must hold this mutex.
 2. **`fanOut` uses RWMutex with non-blocking sends.** `Broadcast` holds `RLock` during iteration and sends via `select { case ch <- msg: default: }` (drop). The read lock guarantees `Unsubscribe` cannot close a channel mid-send. Never change Broadcast to a blocking send under the read lock. **SubscribeFilter predicates are called under this same read lock** — they must be pure, fast, and non-blocking.
 3. **`fanOut.Close()` sets `subscribers = nil` as the closed sentinel.** `Subscribe` checks for nil and returns an already-closed channel. Don't repurpose nil to mean "uninitialized."
+4. **`fanOut.draining` is the "shutdown in progress" sentinel.** Distinct from the closed sentinel so `Subscribe` can keep returning closed channels during a drain while `Close` is not yet meaningful. Always set draining under the write lock and check it under the read or write lock.
+
+## Lifecycle API
+
+`Broadcaster` now exposes a graceful-shutdown story that mirrors `http.Server`:
+
+- `Close()` — instant shutdown; closes all subscriber channels immediately. Use for hard shutdown.
+- `Shutdown(ctx)` — graceful drain; marks the broadcaster as draining (rejects new `Subscribe` calls), waits for every active subscriber's buffer to be empty (consumers caught up), then closes the channels. Returns the context's error (wrapped via `errorfamily` with code `sse.shutdown_drain_deadline_exceeded`) if the deadline fires before the drain completes. The caller can retry with a fresh context or fall back to `Close`.
+- `Health() BroadcasterHealth` — value-type snapshot of `Closed`, `Draining`, `SubscriberCount`, and `BufferSize`. Cheap (read-lock + struct copy). Suitable for k8s liveness/readiness probes.
+- `NewBroadcaster[T](opts ...Option[T])` — accepts functional options at construction. The only option today is `WithBufferSize[T](size int)`. Buffer size is read once and not changed later; non-positive values are silently ignored (default kept).
 
 ## Gotchas
 
@@ -72,6 +82,10 @@ Four layers, each in its own file, composable independently:
 - **`SubscribeFilter` predicates run under the fanOut read lock.** The predicate is called once per subscriber per broadcast inside `sendAllLocked`. It must be pure (no side effects), fast (no I/O, no blocking), and non-panicking. Nil predicate means "all events" (identical to `Subscribe`).
 - **`ReplayFiltered` type-asserts to `FilteredEventStore`.** If the store implements the interface, the predicate is pushed into the store query (efficient). Otherwise it falls back to `EventsAfter` + in-memory post-filter (correct but budget-inefficient). Nil pred delegates to `Replay`.
 - **Internal `subscriber[T]` struct** wraps `chan T` + optional `func(T) bool` predicate. The subscriber map is `map[uintptr]*subscriber[T]`, keyed by channel pointer identity (same as before). One allocation per Subscribe call (negligible — once per connection, not per event).
+- **`Shutdown` polls at `drainPollInterval` (1ms).** The drain loop checks each subscriber's channel length (`len(sub.ch) > 0`) and re-checks on each tick. A subscriber that is genuinely slow will keep Shutdown waiting indefinitely until the context fires. The 1ms granularity is short enough that an idle consumer registers promptly, long enough to avoid burning CPU when there are many slow consumers.
+- **`Shutdown`'s deadline error preserves `errors.Is(err, context.Canceled)` / `context.DeadlineExceeded`.** The error is wrapped with `errorfamily.Wrapf` but the underlying ctx.Err() is the Unwrap target, so existing context-cancellation checks keep working.
+- **`Shutdown` is safe to call from multiple goroutines but only the first call's drain takes effect.** Subsequent calls return nil once the hub is already closed.
+- **`WithBufferSize` non-positive values are silently ignored.** The default (`defaultSubscriberBuffer = 64`) is kept. This means `WithBufferSize(0)` and `WithBufferSize(-1)` are no-ops; pass a positive integer.
 
 ## Conventions
 
