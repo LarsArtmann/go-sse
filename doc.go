@@ -112,6 +112,30 @@
 //	    sse.Replay(stream, store, lastID)
 //	}
 //
+// # Filtered Subscriptions
+//
+// For applications that need selective delivery (e.g., per-channel or per-guild
+// event routing), use [Broadcaster.SubscribeFilter] with a predicate function.
+// The predicate is checked before the channel send, so irrelevant events never
+// enter the subscriber's buffer:
+//
+//	// Deliver only message events to this subscriber
+//	ch := broadcaster.SubscribeFilter(func(evt sse.Event) bool {
+//	    return evt.Event == "message"
+//	})
+//	defer broadcaster.Unsubscribe(ch)
+//
+// The predicate is called inside the fan-out loop under the read lock — it must
+// be pure, fast, and non-blocking.
+//
+// For filtered reconnection replay, use [ReplayFiltered] with a
+// [FilteredEventStore]. The predicate is pushed into the store query so the
+// replay budget is spent entirely on matching events:
+//
+//	sse.ReplayFiltered(stream, store, lastID, func(evt sse.Event) bool {
+//	    return evt.Event == "message"
+//	})
+//
 // # Concurrency and Memory Model
 //
 // Each subscriber gets an independent buffered channel (capacity 64).

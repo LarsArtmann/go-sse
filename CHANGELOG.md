@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- `Broadcaster.SubscribeFilter(pred func(T) bool) <-chan T` — predicate-based subscription that delivers only events matching the predicate to the subscriber's channel. The predicate is checked before the non-blocking send, so irrelevant events never enter the buffer. `Subscribe()` is now `SubscribeFilter(nil)`. Zero overhead for unfiltered subscribers (nil check only).
+- `FilteredEventStore` interface — implemented by event stores that can push a predicate into their retrieval query, so the replay budget is spent entirely on matching events instead of being wasted on non-matching ones that get filtered post-hoc.
+- `ReplayFiltered(stream *Stream, store EventStore, lastID EventID, pred func(Event) bool) (int, error)` — replays only events matching `pred`. If the store implements `FilteredEventStore`, the predicate is pushed into the store query (efficient). Otherwise falls back to `EventsAfter` + in-memory post-filter (correct). Nil pred delegates to `Replay`.
 - `KeyedLines(key, value string) string` — prefixes every line of a multi-line value with `key `, producing the newline-joined string for `Event.Data`. Building block for keyed-data-line SSE protocols (DataStar, htmx extensions, etc.).
 - `Stream.SendLines(eventName string, lines ...string) error` — convenience method that joins variadic arguments with `\n` into `Event.Data`, then delegates to `Send`. Composes with `KeyedLines` for multi-key events.
 - `WriteKeyedLines(w io.Writer, eventType, key, value string) error` — wire-only helper (no `net/http` dependency) for consumers that use `WriteEvent` directly. Single-key convenience counterpart to `KeyedLines`.
