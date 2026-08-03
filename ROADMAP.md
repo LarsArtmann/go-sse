@@ -12,6 +12,7 @@
 | Next    | [Developer experience](#2-developer-experience)                         | Concrete client consumer or `EventStore`-shape request appears |
 | Later   | [Spec compliance & extensibility](#3-spec-compliance-and-extensibility) | Spec amendment or concrete extension need                      |
 | Parked  | [Parked decisions](#4-parked-decisions)                                 | Trigger criteria in the linked brainstorming docs fire         |
+| —       | [Raw ideas](#5-raw-ideas)                                               | Analyzed enough to become a theme or a parked decision         |
 
 ## 1. Production readiness
 
@@ -20,16 +21,20 @@ Before calling it production-grade, explore what production consumers need.
 
 **Exit criteria:** graceful-shutdown helper, configurable subscriber buffer,
 and a scale profile exist; subscribers are observable beyond the existing
-OnSubscribe/OnUnsubscribe hooks. The remaining explorations here are design
-questions with multiple viable answers, not yet bounded enough to be tasks:
+OnSubscribe/OnUnsubscribe hooks.
+
+As of v0.4.0, three of the four criteria are met: graceful shutdown
+(`Broadcaster.Shutdown(ctx)`), configurable buffer (`WithBufferSize[T]`), and
+structured observability (`Broadcaster.Health()` returning `BroadcasterHealth`).
+Only the **scale profile** remains open (TODO_LIST). The remaining
+explorations here are design questions with multiple viable answers, not yet
+bounded enough to be tasks:
 
 - Backpressure policy options beyond drop-on-full (block vs spill)
-- Observability: metrics/structured logging beyond the OnSubscribe/OnUnsubscribe hooks
-
-Bounded work extracted from this theme has moved to TODO_LIST.md. As of the
-last update: graceful-shutdown helper (`Broadcaster.Shutdown(ctx)`) and
-configurable subscriber buffer (`WithBufferSize[T]`) have shipped; only the
-scale profile remains open.
+- Observability: metrics/structured logging beyond `Health()` and the
+  OnSubscribe/OnUnsubscribe hooks (e.g., drop counters, per-subscriber stats)
+- Whether predicate panic recovery should expose an `OnPredicatePanic` callback
+  or log hook — currently silent (see v0.4.0 release report Q2)
 
 ## 2. Developer experience
 

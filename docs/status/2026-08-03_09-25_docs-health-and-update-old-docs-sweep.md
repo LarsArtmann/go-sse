@@ -298,3 +298,33 @@ I can't decide because pushing is the user's call per the "NEVER PUSH TO REMOTE"
 | Coverage | 98.9% of statements (128 test functions) |
 
 **Verdict:** The living docs (TODO_LIST, ROADMAP, FEATURES, CHANGELOG, README, DOMAIN_LANGUAGE) are now superb — verified against code, cross-file consistent, no stale references. All 9 historical `2026-08-*` files have resolution appendices with commit hashes and per-item status. Two fully-executed planning docs are archived. The biggest misses were the DOMAIN_LANGUAGE double-edit (process waste) and the incomplete HARVEST from the 50-item lists (only 4 of 50 explicitly routed).
+
+---
+
+## Resolution (2026-08-03)
+
+Subsequent session (`2026-08-03_19-30`) cut v0.4.0 and reversed the predicate
+panic policy. The items this report flagged as open have the following status:
+
+| Item | Claim in report | Resolution |
+| ---- | --------------- | ---------- |
+| f.1 | `TestIntegration_ReplayFiltered` not started | done at `1c05faf` (v0.4.0) |
+| f.2 | `TestSubscribeFilter_ShutdownDrainsFilteredSubscribers` not started | done at `1c05faf` (v0.4.0) |
+| f.3 | Strengthen race test assertion `>= 500` | done at `1c05faf` (v0.4.0) |
+| f.4 | Document panic contract on `ReplayFiltered` | done at `b666ed5` (v0.4.0) — policy reversed to recovery |
+| f.5 | Get user approval for v0.4.0 cut | done — v0.4.0 tagged `1b6028f`, pushed to origin |
+| f.6 | Move `[Unreleased]` → `[0.4.0]` in CHANGELOG | done at `1b6028f` |
+| f.7 | Tag `v0.4.0` | done — tag exists locally and on origin |
+| f.8 | Push to origin/master | done — 0 commits ahead of origin |
+| f.9 | Verify markdown links resolve after archiving | Still open — not re-verified post-v0.4.0 |
+| f.10 | Check `2026-07-*` status reports for stale ROADMAP refs | Still open — out of scope (user scoped to `2026-08-*`) |
+| f.11 | Add current coverage percentage to FEATURES.md | Still open — FEATURES.md header still says "Verified by running `go test ./... -race`" without a number |
+| e.1 / d.1 | README.md panic policy contradiction (shipped in v0.4.0) | FIXED on master post-v0.4.0 — README.md:242 now says "recovered and treated as a non-match" |
+| Q1 | Annotate `2026-07-*` reports too? | Resolved: user scoped this to `2026-08-*`; older reports left as historical |
+| Q2 | Retag v0.3.0? | Resolved: leave as-is (CHANGELOG `[0.3.0]` explains "No user-facing code changes") |
+| Q3 | Push 9+ commits now or wait for v0.4.0? | Resolved: pushed with v0.4.0 tag (`1b6028f`) |
+
+The v0.4.0 planning doc (`docs/planning/2026-08-03_09-36_SUPERB-v0.4.0-release-and-correctness-gaps.md`)
+is now marked `EXECUTED` and archived to `docs/planning/archived/`. The 19-30
+report's section b/c items (README/AGENTS/doc.go panic contradictions) are also
+resolved on master.
