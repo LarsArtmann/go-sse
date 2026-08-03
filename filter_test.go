@@ -386,3 +386,113 @@ func TestSubscribeFilter_ShutdownDrainsFilteredSubscribers(t *testing.T) {
 		}
 	}
 }
+
+// TestSubscribeFilter_DropPolicyRespected verifies that when a filtered
+// subscriber's buffer is full, matching events are dropped (non-blocking) while
+// non-matching events never enter the buffer. This confirms the filter+drop
+// interaction: drops affect only matching events, and the predicate is evaluated
+// before the send attempt.
+func TestSubscribeFilter_DropPolicyRespected(t *testing.T) {
+	t.Parallel()
+
+	b := sse.NewBroadcaster[sse.Event](sse.WithBufferSize[sse.Event](2))
+
+	ch := b.SubscribeFilter(func(evt sse.Event) bool {
+		return evt.Event == "match"
+	})
+	defer b.Unsubscribe(ch)
+
+	// Fill the 2-deep buffer with matching events (no consumer draining).
+	for i := range 2 {
+		b.Broadcast(sse.Event{Event: "match", Data: strconv.Itoa(i)})
+	}
+
+	// These matching events overflow the full buffer and are silently dropped.
+	for i := 2; i < 10; i++ {
+		b.Broadcast(sse.Event{Event: "match", Data: strconv.Itoa(i)})
+	}
+
+	// Non-matching events never enter the buffer regardless of fill state.
+	for range 5 {
+		b.Broadcast(sse.Event{Event: "skip", Data: "x"})
+	}
+
+	// Drain: only the first 2 matching events fit; the rest were dropped.
+	var got []sse.Event
+
+drain:
+	for {
+		select {
+		case evt := <-ch:
+			got = append(got, evt)
+		default:
+			break drain
+		}
+	}
+
+	if len(got) != 2 {
+		t.Fatalf("expected 2 events (buffer capacity), got %d: %v", len(got), got)
+	}
+
+	for i, evt := range got {
+		if evt.Event != "match" {
+			t.Errorf("[%d] expected match, got %s", i, evt.Event)
+		}
+
+		if evt.Data != strconv.Itoa(i) {
+			t.Errorf("[%d] expected %d, got %s", i, i, evt.Data)
+		}
+	}
+}
+
+// TestSubscribeFilter_BroadcastManyMixedSubscribers verifies correct event
+// partition when half the subscribers have predicates and half do not, all
+// receiving a single BroadcastMany batch. Each filtered subscriber must receive
+// only matching events; each unfiltered subscriber must receive all events in
+// order.
+func TestSubscribeFilter_BroadcastManyMixedSubscribers(t *testing.T) {
+	t.Parallel()
+
+	b := sse.NewBroadcaster[sse.Event]()
+	defer b.Close()
+
+	const half = 5
+
+	filtered := make([]<-chan sse.Event, half)
+	unfiltered := make([]<-chan sse.Event, half)
+
+	for i := range half {
+		filtered[i] = b.SubscribeFilter(func(evt sse.Event) bool { return evt.Event == "keep" })
+		unfiltered[i] = b.Subscribe()
+	}
+
+	b.BroadcastMany(
+		sse.Event{Event: "keep", Data: "k1"},
+		sse.Event{Event: "drop", Data: "d1"},
+		sse.Event{Event: "keep", Data: "k2"},
+	)
+
+	for i, ch := range filtered {
+		for j, want := range []string{"k1", "k2"} {
+			evt := <-ch
+			if evt.Data != want {
+				t.Errorf("filtered[%d][%d]: expected %s, got %s", i, j, want, evt.Data)
+			}
+		}
+
+		select {
+		case extra := <-ch:
+			t.Errorf("filtered[%d] should receive only matching events, got %v", i, extra)
+		default:
+		}
+	}
+
+	for i, ch := range unfiltered {
+		for j, want := range []string{"k1", "d1", "k2"} {
+			evt := <-ch
+			if evt.Data != want {
+				t.Errorf("unfiltered[%d][%d]: expected %s, got %s", i, j, want, evt.Data)
+			}
+		}
+	}
+}

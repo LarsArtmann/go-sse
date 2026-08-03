@@ -9,7 +9,7 @@
 package main
 
 import (
-	"encoding/json/v2"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -147,7 +147,7 @@ const indexHTML = `<!DOCTYPE html>
     <div data-init="@get('/events')"></div>
 
     <div class="bar">
-      <div class="fill" data-bind:style="` + "`" + `width: {{$progress}}%` + "`" + `"></div>
+      <div class="fill" data-style:width="$progress + '%'"></div>
     </div>
 
     <div id="status"><p>Connecting&#8230;</p></div>

@@ -3,6 +3,8 @@ package sse_test
 import (
 	"bytes"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 
 	"github.com/larsartmann/go-sse"
 )
@@ -106,4 +108,40 @@ func ExampleBroadcaster_SubscribeFilter() {
 	// Output:
 	// {event:message data:hello}
 	// {event:message data:world}
+}
+
+// ExampleReplayFiltered demonstrates predicate-based reconnection replay:
+// after a client reconnects (empty Last-Event-ID means "from the beginning"),
+// only events matching the predicate are sent. Here a minimal in-memory store
+// is filtered to "message" events; the "reaction" event is skipped.
+//
+// The store here is a test helper; in real code you back this with a database
+// or ring buffer that implements sse.EventStore.
+func ExampleReplayFiltered() {
+	store := &memoryStore{events: []sse.Event{
+		{Event: "message", Data: "hello", ID: sse.NewEventID("1")},
+		{Event: "reaction", Data: "wave", ID: sse.NewEventID("2")},
+		{Event: "message", Data: "world", ID: sse.NewEventID("3")},
+	}}
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/events", nil)
+	stream := sse.NewStream(w, r)
+	defer func() { _ = stream.Close() }()
+
+	n, _ := sse.ReplayFiltered(stream, store, sse.NewEventID(""),
+		func(evt sse.Event) bool { return evt.Event == "message" })
+
+	fmt.Println("replayed", n, "events")
+	fmt.Print(w.Body.String())
+
+	// Output:
+	// replayed 2 events
+	// event: message
+	// data: hello
+	// id: 1
+	//
+	// event: message
+	// data: world
+	// id: 3
 }
