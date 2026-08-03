@@ -2,6 +2,7 @@ package sse_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -89,21 +90,23 @@ func TestBroadcaster_Shutdown_ContextCancel(t *testing.T) {
 
 	if err := b.Shutdown(ctx); err == nil {
 		t.Fatal("Shutdown should return context error on cancel")
+	} else if !errors.Is(err, context.Canceled) {
+		t.Errorf("Shutdown error should wrap context.Canceled, got %v", err)
 	}
 
 	// Broadcaster must remain in draining state, NOT closed. The
 	// caller can retry with a fresh context or fall back to Close.
-	h := b.Health()
-	if h.Closed {
+	health := b.Health()
+	if health.Closed {
 		t.Error("broadcaster should NOT be closed when Shutdown's ctx fires")
 	}
 
-	if !h.Draining {
+	if !health.Draining {
 		t.Error("broadcaster should be in draining state after cancelled Shutdown")
 	}
 
-	if h.SubscriberCount != 1 {
-		t.Errorf("SubscriberCount: got %d, want 1", h.SubscriberCount)
+	if health.SubscriberCount != 1 {
+		t.Errorf("SubscriberCount: got %d, want 1", health.SubscriberCount)
 	}
 
 	// ch should still be open (not closed by the cancelled Shutdown).
@@ -132,7 +135,19 @@ func TestBroadcaster_Shutdown_RejectsNewSubscribersWhileDraining(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 
-	_ = b.Shutdown(ctx) // returns ctx.Err()
+	if err := b.Shutdown(ctx); !errors.Is(err, context.Canceled) {
+		t.Fatalf("Shutdown: got %v, want context.Canceled", err)
+	}
+
+	// ch1 must remain open during draining: cancelled Shutdown does not
+	// close anything, the caller is expected to retry or Close.
+	select {
+	case _, ok := <-ch1:
+		if !ok {
+			t.Error("ch1 should still be open after cancelled Shutdown")
+		}
+	default:
+	}
 
 	// New Subscribe during draining should return a closed channel.
 	ch2 := b.Subscribe()
@@ -140,9 +155,12 @@ func TestBroadcaster_Shutdown_RejectsNewSubscribersWhileDraining(t *testing.T) {
 		t.Error("Subscribe during draining should return a closed channel")
 	}
 
-	// Cleanup
+	// Cleanup: instant close to release ch1.
 	b.Close()
-	_ = ch1
+
+	if _, ok := <-ch1; ok {
+		t.Error("ch1 should be closed after final Close")
+	}
 }
 
 func TestBroadcaster_Shutdown_Idempotent(t *testing.T) {
@@ -176,21 +194,21 @@ func TestBroadcaster_Health_InitialState(t *testing.T) {
 
 	b := sse.NewBroadcaster[sse.Event]()
 
-	h := b.Health()
-	if h.Closed {
+	health := b.Health()
+	if health.Closed {
 		t.Error("fresh broadcaster should not be closed")
 	}
 
-	if h.Draining {
+	if health.Draining {
 		t.Error("fresh broadcaster should not be draining")
 	}
 
-	if h.SubscriberCount != 0 {
-		t.Errorf("SubscriberCount: got %d, want 0", h.SubscriberCount)
+	if health.SubscriberCount != 0 {
+		t.Errorf("SubscriberCount: got %d, want 0", health.SubscriberCount)
 	}
 
-	if h.BufferSize != 64 {
-		t.Errorf("BufferSize: got %d, want default 64", h.BufferSize)
+	if health.BufferSize != 64 {
+		t.Errorf("BufferSize: got %d, want default 64", health.BufferSize)
 	}
 }
 
@@ -204,12 +222,12 @@ func TestBroadcaster_Health_DuringOperation(t *testing.T) {
 	ch2 := b.Subscribe()
 	defer b.Unsubscribe(ch2)
 
-	h := b.Health()
-	if h.SubscriberCount != 2 {
-		t.Errorf("SubscriberCount: got %d, want 2", h.SubscriberCount)
+	health := b.Health()
+	if health.SubscriberCount != 2 {
+		t.Errorf("SubscriberCount: got %d, want 2", health.SubscriberCount)
 	}
 
-	if h.Closed || h.Draining {
+	if health.Closed || health.Draining {
 		t.Error("operating broadcaster should not be closed or draining")
 	}
 }
@@ -219,9 +237,9 @@ func TestBroadcaster_Health_ReportsBufferSize(t *testing.T) {
 
 	b := sse.NewBroadcaster[sse.Event](sse.WithBufferSize[sse.Event](256))
 
-	h := b.Health()
-	if h.BufferSize != 256 {
-		t.Errorf("BufferSize: got %d, want 256", h.BufferSize)
+	health := b.Health()
+	if health.BufferSize != 256 {
+		t.Errorf("BufferSize: got %d, want 256", health.BufferSize)
 	}
 }
 
@@ -231,8 +249,8 @@ func TestBroadcaster_Health_AfterClose(t *testing.T) {
 	b := sse.NewBroadcaster[sse.Event]()
 	b.Close()
 
-	h := b.Health()
-	if !h.Closed {
+	health := b.Health()
+	if !health.Closed {
 		t.Error("Health.Closed should be true after Close")
 	}
 }

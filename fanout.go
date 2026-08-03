@@ -90,7 +90,7 @@ type fanOut[T any] struct {
 }
 
 func newFanOut[T any](opts ...Option[T]) *fanOut[T] {
-	f := &fanOut[T]{
+	hub := &fanOut[T]{
 		mu:            sync.RWMutex{},
 		subscribers:   make(map[uintptr]*subscriber[T]),
 		bufferSize:    defaultSubscriberBuffer,
@@ -100,10 +100,10 @@ func newFanOut[T any](opts ...Option[T]) *fanOut[T] {
 	}
 
 	for _, opt := range opts {
-		opt(f)
+		opt(hub)
 	}
 
-	return f
+	return hub
 }
 
 // effectiveBufferSize returns the configured buffer size, falling back to
