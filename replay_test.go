@@ -2,8 +2,6 @@ package sse_test
 
 import (
 	"errors"
-	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -35,11 +33,7 @@ func (m *memoryStore) EventsAfter(lastID sse.EventID) ([]sse.Event, error) {
 func TestReplay_AfterGivenID(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, w := newTestStream(t)
 
 	store := &memoryStore{
 		events: []sse.Event{
@@ -80,11 +74,7 @@ func TestReplay_AfterGivenID(t *testing.T) {
 func TestReplay_EmptyAfterLastEvent(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, _ := newTestStream(t)
 
 	store := &memoryStore{
 		events: []sse.Event{
@@ -105,11 +95,7 @@ func TestReplay_EmptyAfterLastEvent(t *testing.T) {
 func TestReplay_NoLastID(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, _ := newTestStream(t)
 
 	store := &memoryStore{
 		events: []sse.Event{
@@ -131,11 +117,7 @@ func TestReplay_NoLastID(t *testing.T) {
 func TestReplay_WriteError(t *testing.T) {
 	t.Parallel()
 
-	w := &errorResponseWriter{ResponseWriter: httptest.NewRecorder(), writer: &errorWriter{}}
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream := newTestFailingStream(t)
 
 	store := &memoryStore{
 		events: []sse.Event{
@@ -149,18 +131,6 @@ func TestReplay_WriteError(t *testing.T) {
 	}
 }
 
-// errorResponseWriter wraps errorWriter as http.ResponseWriter.
-type errorResponseWriter struct {
-	http.ResponseWriter
-	writer *errorWriter
-}
-
-func (e *errorResponseWriter) Write(p []byte) (int, error) {
-	return e.writer.Write(p)
-}
-
-func (e *errorResponseWriter) Flush() {}
-
 // failingStore always returns an error from EventsAfter.
 type failingStore struct{}
 
@@ -171,11 +141,7 @@ func (failingStore) EventsAfter(sse.EventID) ([]sse.Event, error) {
 func TestReplay_StoreError(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, _ := newTestStream(t)
 
 	n, err := sse.Replay(stream, failingStore{}, sse.NewEventID(""))
 	if err == nil {

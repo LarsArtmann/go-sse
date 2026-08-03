@@ -1,8 +1,6 @@
 package sse_test
 
 import (
-	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -65,11 +63,7 @@ func testStore() *filteredMemoryStore {
 func TestReplayFiltered_FilteredEventStorePath(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, w := newTestStream(t)
 
 	n, err := sse.ReplayFiltered(stream, testStore(), sse.NewEventID(""),
 		func(evt sse.Event) bool { return evt.Event == "message" })
@@ -99,11 +93,7 @@ func TestReplayFiltered_FilteredEventStorePath(t *testing.T) {
 func TestReplayFiltered_FallbackPath(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, w := newTestStream(t)
 
 	// Use plain memoryStore (does NOT implement FilteredEventStore)
 	store := &memoryStore{
@@ -138,11 +128,7 @@ func TestReplayFiltered_FallbackPath(t *testing.T) {
 func TestReplayFiltered_NilPredDelegatesToReplay(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, _ := newTestStream(t)
 
 	n, err := sse.ReplayFiltered(stream, testStore(), sse.NewEventID(""), nil)
 	if err != nil {
@@ -157,11 +143,7 @@ func TestReplayFiltered_NilPredDelegatesToReplay(t *testing.T) {
 func TestReplayFiltered_WriteError(t *testing.T) {
 	t.Parallel()
 
-	w := &errorResponseWriter{ResponseWriter: httptest.NewRecorder(), writer: &errorWriter{}}
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream := newTestFailingStream(t)
 
 	_, err := sse.ReplayFiltered(stream, testStore(), sse.NewEventID(""),
 		func(evt sse.Event) bool { return true })
@@ -173,11 +155,7 @@ func TestReplayFiltered_WriteError(t *testing.T) {
 func TestReplayFiltered_StoreError(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, _ := newTestStream(t)
 
 	n, err := sse.ReplayFiltered(stream, failingStore{}, sse.NewEventID(""),
 		func(evt sse.Event) bool { return true })
@@ -197,11 +175,7 @@ func TestReplayFiltered_StoreError(t *testing.T) {
 func TestReplayFiltered_AfterGivenID(t *testing.T) {
 	t.Parallel()
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/events", nil)
-
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	stream, w := newTestStream(t)
 
 	n, err := sse.ReplayFiltered(stream, testStore(), sse.NewEventID("2"),
 		func(evt sse.Event) bool { return evt.Event == "message" })
