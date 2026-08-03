@@ -5,6 +5,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/larsartmann/go-sse"
 )
@@ -251,8 +252,9 @@ func TestSubscribeFilter_ConcurrentRace(t *testing.T) {
 	}
 
 	// Sanity: with 4 broadcasters × 1000 "match" events each, we expect ~4000
-	if received.Load() == 0 {
-		t.Error("filtered subscriber should have received at least some events")
+	// matching events (minus drops during churn). Assert a meaningful threshold.
+	if received.Load() < 500 {
+		t.Errorf("filtered subscriber received only %d matching events out of ~4000 sent", received.Load())
 	}
 }
 
@@ -297,5 +299,75 @@ func BenchmarkSubscribeFilter_PredicateOverhead(b *testing.B) {
 				bc.Broadcast(evt)
 			}
 		})
+	}
+}
+
+func TestSubscribeFilter_PredicatePanicRecovered(t *testing.T) {
+	t.Parallel()
+
+	b := sse.NewBroadcaster[sse.Event]()
+	defer b.Close()
+
+	panicky := b.SubscribeFilter(func(evt sse.Event) bool {
+		if evt.Data == "boom" {
+			panic("predicate explosion")
+		}
+
+		return true
+	})
+	defer b.Unsubscribe(panicky)
+
+	// A panicking predicate must NOT crash the broadcaster.
+	// The panicking event is skipped (treated as non-match).
+	b.Broadcast(sse.Event{Event: "safe", Data: "boom"})
+
+	// After the panic, the broadcaster must still deliver subsequent events.
+	b.Broadcast(sse.Event{Event: "safe", Data: "ok"})
+
+	select {
+	case evt := <-panicky:
+		if evt.Data != "ok" {
+			t.Errorf("expected ok after panic recovery, got %s", evt.Data)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for event after panic recovery")
+	}
+}
+
+func TestSubscribeFilter_ShutdownDrainsFilteredSubscribers(t *testing.T) {
+	t.Parallel()
+
+	b := sse.NewBroadcaster[sse.Event]()
+
+	filtered := b.SubscribeFilter(func(evt sse.Event) bool {
+		return evt.Event == "keep"
+	})
+
+	// Broadcast matching + non-matching events.
+	b.Broadcast(sse.Event{Event: "skip", Data: "nope"})
+	b.Broadcast(sse.Event{Event: "keep", Data: "yes1"})
+	b.Broadcast(sse.Event{Event: "skip", Data: "nope"})
+	b.Broadcast(sse.Event{Event: "keep", Data: "yes2"})
+
+	// Shutdown must drain the buffer — only matching events should arrive.
+	if err := b.Shutdown(t.Context()); err != nil {
+		t.Fatalf("Shutdown: %v", err)
+	}
+
+	var got []string
+
+	for evt := range filtered {
+		got = append(got, evt.Data)
+	}
+
+	want := []string{"yes1", "yes2"}
+	if len(got) != len(want) {
+		t.Fatalf("expected %d events, got %d: %v", len(want), len(got), got)
+	}
+
+	for i, w := range want {
+		if got[i] != w {
+			t.Errorf("[%d] expected %s, got %s", i, w, got[i])
+		}
 	}
 }

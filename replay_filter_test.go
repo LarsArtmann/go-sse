@@ -198,3 +198,49 @@ func TestReplayFiltered_AfterGivenID(t *testing.T) {
 		t.Errorf("should not contain react2 in %q", body)
 	}
 }
+
+func TestReplayFiltered_FallbackPredicatePanicRecovered(t *testing.T) {
+	t.Parallel()
+
+	stream, w := newTestStream(t)
+
+	store := &memoryStore{
+		events: []sse.Event{
+			{Event: "message", Data: "safe1", ID: sse.NewEventID("1")},
+			{Event: "message", Data: "boom", ID: sse.NewEventID("2")},
+			{Event: "message", Data: "safe2", ID: sse.NewEventID("3")},
+		},
+	}
+
+	// A panicking predicate must NOT crash ReplayFiltered.
+	// The panicking event is skipped (treated as non-match).
+	n, err := sse.ReplayFiltered(stream, store, sse.NewEventID(""),
+		func(evt sse.Event) bool {
+			if evt.Data == "boom" {
+				panic("predicate explosion")
+			}
+
+			return true
+		})
+	if err != nil {
+		t.Fatalf("ReplayFiltered with panicking predicate: %v", err)
+	}
+
+	if n != 2 {
+		t.Errorf("expected 2 events (boom skipped), got %d", n)
+	}
+
+	body := w.Body.String()
+
+	if !strings.Contains(body, "data: safe1") {
+		t.Errorf("missing safe1 in %q", body)
+	}
+
+	if !strings.Contains(body, "data: safe2") {
+		t.Errorf("missing safe2 in %q", body)
+	}
+
+	if strings.Contains(body, "data: boom") {
+		t.Errorf("should not contain boom in %q", body)
+	}
+}

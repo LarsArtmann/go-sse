@@ -407,3 +407,78 @@ func TestIntegration_SubscribeFilter(t *testing.T) {
 		t.Errorf("expected 0 subscribers after handler exit, got %d", count)
 	}
 }
+
+func TestIntegration_ReplayFiltered(t *testing.T) {
+	t.Parallel()
+
+	events := []sse.Event{
+		{Event: "message", Data: "msg1", ID: sse.NewEventID("1")},
+		{Event: "reaction", Data: "react1", ID: sse.NewEventID("2")},
+		{Event: "message", Data: "msg2", ID: sse.NewEventID("3")},
+		{Event: "reaction", Data: "react2", ID: sse.NewEventID("4")},
+	}
+
+	// Test both store paths: FilteredEventStore (efficient) and plain EventStore (fallback).
+	for _, tc := range []struct {
+		name  string
+		store sse.EventStore
+	}{
+		{"filtered_store", &filteredMemoryStore{events: events}},
+		{"fallback_store", &memoryStore{events: events}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				stream := sse.NewStream(w, r)
+				defer func() { _ = stream.Close() }()
+
+				_, _ = sse.ReplayFiltered(stream, tc.store, stream.LastEventID(),
+					func(evt sse.Event) bool { return evt.Event == "message" })
+			}))
+			t.Cleanup(func() {
+				server.CloseClientConnections()
+				server.Close()
+			})
+
+			// Client reconnects claiming it last received event "1".
+			// Server should replay only "message" events after ID 1 → event 3 (msg2).
+			// Event 2 (react1) and 4 (react2) are filtered out.
+			ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
+			t.Cleanup(cancel)
+
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
+			if err != nil {
+				t.Fatalf("NewRequest: %v", err)
+			}
+
+			req.Header.Set("Last-Event-ID", "1")
+
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				t.Fatalf("Do: %v", err)
+			}
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatalf("ReadAll: %v", err)
+			}
+
+			_ = resp.Body.Close()
+
+			output := string(body)
+
+			// Only event 3 (message/msg2) should be replayed after ID 1 with the filter.
+			if !strings.Contains(output, "data: msg2") {
+				t.Errorf("missing msg2 in %q", output)
+			}
+
+			// Reactions must NOT appear — they were filtered out.
+			for _, mustNot := range []string{"data: react1", "data: react2"} {
+				if strings.Contains(output, mustNot) {
+					t.Errorf("filtered-out event %q leaked through: %q", mustNot, output)
+				}
+			}
+		})
+	}
+}
