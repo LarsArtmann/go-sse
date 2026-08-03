@@ -46,8 +46,8 @@ Four layers, each in its own file, composable independently:
 | ----------------- | ------------------------------ | ------------------------------------------------------------------------------------------------- |
 | Wire format       | `event.go`                     | `Event`, `EventID`, `WriteEvent`, `WriteHeartbeat`, `WriteRetry`, `KeyedLines`, `WriteKeyedLines` |
 | Single connection | `stream.go`                    | `Stream` — headers, mutex-guarded send, heartbeat, disconnect hooks, `SendLines`, `SendKeyed`     |
-| Fan-out           | `broadcaster.go` + `fanout.go` | `Broadcaster[T]` (public) embeds `fanOut[T]` (unexported hub)                                     |
-| Reconnection      | `replay.go`                    | `EventStore` interface + `Replay` function                                                        |
+| Fan-out           | `broadcaster.go` + `fanout.go` | `Broadcaster[T]` (public) embeds `fanOut[T]` (unexported hub). `SubscribeFilter` for predicate-based filtering. |
+| Reconnection      | `replay.go`                    | `EventStore` interface + `Replay` function. `FilteredEventStore` + `ReplayFiltered` for predicate-aware replay. |
 
 **Data flow:** `Broadcaster.Broadcast(evt)` → non-blocking `select` send into each subscriber's buffered channel → handler's `select` loop reads channel → `stream.Send(evt)` → `WriteEvent` → `ResponseWriter.Write` + `Flush`.
 
@@ -58,7 +58,7 @@ Four layers, each in its own file, composable independently:
 ## Concurrency Invariants (critical)
 
 1. **`Stream.mu` serializes ALL writes** to the underlying `ResponseWriter`. `Send`, `Heartbeat`, and `Close` all acquire it because `http.ResponseWriter` is not safe for concurrent use. Any new write path must hold this mutex.
-2. **`fanOut` uses RWMutex with non-blocking sends.** `Broadcast` holds `RLock` during iteration and sends via `select { case ch <- msg: default: }` (drop). The read lock guarantees `Unsubscribe` cannot close a channel mid-send. Never change Broadcast to a blocking send under the read lock.
+2. **`fanOut` uses RWMutex with non-blocking sends.** `Broadcast` holds `RLock` during iteration and sends via `select { case ch <- msg: default: }` (drop). The read lock guarantees `Unsubscribe` cannot close a channel mid-send. Never change Broadcast to a blocking send under the read lock. **SubscribeFilter predicates are called under this same read lock** — they must be pure, fast, and non-blocking.
 3. **`fanOut.Close()` sets `subscribers = nil` as the closed sentinel.** `Subscribe` checks for nil and returns an already-closed channel. Don't repurpose nil to mean "uninitialized."
 
 ## Gotchas
@@ -69,6 +69,9 @@ Four layers, each in its own file, composable independently:
 - **`MustParseEventID` panics** — it is for tests and constants only, never untrusted input. Use `ParseEventID` (rejects `\n`/`\r` that would corrupt the wire format) for request-header values.
 - **Empty `EventID` is the zero/initial-connection value**, not an error. `Replay` with an empty ID replays everything (the store decides semantics).
 - **`OnDisconnect` callbacks fire inside `Close()`**, after the mutex is released, in registration order.
+- **`SubscribeFilter` predicates run under the fanOut read lock.** The predicate is called once per subscriber per broadcast inside `sendAllLocked`. It must be pure (no side effects), fast (no I/O, no blocking), and non-panicking. Nil predicate means "all events" (identical to `Subscribe`).
+- **`ReplayFiltered` type-asserts to `FilteredEventStore`.** If the store implements the interface, the predicate is pushed into the store query (efficient). Otherwise it falls back to `EventsAfter` + in-memory post-filter (correct but budget-inefficient). Nil pred delegates to `Replay`.
+- **Internal `subscriber[T]` struct** wraps `chan T` + optional `func(T) bool` predicate. The subscriber map is `map[uintptr]*subscriber[T]`, keyed by channel pointer identity (same as before). One allocation per Subscribe call (negligible — once per connection, not per event).
 
 ## Conventions
 

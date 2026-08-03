@@ -67,7 +67,12 @@ func Replay(stream *Stream, store EventStore, lastID EventID) (int, error) {
 //
 // Returns the number of events replayed, or an error if the store fails or
 // writing fails.
-func ReplayFiltered(stream *Stream, store EventStore, lastID EventID, pred func(Event) bool) (int, error) {
+func ReplayFiltered(
+	stream *Stream,
+	store EventStore,
+	lastID EventID,
+	pred func(Event) bool,
+) (int, error) {
 	if pred == nil {
 		return Replay(stream, store, lastID)
 	}

@@ -83,3 +83,27 @@ func ExampleKeyedLines() {
 	// data: elements   <span>1</span>
 	// data: elements </div>
 }
+
+// ExampleBroadcaster_SubscribeFilter demonstrates predicate-based filtering:
+// only events matching the predicate are delivered to the subscriber's channel.
+// Subscribe() with no filter is equivalent to SubscribeFilter(nil).
+func ExampleBroadcaster_SubscribeFilter() {
+	bc := sse.NewBroadcaster[sse.Event]()
+
+	// Only receive "message" events, skip everything else
+	msgs := bc.SubscribeFilter(func(evt sse.Event) bool {
+		return evt.Event == "message"
+	})
+	defer bc.Unsubscribe(msgs)
+
+	bc.Broadcast(sse.Event{Event: "message", Data: "hello"})
+	bc.Broadcast(sse.Event{Event: "reaction", Data: "ignored"})
+	bc.Broadcast(sse.Event{Event: "message", Data: "world"})
+
+	fmt.Println(<-msgs)
+	fmt.Println(<-msgs)
+
+	// Output:
+	// {event:message data:hello}
+	// {event:message data:world}
+}

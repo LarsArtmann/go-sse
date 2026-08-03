@@ -58,7 +58,7 @@ decision log.
 Unexamined ideas — too early for a theme, not analyzed enough to be a parked
 decision. Promoted to a numbered theme when bounded; dropped if ruled out.
 
-- Topic/channel-based multi-broadcaster routing (multiple named fan-out hubs behind one entry point). No consumer has asked for this yet.
+- Topic/channel-based multi-broadcaster routing (multiple named fan-out hubs behind one entry point). No consumer has asked for this yet. The predicate-based filtering approach (`SubscribeFilter` + `ReplayFiltered`) solves the real consumer need (DiscordSync's per-channel/per-guild filtering) without the complexity of named hubs or wildcard matching. Revisit if a consumer needs true multi-hub routing rather than predicate filtering on a single hub.
 - Optional `di/` subpackage providing samber/do v2 lifecycle adapters (`Shutdowner`, `Healthchecker`) for `Broadcaster` and `Stream`. See [docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md](docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md).
 
 ## Non-goals
