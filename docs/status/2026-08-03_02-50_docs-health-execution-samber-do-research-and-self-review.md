@@ -331,14 +331,14 @@ in a timestamped report) is the second-biggest miss. Both are fixable.
 
 ## Resolution (2026-08-03)
 
-| Item | Resolution | Commit |
-|------|------------|--------|
-| §d1 9.7 MB committed binary | FIXED: removed from repo + `.gitignore` | `2c029b4` |
-| §c1 HARVEST (50 items trapped in 01-09 report) | Done — forward-looking items harvested into TODO_LIST/ROADMAP by subsequent docs-health session | — |
-| §b1 samber/do → TODO_LIST action | Done — `Broadcaster.Shutdown(ctx)` and `Broadcaster.Health()` shipped | `af9bfa6` |
-| §c3 gopls stdversion warning | Confirmed false positive under `GOEXPERIMENT=jsonv2` — not actionable until Go 1.27 | — |
-| §c4 Coverage claim (100% vs 98.9%) | Acknowledged — CHANGELOG `[0.2.1]` was accurate at release time; current 98.9% is from new code added after v0.2.1 | — |
-| §c5 `datastar` binary in `.gitignore` | Done | `2c029b4` |
-| Q1: `git rm` + `.gitignore` or history rewrite? | `git rm` + `.gitignore` done; no history rewrite (pre-1.0, acceptable) | `2c029b4` |
-| Q2: gopls stdversion real or false positive? | False positive — `GOEXPERIMENT=jsonv2` provides v2 API in Go 1.26 | — |
-| Q3: Run HARVEST? | Done — this session completed the harvest that was missed | — |
+| Item                                            | Resolution                                                                                                         | Commit    |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------- |
+| §d1 9.7 MB committed binary                     | FIXED: removed from repo + `.gitignore`                                                                            | `2c029b4` |
+| §c1 HARVEST (50 items trapped in 01-09 report)  | Done — forward-looking items harvested into TODO_LIST/ROADMAP by subsequent docs-health session                    | —         |
+| §b1 samber/do → TODO_LIST action                | Done — `Broadcaster.Shutdown(ctx)` and `Broadcaster.Health()` shipped                                              | `af9bfa6` |
+| §c3 gopls stdversion warning                    | Confirmed false positive under `GOEXPERIMENT=jsonv2` — not actionable until Go 1.27                                | —         |
+| §c4 Coverage claim (100% vs 98.9%)              | Acknowledged — CHANGELOG `[0.2.1]` was accurate at release time; current 98.9% is from new code added after v0.2.1 | —         |
+| §c5 `datastar` binary in `.gitignore`           | Done                                                                                                               | `2c029b4` |
+| Q1: `git rm` + `.gitignore` or history rewrite? | `git rm` + `.gitignore` done; no history rewrite (pre-1.0, acceptable)                                             | `2c029b4` |
+| Q2: gopls stdversion real or false positive?    | False positive — `GOEXPERIMENT=jsonv2` provides v2 API in Go 1.26                                                  | —         |
+| Q3: Run HARVEST?                                | Done — this session completed the harvest that was missed                                                          | —         |

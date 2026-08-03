@@ -193,16 +193,16 @@ The core work is solid: two well-tested, well-documented exports that make DataS
 
 All section-c "NOT STARTED" items shipped in subsequent sessions:
 
-| Item | Resolution | Commit |
-|------|------------|--------|
-| CHANGELOG `[Unreleased]` | Done — all DataStar exports documented | `2a31858` |
-| `example/datastar/main.go` | Done — runnable server with HTML + SSE endpoint | `c8ae9a0` |
-| Integration test (HTTP round-trip) | Done — `TestIntegration_DataStarWireFormat` asserts exact wire bytes | `c8ae9a0` |
-| Fuzz test `FuzzKeyedLines` | Done — 6 seed corpus entries | `c8ae9a0` |
-| Benchmark `BenchmarkKeyedLines` | Done — single-line + 100-line variants | `c8ae9a0` |
-| `WriteKeyedLines` standalone | Done — wire-only helper, no `net/http` | `0cb827d` |
-| `SendKeyed` convenience | Done — stream-level single-key pattern | `0cb827d` |
-| TODO_LIST / ROADMAP updates | Done | `2a31858`, `cd78dc4` |
+| Item                               | Resolution                                                           | Commit               |
+| ---------------------------------- | -------------------------------------------------------------------- | -------------------- |
+| CHANGELOG `[Unreleased]`           | Done — all DataStar exports documented                               | `2a31858`            |
+| `example/datastar/main.go`         | Done — runnable server with HTML + SSE endpoint                      | `c8ae9a0`            |
+| Integration test (HTTP round-trip) | Done — `TestIntegration_DataStarWireFormat` asserts exact wire bytes | `c8ae9a0`            |
+| Fuzz test `FuzzKeyedLines`         | Done — 6 seed corpus entries                                         | `c8ae9a0`            |
+| Benchmark `BenchmarkKeyedLines`    | Done — single-line + 100-line variants                               | `c8ae9a0`            |
+| `WriteKeyedLines` standalone       | Done — wire-only helper, no `net/http`                               | `0cb827d`            |
+| `SendKeyed` convenience            | Done — stream-level single-key pattern                               | `0cb827d`            |
+| TODO_LIST / ROADMAP updates        | Done                                                                 | `2a31858`, `cd78dc4` |
 
 Section-e improvements: Grow calc fixed with named constants (`5e4f22d`); README example fixed to use raw string literals (`2a31858`); CRLF doc added (`5e4f22d`). The gopls `stdversion` warning is a confirmed false positive under `GOEXPERIMENT=jsonv2`.
 

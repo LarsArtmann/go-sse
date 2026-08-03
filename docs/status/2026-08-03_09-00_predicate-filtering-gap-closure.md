@@ -10,21 +10,21 @@
 
 ### Documentation updates (4 files)
 
-| File | What was added |
-|---|---|
-| `broadcaster.go` | New `# Filtered Subscriptions` section in the `Broadcaster` doc comment: predicate contract (pure, fast, non-blocking), panic semantics (crashes by design, no recover), equivalence (`Subscribe()` = `SubscribeFilter(nil)`), usage example |
-| `FEATURES.md` | `SubscribeFilter` row in fan-out table (FULLY_FUNCTIONAL); `FilteredEventStore` + `ReplayFiltered` rows in replay table; updated integration test, race test, example test, and benchmark rows to include the new tests |
-| `README.md` | `SubscribeFilter` + `FilteredEventStore` in "What's Included" table; new "Filtered subscriptions" section with code examples; `SubscribeFilter` in Broadcaster API reference; `FilteredEventStore` interface + `ReplayFiltered` in Replay API reference; new design decision entry ("Predicate under read lock") |
-| `docs/DOMAIN_LANGUAGE.md` | 4 new glossary terms: Predicate, SubscribeFilter, FilteredEventStore, ReplayFiltered |
+| File                      | What was added                                                                                                                                                                                                                                                                                                   |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `broadcaster.go`          | New `# Filtered Subscriptions` section in the `Broadcaster` doc comment: predicate contract (pure, fast, non-blocking), panic semantics (crashes by design, no recover), equivalence (`Subscribe()` = `SubscribeFilter(nil)`), usage example                                                                     |
+| `FEATURES.md`             | `SubscribeFilter` row in fan-out table (FULLY_FUNCTIONAL); `FilteredEventStore` + `ReplayFiltered` rows in replay table; updated integration test, race test, example test, and benchmark rows to include the new tests                                                                                          |
+| `README.md`               | `SubscribeFilter` + `FilteredEventStore` in "What's Included" table; new "Filtered subscriptions" section with code examples; `SubscribeFilter` in Broadcaster API reference; `FilteredEventStore` interface + `ReplayFiltered` in Replay API reference; new design decision entry ("Predicate under read lock") |
+| `docs/DOMAIN_LANGUAGE.md` | 4 new glossary terms: Predicate, SubscribeFilter, FilteredEventStore, ReplayFiltered                                                                                                                                                                                                                             |
 
 ### Test improvements (3 added, 1 rewritten)
 
-| Test | What it verifies |
-|---|---|
-| `TestSubscribeFilter_BroadcastManyRespectsPredicates` | `BroadcastMany` honors per-subscriber predicates; filtered subscriber gets only matching events in order while unfiltered gets all |
-| `TestSubscribeFilter_ConcurrentRace` (rewritten) | Correctness under concurrency: 4×2000 concurrent broadcasts (mixed match/skip) + 500 subscribe/unsubscribe churn; persistent filtered subscriber drained into atomic counters; asserts zero non-matching events delivered |
-| `TestIntegration_SubscribeFilter` | HTTP round-trip: non-matching broadcasts never reach the client over the wire; only the matching event appears in the SSE body |
-| `BenchmarkSubscribeFilter_PredicateOverhead` | Unfiltered (nil pred) vs filtered (always-true pred) at 1/100/1000 subscribers to isolate per-subscriber predicate call cost |
+| Test                                                  | What it verifies                                                                                                                                                                                                          |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TestSubscribeFilter_BroadcastManyRespectsPredicates` | `BroadcastMany` honors per-subscriber predicates; filtered subscriber gets only matching events in order while unfiltered gets all                                                                                        |
+| `TestSubscribeFilter_ConcurrentRace` (rewritten)      | Correctness under concurrency: 4×2000 concurrent broadcasts (mixed match/skip) + 500 subscribe/unsubscribe churn; persistent filtered subscriber drained into atomic counters; asserts zero non-matching events delivered |
+| `TestIntegration_SubscribeFilter`                     | HTTP round-trip: non-matching broadcasts never reach the client over the wire; only the matching event appears in the SSE body                                                                                            |
+| `BenchmarkSubscribeFilter_PredicateOverhead`          | Unfiltered (nil pred) vs filtered (always-true pred) at 1/100/1000 subscribers to isolate per-subscriber predicate call cost                                                                                              |
 
 ### CHANGELOG
 
@@ -43,16 +43,17 @@
 
 ### DOMAIN_LANGUAGE.md line references — partially correct
 
-| Term | Referenced line | Actual line | Status |
-|---|---|---|---|
-| `subscriber[T].pred` | `fanout.go:72` | `fanout.go:75` (type), `:77` (field) | Off by 3 (referenced doc comment, not declaration) |
-| `SubscribeFilter` | `fanout.go:142` | `fanout.go:142` | Correct |
-| `FilteredEventStore` | `replay.go:25` | `replay.go:25` | Correct |
-| `ReplayFiltered` | `replay.go:70` | `replay.go:70` | Correct |
+| Term                 | Referenced line | Actual line                          | Status                                             |
+| -------------------- | --------------- | ------------------------------------ | -------------------------------------------------- |
+| `subscriber[T].pred` | `fanout.go:72`  | `fanout.go:75` (type), `:77` (field) | Off by 3 (referenced doc comment, not declaration) |
+| `SubscribeFilter`    | `fanout.go:142` | `fanout.go:142`                      | Correct                                            |
+| `FilteredEventStore` | `replay.go:25`  | `replay.go:25`                       | Correct                                            |
+| `ReplayFiltered`     | `replay.go:70`  | `replay.go:70`                       | Correct                                            |
 
 ### Race test correctness — partially verified
 
 The rewritten `TestSubscribeFilter_ConcurrentRace` verifies that **zero non-matching events** were delivered to the persistent filtered subscriber. It does NOT verify:
+
 - That a reasonable **count** of matching events was delivered (only checks `> 0`, not `>= some threshold`)
 - That the subscribe/unsubscribe churn subscribers also received only matching events (they're created and immediately destroyed — no collector)
 - No data race between `Shutdown`/`drain` and filtered broadcast paths
@@ -92,7 +93,7 @@ The rewritten `TestSubscribeFilter_ConcurrentRace` verifies that **zero non-matc
 
 4. **Predicate panic contract is documented inconsistently.** `broadcaster.go` has it; `ReplayFiltered` in `replay.go` doesn't. Same risk, different documentation depth. Should be consistent.
 
-5. **The benchmark ran with `-benchtime=10x`** (10 iterations). The results showed the filtered path being *faster* than unfiltered at 1 subscriber (237 ns vs 280 ns) which is almost certainly measurement noise, not a real signal. I didn't flag this or run a proper benchmark. The benchmark code is correct; the *verification* was insufficient.
+5. **The benchmark ran with `-benchtime=10x`** (10 iterations). The results showed the filtered path being _faster_ than unfiltered at 1 subscriber (237 ns vs 280 ns) which is almost certainly measurement noise, not a real signal. I didn't flag this or run a proper benchmark. The benchmark code is correct; the _verification_ was insufficient.
 
 ### Code quality observations (pre-existing, not introduced this session)
 
@@ -185,6 +186,7 @@ The rewritten `TestSubscribeFilter_ConcurrentRace` verifies that **zero non-matc
 ### 1. DiscordSync migration: keep or revert?
 
 DiscordSync repo has unverified auto-committed commits (`b725ffed`, `5b1a9f6e`) that migrated from `cqrs-htmx` SSE aliases to direct `go-sse` imports. These were never tested. I cannot determine whether this migration is correct without reading DiscordSync's full SSE usage and its `cqrs-htmx` dependency surface — which is a separate project with its own AGENTS.md, test suite, and architecture. Should I:
+
 - **(a)** Leave it — you'll handle DiscordSync separately
 - **(b)** Investigate and verify/test the migration now
 - **(c)** Revert the commits and redo the migration properly in a later session
@@ -203,16 +205,16 @@ I documented the contract as "a panicking predicate will crash the broadcaster g
 
 ## Session metrics
 
-| Metric | Value |
-|---|---|
-| Files modified | 6 (`broadcaster.go`, `FEATURES.md`, `README.md`, `docs/DOMAIN_LANGUAGE.md`, `CHANGELOG.md`, `filter_test.go`, `integration_test.go`) |
-| Tests added | 2 (`BroadcastManyRespectsPredicates`, `Integration_SubscribeFilter`) |
-| Tests rewritten | 1 (`ConcurrentRace` — now verifies correctness, not just no-panic) |
-| Benchmarks added | 1 (`PredicateOverhead`) |
-| Doc sections added | 5 (broadcaster.go, README "Filtered subscriptions", README design decision, DOMAIN_LANGUAGE glossary, doc.go already done prior) |
-| Commits this session | 4 (auto-committed by daemon) |
-| Commits ahead of origin | 4 |
-| Verification | `go test -race` pass, `golangci-lint` 0 issues, `nix flake check` pass |
+| Metric                  | Value                                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Files modified          | 6 (`broadcaster.go`, `FEATURES.md`, `README.md`, `docs/DOMAIN_LANGUAGE.md`, `CHANGELOG.md`, `filter_test.go`, `integration_test.go`) |
+| Tests added             | 2 (`BroadcastManyRespectsPredicates`, `Integration_SubscribeFilter`)                                                                 |
+| Tests rewritten         | 1 (`ConcurrentRace` — now verifies correctness, not just no-panic)                                                                   |
+| Benchmarks added        | 1 (`PredicateOverhead`)                                                                                                              |
+| Doc sections added      | 5 (broadcaster.go, README "Filtered subscriptions", README design decision, DOMAIN_LANGUAGE glossary, doc.go already done prior)     |
+| Commits this session    | 4 (auto-committed by daemon)                                                                                                         |
+| Commits ahead of origin | 4                                                                                                                                    |
+| Verification            | `go test -race` pass, `golangci-lint` 0 issues, `nix flake check` pass                                                               |
 
 ---
 
@@ -220,16 +222,16 @@ I documented the contract as "a panicking predicate will crash the broadcaster g
 
 Open items from section c and section f are tracked in TODO_LIST.md.
 
-| Item | Resolution |
-|------|------------|
+| Item                                                        | Resolution                                                                    |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | §d.1 Stale DOMAIN_LANGUAGE line refs (Subscribe, Broadcast) | FIXED — all line refs replaced with symbol-only references (maintenance-free) |
-| §d.2 `_ = i` code smell in `filter_test.go` | FIXED — changed to `for range 10` |
-| §c.1 ReplayFiltered HTTP integration test | Still open — TODO_LIST "Predicate filtering correctness gaps" |
-| §c.2 Shutdown + filtered subscribers test | Still open — TODO_LIST |
-| §c.3 Panic contract doc on ReplayFiltered | Still open — TODO_LIST |
-| §c.4 v0.4.0 release | Still open — TODO_LIST "Release" |
-| §c.5 cqrs-htmx JournalSSEStore FilteredEventStore | Cross-project — ROADMAP §2 (developer experience) |
-| §c.6 Push to origin | User decision — 5+ commits ahead of origin/master |
-| Q1: DiscordSync migration | Still open — cross-project decision |
-| Q2: Cut v0.4.0 now or after cqrs-htmx? | Still open — TODO_LIST |
-| Q3: Predicate panic policy | "Let it crash" adopted; ReplayFiltered doc still needed (TODO_LIST) |
+| §d.2 `_ = i` code smell in `filter_test.go`                 | FIXED — changed to `for range 10`                                             |
+| §c.1 ReplayFiltered HTTP integration test                   | Still open — TODO_LIST "Predicate filtering correctness gaps"                 |
+| §c.2 Shutdown + filtered subscribers test                   | Still open — TODO_LIST                                                        |
+| §c.3 Panic contract doc on ReplayFiltered                   | Still open — TODO_LIST                                                        |
+| §c.4 v0.4.0 release                                         | Still open — TODO_LIST "Release"                                              |
+| §c.5 cqrs-htmx JournalSSEStore FilteredEventStore           | Cross-project — ROADMAP §2 (developer experience)                             |
+| §c.6 Push to origin                                         | User decision — 5+ commits ahead of origin/master                             |
+| Q1: DiscordSync migration                                   | Still open — cross-project decision                                           |
+| Q2: Cut v0.4.0 now or after cqrs-htmx?                      | Still open — TODO_LIST                                                        |
+| Q3: Predicate panic policy                                  | "Let it crash" adopted; ReplayFiltered doc still needed (TODO_LIST)           |

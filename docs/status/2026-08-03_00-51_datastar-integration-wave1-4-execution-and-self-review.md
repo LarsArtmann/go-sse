@@ -258,13 +258,13 @@ I decided "no" based on the ROADMAP non-goal "no payload-format opinion." But yo
 
 ## Resolution (2026-08-03)
 
-| Item | Resolution | Commit |
-|------|------------|--------|
-| §d.1 9.7 MB committed binary | FIXED: `git rm datastar` + added to `.gitignore` | `2c029b4` |
-| §d.2 `data-bind:style` unverified | Still open — requires browser testing (TODO_LIST) | — |
-| §d.3 Autonomous decisions on 16 blocked tasks | Resolved: Q1 = no subpackage (core-only); Q2 = 0.3.0 tagged empty, real release is v0.4.0; Q3 = raw HTML (zero deps) | — |
-| §c Deliberately skipped tasks (JSONSignals, KeyedLinesBuilder, etc.) | Confirmed YAGNI — no consumer has asked for these | — |
-| §b.4 gopls stdversion warning | Confirmed false positive under `GOEXPERIMENT=jsonv2` | — |
-| Q1: DataStar subpackage? | **No** — ROADMAP non-goal "no payload-format opinion" holds | — |
-| Q2: Release version? | v0.3.0 was tagged without code changes; next real release is v0.4.0 (TODO_LIST) | — |
-| Q3: Browser test? | Still open — no CLI browser available (TODO_LIST) | — |
+| Item                                                                 | Resolution                                                                                                           | Commit    |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | --------- |
+| §d.1 9.7 MB committed binary                                         | FIXED: `git rm datastar` + added to `.gitignore`                                                                     | `2c029b4` |
+| §d.2 `data-bind:style` unverified                                    | Still open — requires browser testing (TODO_LIST)                                                                    | —         |
+| §d.3 Autonomous decisions on 16 blocked tasks                        | Resolved: Q1 = no subpackage (core-only); Q2 = 0.3.0 tagged empty, real release is v0.4.0; Q3 = raw HTML (zero deps) | —         |
+| §c Deliberately skipped tasks (JSONSignals, KeyedLinesBuilder, etc.) | Confirmed YAGNI — no consumer has asked for these                                                                    | —         |
+| §b.4 gopls stdversion warning                                        | Confirmed false positive under `GOEXPERIMENT=jsonv2`                                                                 | —         |
+| Q1: DataStar subpackage?                                             | **No** — ROADMAP non-goal "no payload-format opinion" holds                                                          | —         |
+| Q2: Release version?                                                 | v0.3.0 was tagged without code changes; next real release is v0.4.0 (TODO_LIST)                                      | —         |
+| Q3: Browser test?                                                    | Still open — no CLI browser available (TODO_LIST)                                                                    | —         |

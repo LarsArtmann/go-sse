@@ -1,6 +1,7 @@
 package sse_test
 
 import (
+	"runtime"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -593,4 +594,41 @@ func BenchmarkBroadcastManyVsLoop(b *testing.B) {
 			}
 		}
 	})
+}
+
+// BenchmarkMemoryPerSubscriber measures steady-state heap memory per subscriber
+// at scale. Each subscriber owns a buffered channel (capacity 64 by default) of
+// Events, plus the subscriber struct and its map entry. This isolates the
+// per-connection memory floor independent of event throughput.
+//
+// The buffer dominates: 64 × sizeof(sse.Event) ≈ 64 × 56 = 3.5 KiB, so the
+// per-subscriber cost is ~3.6–3.8 KiB regardless of how many events flow.
+func BenchmarkMemoryPerSubscriber(b *testing.B) {
+	for _, subs := range []int{100, 1000, 10000} {
+		b.Run(strconv.Itoa(subs)+"subs", func(b *testing.B) {
+			bc := sse.NewBroadcaster[sse.Event]()
+			defer bc.Close()
+
+			runtime.GC()
+			var before runtime.MemStats
+			runtime.ReadMemStats(&before)
+
+			chans := make([]<-chan sse.Event, subs)
+			for i := range subs {
+				chans[i] = bc.Subscribe()
+			}
+
+			runtime.GC()
+			var after runtime.MemStats
+			runtime.ReadMemStats(&after)
+
+			_ = chans // keep subscribers alive across the measurement
+
+			delta := int64(after.HeapInuse) - int64(before.HeapInuse)
+			b.ReportMetric(float64(delta)/float64(subs), "B/sub")
+			b.ReportMetric(float64(delta)/1024, "total-KiB")
+
+			// No timed loop: this is a one-shot memory snapshot. b.N stays 1.
+		})
+	}
 }

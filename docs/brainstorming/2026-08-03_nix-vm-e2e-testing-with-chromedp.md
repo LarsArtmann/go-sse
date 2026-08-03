@@ -11,14 +11,14 @@ Can we use Nix VMs for proper end-to-end testing of the DataStar example, e.g. v
 ## Short answer
 
 **Yes, feasible — but a full Nix VM is the wrong tool for this repo.** A
-headless-Chromium `check` (no VM) is the right shape *if* we decide browser E2E
+headless-Chromium `check` (no VM) is the right shape _if_ we decide browser E2E
 belongs in this library's flake at all. That decision is blocked on a scope
 call (see [Open questions](#open-questions)).
 
 ## What I found in the repo
 
 - **go-sse is a pure library.** `flake.nix:45-49` states `buildGoModule` is used
-  *solely* as a hermetic compile+test check; no binary is published. Adding a
+  _solely_ as a hermetic compile+test check; no binary is published. Adding a
   browser E2E check is a category shift from "does the library compile and pass
   unit tests" to "does the example render in a browser."
 - **The example loads DataStar from a CDN at runtime**
@@ -30,16 +30,16 @@ call (see [Open questions](#open-questions)).
 - **The TODO_LIST already tracks this** as 🔵 BLOCKED: "CI headless browser
   test … Requires the real-client verification above first."
 - **ROADMAP non-goals** explicitly reject expanding toward app-like behavior
-  (dashboard/routes/templates). Browser E2E of an *example* is adjacent to
+  (dashboard/routes/templates). Browser E2E of an _example_ is adjacent to
   that line.
 
 ## The three options
 
-| Option | Verdict | Rationale |
-| --- | --- | --- |
-| **A. NixOS VM test** (`pkgs.testers.vmTests` / QEMU) | ❌ Overkill | Boots a full OS (~10–30s+) to verify an SSE *example*. Disproportionate for a transport library; bloats `nix flake check` time and the closure by hundreds of MB. Only justified when you need to test kernel/systemd-level behavior, which is irrelevant here. |
-| **B. Headless Chromium + chromedp in a Nix `check`** | ✅ Recommended (if we do E2E here) | `pkgs.chromium` + a Go test using `chromedp.NewExecAllocator`. No VM — chromedp speaks CDP directly (no chromedriver needed). Fast, hermetic via Nix. This is the standard Go web E2E pattern. |
-| **C. Skip browser E2E entirely in this flake** | ⚠️ Defensible | The library's correctness lives at the wire-format level (already heavily tested via `httptest`). A browser test verifies the *DataStar example*, i.e. documentation, not the product. E2E could live in a separate example-verification repo or stay manual. |
+| Option                                               | Verdict                            | Rationale                                                                                                                                                                                                                                                       |
+| ---------------------------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A. NixOS VM test** (`pkgs.testers.vmTests` / QEMU) | ❌ Overkill                        | Boots a full OS (~10–30s+) to verify an SSE _example_. Disproportionate for a transport library; bloats `nix flake check` time and the closure by hundreds of MB. Only justified when you need to test kernel/systemd-level behavior, which is irrelevant here. |
+| **B. Headless Chromium + chromedp in a Nix `check`** | ✅ Recommended (if we do E2E here) | `pkgs.chromium` + a Go test using `chromedp.NewExecAllocator`. No VM — chromedp speaks CDP directly (no chromedriver needed). Fast, hermetic via Nix. This is the standard Go web E2E pattern.                                                                  |
+| **C. Skip browser E2E entirely in this flake**       | ⚠️ Defensible                      | The library's correctness lives at the wire-format level (already heavily tested via `httptest`). A browser test verifies the _DataStar example_, i.e. documentation, not the product. E2E could live in a separate example-verification repo or stay manual.   |
 
 ### Why not the VM (Option A)
 

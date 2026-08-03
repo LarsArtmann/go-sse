@@ -99,79 +99,79 @@ Nil pred delegates to existing `Replay` — full backward compatibility.
 
 ### The 20% that delivers 80%
 
-| Item | Impact | Why |
-|------|--------|-----|
-| `SubscribeFilter(pred)` on fanOut | HIGH | Core live-path primitive. Without it, every subscriber's buffer is polluted. |
-| `FilteredEventStore` + `ReplayFiltered` | HIGH | Core replay-path primitive. Without it, the replay budget is wasted on irrelevant events. |
+| Item                                    | Impact | Why                                                                                       |
+| --------------------------------------- | ------ | ----------------------------------------------------------------------------------------- |
+| `SubscribeFilter(pred)` on fanOut       | HIGH   | Core live-path primitive. Without it, every subscriber's buffer is polluted.              |
+| `FilteredEventStore` + `ReplayFiltered` | HIGH   | Core replay-path primitive. Without it, the replay budget is wasted on irrelevant events. |
 
 ### The 4% that delivers 64%
 
-| Item | Impact | Why |
-|------|--------|-----|
+| Item                                         | Impact   | Why                                                                                                                    |
+| -------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `subscriber[T]` struct refactor in fanout.go | CRITICAL | Single data structure change that enables all live-path filtering. Everything else is interface definitions and tests. |
 
 ### The 1% that delivers 51%
 
-| Item | Impact | Why |
-|------|--------|-----|
+| Item                             | Impact      | Why                                                                                                 |
+| -------------------------------- | ----------- | --------------------------------------------------------------------------------------------------- |
 | 3-line change in `sendAllLocked` | ATOMIC CORE | `if sub.pred != nil && !sub.pred(msg) { continue }` — the entire feature flows from this one check. |
 
 ### The other 20% (to reach 100%)
 
-| Item | Impact | Effort |
-|------|--------|--------|
-| Tests for SubscribeFilter | HIGH (correctness) | M |
-| Tests for ReplayFiltered | HIGH (correctness) | M |
-| doc.go, AGENTS.md, ROADMAP.md, CHANGELOG.md | MEDIUM (adoption) | S |
-| Example functions | LOW (nice-to-have) | S |
+| Item                                        | Impact             | Effort |
+| ------------------------------------------- | ------------------ | ------ |
+| Tests for SubscribeFilter                   | HIGH (correctness) | M      |
+| Tests for ReplayFiltered                    | HIGH (correctness) | M      |
+| doc.go, AGENTS.md, ROADMAP.md, CHANGELOG.md | MEDIUM (adoption)  | S      |
+| Example functions                           | LOW (nice-to-have) | S      |
 
 ## Comprehensive Task Plan (30-100 min tasks)
 
-| # | Task | Phase | Impact | Effort | Customer Value |
-|---|------|-------|--------|--------|----------------|
-| T1 | Refactor fanout.go: subscriber struct + SubscribeFilter + sendAllLocked predicate check | Core | CRITICAL | M | Enables all live-path filtering |
-| T2 | Add FilteredEventStore interface + ReplayFiltered function to replay.go | Core | HIGH | M | Enables all replay-path filtering |
-| T3 | Write tests for SubscribeFilter (basic delivery, nil pred, excludes non-matching, mixed subs, after-close, buffer overflow, race) | Tests | HIGH | L | Proves correctness |
-| T4 | Write tests for ReplayFiltered (FilteredEventStore path, fallback path, nil pred, write error, store error) | Tests | HIGH | M | Proves correctness |
-| T5 | Update documentation (doc.go, AGENTS.md, ROADMAP.md, CHANGELOG.md, example_test.go) | Docs | MEDIUM | M | Enables adoption |
-| T6 | Full verification (race tests, lint, flake check) | Verify | HIGH | S | Confidence |
+| #   | Task                                                                                                                              | Phase  | Impact   | Effort | Customer Value                    |
+| --- | --------------------------------------------------------------------------------------------------------------------------------- | ------ | -------- | ------ | --------------------------------- |
+| T1  | Refactor fanout.go: subscriber struct + SubscribeFilter + sendAllLocked predicate check                                           | Core   | CRITICAL | M      | Enables all live-path filtering   |
+| T2  | Add FilteredEventStore interface + ReplayFiltered function to replay.go                                                           | Core   | HIGH     | M      | Enables all replay-path filtering |
+| T3  | Write tests for SubscribeFilter (basic delivery, nil pred, excludes non-matching, mixed subs, after-close, buffer overflow, race) | Tests  | HIGH     | L      | Proves correctness                |
+| T4  | Write tests for ReplayFiltered (FilteredEventStore path, fallback path, nil pred, write error, store error)                       | Tests  | HIGH     | M      | Proves correctness                |
+| T5  | Update documentation (doc.go, AGENTS.md, ROADMAP.md, CHANGELOG.md, example_test.go)                                               | Docs   | MEDIUM   | M      | Enables adoption                  |
+| T6  | Full verification (race tests, lint, flake check)                                                                                 | Verify | HIGH     | S      | Confidence                        |
 
 ## Detailed Breakdown (max 12 min tasks)
 
-| # | Task | Parent | Est |
-|---|------|--------|-----|
-| D1 | Add `subscriber[T]` struct type to fanout.go | T1 | 5min |
-| D2 | Change `subscribers` field type from `map[uintptr]chan T` to `map[uintptr]*subscriber[T]` | T1 | 3min |
-| D3 | Update `newFanOut` initializer (map value type changes) | T1 | 2min |
-| D4 | Update `Subscribe()`: create `&subscriber[T]{ch: ch, pred: nil}` | T1 | 5min |
-| D5 | Add `SubscribeFilter(pred func(T) bool) <-chan T` method | T1 | 8min |
-| D6 | Refactor `Subscribe()` to delegate to `SubscribeFilter(nil)` | T1 | 3min |
-| D7 | Update `Unsubscribe()`: close `sub.ch` instead of `sender` | T1 | 3min |
-| D8 | Update `Close()`: close `sub.ch` instead of `ch` | T1 | 3min |
-| D9 | Update `sendAllLocked()`: check `sub.pred` before send | T1 | 5min |
-| D10 | Verify T1 compiles: `go build ./...` | T1 | 2min |
-| D11 | Add `FilteredEventStore` interface to replay.go | T2 | 5min |
-| D12 | Add `ReplayFiltered` function to replay.go (with type assertion + fallback) | T2 | 10min |
-| D13 | Verify T2 compiles: `go build ./...` | T2 | 2min |
-| D14 | Test: SubscribeFilter delivers only matching events | T3 | 10min |
-| D15 | Test: SubscribeFilter with nil pred = same as Subscribe | T3 | 5min |
-| D16 | Test: mixed filtered + unfiltered subscribers both receive correct events | T3 | 10min |
-| D17 | Test: SubscribeFilter after Close returns closed channel | T3 | 5min |
-| D18 | Test: filtered subscriber buffer only fills with matching events | T3 | 10min |
-| D19 | Test: SubscribeFilter concurrent race (broadcast + subscribe/unsubscribe) | T3 | 10min |
-| D20 | Test: ReplayFiltered with FilteredEventStore (predicate pushed to store) | T4 | 10min |
-| D21 | Test: ReplayFiltered fallback (plain EventStore + post-filter) | T4 | 8min |
-| D22 | Test: ReplayFiltered with nil pred = Replay | T4 | 5min |
-| D23 | Test: ReplayFiltered write error propagation | T4 | 5min |
-| D24 | Test: ReplayFiltered store error propagation | T4 | 5min |
-| D25 | Update doc.go: add "# Filtered Subscriptions" section | T5 | 8min |
-| D26 | Update AGENTS.md: concurrency invariants (predicates under RLock) | T5 | 5min |
-| D27 | Update ROADMAP.md: move topic routing from "open idea" to realized | T5 | 5min |
-| D28 | Add CHANGELOG.md entry for predicate filtering | T5 | 5min |
-| D29 | Add Example functions: ExampleSubscribeFilter, ExampleReplayFiltered | T5 | 10min |
-| D30 | Run `nix run .#test-race` | T6 | 5min |
-| D31 | Run `nix run .#lint` | T6 | 3min |
-| D32 | Run `nix flake check` | T6 | 5min |
+| #   | Task                                                                                      | Parent | Est   |
+| --- | ----------------------------------------------------------------------------------------- | ------ | ----- |
+| D1  | Add `subscriber[T]` struct type to fanout.go                                              | T1     | 5min  |
+| D2  | Change `subscribers` field type from `map[uintptr]chan T` to `map[uintptr]*subscriber[T]` | T1     | 3min  |
+| D3  | Update `newFanOut` initializer (map value type changes)                                   | T1     | 2min  |
+| D4  | Update `Subscribe()`: create `&subscriber[T]{ch: ch, pred: nil}`                          | T1     | 5min  |
+| D5  | Add `SubscribeFilter(pred func(T) bool) <-chan T` method                                  | T1     | 8min  |
+| D6  | Refactor `Subscribe()` to delegate to `SubscribeFilter(nil)`                              | T1     | 3min  |
+| D7  | Update `Unsubscribe()`: close `sub.ch` instead of `sender`                                | T1     | 3min  |
+| D8  | Update `Close()`: close `sub.ch` instead of `ch`                                          | T1     | 3min  |
+| D9  | Update `sendAllLocked()`: check `sub.pred` before send                                    | T1     | 5min  |
+| D10 | Verify T1 compiles: `go build ./...`                                                      | T1     | 2min  |
+| D11 | Add `FilteredEventStore` interface to replay.go                                           | T2     | 5min  |
+| D12 | Add `ReplayFiltered` function to replay.go (with type assertion + fallback)               | T2     | 10min |
+| D13 | Verify T2 compiles: `go build ./...`                                                      | T2     | 2min  |
+| D14 | Test: SubscribeFilter delivers only matching events                                       | T3     | 10min |
+| D15 | Test: SubscribeFilter with nil pred = same as Subscribe                                   | T3     | 5min  |
+| D16 | Test: mixed filtered + unfiltered subscribers both receive correct events                 | T3     | 10min |
+| D17 | Test: SubscribeFilter after Close returns closed channel                                  | T3     | 5min  |
+| D18 | Test: filtered subscriber buffer only fills with matching events                          | T3     | 10min |
+| D19 | Test: SubscribeFilter concurrent race (broadcast + subscribe/unsubscribe)                 | T3     | 10min |
+| D20 | Test: ReplayFiltered with FilteredEventStore (predicate pushed to store)                  | T4     | 10min |
+| D21 | Test: ReplayFiltered fallback (plain EventStore + post-filter)                            | T4     | 8min  |
+| D22 | Test: ReplayFiltered with nil pred = Replay                                               | T4     | 5min  |
+| D23 | Test: ReplayFiltered write error propagation                                              | T4     | 5min  |
+| D24 | Test: ReplayFiltered store error propagation                                              | T4     | 5min  |
+| D25 | Update doc.go: add "# Filtered Subscriptions" section                                     | T5     | 8min  |
+| D26 | Update AGENTS.md: concurrency invariants (predicates under RLock)                         | T5     | 5min  |
+| D27 | Update ROADMAP.md: move topic routing from "open idea" to realized                        | T5     | 5min  |
+| D28 | Add CHANGELOG.md entry for predicate filtering                                            | T5     | 5min  |
+| D29 | Add Example functions: ExampleSubscribeFilter, ExampleReplayFiltered                      | T5     | 10min |
+| D30 | Run `nix run .#test-race`                                                                 | T6     | 5min  |
+| D31 | Run `nix run .#lint`                                                                      | T6     | 3min  |
+| D32 | Run `nix flake check`                                                                     | T6     | 5min  |
 
 ## Mermaid Execution Graph
 
@@ -253,13 +253,13 @@ func ReplayFiltered(stream *Stream, store EventStore, lastID EventID, pred func(
 
 ## Risk Assessment
 
-| Risk | Likelihood | Mitigation |
-|------|------------|------------|
-| Predicate panics under RLock | LOW | Document contract: pure, fast, non-blocking |
-| Breaking existing subscriber map semantics | LOW | Subscribe() delegates to SubscribeFilter(nil) — same behavior |
-| Allocation overhead of *subscriber[T] | NEGLIGIBLE | One alloc per Subscribe call (per connection), not per event |
-| cqrs-htmx compatibility | NONE | Type aliases pass through; SubscribeFilter is additive |
-| DiscordSync integration | FUTURE | Separate follow-up: extend JournalSSEStore with EventsAfterFiltered |
+| Risk                                       | Likelihood | Mitigation                                                          |
+| ------------------------------------------ | ---------- | ------------------------------------------------------------------- |
+| Predicate panics under RLock               | LOW        | Document contract: pure, fast, non-blocking                         |
+| Breaking existing subscriber map semantics | LOW        | Subscribe() delegates to SubscribeFilter(nil) — same behavior       |
+| Allocation overhead of *subscriber[T]      | NEGLIGIBLE | One alloc per Subscribe call (per connection), not per event        |
+| cqrs-htmx compatibility                    | NONE       | Type aliases pass through; SubscribeFilter is additive              |
+| DiscordSync integration                    | FUTURE     | Separate follow-up: extend JournalSSEStore with EventsAfterFiltered |
 
 ---
 

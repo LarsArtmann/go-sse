@@ -316,15 +316,15 @@ decision, and the 0.3.0 release cut.
 All session-scoped items (sections a–d) are resolved. Forward-looking items from
 section f have been harvested into TODO_LIST.md and ROADMAP.md.
 
-| Item | Resolution |
-|------|------------|
-| §b.1 Cross-reference consistency audit | Done — DOMAIN_LANGUAGE line refs fixed, "theme" → "section" refs corrected |
-| §b.2 TODO_LIST "Previously shipped" split-brain | Done — section trimmed to CHANGELOG pointer by 02-50 session, TODO_LIST fully rebuilt |
-| §b.3 FEATURES.md consistency check | Done — non-goals now 3-way consistent (README ↔ FEATURES ↔ ROADMAP) |
-| §c.1–c.2 Quality gates (nix flake check, nix fmt) | Pass — run multiple times since |
-| §c.4 Planning doc stale ROADMAP refs | Done — moot task annotated by 02-50 session |
-| §c.5 DOMAIN_LANGUAGE ROADMAP refs | Done — all line refs replaced with symbol-only refs (maintenance-free) |
-| §c.6 Trim TODO_LIST "Previously shipped" | Done — TODO_LIST rebuilt with only open items |
-| Q1: Cut 0.3.0 now? | v0.3.0 was tagged without code changes; v0.4.0 is in TODO_LIST |
-| Q2: Trim "Previously shipped"? | Done — TODO_LIST now has zero completed items |
-| Q3: Backpressure policy? | Stays in ROADMAP as exploration — no consumer has hit the limit |
+| Item                                              | Resolution                                                                            |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| §b.1 Cross-reference consistency audit            | Done — DOMAIN_LANGUAGE line refs fixed, "theme" → "section" refs corrected            |
+| §b.2 TODO_LIST "Previously shipped" split-brain   | Done — section trimmed to CHANGELOG pointer by 02-50 session, TODO_LIST fully rebuilt |
+| §b.3 FEATURES.md consistency check                | Done — non-goals now 3-way consistent (README ↔ FEATURES ↔ ROADMAP)                   |
+| §c.1–c.2 Quality gates (nix flake check, nix fmt) | Pass — run multiple times since                                                       |
+| §c.4 Planning doc stale ROADMAP refs              | Done — moot task annotated by 02-50 session                                           |
+| §c.5 DOMAIN_LANGUAGE ROADMAP refs                 | Done — all line refs replaced with symbol-only refs (maintenance-free)                |
+| §c.6 Trim TODO_LIST "Previously shipped"          | Done — TODO_LIST rebuilt with only open items                                         |
+| Q1: Cut 0.3.0 now?                                | v0.3.0 was tagged without code changes; v0.4.0 is in TODO_LIST                        |
+| Q2: Trim "Previously shipped"?                    | Done — TODO_LIST now has zero completed items                                         |
+| Q3: Backpressure policy?                          | Stays in ROADMAP as exploration — no consumer has hit the limit                       |
