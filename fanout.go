@@ -190,8 +190,9 @@ func (f *fanOut[T]) Unsubscribe(ch <-chan T) {
 // closed channel would panic. Because sends use a non-blocking select, no
 // goroutine blocks here, and the lock is held only for the brief fan-out.
 //
-// After [Broadcaster.Close] or during [Broadcaster.Shutdown], broadcasts
-// are silently dropped.
+// After [Broadcaster.Close] the subscriber set is nil and broadcasts are
+// silently dropped. During [Broadcaster.Shutdown] the set is still live,
+// so broadcasts reach the existing subscribers until the drain completes.
 func (f *fanOut[T]) Broadcast(msg T) {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
