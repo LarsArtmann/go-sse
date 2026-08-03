@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"sync"
 	"time"
+
+	errorfamily "github.com/larsartmann/go-error-family"
 )
 
 // defaultSubscriberBuffer is the per-subscriber channel capacity. Broadcasts
@@ -92,6 +94,7 @@ func newFanOut[T any](opts ...Option[T]) *fanOut[T] {
 		mu:            sync.RWMutex{},
 		subscribers:   make(map[uintptr]*subscriber[T]),
 		bufferSize:    defaultSubscriberBuffer,
+		draining:      false,
 		onSubscribe:   nil,
 		onUnsubscribe: nil,
 	}
@@ -320,7 +323,9 @@ func (f *fanOut[T]) Shutdown(ctx context.Context) error {
 			// Drain deadline exceeded. Leave draining=true so Subscribe
 			// continues to reject new subscribers; the caller can either
 			// retry Shutdown with a fresh context or call Close.
-			return ctx.Err()
+			return errorfamily.Wrapf(ctx.Err(), errorfamily.Transient,
+				"sse.shutdown_drain_deadline_exceeded",
+				"broadcaster drain did not complete before context deadline")
 		case <-ticker.C:
 		}
 	}
