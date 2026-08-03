@@ -15,7 +15,7 @@
 
 ## Backlog
 
-### Production readiness — extracted from ROADMAP theme 1
+### Production readiness — extracted from ROADMAP section 1
 
 Bounded items promoted out of the production-readiness theme. The remaining
 explorations (backpressure policy, observability shape) stay in ROADMAP until
@@ -39,16 +39,4 @@ follow-ups:
 | 🔴 `TODO`    | Cut 0.3.0 release                                           | Tag, release notes, GitHub release. New API = minor bump                        |
 | 🔵 `BLOCKED` | CI headless browser test (DataStar client + example server) | Requires the real-client verification first                                     |
 
-### Previously shipped
-
-All prior backlog items are complete and shipped under their respective
-`CHANGELOG.md` entries:
-
-- `KeyedLines` + `SendLines` + `WriteKeyedLines` + `SendKeyed` + `JSONSignals` — DataStar keyed-data-line support (0.3.0 `[Unreleased]`)
-- `FuzzKeyedLines`, DataStar wire-format integration test, `BenchmarkKeyedLines`
-- Flaky-test elimination (`TestIntegration_BroadcasterFanOut`, `TestStream_Heartbeat`) via deterministic channel sync
-- Heartbeat comment-frame delivery and `Last-Event-ID` reconnection replay integration tests (real HTTP round-trips)
-- Coverage raised to ~100% (incl. `Name()`, `MustParseEventID` success path, `splitLines` dead-branch removal, `Heartbeat` write-error path)
-- `govulncheck` and `fuzz` CI jobs
-- Doc/source/README examples fixed to `defer func() { _ = stream.Close() }()`
-- Test modernization: `context.WithCancel(t.Context())` and `wg.Go`
+Completed work lives in [`CHANGELOG.md`](CHANGELOG.md), not here.

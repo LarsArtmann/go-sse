@@ -100,6 +100,7 @@ do not mistake their absence for a gap.
 - Dashboard server, routes, or HTML templates
 - Event bus integration
 - Any opinion about payload format (strings, JSON, HTML fragments are all fine)
+- `Broadcaster.ServeSSE` convenience handler (would bake in heartbeat, replay, and event-loop opinions; the `example/` package shows the canonical pattern)
 
 ## Dependencies
 

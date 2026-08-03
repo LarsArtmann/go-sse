@@ -105,7 +105,7 @@ question is whether it earns its keep.
    `Broadcaster`/`Stream` noise. Real ergonomic win _if_ a client ever exists.
 2. **Independent semver** — wire format (`common`) is frozen by the SSE spec
    (~unchanged in a decade); server-side can iterate on backpressure
-   (ROADMAP theme 1) without bumping client. Genuine versioning isolation.
+   (ROADMAP section 1) without bumping client. Genuine versioning isolation.
 3. **Compile-time boundary** — a client can't accidentally reach into
    `fanOut`/`Stream`. Today's flat package allows it.
 4. **Stable base for the planned `Dial`** — extracting `common` now means the
@@ -201,7 +201,7 @@ Re-open this analysis when **any** of these becomes true:
 - A concrete `client/` package is being written (not just roadmap-fantasized).
   ← still the strongest single signal.
 - **The server gains a non-stdlib dependency** (e.g. a Redis event store per
-  ROADMAP theme 1) that the 2 wire-only consumers should never transitively
+  ROADMAP section 1) that the 2 wire-only consumers should never transitively
   pull in. ← this is now a _live_ trigger, not a hypothetical.
 - A wire-only consumer asks to pin `common` and stop tracking server churn.
 - A third wire-only consumer appears (2 → 3 turns a coincidence into an archetype).
@@ -214,7 +214,7 @@ and welcomed when it comes.
 
 ## References
 
-- `ROADMAP.md` — themes 1 (production readiness), 2 (developer experience / client Dial), 4 (parked decisions / module boundaries)
+- `ROADMAP.md` — sections 1 (production readiness), 2 (developer experience / client Dial), 4 (parked decisions / module boundaries), 5 (raw ideas)
 - `AGENTS.md` — "What This Library Is NOT", Broadcaster vs fanOut split
 - `go-modularize` skill — Direction Neutrality, When NOT to Modularize
 - Consumer audit (2026-07-25), verifiable at:

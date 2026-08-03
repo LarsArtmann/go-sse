@@ -53,9 +53,13 @@ decision log.
 - **Split into `common` (wire format) + `server` (Stream, Broadcaster, Replay)?** Deferred 2026-07-25. The wire/server seam is exercised in production — 2 of 4 real consumers import go-sse wire-only and roll their own HTTP scaffolding. But the flat layout costs them ~zero today: `net/http` is stdlib, and `brandid`/`errorfamily` are genuinely used by the wire path. Re-open when **any** of these fires: a `client/` package is being written; the server gains a non-stdlib dependency wire-only consumers shouldn't transitively pull in (e.g. a Redis event store); a wire-only consumer asks to pin `common`; or a third wire-only consumer appears (2 → 3 turns a coincidence into an archetype). Full analysis: [docs/brainstorming/2026-07-25_client-server-common-submodule-split.md](docs/brainstorming/2026-07-25_client-server-common-submodule-split.md).
 - **Export the unexported `fanOut[T]` hub?** Resolved (v0.2.0): no. No consumer needs it yet, and the generic `Broadcaster[T]` already serves "fan-out any type" for SSE consumers. Exporting would commit to API stability prematurely. Revisit when a concrete non-SSE use case emerges.
 
-### Still-open raw idea
+## 5. Raw ideas
+
+Unexamined ideas — too early for a theme, not analyzed enough to be a parked
+decision. Promoted to a numbered theme when bounded; dropped if ruled out.
 
 - Topic/channel-based multi-broadcaster routing (multiple named fan-out hubs behind one entry point). No consumer has asked for this yet.
+- Optional `di/` subpackage providing samber/do v2 lifecycle adapters (`Shutdowner`, `Healthchecker`) for `Broadcaster` and `Stream`. See [docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md](docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md).
 
 ## Non-goals
 

@@ -208,3 +208,13 @@ These don't require the subpackage decision — they're helpers that could live 
 - **ID**: Stable task identifier for tracking
 - **(#N)**: References item number from the original 50-item list in the status report
 - **(E#)**: References self-review item E1–E5 from the status report
+
+---
+
+## Resolution notes (added 2026-08-03, post-ROADMAP restructure)
+
+**Task 7 (moot):** "Update ROADMAP.md — add DataStar to 'Realized in' callout."
+The "Realized in" callout pattern was removed entirely in the 2026-08-03 ROADMAP
+restructure (completed-work history now lives exclusively in CHANGELOG.md). This
+task will never execute. No replacement needed — CHANGELOG `[Unreleased]` already
+documents the DataStar additions.
