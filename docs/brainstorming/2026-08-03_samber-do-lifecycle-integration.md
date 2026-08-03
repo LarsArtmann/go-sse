@@ -53,12 +53,12 @@ The three value propositions for go-sse:
 
 ## What go-sse has today
 
-| Capability | Current state | Gap |
-| ---------- | ------------- | --- |
-| Close all subscribers | `Broadcaster.Close()` — instant, no drain | No context/deadline; no "wait for in-flight sends" |
-| Health signal | `Broadcaster.SubscriberCount()` (count only) | No "am I closed?" query; no drop counter; no structured status |
-| Signal handling | Consumer's responsibility (TODO_LIST item) | No helper exists |
-| Per-subscriber observability | `OnSubscribe` / `OnUnsubscribe` hooks | No aggregate metrics (total broadcasts, total drops) |
+| Capability                   | Current state                                | Gap                                                            |
+| ---------------------------- | -------------------------------------------- | -------------------------------------------------------------- |
+| Close all subscribers        | `Broadcaster.Close()` — instant, no drain    | No context/deadline; no "wait for in-flight sends"             |
+| Health signal                | `Broadcaster.SubscriberCount()` (count only) | No "am I closed?" query; no drop counter; no structured status |
+| Signal handling              | Consumer's responsibility (TODO_LIST item)   | No helper exists                                               |
+| Per-subscriber observability | `OnSubscribe` / `OnUnsubscribe` hooks        | No aggregate metrics (total broadcasts, total drops)           |
 
 **Key insight:** the gaps are in go-sse's own API surface, not in DI wiring.
 samber/do would not add a drain method or a health struct — it would only
@@ -81,6 +81,7 @@ type Broadcaster[T any] struct {
 **Rejected.** go-sse has 2 dependencies (`go-branded-id`, `go-error-family`),
 both same-author utility modules. samber/do pulls in `testify/testify` and a
 full DI container. Adding it to core violates:
+
 - The ROADMAP non-goal: "no framework or payload-format opinions."
 - The wire-only consumer contract (2 of 4 consumers import go-sse for the wire
   format only — they do not want a DI container transitively).
@@ -113,11 +114,13 @@ func (a *broadcasterAdapter[T]) HealthCheck(ctx context.Context) error {
 ```
 
 **Pros:**
+
 - Only consumers using samber/do import it (`samber-do-auditlog` uses both today).
 - Core stays clean — no DI dependency.
 - Follows the `datastar/` optional-subpackage precedent (already scaffolded).
 
 **Cons:**
+
 - Sets a precedent: "every Go library needs a `di/` subpackage for every DI container."
 - The adapter is 15-30 lines — consumers can write it themselves in their
   composition root, where DI integration belongs.
@@ -166,14 +169,14 @@ do.Provide(injector, func(i do.Injector) (SSEService, error) {
 
 ## Recommendation: Option C
 
-| Criterion | Option A (hard dep) | Option B (`di/` subpackage) | Option C (primitives + example) |
-| --------- | ------------------- | --------------------------- | ------------------------------- |
-| Core stays clean | ❌ | ✅ | ✅ |
-| No transitive deps for wire-only consumers | ❌ | ✅ | ✅ |
-| Consumer gets orchestration convenience | ✅ | ✅ | ✅ (10 lines) |
-| Consumer controls DI integration | ❌ | ❌ (library's adapter) | ✅ |
-| No "di/ per container" precedent | ✅ | ❌ | ✅ |
-| Core API gains drain + health (works without DI) | ❌ | ❌ | ✅ |
+| Criterion                                        | Option A (hard dep) | Option B (`di/` subpackage) | Option C (primitives + example) |
+| ------------------------------------------------ | ------------------- | --------------------------- | ------------------------------- |
+| Core stays clean                                 | ❌                  | ✅                          | ✅                              |
+| No transitive deps for wire-only consumers       | ❌                  | ✅                          | ✅                              |
+| Consumer gets orchestration convenience          | ✅                  | ✅                          | ✅ (10 lines)                   |
+| Consumer controls DI integration                 | ❌                  | ❌ (library's adapter)      | ✅                              |
+| No "di/ per container" precedent                 | ✅                  | ❌                          | ✅                              |
+| Core API gains drain + health (works without DI) | ❌                  | ❌                          | ✅                              |
 
 Option C wins on every criterion. The primitives (`Shutdown(ctx)`, `Health()`)
 are valuable to ALL consumers — not just samber/do users. A consumer using

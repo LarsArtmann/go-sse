@@ -90,7 +90,7 @@ func FuzzKeyedLines(f *testing.F) {
 		}
 
 		// Every line in the result must start with the key prefix.
-		for _, line := range strings.Split(result, "\n") {
+		for line := range strings.SplitSeq(result, "\n") {
 			if !strings.HasPrefix(line, key) {
 				t.Errorf("KeyedLines(%q, ...): line %q does not start with key", key, line)
 			}
