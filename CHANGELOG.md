@@ -17,7 +17,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - `example/datastar/main.go` progress bar corrected: `data-bind:style` → `data-style:width="$progress + '%'"`. `data-bind` is DataStar's form-element two-way binding; CSS styles use `data-style`. Verified against the DataStar v1.0.2 attributes reference.
-- `example/datastar/main.go` import changed from `encoding/json/v2` to `encoding/json`. The example is a teaching tool meant to be copied by consumers who may not set `GOEXPERIMENT=jsonv2`; stable `encoding/json` keeps the example portable.
 - `broadcaster.go` `NewBroadcaster` removed an unnecessary explicit type argument (`newFanOut[T]` → `newFanOut`) flagged by gopls `infertypeargs`.
 - `.envrc` now exports `GOEXPERIMENT=jsonv2` alongside `GOWORK=off`, so `buildflow`, `gopls`, and direct `go` invocations launched outside the Nix devShell inherit the flag via direnv (AGENTS.md already documented this as a gotcha).
 - README.md and doc.go predicate panic-policy documentation corrected: both now state that panicking predicates are recovered and treated as non-matches (matching v0.4.0 code behavior). The v0.4.0 tag permanently contains the old "crashes the broadcaster" wording; this fix lands on master for consumers reading HEAD.

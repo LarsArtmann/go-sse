@@ -15,8 +15,8 @@
 
 ## Verification & correctness
 
-| Status    | Item                                                       | Notes                                                                                                                                                     |
-| --------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status    | Item                                                       | Notes                                                                                                                                                       |
+| --------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🔴 `TODO` | Point a real DataStar JS client at a go-sse example server | Ultimate integration verification — confirm events parse correctly in a browser now that `data-style:width` is correct. Unblocks the CI browser test below. |
 
 ## Blocked
