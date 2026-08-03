@@ -55,7 +55,7 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 | Subscribe / Unsubscribe                              | FULLY_FUNCTIONAL | `fanOut.Subscribe`, `fanOut.Unsubscribe` in `fanout.go`; `TestBroadcaster_Subscribe`                        |
 | O(1) unsubscribe via channel pointer identity        | FULLY_FUNCTIONAL | `channelPtr` in `fanout.go`; `TestBroadcaster_BroadcastUnsubscribeRace`                                     |
 | Non-blocking broadcast (drops to slow consumers)     | FULLY_FUNCTIONAL | `fanOut.Broadcast` in `fanout.go`; `TestBroadcaster_DropsOnFullBuffer`                                      |
-| Predicate-based subscription (`SubscribeFilter`)     | FULLY_FUNCTIONAL | `fanOut.SubscribeFilter` in `fanout.go`; `TestSubscribeFilter_*` (7 tests)                                  |
+| Predicate-based subscription (`SubscribeFilter`)     | FULLY_FUNCTIONAL | `fanOut.SubscribeFilter` in `fanout.go`; `TestSubscribeFilter_*` (9 tests, including panic recovery and Shutdown drain) |
 | Batch broadcast (`BroadcastMany`, single lock pass)  | FULLY_FUNCTIONAL | `fanOut.BroadcastMany` in `fanout.go`; `TestBroadcaster_BroadcastMany`, `_PreservesOrder`, `_MixedSlowFast` |
 | Broadcast after Close is safe (no panic)             | FULLY_FUNCTIONAL | `TestBroadcaster_BroadcastAfterClose`                                                                       |
 | `OnSubscribe` / `OnUnsubscribe` hooks                | FULLY_FUNCTIONAL | `fanOut.OnSubscribe`, `fanOut.OnUnsubscribe` in `fanout.go`; `TestBroadcaster_OnSubscribeHook`              |
@@ -73,7 +73,7 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 | `EventStore` interface (consumer-implemented, takes `EventID`) | FULLY_FUNCTIONAL | `replay.go`                                                               |
 | `Replay` function (replays missed events after a given ID)     | FULLY_FUNCTIONAL | `Replay` in `replay.go`; `TestReplay_AfterGivenID`, `TestReplay_NoLastID` |
 | `FilteredEventStore` interface (predicate push-down to store)  | FULLY_FUNCTIONAL | `FilteredEventStore` in `replay.go`; `TestReplayFiltered_FilteredEventStorePath` |
-| `ReplayFiltered` (replays only events matching a predicate)    | FULLY_FUNCTIONAL | `ReplayFiltered` in `replay.go`; `TestReplayFiltered_*` (6 tests)          |
+| `ReplayFiltered` (replays only events matching a predicate)    | FULLY_FUNCTIONAL | `ReplayFiltered` in `replay.go`; `TestReplayFiltered_*` (7 tests, including fallback panic recovery)          |
 | Write-failure error propagation                                | FULLY_FUNCTIONAL | `Replay` in `replay.go`; `TestReplay_WriteError`                          |
 | Store-error propagation (`EventsAfter` returns error)          | FULLY_FUNCTIONAL | `Replay` in `replay.go`; `TestReplay_StoreError`                          |
 
@@ -90,7 +90,7 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 | Feature               | Status           | Evidence                                                                                                                                          |
 | --------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Fuzz tests            | FULLY_FUNCTIONAL | `FuzzWriteEvent`, `FuzzParseEventID`, `FuzzKeyedLines` in `fuzz_test.go`                                                                          |
-| Integration tests     | FULLY_FUNCTIONAL | `TestIntegration_DirectSendAndHeaders`, `_BroadcasterFanOut`, `_HeartbeatDelivery`, `_LastEventIDReconnectionReplay`, `_DataStarWireFormat`, `_SubscribeFilter` in `integration_test.go` |
+| Integration tests     | FULLY_FUNCTIONAL | `TestIntegration_DirectSendAndHeaders`, `_BroadcasterFanOut`, `_HeartbeatDelivery`, `_LastEventIDReconnectionReplay`, `_DataStarWireFormat`, `_SubscribeFilter`, `_ReplayFiltered` in `integration_test.go` |
 | Race detector tests   | FULLY_FUNCTIONAL | `TestStream_SendHeartbeatRaceSafety`, `TestStream_SendCloseRace`, `TestStream_SendHeartbeatCloseRace`, `TestBroadcaster_BroadcastUnsubscribeRace`, `TestSubscribeFilter_ConcurrentRace` |
 | Example tests (godoc) | FULLY_FUNCTIONAL | `ExampleWriteEvent`, `ExampleBroadcaster`, `ExampleBroadcaster_SubscribeFilter`, `ExampleParseEventID` in `example_test.go`                                                             |
 | Benchmarks            | FULLY_FUNCTIONAL | `BenchmarkBroadcasterFanOut` (1–10k subs), `BenchmarkBroadcastManyVsLoop` in `broadcaster_test.go`; `BenchmarkKeyedLines` in `event_test.go`; `BenchmarkSubscribeFilter_PredicateOverhead` in `filter_test.go` |

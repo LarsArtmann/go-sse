@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-03
+
 ### Added
 
 - `Broadcaster.SubscribeFilter(pred func(T) bool) <-chan T` — predicate-based subscription that delivers only events matching the predicate to the subscriber's channel. The predicate is checked before the non-blocking send, so irrelevant events never enter the buffer. `Subscribe()` is now `SubscribeFilter(nil)`. Zero overhead for unfiltered subscribers (nil check only).
@@ -19,7 +21,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `BenchmarkKeyedLines` — single-line and 100-line variants measuring allocation behavior.
 - `BenchmarkSubscribeFilter_PredicateOverhead` — measures per-subscriber predicate call overhead at 1/100/1000 subscribers (unfiltered vs filtered).
 - `TestSubscribeFilter_BroadcastManyRespectsPredicates` — verifies BroadcastMany honors subscriber predicates.
+- `TestSubscribeFilter_PredicatePanicRecovered` — verifies a panicking predicate is recovered (treated as non-match) and does not crash the broadcaster.
+- `TestSubscribeFilter_ShutdownDrainsFilteredSubscribers` — verifies Shutdown drain works correctly when subscribers have predicates.
 - `TestIntegration_SubscribeFilter` — HTTP round-trip verifying non-matching events never reach the client.
+- `TestIntegration_ReplayFiltered` — HTTP round-trip for ReplayFiltered covering both the FilteredEventStore (efficient) and plain EventStore (fallback) paths.
+- `TestReplayFiltered_FallbackPredicatePanicRecovered` — verifies a panicking predicate in the fallback path is recovered and does not crash.
 - DataStar wire-format integration test — HTTP round-trip asserting exact wire bytes.
 - `Broadcaster.Shutdown(ctx context.Context) error` — graceful shutdown that stops accepting new subscribers, waits for every active subscriber's buffer to drain (consumers catch up), then closes all channels. Returns a wrapped context error (`sse.shutdown_drain_deadline_exceeded`) if the deadline fires before the drain completes; the caller can retry with a fresh context or fall back to `Close`. Preserves `errors.Is(err, context.Canceled)` / `context.DeadlineExceeded` for existing context-aware code.
 - `Broadcaster.Health() BroadcasterHealth` — value-type snapshot of `Closed`, `Draining`, `SubscriberCount`, and `BufferSize`. Cheap (read-lock + struct copy) and safe from any goroutine, including health-check loops.
@@ -30,9 +36,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Predicate calls (`SubscribeFilter` and `ReplayFiltered` fallback) now recover from panics. A panicking predicate is treated as a non-match (the event is skipped for that subscriber). This ensures one broken predicate cannot crash the broadcaster or replay loop.
 - `replay_test.go` and `replay_filter_test.go` now use the existing `newTestStream` helper from `testhelpers_test.go` instead of duplicating the stream-setup boilerplate. The shared `errorResponseWriter` test fake moved from `replay_test.go` to `testhelpers_test.go` so any test file can use it; `newTestFailingStream(t)` was added to the helpers for write-failure paths.
 - `filter_test.go` adopts the Go 1.26 `sync.WaitGroup.Go` helper in `TestSubscribeFilter_ConcurrentRace` instead of the manual `wg.Add` / `defer wg.Done` pair.
 - `fanOut` now tracks a `draining` flag alongside the existing `subscribers = nil` closed sentinel, so `Shutdown` can reject new subscribers during a drain without conflating "shutting down" with "closed".
+- `TestSubscribeFilter_ConcurrentRace` strengthened: asserts `received >= 500` (meaningful threshold) instead of just `> 0`.
 
 ## [0.3.0] - 2026-07-27
 
@@ -110,7 +118,8 @@ and the subsequent DataStar integration work.
 
 - `LastEventIDFromRequest` validates header input with `ParseEventID`, preventing SSE wire-format injection via crafted `Last-Event-ID` headers
 
-[Unreleased]: https://github.com/larsartmann/go-sse/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/larsartmann/go-sse/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/larsartmann/go-sse/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/larsartmann/go-sse/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/larsartmann/go-sse/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/larsartmann/go-sse/compare/v0.1.0...v0.2.0

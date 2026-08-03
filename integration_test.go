@@ -419,23 +419,25 @@ func TestIntegration_ReplayFiltered(t *testing.T) {
 	}
 
 	// Test both store paths: FilteredEventStore (efficient) and plain EventStore (fallback).
-	for _, tc := range []struct {
+	for _, testCase := range []struct {
 		name  string
 		store sse.EventStore
 	}{
 		{"filtered_store", &filteredMemoryStore{events: events}},
 		{"fallback_store", &memoryStore{events: events}},
 	} {
-		t.Run(tc.name, func(t *testing.T) {
+		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				stream := sse.NewStream(w, r)
-				defer func() { _ = stream.Close() }()
+			server := httptest.NewServer(
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					stream := sse.NewStream(w, r)
+					defer func() { _ = stream.Close() }()
 
-				_, _ = sse.ReplayFiltered(stream, tc.store, stream.LastEventID(),
-					func(evt sse.Event) bool { return evt.Event == "message" })
-			}))
+					_, _ = sse.ReplayFiltered(stream, testCase.store, stream.LastEventID(),
+						func(evt sse.Event) bool { return evt.Event == "message" })
+				}),
+			)
 			t.Cleanup(func() {
 				server.CloseClientConnections()
 				server.Close()

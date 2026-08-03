@@ -254,7 +254,10 @@ func TestSubscribeFilter_ConcurrentRace(t *testing.T) {
 	// Sanity: with 4 broadcasters × 1000 "match" events each, we expect ~4000
 	// matching events (minus drops during churn). Assert a meaningful threshold.
 	if received.Load() < 500 {
-		t.Errorf("filtered subscriber received only %d matching events out of ~4000 sent", received.Load())
+		t.Errorf(
+			"filtered subscriber received only %d matching events out of ~4000 sent",
+			received.Load(),
+		)
 	}
 }
 
