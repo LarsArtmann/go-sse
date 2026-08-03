@@ -74,7 +74,7 @@ type Broadcaster[T any] struct {
 //
 //	func NewBroadcaster[sse.Event](sse.WithBufferSize[sse.Event](256))
 func NewBroadcaster[T any](opts ...Option[T]) *Broadcaster[T] {
-	return &Broadcaster[T]{fanOut: newFanOut[T](opts...)}
+	return &Broadcaster[T]{fanOut: newFanOut(opts...)}
 }
 
 // BroadcastMany sends a batch of messages to all active subscribers in a single
