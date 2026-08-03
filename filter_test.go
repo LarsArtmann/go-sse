@@ -349,16 +349,28 @@ func TestSubscribeFilter_ShutdownDrainsFilteredSubscribers(t *testing.T) {
 	b.Broadcast(sse.Event{Event: "skip", Data: "nope"})
 	b.Broadcast(sse.Event{Event: "keep", Data: "yes2"})
 
+	// Drain in a background goroutine while Shutdown waits for the buffer to empty.
+	var got []string
+
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+
+		for evt := range filtered {
+			got = append(got, evt.Data)
+		}
+	}()
+
+	// Give the drain goroutine a moment to start consuming.
+	time.Sleep(time.Millisecond)
+
 	// Shutdown must drain the buffer — only matching events should arrive.
 	if err := b.Shutdown(t.Context()); err != nil {
 		t.Fatalf("Shutdown: %v", err)
 	}
 
-	var got []string
-
-	for evt := range filtered {
-		got = append(got, evt.Data)
-	}
+	<-done
 
 	want := []string{"yes1", "yes2"}
 	if len(got) != len(want) {

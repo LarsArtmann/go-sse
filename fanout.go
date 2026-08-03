@@ -219,6 +219,8 @@ func (f *fanOut[T]) BroadcastMany(msgs ...T) {
 // returns false (treated as "no match") so one broken predicate cannot crash
 // the broadcaster or replay loop. The zero overhead for unfiltered subscribers
 // (nil pred) is preserved — callers check nil before calling this helper.
+//
+//nolint:nonamedreturns // named return required so the deferred recover can set the result
 func safePredCall[T any](pred func(T) bool, msg T) (match bool) {
 	defer func() {
 		if r := recover(); r != nil {
