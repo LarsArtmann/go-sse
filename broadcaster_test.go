@@ -613,9 +613,9 @@ func BenchmarkMemoryPerSubscriber(b *testing.B) {
 			var before runtime.MemStats
 			runtime.ReadMemStats(&before)
 
-			chans := make([]<-chan sse.Event, subs)
-			for i := range subs {
-				chans[i] = bc.Subscribe()
+			chans := make([]<-chan sse.Event, 0, subs)
+			for range subs {
+				chans = append(chans, bc.Subscribe())
 			}
 
 			runtime.GC()
@@ -624,7 +624,7 @@ func BenchmarkMemoryPerSubscriber(b *testing.B) {
 
 			_ = chans // keep subscribers alive across the measurement
 
-			delta := int64(after.HeapInuse) - int64(before.HeapInuse)
+			delta := after.HeapInuse - before.HeapInuse
 			b.ReportMetric(float64(delta)/float64(subs), "B/sub")
 			b.ReportMetric(float64(delta)/1024, "total-KiB")
 

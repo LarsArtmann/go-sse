@@ -458,12 +458,15 @@ func TestSubscribeFilter_BroadcastManyMixedSubscribers(t *testing.T) {
 
 	const half = 5
 
-	filtered := make([]<-chan sse.Event, half)
-	unfiltered := make([]<-chan sse.Event, half)
+	filtered := make([]<-chan sse.Event, 0, half)
+	unfiltered := make([]<-chan sse.Event, 0, half)
 
-	for i := range half {
-		filtered[i] = b.SubscribeFilter(func(evt sse.Event) bool { return evt.Event == "keep" })
-		unfiltered[i] = b.Subscribe()
+	for range half {
+		filtered = append(
+			filtered,
+			b.SubscribeFilter(func(evt sse.Event) bool { return evt.Event == "keep" }),
+		)
+		unfiltered = append(unfiltered, b.Subscribe())
 	}
 
 	b.BroadcastMany(
