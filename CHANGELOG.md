@@ -19,6 +19,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `BenchmarkKeyedLines` — single-line and 100-line variants measuring allocation behavior.
 - DataStar wire-format integration test — HTTP round-trip asserting exact wire bytes.
 
+### Changed
+
+- `replay_test.go` and `replay_filter_test.go` now use the existing `newTestStream` helper from `testhelpers_test.go` instead of duplicating the stream-setup boilerplate. The shared `errorResponseWriter` test fake moved from `replay_test.go` to `testhelpers_test.go` so any test file can use it; `newTestFailingStream(t)` was added to the helpers for write-failure paths.
+- `filter_test.go` adopts the Go 1.26 `sync.WaitGroup.Go` helper in `TestSubscribeFilter_ConcurrentRace` instead of the manual `wg.Add` / `defer wg.Done` pair.
+
 ## [0.2.1] - 2026-07-26
 
 ### Added
