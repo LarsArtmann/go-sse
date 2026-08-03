@@ -1,6 +1,7 @@
 package sse
 
 import (
+	"context"
 	"reflect"
 	"sync"
 )
@@ -10,6 +11,28 @@ import (
 // 64 is large enough to absorb short bursts without dropping under normal
 // fan-out, while bounding memory per subscriber.
 const defaultSubscriberBuffer = 64
+
+// Option configures a Broadcaster at construction time. Use the helpers
+// ([WithBufferSize]) rather than constructing an Option literal directly.
+type Option[T any] func(*fanOut[T])
+
+// WithBufferSize overrides the per-subscriber channel capacity. The default
+// is [defaultSubscriberBuffer] (64). Pass any positive integer; values ≤ 0
+// are ignored and the default is kept.
+//
+// Larger buffers absorb longer consumer slow-downs before drops begin; smaller
+// buffers reduce memory per subscriber at the cost of earlier drops. The
+// setting applies to subscribers created after NewBroadcaster returns; it is
+// read once and not changed later.
+//
+//	func NewBroadcaster[T any](opts ...Option[T]) signature uses generics.
+func WithBufferSize[T any](size int) Option[T] {
+	return func(f *fanOut[T]) {
+		if size > 0 {
+			f.bufferSize = size
+		}
+	}
+}
 
 // subscriber wraps a subscriber channel with an optional predicate.
 // When pred is nil, all events are delivered (the default unfiltered case).
@@ -25,22 +48,41 @@ type subscriber[T any] struct {
 type fanOut[T any] struct {
 	mu            sync.RWMutex
 	subscribers   map[uintptr]*subscriber[T]
+	bufferSize    int
 	onSubscribe   func()
 	onUnsubscribe func()
 }
 
-func newFanOut[T any]() *fanOut[T] {
-	return &fanOut[T]{
+func newFanOut[T any](opts ...Option[T]) *fanOut[T] {
+	f := &fanOut[T]{
 		mu:            sync.RWMutex{},
 		subscribers:   make(map[uintptr]*subscriber[T]),
+		bufferSize:    defaultSubscriberBuffer,
 		onSubscribe:   nil,
 		onUnsubscribe: nil,
 	}
+
+	for _, opt := range opts {
+		opt(f)
+	}
+
+	return f
+}
+
+// effectiveBufferSize returns the configured buffer size, falling back to
+// the default if none was set or the configured value is non-positive.
+func (f *fanOut[T]) effectiveBufferSize() int {
+	if f.bufferSize > 0 {
+		return f.bufferSize
+	}
+
+	return defaultSubscriberBuffer
 }
 
 // Subscribe creates a new subscriber channel that receives all broadcast
-// messages. The channel has a buffer of 64; slower consumers may miss messages
-// when the buffer is full.
+// messages. The channel has a buffer of 64 by default (configurable via
+// [WithBufferSize]); slower consumers may miss messages when the buffer is
+// full.
 //
 // Call [Broadcaster.Unsubscribe] when the client disconnects to prevent memory leaks.
 // After [Broadcaster.Close], Subscribe returns a closed channel (no-op).
@@ -59,7 +101,7 @@ func (f *fanOut[T]) Subscribe() <-chan T {
 // Call [Broadcaster.Unsubscribe] when the client disconnects to prevent memory leaks.
 // After [Broadcaster.Close], SubscribeFilter returns a closed channel (no-op).
 func (f *fanOut[T]) SubscribeFilter(pred func(T) bool) <-chan T {
-	ch := make(chan T, defaultSubscriberBuffer)
+	ch := make(chan T, f.effectiveBufferSize())
 
 	f.mu.Lock()
 	if f.subscribers == nil {
@@ -157,9 +199,9 @@ func (f *fanOut[T]) SubscriberCount() int {
 // marks the hub as closed so that future Subscribe calls return a closed
 // channel (no-op). Broadcasts after Close are silently dropped.
 //
-// This is the graceful-shutdown primitive for broadcasters. Call it
-// when your server is shutting down so connected clients receive a channel-close
-// signal and their read loops exit cleanly.
+// Close is the instant shutdown primitive — use it when you do not need to
+// wait for in-flight events to be consumed. For graceful shutdown that drains
+// subscriber buffers first, use [Broadcaster.Shutdown] with a context.
 func (f *fanOut[T]) Close() {
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -170,6 +212,102 @@ func (f *fanOut[T]) Close() {
 	}
 
 	f.subscribers = nil // marks as closed
+}
+
+// drainLocked waits for every active subscriber's channel to be empty (the
+// consumer caught up and read everything) or for ctx to be cancelled. The
+// caller must hold f.mu; this function releases it before blocking, then
+// re-acquires it to close the subscribers and mark the hub closed.
+//
+// On success, all subscriber channels are closed and f.subscribers is set
+// to nil (the closed sentinel). On context cancellation, the function returns
+// ctx.Err() without closing anything; subsequent Subscribe calls still
+// return live channels.
+func (f *fanOut[T]) drainLocked(ctx context.Context) error {
+	if f.subscribers == nil {
+		return nil // already closed — nothing to drain
+	}
+
+	// Snapshot the subscriber set under the lock; we need to wait outside it.
+	subs := make([]*subscriber[T], 0, len(f.subscribers))
+	for _, sub := range f.subscribers {
+		subs = append(subs, sub)
+	}
+
+	f.mu.Unlock()
+	defer f.mu.Lock()
+
+	for {
+		// If a subscriber disconnected while we were waiting, len(f.subscribers)
+		// shrank but our snapshot still holds a reference to the (now-closed)
+		// channel. Drain check below tolerates closed channels: a receive on a
+		// closed, empty channel returns the zero value with ok=false, which
+		// our len() check would not see — but we also re-acquire the lock to
+		// verify the live subscriber set. See Shutdown test.
+		allDrained := true
+
+		for _, sub := range subs {
+			// Use len() to avoid a blocking receive. Channels report their
+			// current buffered length; a subscriber with len == 0 has
+			// consumed everything that was sent.
+			if len(sub.ch) > 0 {
+				allDrained = false
+
+				break
+			}
+		}
+
+		if allDrained {
+			// Re-acquire the lock (via the defer) and close everything.
+			break
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-afterBriefDelay():
+			// Re-check drain status. Polling is required because the
+			// consumer's reads are not observable from here.
+		}
+	}
+
+	// Lock is held by the deferred f.mu.Lock() above. Close the snapshot.
+	for _, sub := range subs {
+		// The channel might have been closed by Unsubscribe in the meantime;
+		// that's fine — closing an already-closed channel would panic, so
+		// check first.
+		select {
+		case _, ok := <-sub.ch:
+			if !ok {
+				continue // already closed by Unsubscribe
+			}
+		default:
+		}
+
+		close(sub.ch)
+	}
+
+	f.subscribers = nil
+
+	return nil
+}
+
+// afterBriefDelay returns a channel that fires after a short poll interval.
+// The poll is intentionally short so drain latency is bounded but not so
+// short that it dominates CPU when there are many slow consumers.
+func afterBriefDelay() <-chan struct{} {
+	ch := make(chan struct{})
+
+	go func() {
+		defer close(ch)
+		// 1ms is a balance: long enough to avoid burning CPU, short enough
+		// that consumer reads register promptly.
+		t := time.NewTimer(time.Millisecond)
+		defer t.Stop()
+		<-t.C
+	}()
+
+	return ch
 }
 
 // OnSubscribe registers a callback fired after each successful Subscribe.
