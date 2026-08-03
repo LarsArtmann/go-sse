@@ -232,3 +232,22 @@ The core API is stable and tested. But the real consumer value (SQL-level predic
 ### 3. Should predicate panics be recovered or let crash?
 
 A panicking predicate inside `sendAllLocked` (under the read lock) would crash the entire broadcaster, taking down all subscribers. I documented "must be pure, fast, non-blocking" but didn't implement any runtime guard. Options: (a) `defer recover()` in sendAllLocked that logs and skips the panicking subscriber, (b) let it crash (documented contract violation = programmer error), (c) provide a `SubscribeFilterSafe` variant with recovery. I can't decide this without knowing your philosophy on programmer errors vs resilience.
+
+---
+
+## Resolution (2026-08-03)
+
+Most section-b and section-c gaps were closed by the subsequent gap-closure
+session (`2026-08-03_09-00`). Remaining items are tracked in TODO_LIST.md.
+
+| Item | Resolution | Source |
+|------|------------|--------|
+| §B Documentation cross-refs (broadcaster.go doc) | Done — `# Filtered Subscriptions` section added | 09-00 session |
+| §C FEATURES.md update | Done — SubscribeFilter, FilteredEventStore, ReplayFiltered rows | 09-00 session |
+| §C DOMAIN_LANGUAGE.md update | Done — 4 terms added; line refs later replaced with symbol-only refs | 09-00 + this session |
+| §C README.md update | Done — filtered subscriptions section, code examples, API reference | 09-00 session |
+| §B Test coverage (integration test, race test, benchmark) | Done — `TestIntegration_SubscribeFilter`, rewritten race test, `BenchmarkSubscribeFilter_PredicateOverhead` | 09-00 session |
+| §C `BroadcastMany` + filter test | Done — `TestSubscribeFilter_BroadcastManyRespectsPredicates` | 09-00 session |
+| Q1: DiscordSync migration | Still open — cross-project decision (DiscordSync repo) | — |
+| Q2: Cut v0.4.0? | v0.4.0 release in TODO_LIST — v0.3.0 was tagged empty | — |
+| Q3: Predicate panics? | "Let it crash" policy adopted and documented in `broadcaster.go`. Still needs matching doc on `ReplayFiltered` (TODO_LIST) | — |

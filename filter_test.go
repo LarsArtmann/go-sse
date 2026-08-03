@@ -120,9 +120,8 @@ func TestSubscribeFilter_BufferOnlyFillsWithMatching(t *testing.T) {
 	}
 
 	// Broadcast 10 matching events
-	for i := range 10 {
+	for range 10 {
 		b.Broadcast(sse.Event{Event: "match", Data: "m"})
-		_ = i
 	}
 
 	// Should receive all 10 matching events
