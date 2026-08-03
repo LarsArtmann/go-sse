@@ -23,12 +23,13 @@ Before calling it production-grade, explore what production consumers need.
 and a scale profile exist; subscribers are observable beyond the existing
 OnSubscribe/OnUnsubscribe hooks.
 
-As of v0.4.0, three of the four criteria are met: graceful shutdown
-(`Broadcaster.Shutdown(ctx)`), configurable buffer (`WithBufferSize[T]`), and
-structured observability (`Broadcaster.Health()` returning `BroadcasterHealth`).
-Only the **scale profile** remains open (TODO_LIST). The remaining
-explorations here are design questions with multiple viable answers, not yet
-bounded enough to be tasks:
+All four criteria are met: graceful shutdown (`Broadcaster.Shutdown(ctx)`),
+configurable buffer (`WithBufferSize[T]`), structured observability
+(`Broadcaster.Health()` returning `BroadcasterHealth`), and a scale profile
+([docs/performance/scale-profile.md](docs/performance/scale-profile.md) —
+conclusion: the default 64-buffer and non-blocking drop policy are
+well-calibrated; no change needed). The remaining explorations here are design
+questions with multiple viable answers, not yet bounded enough to be tasks:
 
 - Backpressure policy options beyond drop-on-full (block vs spill)
 - Observability: metrics/structured logging beyond `Health()` and the

@@ -6,8 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `ExampleReplayFiltered` — godoc example demonstrating predicate-based reconnection replay. Completes example coverage for every public replay/filter API.
+- `TestSubscribeFilter_DropPolicyRespected` — verifies a filtered subscriber with a full buffer drops matching events (non-matching events never enter the buffer), confirming the filter+drop interaction.
+- `TestSubscribeFilter_BroadcastManyMixedSubscribers` — verifies correct event partition when half the subscribers have predicates and half do not across a single `BroadcastMany` batch.
+- `BenchmarkMemoryPerSubscriber` — measures steady-state heap memory per subscriber at 100/1k/10k subscribers (~4 KiB each, buffer-dominated).
+- `docs/performance/scale-profile.md` — memory and latency characterization at 100/1k/10k subscribers. Conclusion: the default 64-buffer and non-blocking drop policy are well-calibrated; no change needed.
+
 ### Fixed
 
+- `example/datastar/main.go` progress bar corrected: `data-bind:style` → `data-style:width="$progress + '%'"`. `data-bind` is DataStar's form-element two-way binding; CSS styles use `data-style`. Verified against the DataStar v1.0.2 attributes reference.
+- `example/datastar/main.go` import changed from `encoding/json/v2` to `encoding/json`. The example is a teaching tool meant to be copied by consumers who may not set `GOEXPERIMENT=jsonv2`; stable `encoding/json` keeps the example portable.
+- `broadcaster.go` `NewBroadcaster` removed an unnecessary explicit type argument (`newFanOut[T]` → `newFanOut`) flagged by gopls `infertypeargs`.
+- `.envrc` now exports `GOEXPERIMENT=jsonv2` alongside `GOWORK=off`, so `buildflow`, `gopls`, and direct `go` invocations launched outside the Nix devShell inherit the flag via direnv (AGENTS.md already documented this as a gotcha).
 - README.md and doc.go predicate panic-policy documentation corrected: both now state that panicking predicates are recovered and treated as non-matches (matching v0.4.0 code behavior). The v0.4.0 tag permanently contains the old "crashes the broadcaster" wording; this fix lands on master for consumers reading HEAD.
 
 ## [0.4.0] - 2026-08-03
