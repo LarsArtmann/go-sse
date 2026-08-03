@@ -147,11 +147,7 @@ func TestSubscribeFilter_ConcurrentRace(t *testing.T) {
 
 	// Broadcasters: mix of matching and non-matching events
 	for range 4 {
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
-
+		wg.Go(func() {
 			for i := 0; !stop.Load(); i++ {
 				if i%2 == 0 {
 					b.Broadcast(sse.Event{Event: "match", Data: "x"})
@@ -159,22 +155,18 @@ func TestSubscribeFilter_ConcurrentRace(t *testing.T) {
 					b.Broadcast(sse.Event{Event: "skip", Data: "x"})
 				}
 			}
-		}()
+		})
 	}
 
 	// Subscriber churn: subscribe/unsubscribe with filters
-	wg.Add(1)
-
-	go func() {
-		defer wg.Done()
-
+	wg.Go(func() {
 		for !stop.Load() {
 			ch := b.SubscribeFilter(func(evt sse.Event) bool {
 				return evt.Event == "match"
 			})
 			b.Unsubscribe(ch)
 		}
-	}()
+	})
 
 	// Let it run briefly
 	stop.Store(true)
