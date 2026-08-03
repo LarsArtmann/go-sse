@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- README.md and doc.go predicate panic-policy documentation corrected: both now state that panicking predicates are recovered and treated as non-matches (matching v0.4.0 code behavior). The v0.4.0 tag permanently contains the old "crashes the broadcaster" wording; this fix lands on master for consumers reading HEAD.
+
 ## [0.4.0] - 2026-08-03
 
 ### Added
