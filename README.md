@@ -18,7 +18,9 @@ Every Go project that serves SSE reinvents the same four pieces: event serializa
 | `WriteEvent`            | Allocation-minimized SSE serializer (handles multi-line data, CRLF)      |
 | `Stream`                | Single SSE connection — headers, send, heartbeat, context, Last-Event-ID |
 | `Broadcaster[T]`        | Generic subscriber fan-out — subscribe, broadcast, close, hooks          |
+| `SubscribeFilter`       | Predicate-based subscription — only matching events enter the buffer     |
 | `EventStore` + `Replay` | Reconnection replay — missed events sent on reconnect                    |
+| `FilteredEventStore`    | Predicate push-down for replay budget efficiency                         |
 
 ## What's NOT Included
 
@@ -115,6 +117,34 @@ id := sse.NewEventID("evt-42")
 id, err := sse.ParseEventID(headerValue)
 ```
 
+### Filtered subscriptions
+
+Deliver only events matching a predicate to a subscriber — useful for per-channel,
+per-tenant, or per-event-type routing without multiple broadcasters:
+
+```go
+b := sse.NewBroadcaster[sse.Event]()
+
+// Only "message" events enter this subscriber's buffer
+ch := b.SubscribeFilter(func(evt sse.Event) bool {
+    return evt.Event == "message"
+})
+defer b.Unsubscribe(ch)
+```
+
+The predicate is checked before the non-blocking send. It runs inside the fan-out
+loop under the read lock — it must be pure, fast, and non-blocking.
+
+For filtered reconnection replay, use `ReplayFiltered`. If the store implements
+`FilteredEventStore`, the predicate is pushed into the store query so the replay
+budget is spent entirely on matching events:
+
+```go
+sse.ReplayFiltered(stream, store, lastID, func(evt sse.Event) bool {
+    return evt.Event == "message"
+})
+```
+
 ## API Reference
 
 ### Event Types
@@ -170,6 +200,9 @@ b := sse.NewBroadcaster[sse.Event]()
 ch := b.Subscribe()                 // returns <-chan sse.Event
 defer b.Unsubscribe(ch)             // closes the channel
 
+// Predicate-based: only matching events enter the buffer
+ch := b.SubscribeFilter(func(evt sse.Event) bool { return evt.Event == "message" })
+
 b.Broadcast(sse.Event{...})         // non-blocking, drops to slow consumers
 b.BroadcastMany(evt1, evt2, evt3)   // batch: single lock pass, preserves order
 b.SubscriberCount()
@@ -188,7 +221,14 @@ type EventStore interface {
     EventsAfter(lastID EventID) ([]Event, error)
 }
 
+// Stores that can push predicates into queries implement this additionally:
+type FilteredEventStore interface {
+    EventStore
+    EventsAfterFiltered(lastID EventID, pred func(Event) bool) ([]Event, error)
+}
+
 n, err := sse.Replay(stream, store, lastEventID)
+n, err := sse.ReplayFiltered(stream, store, lastEventID, pred) // filtered replay
 ```
 
 ## Design Decisions
