@@ -60,6 +60,9 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 | `OnSubscribe` / `OnUnsubscribe` hooks                | FULLY_FUNCTIONAL | `fanOut.OnSubscribe`, `fanOut.OnUnsubscribe` in `fanout.go`; `TestBroadcaster_OnSubscribeHook`              |
 | Graceful `Close` (closes all channels)               | FULLY_FUNCTIONAL | `fanOut.Close` in `fanout.go`; `TestBroadcaster_Close`                                                      |
 | Subscribe-after-close returns closed channel (no-op) | FULLY_FUNCTIONAL | `fanOut.Subscribe` in `fanout.go`; `TestBroadcaster_SubscribeAfterClose`                                    |
+| Graceful `Shutdown(ctx)` drain with deadline         | FULLY_FUNCTIONAL | `fanOut.Shutdown` in `fanout.go`; `TestBroadcaster_Shutdown_DrainsAllSubscribers`, `_ContextCancel`, `_RejectsNewSubscribersWhileDraining`, `_Idempotent`, `_AfterCloseIsNoop`, `_ConcurrentWithUnsubscribe` |
+| `Broadcaster.Health()` structured status snapshot    | FULLY_FUNCTIONAL | `BroadcasterHealth` in `fanout.go`; `TestBroadcaster_Health_InitialState`, `_DuringOperation`, `_AfterClose`, `_ReportsBufferSize` |
+| Configurable subscriber buffer (`WithBufferSize`)    | FULLY_FUNCTIONAL | `Option[T]`, `WithBufferSize[T]` in `fanout.go`; `TestBroadcaster_WithBufferSize_AppliesToNewSubscribers`, `_NonPositiveIsIgnored` |
 | Concurrent-safety (race-tested)                      | FULLY_FUNCTIONAL | `TestBroadcaster_ConcurrentSafety`, `TestBroadcaster_ConcurrentHookCount`                                   |
 
 ## Reconnection replay

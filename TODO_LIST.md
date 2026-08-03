@@ -23,8 +23,8 @@ they narrow to a single approach.
 
 | Status    | Item                                     | Notes                                                                                                                                                                                |
 | --------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 🔴 `TODO` | Graceful-shutdown helper                 | Drain subscribers on SIGTERM before closing broadcasters. Must compose with consumer-owned handlers, not own the signal loop.                                                        |
-| 🔴 `TODO` | Configurable subscriber buffer size      | Currently hardcoded at `defaultSubscriberBuffer = 64` in `fanout.go`. Expose as a `Broadcaster`/`Subscribe` option without breaking the default.                                     |
+| 🟢 `DONE` | Graceful-shutdown helper                 | Shipped as `Broadcaster.Shutdown(ctx) error` (drain respecting context deadline) plus `Broadcaster.Health() BroadcasterHealth` for health checks. Signal handling stays in the consumer. |
+| 🟢 `DONE` | Configurable subscriber buffer size      | Shipped as `WithBufferSize[T](size int) Option[T]` applied at construction via `NewBroadcaster[T](opts ...)`. Default of 64 preserved; non-positive values fall back to the default.   |
 | 🔴 `TODO` | Scale profile: 64-buffer × N subscribers | Memory and latency characterization at subscriber counts (100/1k/10k). Produces a report, not a code change. Informs whether the buffer size or backpressure policy needs to change. |
 
 ### DataStar integration — follow-up items
