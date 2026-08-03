@@ -53,6 +53,9 @@ vendor/
 go.work
 go.work.sum
 /go-sse
+/datastar
+/example/datastar/datastar
+/example/server
 
 ## Nix
 .envrc
