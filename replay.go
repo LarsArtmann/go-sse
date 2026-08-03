@@ -63,6 +63,10 @@ func Replay(stream *Stream, store EventStore, lastID EventID) (int, error) {
 // it falls back to [EventStore.EventsAfter] + in-memory post-filter (correct but
 // the replay budget may be partially wasted on non-matching events).
 //
+// In the fallback path, if pred panics, the panic is recovered and treated as a
+// non-match (the event is skipped). This mirrors [Broadcaster.SubscribeFilter]'s
+// panic-recovery contract.
+//
 // When pred is nil, ReplayFiltered delegates to [Replay] (no filtering).
 //
 // Returns the number of events replayed, or an error if the store fails or
@@ -98,7 +102,7 @@ func ReplayFiltered(
 
 		events = make([]Event, 0, len(all))
 		for _, evt := range all {
-			if pred(evt) {
+			if safePredCall(pred, evt) {
 				events = append(events, evt)
 			}
 		}

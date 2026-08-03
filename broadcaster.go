@@ -33,8 +33,9 @@ import (
 //	defer broadcaster.Unsubscribe(ch)
 //
 // The predicate is called inside the fan-out loop under the read lock — it must
-// be pure, fast, and non-blocking. A panicking predicate will crash the
-// broadcaster goroutine (do not recover; fix the predicate). Subscribe() with
+// be pure, fast, and non-blocking. If a predicate panics, the panic is recovered
+// and treated as a non-match (the message is skipped for that subscriber). This
+// ensures one broken predicate cannot crash the broadcaster. Subscribe() with
 // no filter is equivalent to SubscribeFilter(nil).
 //
 // # Backpressure and Drop Policy

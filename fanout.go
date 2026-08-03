@@ -215,11 +215,25 @@ func (f *fanOut[T]) BroadcastMany(msgs ...T) {
 	}
 }
 
+// safePredCall calls pred(msg), recovering from panics. A panicking predicate
+// returns false (treated as "no match") so one broken predicate cannot crash
+// the broadcaster or replay loop. The zero overhead for unfiltered subscribers
+// (nil pred) is preserved — callers check nil before calling this helper.
+func safePredCall[T any](pred func(T) bool, msg T) (match bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			match = false
+		}
+	}()
+
+	return pred(msg)
+}
+
 // sendAllLocked fans msg out to every subscriber. The caller must hold f.mu
 // (read or write) so that a concurrent Unsubscribe cannot close a channel mid-send.
 func (f *fanOut[T]) sendAllLocked(msg T) {
 	for _, sub := range f.subscribers {
-		if sub.pred != nil && !sub.pred(msg) {
+		if sub.pred != nil && !safePredCall(sub.pred, msg) {
 			continue
 		}
 
