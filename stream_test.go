@@ -154,7 +154,8 @@ func TestStream_SendLines(t *testing.T) {
 
 	html := "<div>\n  <span>hi</span>\n</div>"
 
-	err := stream.SendLines("datastar-patch-elements",
+	err := stream.SendLines(
+		"datastar-patch-elements",
 		"selector #feed",
 		"mode inner",
 		sse.KeyedLines("elements", html),

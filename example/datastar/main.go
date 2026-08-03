@@ -67,7 +67,8 @@ func eventsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_ = stream.SendLines("datastar-patch-elements",
+	_ = stream.SendLines(
+		"datastar-patch-elements",
 		"selector #status",
 		"mode inner",
 		sse.KeyedLines("elements", "<p>Complete!</p>"),
@@ -86,7 +87,8 @@ func sendProgress(stream *sse.Stream, progress int) {
 
 	status := fmt.Sprintf("<p>Processing... %d%%</p>", progress)
 
-	_ = stream.SendLines("datastar-patch-elements",
+	_ = stream.SendLines(
+		"datastar-patch-elements",
 		"selector #status",
 		"mode inner",
 		sse.KeyedLines("elements", status),

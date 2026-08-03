@@ -268,7 +268,8 @@ func TestIntegration_DataStarWireFormat(t *testing.T) {
 
 		html := "<div id=\"feed\">\n  <span>1</span>\n</div>"
 
-		_ = stream.SendLines("datastar-patch-elements",
+		_ = stream.SendLines(
+			"datastar-patch-elements",
 			"selector #feed",
 			"mode inner",
 			sse.KeyedLines("elements", html),

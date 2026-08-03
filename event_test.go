@@ -595,7 +595,9 @@ func BenchmarkKeyedLines(b *testing.B) {
 	var multiLineBuilder strings.Builder
 	multiLineBuilder.WriteString("<div id=\"feed\">\n")
 	for range 100 {
-		multiLineBuilder.WriteString("  <article>\n    <h3>Title</h3>\n    <p>Body text</p>\n  </article>\n")
+		multiLineBuilder.WriteString(
+			"  <article>\n    <h3>Title</h3>\n    <p>Body text</p>\n  </article>\n",
+		)
 	}
 	multiLineBuilder.WriteString("</div>")
 	multiLineHTML := multiLineBuilder.String()
