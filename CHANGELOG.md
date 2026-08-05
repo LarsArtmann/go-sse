@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `broadcaster.go` `NewBroadcaster` removed an unnecessary explicit type argument (`newFanOut[T]` → `newFanOut`) flagged by gopls `infertypeargs`.
 - `.envrc` now exports `GOEXPERIMENT=jsonv2` alongside `GOWORK=off`, so `buildflow`, `gopls`, and direct `go` invocations launched outside the Nix devShell inherit the flag via direnv (AGENTS.md already documented this as a gotcha).
 - README.md and doc.go predicate panic-policy documentation corrected: both now state that panicking predicates are recovered and treated as non-matches (matching v0.4.0 code behavior). The v0.4.0 tag permanently contains the old "crashes the broadcaster" wording; this fix lands on master for consumers reading HEAD.
+- `example/datastar/main.go` CDN URL corrected: `[email protected]` (Cloudflare email-protection placeholder leaked into the URL) → `datastar@1.0.2` (current stable DataStar release). The previous URL returned `400 Bad Request` from jsdelivr and prevented the browser from loading the DataStar runtime at all. The page now renders, the progress bar advances, and the status text patches as designed.
 
 ## [0.4.0] - 2026-08-03
 
