@@ -44,11 +44,11 @@ The user explicitly asked me to "break this down, think about them again, execut
 
 ## c) NOT STARTED
 
-11. **No Subresource Integrity (SRI) hash on the CDN script.** Flagged in `docs/status/2026-08-03_20-20_v0.4.0-followup-tests-scale-profile-profile-and-example-fix.md:132` as task #28 ("Pin the DataStar CDN version in the example with SRI — a compromised CDN would inject arbitrary JS into every page using this example."). This is a real security gap, and the fix I just shipped makes the URL *work* but does not address that the example pulls arbitrary JS from a third-party origin with no integrity check. Out of scope for the reported symptom, but sitting there.
+11. **No Subresource Integrity (SRI) hash on the CDN script.** Flagged in `docs/status/2026-08-03_20-20_v0.4.0-followup-tests-scale-profile-profile-and-example-fix.md:132` as task #28 ("Pin the DataStar CDN version in the example with SRI — a compromised CDN would inject arbitrary JS into every page using this example."). This is a real security gap, and the fix I just shipped makes the URL _work_ but does not address that the example pulls arbitrary JS from a third-party origin with no integrity check. Out of scope for the reported symptom, but sitting there.
 12. **No Nix overlay/launcher for the example** (`nix run .#datastar-example`). Flagged in the same report (§30).
 13. **No integration test asserting the served HTML uses a reachable DataStar CDN URL.** The library has plenty of wire-format integration tests, but nothing tests the example's own correctness. One line — `resp, _ := http.Get("http://localhost:8765/"); strings.Contains(resp.Body, "[email protected]")` — would have caught this before the user did. Should exist.
 14. **No `go run -- -port 9000` flag** so the example can run on a non-8765 port without rebuilding from a fork. (Trade-off — would bloat a 95-line example, but would have avoided my "fake port" testing detour today.)
-15. **No browser-rendered end-to-end test.** Prior reports (2026-08-03_02-50 §11, 2026-08-03_19-57 §90) identified this and it never landed. The current symptom *is* a browser-rendering bug (the URL never loaded, so DOM never patched); a headless-browser smoke test (chromedp / Playwright via the nix-vm brainstorming doc) would have caught this and every future regression.
+15. **No browser-rendered end-to-end test.** Prior reports (2026-08-03_02-50 §11, 2026-08-03_19-57 §90) identified this and it never landed. The current symptom _is_ a browser-rendering bug (the URL never loaded, so DOM never patched); a headless-browser smoke test (chromedp / Playwright via the nix-vm brainstorming doc) would have caught this and every future regression.
 
 ---
 
@@ -58,7 +58,7 @@ Nothing is in a broken state from this session. Tests pass, lint passes, flake c
 
 If we stretch "fucked up" to mean "left in an incorrect state that I'm aware of":
 
-16. **The auto-commit's commit message lies about the diff.** Future archaeology of `git log --oneline` will read "1.0.0-RC.6 → 1.0.2" and conclude this was an ordinary version bump. Anyone debugging "why is this URL `[email protected]` in an old commit" will think the bummer is that they had an RC. The real story is that this URL was *never* valid in any commit — it was committed broken from day one (commit `8f1a07b feat(datastar): add Datastar SSE example and integration` per the 00-18 status report). The lazy fix-update commit message perpetuates that confusion.
+16. **The auto-commit's commit message lies about the diff.** Future archaeology of `git log --oneline` will read "1.0.0-RC.6 → 1.0.2" and conclude this was an ordinary version bump. Anyone debugging "why is this URL `[email protected]` in an old commit" will think the bummer is that they had an RC. The real story is that this URL was _never_ valid in any commit — it was committed broken from day one (commit `8f1a07b feat(datastar): add Datastar SSE example and integration` per the 00-18 status report). The lazy fix-update commit message perpetuates that confusion.
 
 17. **The user's `./datastar` running binary is still the broken old binary.** They were running it from a stale build (per `ps -ef` showing `go run ./example/datastar/` PID 2409446 → child PID 2409554 `/tmp/go-build1888062148/b001/exe/datastar`). After the file edit and the auto-commit, neither the on-disk binary at repo root nor that running child was rebuilt. The user said "It works now" — they may have rebuilt manually, or they may have reloaded the browser after the source change and gotten confused about what loaded. Did not ask. Did not rebuild for them. May not actually work for them yet.
 
@@ -90,13 +90,13 @@ If we stretch "fucked up" to mean "left in an incorrect state that I'm aware of"
 
 ### Things I personally should have done better this session
 
-26. **Did not grep AGENTS.md / prior status reports for "datastar CDN" before fixing.** The 2026-08-03_20-20 status report already enumerated three problems with this exact example (data-bind:style, no SRI, no nix overlay). I should have read that first and bundled the obvious ones (SRI). I would have caught that fact #2 was already shipped but #1 was *not yet fixed on the same line* — line 150 already had `data-style:width` (per prior self-review), but line 104 still had the broken URL. Two separate latent bugs on the same example.
+26. **Did not grep AGENTS.md / prior status reports for "datastar CDN" before fixing.** The 2026-08-03_20-20 status report already enumerated three problems with this exact example (data-bind:style, no SRI, no nix overlay). I should have read that first and bundled the obvious ones (SRI). I would have caught that fact #2 was already shipped but #1 was _not yet fixed on the same line_ — line 150 already had `data-style:width` (per prior self-review), but line 104 still had the broken URL. Two separate latent bugs on the same example.
 
 27. **Did not verify the build with a real browser.** I verified the URL is reachable (HTTP 200, valid JS body) but never verified the page renders. The user said "It works now" but I don't have ground truth that the DOM patches executed correctly. The integration test recommendation above would close this loop.
 
 28. **Killed/stopped processes to free port 8765.** I tried `kill 2409554` and `kill -9 2409554` and they appeared to work but actually didn't (the process came back, the port stayed bound). I should have identified that the `go run ./example/datastar/` parent (`2409446`) was respawning the child. Instead I just worked around it by building to `/tmp` and giving up on testing the live server. Lazy.
 
-29. **Did not run `git diff` mentally before responding.** I should have noticed the auto-commit message was factually wrong *immediately after it landed* and either amended (with explanation) or flagged it prominently. I waited until this status report.
+29. **Did not run `git diff` mentally before responding.** I should have noticed the auto-commit message was factually wrong _immediately after it landed_ and either amended (with explanation) or flagged it prominently. I waited until this status report.
 
 30. **Built `/tmp/dt3` with an unused `-ldflags "-X main.addr=..."`** that failed silently (const, not var). Wasted 30 seconds. Did not notice until cleanup.
 
@@ -141,6 +141,6 @@ Bonus (51-55, not in the 50):
 
 1. **Should I amend the auto-git commit message** (commits `76739ba chore(example): update datastar CDN version to 1.0.2`) **to reflect the truth** (broken `[email protected]` placeholder → working `1.0.2`)? AGENTS.md says "NEVER use git reset / git checkout", and the auto-git daemon authored the commit. Rewriting its message is a history edit I should not do unilaterally. **No-Go or Go?**
 
-2. **Is the user's `./datastar` running binary stale, or did they rebuild it manually** before saying "It works now"? I observed `go run ./example/datastar/` (PID 2409446) and child `2409554` running with the *pre-fix* binary throughout the session, but never saw them rebuild. The user-confirmation is consistent with either: (a) they rebuilt + restarted after seeing the file change, or (b) they confirmed before rebuilding and the bug persists. **Should I rebuild the example binary for them now so we don't leave a stale process running, or trust the user?**
+2. **Is the user's `./datastar` running binary stale, or did they rebuild it manually** before saying "It works now"? I observed `go run ./example/datastar/` (PID 2409446) and child `2409554` running with the _pre-fix_ binary throughout the session, but never saw them rebuild. The user-confirmation is consistent with either: (a) they rebuilt + restarted after seeing the file change, or (b) they confirmed before rebuilding and the bug persists. **Should I rebuild the example binary for them now so we don't leave a stale process running, or trust the user?**
 
 3. **Do you want the DataStar CDN script pinned with SRI in this same commit**, or as a follow-up? Doing it here means one consolidated "fix the example" commit; doing it separately means a clean review boundary. SRI requires fetching `datastar.js` once and embedding its hash, which is a one-shot operation I can run via `fetch` + `sha384sum`. **Bundled or separate?**

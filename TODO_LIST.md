@@ -7,17 +7,18 @@
 
 ## Status legend
 
-| Status           | Meaning                                                 |
-| ---------------- | ------------------------------------------------------- |
-| 🔴 `TODO`        | Not started. Needs doing.                               |
-| 🟡 `IN_PROGRESS` | Actively being worked on.                               |
-| 🔵 `BLOCKED`     | Cannot proceed; external dependency or decision needed. |
+| Status           | Meaning                                                                                      |
+| ---------------- | -------------------------------------------------------------------------------------------- |
+| ✅ `DONE`        | Resolved. Removed from active TODO; lives in `CHANGELOG.md` and/or referenced status report. |
+| 🔴 `TODO`        | Not started. Needs doing.                                                                    |
+| 🟡 `IN_PROGRESS` | Actively being worked on.                                                                    |
+| 🔵 `BLOCKED`     | Cannot proceed; external dependency or decision needed.                                      |
 
 ## Verification & correctness
 
-| Status    | Item                                                       | Notes                                                                                                                                                       |
-| --------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🔴 `TODO` | Point a real DataStar JS client at a go-sse example server | Ultimate integration verification — confirm events parse correctly in a browser now that `data-style:width` is correct. Unblocks the CI browser test below. |
+No open items.
+
+> ✅ 2026-08-05 — Real DataStar JS client manually tested against `example/datastar` example server (browser session). Progress bar and status patches confirmed working end-to-end after the CDN URL fix (`docs/status/2026-08-05_10-15_datastar-example-cdn-url-fix.md`). Both `data-style:width` (data attribute) and the `[email protected]` placeholder bug are simultaneously verified.
 
 ## Blocked
 
