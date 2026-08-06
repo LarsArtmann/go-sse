@@ -1,0 +1,65 @@
+package main
+
+import "fmt"
+
+templ indexPage() {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<title>go-sse × HTMX</title>
+			<link rel="stylesheet" href="/static/styles.css"/>
+			<script src="/static/htmx.min.js"></script>
+			<script src="/static/sse.min.js"></script>
+		</head>
+		<body>
+			<main class="card">
+				<h1>go-sse × HTMX</h1>
+				<p class="subtitle">
+					Live <strong>Server-Sent Events</strong> from a Go backend powered by
+					<code>github.com/larsartmann/go-sse</code>, rendered with
+					<a href="https://htmx.org">HTMX</a> and its
+					<a href="https://htmx.org/extensions/sse/">SSE extension</a>.
+					The server streams HTML fragments; HTMX swaps them into the DOM.
+					No frontend JavaScript required.
+				</p>
+				@sseContainer()
+			</main>
+		</body>
+	</html>
+}
+
+// sseContainer is the reconnect root: replacing it (via the Restart button's
+// outerHTML swap) tears down the old EventSource and lets HTMX open a fresh
+// connection. This is the idiomatic HTMX way to restart an SSE stream.
+templ sseContainer() {
+	<div id="sse-container" hx-ext="sse" sse-connect="/events">
+		<button
+			hx-get="/sse-container"
+			hx-target="#sse-container"
+			hx-swap="outerHTML"
+		>
+			Restart demo
+		</button>
+		<div id="progress-area" sse-swap="progress" hx-swap="innerHTML">
+			@progressContent(0)
+		</div>
+	</div>
+}
+
+// progressContent is the inner HTML streamed as the data payload of the
+// "progress" SSE event. HTMX swaps it into #progress-area on every tick.
+templ progressContent(progress int) {
+	<div class="progress-bar">
+		<div class="progress-fill" style={ fmt.Sprintf("width: %d%%", progress) }></div>
+	</div>
+	<div class="status">
+		if progress >= 100 {
+			<p>Complete!</p>
+		} else {
+			<p>Processing… { progress }%</p>
+		}
+	</div>
+	<p class="progress-value">Progress: <span>{ progress }</span>%</p>
+}

@@ -154,13 +154,3 @@ button:hover {
   color: var(--accent);
   font-weight: 600;
 }
-
-/* Smooth fade-in when HTMX swaps fresh fragments in. */
-.htmx-swapping {
-  opacity: 0;
-}
-
-.htmx-settling {
-  opacity: 1;
-  transition: opacity 0.2s ease-out;
-}

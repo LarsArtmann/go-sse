@@ -214,6 +214,9 @@ linters:
       - path: example/datastar/
         linters:
           - godoclint
+      - path: example/htmx/
+        linters:
+          - godoclint
     paths:
       - _templ\.go$
       - \.gen\.go$
