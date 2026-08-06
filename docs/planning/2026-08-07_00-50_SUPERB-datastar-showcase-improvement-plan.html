@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataStar Showcase — Pareto Execution Plan</title>
+<style>
+:root {
+	--color-graphite: #0e0e10;
+	--color-graphite-2: #18181d;
+	--color-graphite-3: #16161a;
+	--color-bone: #f4f4f0;
+	--color-bone-2: #c9c9c2;
+	--color-red: #ff6b6b;
+	--color-blue: #6eb5ff;
+	--color-yellow: #f4d35e;
+	--color-amber: #ffb347;
+	--color-green: #51cf66;
+
+	--surface: var(--color-graphite);
+	--surface-raised: var(--color-graphite-2);
+	--surface-sunken: var(--color-graphite-3);
+	--text: var(--color-bone);
+	--text-muted: var(--color-bone-2);
+	--text-faint: #8a8a85;
+	--border: #2a2a30;
+	--border-strong: #3a3a42;
+	--accent: var(--color-amber);
+	--problem: var(--color-red);
+	--solution: var(--color-blue);
+	--warning: var(--color-yellow);
+	--radius: 0px;
+
+	--font-heading: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+	--font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+	--font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+	background: var(--surface);
+	color: var(--text);
+	font-family: var(--font-body);
+	line-height: 1.6;
+	font-size: 15px;
+	-webkit-font-smoothing: antialiased;
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* Hero */
+.hero {
+	padding: 64px 0 40px;
+	border-bottom: 1px solid var(--border);
+}
+.hero-badge {
+	display: inline-block;
+	font-size: 11px;
+	font-weight: 800;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	color: var(--accent);
+	padding: 4px 10px;
+	border: 1px solid var(--accent);
+	margin-bottom: 16px;
+}
+.hero h1 {
+	font-size: 36px;
+	font-weight: 900;
+	letter-spacing: -0.03em;
+	line-height: 1.1;
+	margin-bottom: 12px;
+}
+.hero-subtitle {
+	color: var(--text-muted);
+	font-size: 17px;
+	max-width: 700px;
+}
+.hero-meta {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-top: 20px;
+}
+.tag {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--text-muted);
+	padding: 3px 10px;
+	background: var(--surface-sunken);
+	border: 1px solid var(--border);
+}
+.tag.amber { color: var(--accent); border-color: var(--accent); }
+
+/* Section */
+section { padding: 48px 0; border-bottom: 1px solid var(--border); }
+section:last-of-type { border-bottom: none; }
+h2 {
+	font-size: 24px;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	margin-bottom: 8px;
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+}
+h2 .num {
+	font-size: 14px;
+	color: var(--accent);
+	font-weight: 800;
+	font-family: var(--font-mono);
+}
+.section-desc { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; max-width: 700px; }
+
+/* Stat grid */
+.stat-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 16px;
+	margin-bottom: 40px;
+}
+.stat-card {
+	background: var(--surface-raised);
+	border: 1px solid var(--border);
+	border-left: 3px solid var(--border-strong);
+	padding: 20px;
+}
+.stat-card.t0 { border-left-color: var(--problem); }
+.stat-card.t1 { border-left-color: var(--accent); }
+.stat-card.t2 { border-left-color: var(--solution); }
+.stat-card.t3 { border-left-color: var(--warning); }
+.stat-card.t4 { border-left-color: var(--text-faint); }
+.stat-value { font-size: 32px; font-weight: 900; letter-spacing: -0.03em; }
+.stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+.stat-detail { font-size: 13px; color: var(--text-faint); margin-top: 6px; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+}
+thead { background: var(--surface-sunken); }
+th {
+	text-align: left;
+	padding: 10px 14px;
+	font-size: 11px;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	border-bottom: 1px solid var(--border-strong);
+	white-space: nowrap;
+}
+td {
+	padding: 10px 14px;
+	border-bottom: 1px solid var(--border);
+	vertical-align: top;
+}
+tbody tr:hover { background: color-mix(in srgb, var(--surface-raised) 50%, transparent); }
+
+/* Badges */
+.badge {
+	display: inline-block;
+	font-size: 11px;
+	font-weight: 700;
+	padding: 2px 8px;
+	border: 1px solid;
+	white-space: nowrap;
+}
+.badge-critical { color: var(--problem); border-color: var(--problem); }
+.badge-high { color: var(--accent); border-color: var(--accent); }
+.badge-medium { color: var(--solution); border-color: var(--solution); }
+.badge-low { color: var(--warning); border-color: var(--warning); }
+.badge-future { color: var(--text-faint); border-color: var(--text-faint); }
+
+.effort { font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); white-space: nowrap; }
+.score { font-family: var(--font-mono); font-weight: 700; font-size: 15px; }
+.score-high { color: var(--color-green); }
+.score-mid { color: var(--accent); }
+.score-low { color: var(--text-faint); }
+
+/* Callout */
+.callout {
+	padding: 16px 20px;
+	border: 1px solid var(--border);
+	border-left: 3px solid;
+	margin-bottom: 24px;
+	font-size: 14px;
+}
+.callout-warning { border-left-color: var(--warning); background: color-mix(in srgb, var(--warning) 8%, transparent); }
+.callout-solution { border-left-color: var(--solution); background: color-mix(in srgb, var(--solution) 8%, transparent); }
+.callout strong { display: block; margin-bottom: 4px; }
+
+/* Pareto tiers */
+.pareto-tier {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 16px;
+	background: var(--surface-raised);
+	border: 1px solid var(--border);
+	border-left: 3px solid;
+	margin-bottom: 8px;
+	font-size: 14px;
+}
+.pareto-tier .pct { font-family: var(--font-mono); font-weight: 900; font-size: 20px; min-width: 60px; }
+.pareto-tier.p1 { border-left-color: var(--problem); }
+.pareto-tier.p1 .pct { color: var(--problem); }
+.pareto-tier.p4 { border-left-color: var(--accent); }
+.pareto-tier.p4 .pct { color: var(--accent); }
+.pareto-tier.p20 { border-left-color: var(--solution); }
+.pareto-tier.p20 .pct { color: var(--solution); }
+.pareto-tier.p-rest { border-left-color: var(--text-faint); }
+.pareto-tier.p-rest .pct { color: var(--text-faint); }
+
+.mono { font-family: var(--font-mono); font-size: 13px; color: var(--text-muted); }
+
+footer { padding: 32px 0 48px; text-align: center; color: var(--text-faint); font-size: 13px; }
+
+@media (max-width: 768px) {
+	.hero h1 { font-size: 28px; }
+	.stat-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="hero">
+	<div class="hero-badge">Pareto Execution Plan</div>
+	<h1>DataStar Activity Feed Showcase — Full Improvement Plan</h1>
+	<p class="hero-subtitle">Every identified TODO broken into tasks of 12 minutes or less, sorted by importance, impact, effort, and customer value. Covers correctness fixes, verification gaps, code quality, UI polish, documentation, and future feature ideas.</p>
+	<div class="hero-meta">
+		<span class="tag amber">64 total tasks</span>
+		<span class="tag">40 actionable (≤12min)</span>
+		<span class="tag">24 future ideas</span>
+		<span class="tag">2026-08-07</span>
+	</div>
+</div>
+
+<!-- Pareto Breakdown -->
+<section id="pareto">
+	<h2><span class="num">01</span>Pareto Breakdown</h2>
+	<p class="section-desc">Where to concentrate effort for maximum return. The 1% tier fixes correctness and proves core claims; the 4% tier hardens quality; the 20% tier adds polish visitors notice; everything else is future speculation.</p>
+
+	<div class="stat-grid">
+		<div class="stat-card t0">
+			<div class="stat-value">7</div>
+			<div class="stat-label">Tier 0 — Blockers</div>
+			<div class="stat-detail">Correctness + verification gaps that undermine the showcase claim. ~53min total.</div>
+		</div>
+		<div class="stat-card t1">
+			<div class="stat-value">8</div>
+			<div class="stat-label">Tier 1 — High-Impact</div>
+			<div class="stat-detail">Tests + formatting + shutdown proof. The 4% that delivers 64%. ~48min total.</div>
+		</div>
+		<div class="stat-card t2">
+			<div class="stat-value">9</div>
+			<div class="stat-label">Tier 2 — Code Quality</div>
+			<div class="stat-detail">File split, race docs, constants, timeouts. ~77min total.</div>
+		</div>
+		<div class="stat-card t3">
+			<div class="stat-value">16</div>
+			<div class="stat-label">Tier 3+4 — Polish & Docs</div>
+			<div class="stat-detail">UI enhancements + documentation. ~168min total.</div>
+		</div>
+	</div>
+
+	<div class="pareto-tier p1">
+		<span class="pct">1%</span>
+		<div><strong>Delivers 51% of the result</strong> — Fix the filter predicate (fragile HTML matching), prove fan-out with a concurrent test, verify nix hermetic build. These three fix the biggest correctness/credibility gaps.</div>
+	</div>
+	<div class="pareto-tier p4">
+		<span class="pct">4%</span>
+		<div><strong>Delivers 64% of the result</strong> — Add memStore unit tests, prove graceful shutdown, reset the $replayed signal, run nix fmt. Turns "works by inspection" into "works by proof."</div>
+	</div>
+	<div class="pareto-tier p20">
+		<span class="pct">20%</span>
+		<div><strong>Delivers 80% of the result</strong> — Split main.go into focused files, add connection indicator, empty state, event count, README "How it works" + "Try it" checklist. Makes the example feel production-grade.</div>
+	</div>
+	<div class="pareto-tier p-rest">
+		<span class="pct">rest</span>
+		<div><strong>Diminishing returns</strong> — 24 future feature ideas (chat room, SQLite store, WebSocket comparison, Prometheus, etc.). Worth doing eventually but not before the tiers above.</div>
+	</div>
+</section>
+
+<!-- Tier 0: Blockers -->
+<section id="tier0">
+	<h2><span class="num">02</span>Tier 0 — Blockers &amp; Correctness</h2>
+	<p class="section-desc">These undermine the showcase's core claims. Fix first.</p>
+
+	<div class="callout callout-warning">
+		<strong>Why these are blockers</strong>
+		The filter predicate greps rendered HTML for a CSS class name — change a class and it breaks silently. The fan-out claim was never proven with 2+ concurrent clients. The nix hermetic check was never run.
+	</div>
+
+	<div class="table-wrap">
+	<table>
+	<thead>
+		<tr>
+			<th style="width:32px">#</th>
+			<th>Task</th>
+			<th>Impact</th>
+			<th>Effort</th>
+			<th>Cust. Value</th>
+			<th>ROI</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="mono">1</td>
+			<td><strong>Run <code>nix flake check</code></strong> — full hermetic build+test verification. AGENTS.md calls this the canonical check; it was never run. <span class="badge badge-critical">Correctness</span></td>
+			<td><span class="badge badge-critical">10</span></td>
+			<td class="effort">5 min</td>
+			<td><span class="badge badge-medium">6</span></td>
+			<td><span class="score score-high">48</span></td>
+		</tr>
+		<tr>
+			<td class="mono">2</td>
+			<td><strong>Run <code>nix fmt</code></strong> — treefmt (gofumpt, goimports, golines). May reformat files; verify diff is clean afterward. <span class="badge badge-critical">Quality</span></td>
+			<td><span class="badge badge-high">8</span></td>
+			<td class="effort">5 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td><span class="score score-high">32</span></td>
+		</tr>
+		<tr>
+			<td class="mono">3</td>
+			<td><strong>Refactor <code>feedItemEvent</code> to embed category in event name</strong> — change <code>Event: "datastar-patch-elements"</code> to encode the category (e.g. <code>"feed-item-alert"</code>) or add a separate <code>Retry</code>-style field. Removes HTML-string dependency. <span class="badge badge-critical">Correctness</span></td>
+			<td><span class="badge badge-critical">9</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-medium">6</span></td>
+			<td><span class="score score-mid">22</span></td>
+		</tr>
+		<tr>
+			<td class="mono">4</td>
+			<td><strong>Update filter predicate to check structured field</strong> — replace <code>strings.Contains(evt.Data, "feed-item--alert")</code> with check against the new event name/field. <span class="badge badge-critical">Correctness</span></td>
+			<td><span class="badge badge-critical">9</span></td>
+			<td class="effort">5 min</td>
+			<td><span class="badge badge-medium">6</span></td>
+			<td><span class="score score-high">27</span></td>
+		</tr>
+		<tr>
+			<td class="mono">5</td>
+			<td><strong>Verify filter works post-refactor</strong> — run server, connect with <code>?filter=alerts</code>, confirm only alerts arrive. Build + lint. <span class="badge badge-high">Verification</span></td>
+			<td><span class="badge badge-high">7</span></td>
+			<td class="effort">5 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td><span class="score score-high">21</span></td>
+		</tr>
+		<tr>
+			<td class="mono">6</td>
+			<td><strong>Write concurrent multi-tab integration test harness</strong> — launch <code>httptest.Server</code> wrapping the mux, open 2 SSE client goroutines with <code>bufio.Scanner</code>, collect events for 5s. <span class="badge badge-critical">Verification</span></td>
+			<td><span class="badge badge-critical">10</span></td>
+			<td class="effort">12 min</td>
+			<td><span class="badge badge-medium">8</span></td>
+			<td><span class="score score-mid">22</span></td>
+		</tr>
+		<tr>
+			<td class="mono">7</td>
+			<td><strong>Assert both clients receive identical event streams</strong> — compare event IDs from client A and B; verify fan-out sends the same events to both. Also assert subscriber count increments. <span class="badge badge-critical">Verification</span></td>
+			<td><span class="badge badge-critical">10</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-medium">8</span></td>
+			<td><span class="score score-high">24</span></td>
+		</tr>
+	</tbody>
+	</table>
+	</div>
+</section>
+
+<!-- Tier 1: High-Impact -->
+<section id="tier1">
+	<h2><span class="num">03</span>Tier 1 — High-Impact Verification &amp; Fixes</h2>
+	<p class="section-desc">Turns "works by inspection" into "works by proof." Every item here is either a test, a format check, or a small UX fix with outsized visibility.</p>
+
+	<div class="table-wrap">
+	<table>
+	<thead>
+		<tr>
+			<th style="width:32px">#</th>
+			<th>Task</th>
+			<th>Impact</th>
+			<th>Effort</th>
+			<th>Cust. Value</th>
+			<th>ROI</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="mono">8</td>
+			<td><strong>Reset <code>$replayed</code> signal to 0 before sending new count</strong> — prevents stale banner on multi-reconnect. One-line fix in <code>eventsHandler</code>. <span class="badge badge-high">UX Bug</span></td>
+			<td><span class="badge badge-high">7</span></td>
+			<td class="effort">5 min</td>
+			<td><span class="badge badge-high">8</span></td>
+			<td><span class="score score-high">48</span></td>
+		</tr>
+		<tr>
+			<td class="mono">9</td>
+			<td><strong>memStore test: empty store EventsAfter</strong> — store with zero events, query any ID, expect empty slice + nil error. <span class="badge badge-high">Test</span></td>
+			<td><span class="badge badge-high">8</span></td>
+			<td class="effort">5 min</td>
+			<td><span class="badge badge-medium">4</span></td>
+			<td><span class="score score-high">24</span></td>
+		</tr>
+		<tr>
+			<td class="mono">10</td>
+			<td><strong>memStore test: non-integer / unknown ID</strong> — query with <code>"abc"</code>, empty string, and an ID larger than any stored. Verify graceful fallback to 0 / empty result. <span class="badge badge-high">Test</span></td>
+			<td><span class="badge badge-high">8</span></td>
+			<td class="effort">8 min</td>
+			<td><span class="badge badge-medium">4</span></td>
+			<td><span class="score score-mid">20</span></td>
+		</tr>
+		<tr>
+			<td class="mono">11</td>
+			<td><strong>memStore test: valid sequential replay</strong> — append 5 events with IDs 1–5, query EventsAfter(2), expect events 3–5 in order. <span class="badge badge-high">Test</span></td>
+			<td><span class="badge badge-high">8</span></td>
+			<td class="effort">5 min</td>
+			<td><span class="badge badge-medium">4</span></td>
+			<td><span class="score score-high">24</span></td>
+		</tr>
+		<tr>
+			<td class="mono">12</td>
+			<td><strong>memStore test: ring buffer cap &amp; eviction</strong> — append <code>cap+10</code> events, verify only last <code>cap</code> are retained and <code>EventsAfter</code> never returns evicted events. <span class="badge badge-high">Test</span></td>
+			<td><span class="badge badge-high">8</span></td>
+			<td class="effort">8 min</td>
+			<td><span class="badge badge-medium">4</span></td>
+			<td><span class="score score-mid">20</span></td>
+		</tr>
+		<tr>
+			<td class="mono">13</td>
+			<td><strong>Graceful shutdown test</strong> — start server goroutine, send SIGTERM via <code>signal.NotifyContext</code>, assert HTTP server + broadcaster both shut down within timeout without panic. <span class="badge badge-high">Test</span></td>
+			<td><span class="badge badge-high">8</span></td>
+			<td class="effort">12 min</td>
+			<td><span class="badge badge-medium">6</span></td>
+			<td><span class="score score-mid">18</span></td>
+		</tr>
+		<tr>
+			<td class="mono">14</td>
+			<td><strong>Create browser verification checklist</strong> — write a step-by-step doc (<code>example/datastar/VERIFY.md</code>) so the user can confirm DataStar DOM patching in &lt;2 minutes: open 2 tabs, see feed items, see count, toggle filter, close+reopen for replay. <span class="badge badge-high">Unblock</span></td>
+			<td><span class="badge badge-high">7</span></td>
+			<td class="effort">8 min</td>
+			<td><span class="badge badge-critical">9</span></td>
+			<td><span class="score score-high">32</span></td>
+		</tr>
+		<tr>
+			<td class="mono">15</td>
+			<td><strong>Document subscriber count race condition</strong> — add comment in <code>OnSubscribe</code> callback explaining the TOCTOU window between <code>SubscriberCount()</code> and <code>Broadcast()</code>. Acceptable for demo, must be documented. <span class="badge badge-medium">Docs</span></td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td class="effort">5 min</td>
+			<td><span class="badge badge-low">3</span></td>
+			<td><span class="score score-mid">15</span></td>
+		</tr>
+	</tbody>
+	</table>
+	</div>
+</section>
+
+<!-- Tier 2: Code Quality -->
+<section id="tier2">
+	<h2><span class="num">04</span>Tier 2 — Code Quality</h2>
+	<p class="section-desc">Structural improvements that make the example readable and maintainable. Each task is a focused extraction or documentation pass.</p>
+
+	<div class="table-wrap">
+	<table>
+	<thead>
+		<tr>
+			<th style="width:32px">#</th>
+			<th>Task</th>
+			<th>Impact</th>
+			<th>Effort</th>
+			<th>Cust. Value</th>
+			<th>ROI</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="mono">16</td>
+			<td><strong>Document memStore O(n) scan as demo-only</strong> — one-line comment in <code>EventsAfter</code> noting linear scan is fine for 50 events but a production store would index. <span class="badge badge-low">Docs</span></td>
+			<td><span class="badge badge-low">4</span></td>
+			<td class="effort">2 min</td>
+			<td><span class="badge badge-low">3</span></td>
+			<td><span class="score score-high">30</span></td>
+		</tr>
+		<tr>
+			<td class="mono">17</td>
+			<td><strong>Extract <code>store.go</code></strong> — move <code>memStore</code> struct + methods + <code>newMemStore</code> into their own file. No logic change, pure move. <span class="badge badge-high">Structure</span></td>
+			<td><span class="badge badge-high">7</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td><span class="score score-mid">18</span></td>
+		</tr>
+		<tr>
+			<td class="mono">18</td>
+			<td><strong>Extract <code>producer.go</code></strong> — move <code>activityItem</code>, <code>msgTemplates</code>, <code>generateItem</code>, <code>randomN</code>, <code>startProducer</code>, event builders (<code>feedItemEvent</code>, <code>countEvent</code>, <code>replayEvent</code>, <code>feedItemHTML</code>) into their own file. <span class="badge badge-high">Structure</span></td>
+			<td><span class="badge badge-high">7</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td><span class="score score-mid">18</span></td>
+		</tr>
+		<tr>
+			<td class="mono">19</td>
+			<td><strong>Extract <code>handlers.go</code></strong> — move <code>activityServer</code>, <code>newActivityServer</code>, <code>indexHandler</code>, <code>eventsHandler</code> into their own file. <code>main.go</code> keeps only <code>main()</code> + constants + embed. <span class="badge badge-high">Structure</span></td>
+			<td><span class="badge badge-high">7</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td><span class="score score-mid">18</span></td>
+		</tr>
+		<tr>
+			<td class="mono">20</td>
+			<td><strong>Verify build + lint after file split</strong> — <code>go build ./...</code>, <code>go vet ./...</code>, <code>golangci-lint run ./...</code>. Fix any import cycles or package-level visibility issues. <span class="badge badge-high">Verify</span></td>
+			<td><span class="badge badge-high">7</span></td>
+			<td class="effort">5 min</td>
+			<td><span class="badge badge-low">3</span></td>
+			<td><span class="score score-high">21</span></td>
+		</tr>
+		<tr>
+			<td class="mono">21</td>
+			<td><strong>Add <code>IdleTimeout</code> to <code>http.Server</code></strong> — SSE connections are long-lived, so set a generous idle timeout (e.g. 5 min) with a comment explaining the tradeoff vs <code>ReadTimeout</code>/<code>WriteTimeout</code> (which would kill SSE). <span class="badge badge-medium">Quality</span></td>
+			<td><span class="badge badge-medium">6</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-low">4</span></td>
+			<td><span class="score score-mid">12</span></td>
+		</tr>
+		<tr>
+			<td class="mono">22</td>
+			<td><strong>Extract magic numbers in message templates to named constants</strong> — <code>randomN(20)+1</code> → <code>randomN(nodeCount)+1</code>, etc. Improves readability of <code>msgTemplates</code>. <span class="badge badge-medium">Readability</span></td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-low">3</span></td>
+			<td><span class="score score-mid">10</span></td>
+		</tr>
+		<tr>
+			<td class="mono">23</td>
+			<td><strong>Add replay banner fade-out animation</strong> — CSS transition on <code>data-show</code> so the "Replayed N events" banner fades after a few seconds instead of persisting. Uses <code>$replayed</code> signal + <code>data-star</code> expression. <span class="badge badge-medium">UX</span></td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-high">7</span></td>
+			<td><span class="score score-mid">18</span></td>
+		</tr>
+	</tbody>
+	</table>
+	</div>
+</section>
+
+<!-- Tier 3: Polish -->
+<section id="tier3">
+	<h2><span class="num">05</span>Tier 3 — UI Polish</h2>
+	<p class="section-desc">Features that make the demo feel production-grade. Visitor-facing improvements.</p>
+
+	<div class="table-wrap">
+	<table>
+	<thead>
+		<tr>
+			<th style="width:32px">#</th>
+			<th>Task</th>
+			<th>Impact</th>
+			<th>Effort</th>
+			<th>Cust. Value</th>
+			<th>ROI</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="mono">24</td>
+			<td><strong>Add empty-state message</strong> — when feed is empty, show "Waiting for events…" placeholder in <code>#feed</code>. DataStar <code>data-show</code> on signal. <span class="badge badge-medium">UX</span></td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td class="effort">8 min</td>
+			<td><span class="badge badge-high">7</span></td>
+			<td><span class="score score-high">26</span></td>
+		</tr>
+		<tr>
+			<td class="mono">25</td>
+			<td><strong>Add total event count to stats bar</strong> — track total events emitted, display "N events sent" alongside subscriber count. New signal + meta event. <span class="badge badge-medium">UX</span></td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-high">7</span></td>
+			<td><span class="score score-mid">21</span></td>
+		</tr>
+		<tr>
+			<td class="mono">26</td>
+			<td><strong>Add connection status indicator</strong> — green dot when SSE connected, red when disconnected. DataStar reacts to connection state via <code>data-on</code> / custom signal. <span class="badge badge-medium">UX</span></td>
+			<td><span class="badge badge-medium">6</span></td>
+			<td class="effort">12 min</td>
+			<td><span class="badge badge-high">8</span></td>
+			<td><span class="score score-mid">20</span></td>
+		</tr>
+		<tr>
+			<td class="mono">27</td>
+			<td><strong>Add favicon</strong> — simple SVG or ICO favicon embedded via <code>go:embed</code>. Prevents 404 in browser tab. <span class="badge badge-low">Polish</span></td>
+			<td><span class="badge badge-low">3</span></td>
+			<td class="effort">5 min</td>
+			<td><span class="badge badge-low">4</span></td>
+			<td><span class="score score-mid">12</span></td>
+		</tr>
+		<tr>
+			<td class="mono">28</td>
+			<td><strong>Add Open Graph meta tags</strong> — <code>og:title</code>, <code>og:description</code>, <code>og:type</code> in <code>index.templ</code> for link previews when shared. <span class="badge badge-low">Polish</span></td>
+			<td><span class="badge badge-low">3</span></td>
+			<td class="effort">5 min</td>
+			<td><span class="badge badge-low">4</span></td>
+			<td><span class="score score-mid">12</span></td>
+		</tr>
+		<tr>
+			<td class="mono">29</td>
+			<td><strong>Add replay banner fade-out (CSS)</strong> — <code>transition: opacity 0.5s</code> on the banner element, auto-hide via <code>data-star</code> timeout expression. <span class="badge badge-medium">UX</span></td>
+			<td><span class="badge badge-low">4</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-medium">6</span></td>
+			<td><span class="score score-mid">12</span></td>
+		</tr>
+		<tr>
+			<td class="mono">30</td>
+			<td><strong>Add scroll-to-top on new event</strong> — when feed overflows, auto-scroll or add a button. DataStar <code>data-on-load</code> or signal watcher. <span class="badge badge-low">UX</span></td>
+			<td><span class="badge badge-low">4</span></td>
+			<td class="effort">12 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td><span class="score score-low">8</span></td>
+		</tr>
+		<tr>
+			<td class="mono">31</td>
+			<td><strong>Add pause button (client-side)</strong> — signal <code>$paused</code> that hides feed updates when true. Toggle button in the UI. Pure client-side, no server change. <span class="badge badge-low">UX</span></td>
+			<td><span class="badge badge-low">4</span></td>
+			<td class="effort">12 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td><span class="score score-low">8</span></td>
+		</tr>
+		<tr>
+			<td class="mono">32</td>
+			<td><strong>Add timestamp filter ("last 5 min")</strong> — query param <code>?since=5m</code> that filters replay + live events by timestamp. Server-side predicate on event time. <span class="badge badge-low">Feature</span></td>
+			<td><span class="badge badge-low">4</span></td>
+			<td class="effort">12 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td><span class="score score-low">8</span></td>
+		</tr>
+		<tr>
+			<td class="mono">33</td>
+			<td><strong>Add CORS headers for cross-origin SSE</strong> — <code>Access-Control-Allow-Origin</code> on <code>/events</code>. Enables consuming the feed from a different domain. <span class="badge badge-low">Feature</span></td>
+			<td><span class="badge badge-low">4</span></td>
+			<td class="effort">8 min</td>
+			<td><span class="badge badge-low">4</span></td>
+			<td><span class="score score-low">10</span></td>
+		</tr>
+		<tr>
+			<td class="mono">34</td>
+			<td><strong>Add dark/light theme toggle button</strong> — manual toggle in addition to <code>prefers-color-scheme</code>. Signal + CSS class swap. <span class="badge badge-low">UX</span></td>
+			<td><span class="badge badge-low">3</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td><span class="score score-low">8</span></td>
+		</tr>
+		<tr>
+			<td class="mono">35</td>
+			<td><strong>Add keyboard shortcut ('a' for alerts)</strong> — <code>data-on-keydown</code> that navigates to <code>/?filter=alerts</code>. <span class="badge badge-low">UX</span></td>
+			<td><span class="badge badge-low">3</span></td>
+			<td class="effort">8 min</td>
+			<td><span class="badge badge-low">3</span></td>
+			<td><span class="score score-low">6</span></td>
+		</tr>
+	</tbody>
+	</table>
+	</div>
+</section>
+
+<!-- Tier 4: Documentation -->
+<section id="tier4">
+	<h2><span class="num">06</span>Tier 4 — Documentation</h2>
+	<p class="section-desc">Makes the example self-explanatory. A visitor should understand the architecture without reading the library source.</p>
+
+	<div class="table-wrap">
+	<table>
+	<thead>
+		<tr>
+			<th style="width:32px">#</th>
+			<th>Task</th>
+			<th>Impact</th>
+			<th>Effort</th>
+			<th>Cust. Value</th>
+			<th>ROI</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="mono">36</td>
+			<td><strong>Add "Try it" checklist to README</strong> — step-by-step: open 2 tabs, see live fan-out, toggle alerts filter, close+reopen for replay, check subscriber count. 5 bullet points. <span class="badge badge-high">Docs</span></td>
+			<td><span class="badge badge-high">7</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-critical">9</span></td>
+			<td><span class="score score-high">32</span></td>
+		</tr>
+		<tr>
+			<td class="mono">37</td>
+			<td><strong>Add "How it works" section (part 1: data flow)</strong> — explain: background producer → Broadcaster → subscriber channels → Stream.Send. Mermaid or text diagram. <span class="badge badge-high">Docs</span></td>
+			<td><span class="badge badge-high">6</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-high">8</span></td>
+			<td><span class="score score-high">24</span></td>
+		</tr>
+		<tr>
+			<td class="mono">38</td>
+			<td><strong>Add "How it works" section (part 2: feature mapping)</strong> — table mapping each user-visible behavior to the go-sse API that powers it (fan-out→Broadcaster, replay→EventStore, filter→SubscribeFilter, etc.). <span class="badge badge-high">Docs</span></td>
+			<td><span class="badge badge-high">6</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-high">8</span></td>
+			<td><span class="score score-high">24</span></td>
+		</tr>
+		<tr>
+			<td class="mono">39</td>
+			<td><strong>Document shutdown behavior</strong> — explain SIGINT → drain → close sequence in README or inline. What happens to connected clients on shutdown. <span class="badge badge-medium">Docs</span></td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td class="effort">10 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td><span class="score score-mid">12</span></td>
+		</tr>
+		<tr>
+			<td class="mono">40</td>
+			<td><strong>Add inline architecture comments (part 1)</strong> — in <code>handlers.go</code>, add comments pointing to relevant go-sse types (<code>Broadcaster</code>, <code>SubscribeFilter</code>, <code>Replay</code>). <span class="badge badge-medium">Docs</span></td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td class="effort">8 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td><span class="score score-mid">16</span></td>
+		</tr>
+	</tbody>
+	</table>
+	</div>
+</section>
+
+<!-- Tier 5: Future -->
+<section id="tier5">
+	<h2><span class="num">07</span>Tier 5 — Future Feature Ideas</h2>
+	<p class="section-desc">Not committed work. Ideas from the status report, listed for completeness. Each would be broken into ≤12min subtasks if pursued. Sorted by impact/effort within this tier.</p>
+
+	<div class="callout callout-solution">
+		<strong>How to read this table</strong>
+		These are <em>ideas</em>, not committed tasks. The "Effort" column is a rough estimate for the whole feature. If the user greenlights any of these, it will be broken into ≤12min subtasks before execution.
+	</div>
+
+	<div class="table-wrap">
+	<table>
+	<thead>
+		<tr>
+			<th style="width:32px">#</th>
+			<th>Feature Idea</th>
+			<th>Impact</th>
+			<th>Est. Effort</th>
+			<th>Cust. Value</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="mono">41</td>
+			<td><strong>POST → Broadcast form</strong> — let visitors send their own events via a form. Demonstrates the write path. <span class="badge badge-future">Interactive</span></td>
+			<td><span class="badge badge-high">7</span></td>
+			<td class="effort">~30 min</td>
+			<td><span class="badge badge-high">9</span></td>
+		</tr>
+		<tr>
+			<td class="mono">42</td>
+			<td><strong>Simple chat room example</strong> — user input → broadcast → all clients. The canonical interactive SSE demo. <span class="badge badge-future">Interactive</span></td>
+			<td><span class="badge badge-high">7</span></td>
+			<td class="effort">~45 min</td>
+			<td><span class="badge badge-critical">10</span></td>
+		</tr>
+		<tr>
+			<td class="mono">43</td>
+			<td><strong>WebSocket comparison example</strong> — same feed over WS vs SSE, side-by-side. Shows when SSE wins. <span class="badge badge-future">Education</span></td>
+			<td><span class="badge badge-medium">6</span></td>
+			<td class="effort">~60 min</td>
+			<td><span class="badge badge-high">8</span></td>
+		</tr>
+		<tr>
+			<td class="mono">44</td>
+			<td><strong>SQLite EventStore</strong> — replace memStore with persistent store. Demonstrates real reconnection replay. <span class="badge badge-future">Persistence</span></td>
+			<td><span class="badge badge-medium">6</span></td>
+			<td class="effort">~45 min</td>
+			<td><span class="badge badge-high">7</span></td>
+		</tr>
+		<tr>
+			<td class="mono">45</td>
+			<td><strong>/health endpoint</strong> — returns <code>BroadcasterHealth</code> as JSON. Demonstrates the Health() API for k8s probes. <span class="badge badge-future">Ops</span></td>
+			<td><span class="badge badge-medium">6</span></td>
+			<td class="effort">~15 min</td>
+			<td><span class="badge badge-medium">6</span></td>
+		</tr>
+		<tr>
+			<td class="mono">46</td>
+			<td><strong>ReplayFiltered demonstration</strong> — replay only matching events on reconnect with filter active. <span class="badge badge-future">Feature</span></td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td class="effort">~25 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+		</tr>
+		<tr>
+			<td class="mono">47</td>
+			<td><strong>WithBufferSize demonstration</strong> — toggle buffer=1 vs buffer=64, show drop behavior under load. <span class="badge badge-future">Feature</span></td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td class="effort">~30 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+		</tr>
+		<tr>
+			<td class="mono">48</td>
+			<td><strong>Shutdown drain indicator in UI</strong> — show "draining…" banner during graceful shutdown. <span class="badge badge-future">Feature</span></td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td class="effort">~30 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+		</tr>
+		<tr>
+			<td class="mono">49</td>
+			<td><strong>Last-Event-ID inspector in UI</strong> — show what the browser sends on reconnect. Educational. <span class="badge badge-future">Education</span></td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td class="effort">~20 min</td>
+			<td><span class="badge badge-medium">6</span></td>
+		</tr>
+		<tr>
+			<td class="mono">50</td>
+			<td><strong>Animated connection diagram</strong> — live SVG that updates as events flow through the pipeline. <span class="badge badge-future">Visual</span></td>
+			<td><span class="badge badge-medium">5</span></td>
+			<td class="effort">~45 min</td>
+			<td><span class="badge badge-high">8</span></td>
+		</tr>
+		<tr>
+			<td class="mono">51</td>
+			<td><strong>BroadcastMany batch demo</strong> — burst of events in one call, show they arrive together. <span class="badge badge-future">Feature</span></td>
+			<td><span class="badge badge-low">4</span></td>
+			<td class="effort">~20 min</td>
+			<td><span class="badge badge-low">4</span></td>
+		</tr>
+		<tr>
+			<td class="mono">52</td>
+			<td><strong>Multi-room (second broadcaster)</strong> — two independent feeds, switch between rooms. <span class="badge badge-future">Feature</span></td>
+			<td><span class="badge badge-low">4</span></td>
+			<td class="effort">~30 min</td>
+			<td><span class="badge badge-low">4</span></td>
+		</tr>
+		<tr>
+			<td class="mono">53</td>
+			<td><strong>Rate limiting on /events</strong> — show how to protect an SSE endpoint from abuse. <span class="badge badge-future">Ops</span></td>
+			<td><span class="badge badge-low">4</span></td>
+			<td class="effort">~25 min</td>
+			<td><span class="badge badge-low">4</span></td>
+		</tr>
+		<tr>
+			<td class="mono">54</td>
+			<td><strong>Prometheus metrics</strong> — subscriber count, broadcast rate, drop rate. <span class="badge badge-future">Ops</span></td>
+			<td><span class="badge badge-low">4</span></td>
+			<td class="effort">~30 min</td>
+			<td><span class="badge badge-low">3</span></td>
+		</tr>
+		<tr>
+			<td class="mono">55</td>
+			<td><strong>Mobile responsive CSS</strong> — feed items stack, smaller text, touch-friendly filter toggle. <span class="badge badge-future">Polish</span></td>
+			<td><span class="badge badge-low">4</span></td>
+			<td class="effort">~15 min</td>
+			<td><span class="badge badge-medium">5</span></td>
+		</tr>
+		<tr>
+			<td class="mono">56</td>
+			<td><strong>Dockerfile for example</strong> — multi-stage build, scratch/distroless final image. <span class="badge badge-future">Ops</span></td>
+			<td><span class="badge badge-low">3</span></td>
+			<td class="effort">~15 min</td>
+			<td><span class="badge badge-low">3</span></td>
+		</tr>
+		<tr>
+			<td class="mono">57</td>
+			<td><strong>TLS support</strong> — HTTPS + SSE over TLS. <span class="badge badge-future">Ops</span></td>
+			<td><span class="badge badge-low">3</span></td>
+			<td class="effort">~20 min</td>
+			<td><span class="badge badge-low">3</span></td>
+		</tr>
+		<tr>
+			<td class="mono">58</td>
+			<td><strong>"Copy curl command" button</strong> — generates a testable curl/SSE command for manual testing. <span class="badge badge-future">DevEx</span></td>
+			<td><span class="badge badge-low">3</span></td>
+			<td class="effort">~15 min</td>
+			<td><span class="badge badge-low">4</span></td>
+		</tr>
+		<tr>
+			<td class="mono">59</td>
+			<td><strong>Sound notification on alerts</strong> — optional, toggleable audio cue. <span class="badge badge-future">Polish</span></td>
+			<td><span class="badge badge-low">3</span></td>
+			<td class="effort">~12 min</td>
+			<td><span class="badge badge-low">3</span></td>
+		</tr>
+		<tr>
+			<td class="mono">60</td>
+			<td><strong>Gzip compression middleware</strong> — compress static HTML/CSS/JS. <span class="badge badge-future">Perf</span></td>
+			<td><span class="badge badge-low">2</span></td>
+			<td class="effort">~12 min</td>
+			<td><span class="badge badge-low">2</span></td>
+		</tr>
+	</tbody>
+	</table>
+	</div>
+</section>
+
+<!-- Summary -->
+<section id="summary">
+	<h2><span class="num">08</span>Execution Summary</h2>
+
+	<div class="stat-grid">
+		<div class="stat-card t0">
+			<div class="stat-value">53 min</div>
+			<div class="stat-label">Tier 0 — Blockers</div>
+			<div class="stat-detail">7 tasks. Do these first.</div>
+		</div>
+		<div class="stat-card t1">
+			<div class="stat-value">51 min</div>
+			<div class="stat-label">Tier 1 — High-Impact</div>
+			<div class="stat-detail">8 tasks. Tests + quick fixes.</div>
+		</div>
+		<div class="stat-card t2">
+			<div class="stat-value">67 min</div>
+			<div class="stat-label">Tier 2 — Code Quality</div>
+			<div class="stat-detail">8 tasks. Structural + docs.</div>
+		</div>
+		<div class="stat-card t3">
+			<div class="stat-value">152 min</div>
+			<div class="stat-label">Tier 3+4 — Polish & Docs</div>
+			<div class="stat-detail">17 tasks. Visitor-facing.</div>
+		</div>
+	</div>
+
+	<div class="callout callout-solution">
+		<strong>Total actionable effort: ~323 min (~5.4 hours)</strong>
+		Tiers 0–1 (104 min) deliver the core credibility and verification gaps. Tiers 0–2 (171 min) make the example production-grade. Tiers 0–4 (323 min) complete every actionable improvement. Tier 5 (20 ideas) is future speculation.
+	</div>
+</section>
+
+<footer>
+	Generated 2026-08-07 &middot; DataStar Activity Feed Showcase &middot; Pareto Execution Plan
+</footer>
+
+</div>
+</body>
+</html>
