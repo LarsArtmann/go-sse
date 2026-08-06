@@ -136,6 +136,7 @@ linters:
             - github.com/larsartmann/go-sse
             - github.com/larsartmann/go-branded-id
             - github.com/larsartmann/go-error-family
+            - github.com/a-h/templ
     exhaustruct:
       exclude:
         - os/exec.Cmd

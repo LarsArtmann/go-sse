@@ -4,13 +4,18 @@
 //   - datastar-patch-signals: updates client-side reactive state ($progress)
 //   - datastar-patch-elements: patches DOM elements (#status)
 //
+// The HTML is rendered with templ (type-safe Go templates), CSS is served from
+// a real .css file, and the DataStar JS bundle is embedded — no CDN required.
+//
 // Run: go run example/datastar/main.go
-// Then: open http://localhost:8081 in your browser
+// Then: open http://localhost:8765 in your browser
 package main
 
 import (
+	"embed"
 	"encoding/json/v2"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"time"
@@ -25,10 +30,19 @@ const (
 	progressDelay = 500 * time.Millisecond
 )
 
+//go:embed all:static
+var staticFiles embed.FS
+
 func main() {
+	staticFS, err := fs.Sub(staticFiles, "static")
+	if err != nil {
+		log.Fatalf("static sub FS: %v", err)
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", indexHandler)
 	mux.HandleFunc("GET /events", eventsHandler)
+	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(staticFS)))
 
 	log.Printf("DataStar example on http://localhost%s", datastarAddr)
 	log.Print("Open the URL in your browser to see live SSE-driven DOM patches.")
@@ -38,9 +52,11 @@ func main() {
 	))
 }
 
-func indexHandler(w http.ResponseWriter, _ *http.Request) {
+func indexHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, _ = fmt.Fprint(w, indexHTML)
+	if err := indexPage().Render(r.Context(), w); err != nil {
+		log.Printf("render index page: %v", err)
+	}
 }
 
 func eventsHandler(w http.ResponseWriter, r *http.Request) {
@@ -94,66 +110,3 @@ func sendProgress(stream *sse.Stream, progress int) {
 		sse.KeyedLines("elements", status),
 	)
 }
-
-const indexHTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>go-sse + DataStar</title>
-  <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@1.0.2/bundles/datastar.js"></script>
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      max-width: 640px;
-      margin: 3rem auto;
-      padding: 0 1.5rem;
-      color: #1a1a1a;
-    }
-    code { background: #f0f0f0; padding: 0.15em 0.35em; border-radius: 3px; font-size: 0.9em; }
-    .bar {
-      background: #e0e0e0;
-      border-radius: 6px;
-      overflow: hidden;
-      height: 28px;
-      margin: 1rem 0;
-    }
-    .fill {
-      background: linear-gradient(90deg, #4a90d9, #5cb85c);
-      height: 100%;
-      transition: width 0.3s ease;
-    }
-    button {
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      cursor: pointer;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: #fff;
-    }
-    button:hover { background: #f5f5f5; }
-  </style>
-</head>
-<body>
-  <div data-signals="{progress: 0}">
-    <h1>go-sse &#215; DataStar</h1>
-
-    <p>This page receives <strong>Server-Sent Events</strong> from a Go backend built with
-      <code>github.com/larsartmann/go-sse</code> and renders them with
-      <a href="https://data-star.dev">DataStar</a>. No frontend JavaScript required.</p>
-
-    <button data-on:click="@get('/events')">Restart demo</button>
-
-    <div data-init="@get('/events')"></div>
-
-    <div class="bar">
-      <div class="fill" data-style:width="$progress + '%'"></div>
-    </div>
-
-    <div id="status"><p>Connecting&#8230;</p></div>
-
-    <p>Signal value: <span data-text="$progress"></span>%</p>
-  </div>
-</body>
-</html>
-`

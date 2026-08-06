@@ -1,0 +1,38 @@
+package main
+
+templ indexPage() {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<title>go-sse × DataStar</title>
+			<link rel="stylesheet" href="/static/styles.css"/>
+			<script type="module" src="/static/datastar.js"></script>
+		</head>
+		<body>
+			<main class="card">
+				<div data-signals="{progress: 0}">
+					<h1>go-sse × DataStar</h1>
+					<p class="subtitle">
+						Live <strong>Server-Sent Events</strong> from a Go backend powered by
+						<code>github.com/larsartmann/go-sse</code>, rendered with
+						<a href="https://data-star.dev">DataStar</a>.
+						No frontend JavaScript required.
+					</p>
+					<button data-on:click="@get('/events')">Restart demo</button>
+					<div data-init="@get('/events')"></div>
+					<div class="progress-bar">
+						<div class="progress-fill" data-style:width="$progress + '%'"></div>
+					</div>
+					<div class="status" id="status">
+						<p>Connecting…</p>
+					</div>
+					<p class="signal-value">
+						Signal value: <span data-text="$progress"></span>%
+					</p>
+				</div>
+			</main>
+		</body>
+	</html>
+}
