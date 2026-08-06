@@ -54,6 +54,7 @@ func main() {
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	if err := indexPage().Render(r.Context(), w); err != nil {
 		log.Printf("render index page: %v", err)
 	}

@@ -12,10 +12,11 @@ nix run .#vet                # go vet
 nix run .#lint               # golangci-lint
 nix run .#coverage           # test + coverage report
 nix flake check              # full hermetic check (compile + test)
-nix develop                  # enter dev shell (Go 1.26, golangci-lint, gopls, govulncheck)
+nix develop                  # enter dev shell (Go 1.26, golangci-lint, gopls, govulncheck, templ)
 ```
 
 Formatting via treefmt (`nix fmt`): gofumpt, goimports, golines, nixfmt.
+Generated `*_templ.go` files are excluded from treefmt and golangci-lint.
 
 Raw `go` tooling (for environments without Nix):
 
@@ -23,6 +24,7 @@ Raw `go` tooling (for environments without Nix):
 GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race -count=1   # tests
 GOWORK=off GOEXPERIMENT=jsonv2 go vet ./...                    # vet
 GOWORK=off GOEXPERIMENT=jsonv2 golangci-lint run ./...         # lint
+templ generate                                                 # regenerate *_templ.go from .templ files
 ```
 
 **`GOEXPERIMENT=jsonv2` is required** to build, transitively via `go-branded-id`. Without it, compilation fails. Always prefix build/test/vet commands with it.
@@ -33,10 +35,14 @@ GOWORK=off GOEXPERIMENT=jsonv2 golangci-lint run ./...         # lint
 
 ## Dependencies
 
-Only two, both `github.com/larsartmann/*`:
+Two library dependencies, both `github.com/larsartmann/*`:
 
 - `go-branded-id` — phantom-type branded IDs (`EventID = brandid.ID[eventBrand, string]`)
 - `go-error-family` — structured error wrapping with severity categories
+
+One example-only dependency:
+
+- `a-h/templ` — type-safe HTML templates for the DataStar example (`example/datastar/`). The library itself does not import templ; it is only used by the example `main` package. The generated `*_templ.go` files are checked into git, so consumers of the library never need the `templ` CLI.
 
 ## Architecture
 
@@ -100,6 +106,21 @@ Four layers, each in its own file, composable independently:
 - **`Stream.SendLines`** (stream.go) is a convenience wrapper around `Send` that joins variadic string arguments with `\n` into `Event.Data`. Composes with `KeyedLines` for the DataStar pattern: each `KeyedLines` result (which may contain embedded `\n`) is one argument, and `splitLines` in `WriteEvent` handles the final split.
 - **`WriteKeyedLines`** (event.go) is the wire-only single-key convenience: `WriteEvent(w, Event{Event: eventType, Data: KeyedLines(key, value)})`. For consumers that use `WriteEvent` directly without a `Stream`.
 - **`Stream.SendKeyed`** (stream.go) is the stream-level single-key convenience: `Send(Event{Event: eventName, Data: KeyedLines(key, value)})`. For the common single-key DataStar pattern (e.g., `patch-signals`).
+
+## DataStar Example (`example/datastar/`)
+
+The DataStar example demonstrates a complete SSE-driven UI with embedded assets — no CDN required.
+
+**Architecture:**
+- `index.templ` — type-safe HTML template (templ). Run `templ generate` after editing.
+- `index_templ.go` — generated code (checked into git, excluded from treefmt and golangci-lint via `*_templ.go` path patterns).
+- `static/styles.css` — real CSS file with dark/light theme support via `prefers-color-scheme`.
+- `static/datastar.js` — DataStar v1.0.2 JS bundle, embedded via `go:embed`.
+- `main.go` — HTTP server: renders templ for `GET /`, serves embedded static files for `GET /static/`, SSE events for `GET /events`.
+
+**Running:** `go run ./example/datastar/` (must run the package, not a single file, because `indexPage()` is in the generated `index_templ.go`).
+
+**Editing the template:** After changing `index.templ`, run `templ generate` to regenerate `index_templ.go`. The `templ` CLI is in the devShell.
 
 ## What This Library Is NOT
 

@@ -211,6 +211,9 @@ linters:
         text: unused
         linters:
           - unused
+      - path: example/datastar/
+        linters:
+          - godoclint
     paths:
       - _templ\.go$
       - \.gen\.go$

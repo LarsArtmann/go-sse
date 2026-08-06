@@ -304,6 +304,18 @@ go-sse has no DataStar-specific types or event-name constants — it remains a
 transport library. `KeyedLines` is a general SSE utility (keyed data lines are
 used by many protocols); DataStar is the most prominent consumer.
 
+### Runnable example
+
+A complete DataStar example lives in [`example/datastar/`](example/datastar/).
+It uses [templ](https://templ.guide) for type-safe HTML, a real `.css` file
+with dark/light theme support, and embeds the DataStar JS bundle via
+`go:embed` — no CDN required.
+
+```bash
+go run ./example/datastar/
+# open http://localhost:8765
+```
+
 ## Companion Libraries
 
 - [go-error-family](https://github.com/larsartmann/go-error-family) — structured error wrapping with severity categories (used by go-sse for error codes)
