@@ -115,10 +115,10 @@ Three runnable examples, each an independent `package main`:
 - `example/datastar/` — DataStar activity feed (fan-out, filtering, replay, heartbeat), port `:8765`.
 - `example/htmx/` — HTMX HTML-fragment-swap UI, port `:8766`.
 
-**`example/README.md` compares the DataStar vs HTMX approaches in detail** (mechanism, payload size, granularity, bundle size, trade-offs). The two browser examples render the _same_ progress-bar demo through different mechanisms:
+**`example/README.md` compares the DataStar vs HTMX approaches in detail** (mechanism, payload size, granularity, bundle size, trade-offs). The two browser examples have different scopes:
 
-- **DataStar** uses go-sse's keyed-line helpers (`KeyedLines`/`SendKeyed`/`SendLines`) to patch reactive signals (`datastar-patch-signals`) and DOM elements (`datastar-patch-elements`).
-- **HTMX** uses plain `stream.Send(Event{...})` to stream HTML fragments; the HTMX SSE extension (`sse-swap="progress"` + `hx-swap="innerHTML"`) swaps them into the DOM. No HTMX-specific helpers are needed — HTMX speaks vanilla SSE.
+- **DataStar** (`example/datastar/`) is a **live activity feed** that demonstrates every go-sse feature: `Broadcaster` fan-out (open multiple tabs), `SubscriberCount` (live counter via `OnSubscribe`/`OnUnsubscribe`), `SubscribeFilter` (`?filter=alerts`), `EventStore` + `Replay` (close/reopen tab), and `Heartbeat` (proxy keep-alive). A background producer goroutine emits events every 2s; each handler subscribes, replays missed events on reconnect, and forwards live events to the `Stream`. Uses `KeyedLines`/`SendKeyed`/`SendLines` for DataStar's keyed-data-line wire format (`datastar-patch-signals` for reactive state, `datastar-patch-elements` for DOM patches).
+- **HTMX** (`example/htmx/`) is a simpler progress-bar demo that uses plain `stream.Send(Event{...})` to stream HTML fragments; the HTMX SSE extension (`sse-swap="progress"` + `hx-swap="innerHTML"`) swaps them into the DOM. No HTMX-specific helpers are needed — HTMX speaks vanilla SSE.
 
 **Shared structure (both browser examples):**
 
