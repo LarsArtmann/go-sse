@@ -1,22 +1,48 @@
-# go-sse example server
+# go-sse examples
 
-Minimal SSE server demonstrating the [go-sse](https://github.com/larsartmann/go-sse) library.
+Three runnable examples for the [go-sse](https://github.com/larsartmann/go-sse)
+library, progressing from a raw terminal demo to two browser UIs that contrast
+the two most popular ways to consume SSE in a Go backend.
 
-## Run
+| Example                | Port  | What it shows                                                                                       | Audience                                     |
+| ---------------------- | ----- | --------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| [`server.go`](server.go) | `:8080`  | Bare wire format — subscribe and broadcast with `curl`. No browser.                                  | Learning the SSE wire format                 |
+| [`datastar/`](datastar/) | `:8765` | Reactive signals + surgical DOM patching via the DataStar keyed-line protocol.                       | Fine-grained, signal-driven UIs              |
+| [`htmx/`](htmx/)         | `:8766` | HTML fragment swapping via HTMX + its SSE extension. The server streams HTML; HTMX swaps it in.      | Hypermedia / server-rendered HTML UIs        |
+
+The **DataStar** and **HTMX** examples render the *same* demo — a progress bar
+that fills 0 → 100% over Server-Sent Events — so you can compare them
+apples-to-apples. The difference is entirely in the *mechanism*, summarized
+below and explained in detail in [DataStar vs HTMX](#datastar-vs-htmx).
+
+---
+
+## Run any example
 
 ```bash
-go run example/server.go
+go run example/server.go      # raw terminal demo   → http://localhost:8080
+go run example/datastar/      # DataStar UI         → http://localhost:8765
+go run example/htmx/          # HTMX UI             → http://localhost:8766
 ```
 
-## Try it
+> Each example is an independent `package main`. Run the package
+> (`example/datastar/`), not a single file, because the page is rendered by
+> generated templ code (`index_templ.go`). The JS bundles and CSS are embedded
+> via `go:embed` — no CDN, no internet connection required at runtime.
+
+---
+
+## 1. Raw server (`server.go`)
+
+A minimal fan-out server. Open a second terminal and broadcast a message;
+
+every connected client receives it instantly.
 
 ### Subscribe (terminal 1)
 
 ```bash
 curl -N http://localhost:8080/events
 ```
-
-You'll see:
 
 ```
 event: connected
@@ -40,21 +66,138 @@ data: hello
 id: 1770000000000000000
 ```
 
-## JavaScript client
-
-```html
-<script>
-	const es = new EventSource("http://localhost:8080/events");
-
-	es.addEventListener("connected", (e) => {
-		console.log("connected, last event:", e.lastEventId);
-	});
-
-	es.addEventListener("message", (e) => {
-		console.log("message:", e.data);
-	});
-</script>
-```
-
 `EventSource` handles reconnection automatically and sends the `Last-Event-ID`
 header on reconnect, enabling replay of missed events.
+
+---
+
+## 2. DataStar example (`datastar/`)
+
+The server emits **two DataStar event types** over one SSE connection:
+
+- `datastar-patch-signals` — updates the client-side reactive state (`$progress`),
+  which the progress-bar width and percentage text bind to reactively.
+- `datastar-patch-elements` — patches a DOM element (`#status`) with new HTML.
+
+Built with the go-sse DataStar helpers: [`KeyedLines`](../event.go),
+[`SendKeyed`](../stream.go), and [`SendLines`](../stream.go). The page is a
+type-safe [templ](https://templ.guide) template; the DataStar JS bundle is
+embedded.
+
+```bash
+go run example/datastar/    # → http://localhost:8765
+```
+
+---
+
+## 3. HTMX example (`htmx/`)
+
+The server emits a single named event, `progress`, whose `data:` payload is an
+**HTML fragment**. HTMX's [SSE extension](https://htmx.org/extensions/sse/)
+swaps each fragment into the `#progress-area` target (`innerHTML`) as it
+arrives. The Restart button fetches a fresh `#sse-container` fragment and swaps
+it in (`outerHTML`), which tears down the old `EventSource` and opens a new one
+— no JavaScript required.
+
+Built with plain `stream.Send(sse.Event{...})`; HTMX speaks vanilla SSE, so no
+HTMX-specific helpers are needed. htmx 2.0.4 + htmx-ext-sse 2.2.4 are vendored.
+
+```bash
+go run example/htmx/        # → http://localhost:8766
+```
+
+---
+
+## DataStar vs HTMX
+
+Both examples produce the same on-screen result. They differ in what the server
+sends over the wire, how the client applies updates, and the trade-offs that
+follow.
+
+### At a glance
+
+| Aspect                    | DataStar `datastar/`                                            | HTMX `htmx/`                                                  |
+| ------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------- |
+| **Mental model**          | Reactive signals + surgical DOM patches                         | Hypermedia: swap HTML fragments into targets                  |
+| **Server sends**          | Keyed-line protocol (`selector …`, `mode …`, `signals {…}`)     | Raw HTML fragments                                            |
+| **go-sse API used**       | `KeyedLines`, `SendKeyed`, `SendLines` (purpose-built helpers)  | `Send(Event{...})` (vanilla SSE; no special helpers)          |
+| **Client bundle**         | `datastar.js` (~56 KB, 1 file)                                  | `htmx.min.js` + `sse.min.js` (~54 KB, 2 files)               |
+| **Payload per tick**      | Small — only the changed signal / element                       | Larger — the whole fragment is re-rendered each tick          |
+| **Update granularity**    | Surgical — updates one value on a **stable** element            | Coarse — `innerHTML` swap **recreates** the children          |
+| **CSS transitions**       | Smooth — width animates because the element is never replaced   | Jumpy — replaced elements reset transitions (use `morph` ext) |
+| **Restart the stream**    | `data-on:click="@get('/events')"` — one attribute               | Swap the `sse-connect` container (`outerHTML`) — a fragment   |
+| **Reconnect / replay**    | Native `EventSource` → `Last-Event-ID` → go-sse replay          | Native `EventSource` → `Last-Event-ID` → go-sse replay        |
+| **Ecosystem / maturity**  | Newer, custom attribute DSL, growing                            | Mature, huge ecosystem, standard HTML attributes              |
+| **Learning curve**        | Reactivity + DataStar expression DSL                            | Hypermedia fundamentals (HTML in, HTML out)                   |
+
+### Pros & cons
+
+#### DataStar
+
+**Pros**
+
+- **Fine-grained updates.** Patch a single signal (`signals {"progress": 10}`)
+  or a single element without resending surrounding markup. Smaller payloads,
+  lower bandwidth at scale.
+- **Reactive by default.** Bind `data-style:width="$progress + '%'"` once and
+  every signal change flows into the DOM automatically — no manual targeting.
+- **Smooth animations.** Because the progress element is patched in place (not
+  replaced), CSS `transition: width` animates each step instead of jumping.
+- **First-class in go-sse.** `KeyedLines` / `SendKeyed` / `SendLines` /
+  `WriteKeyedLines` exist specifically to build the keyed-line wire format
+  correctly (multi-line splitting, CRLF handling) with zero boilerplate.
+
+**Cons**
+
+- **Proprietary protocol.** The keyed-line format (`selector`, `mode`,
+  `elements`, `signals`) is DataStar-specific; clients must run DataStar.
+- **Newer ecosystem.** Smaller community, fewer integrations, evolving docs.
+- **DSL to learn.** `data-signals`, `data-on:click`, `@get()`, `$var`
+  expressions are a custom mental model on top of HTML.
+- **Heavier conceptually** for teams that only need "replace this div".
+
+#### HTMX
+
+**Pros**
+
+- **Universal.** The server sends ordinary HTML — anything your templ / `html/template`
+  / `text/template` already renders works as an SSE fragment. No special
+  protocol or wire-format helpers.
+- **Mature & familiar.** Standard attributes (`hx-get`, `hx-swap`,
+  `sse-swap`), a large ecosystem, and the hypermedia model is easy to reason
+  about: HTML in, HTML out.
+- **Composable with the rest of HTMX.** The same fragment endpoint serves both
+  SSE swaps and regular HTMX AJAX requests; SSE is just another trigger.
+- **Shallow go-sse integration** is a feature here — no library-specific
+  coupling; plain `Event` structs.
+
+**Cons**
+
+- **Coarse granularity.** `innerHTML` swap recreates the target's children on
+  every event. Unchanged surrounding HTML is resent and re-rendered, and CSS
+  transitions on replaced elements reset (the bar "jumps" instead of gliding).
+  Smoother updates need the extra `idiomorph` extension (`hx-swap="morph"`).
+- **Larger payloads.** Each event carries the entire fragment, not just the
+  delta — more bytes per tick, which adds up for high-frequency streams.
+- **Restart is more ceremony.** Re-establishing an SSE stream means replacing
+  the `sse-connect` element (a fragment swap), not a single attribute.
+- **Two client files.** Core htmx + the SSE extension must both be loaded.
+
+### When to choose which
+
+| Pick DataStar if…                                                | Pick HTMX if…                                                       |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------- |
+| You need fine-grained, low-bandwidth reactive updates            | You already server-render HTML and want to stream it as-is          |
+| Smooth in-place animations matter (progress bars, live gauges)   | Your team knows hypermedia and wants the simplest possible model     |
+| You're building a signal-driven, app-like UI                     | You want one fragment endpoint that also serves regular HTMX requests |
+| You're happy to adopt the DataStar attribute DSL                 | You want to stay on standard HTML attributes and a mature ecosystem  |
+
+### The bottom line
+
+**DataStar** optimizes for *precision* — small, surgical updates to reactive
+state and individual elements, at the cost of a custom protocol and DSL.
+**HTMX** optimizes for *simplicity and universality* — stream any HTML and let
+HTMX swap it, at the cost of coarser updates and larger payloads. go-sse
+supports both first-class: purpose-built helpers for DataStar's keyed lines,
+and plain `Event` sending for HTMX's fragment streams. Both reuse the same
+reconnection, replay, fan-out, and heartbeat infrastructure.

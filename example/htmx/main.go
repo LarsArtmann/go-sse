@@ -100,10 +100,10 @@ func eventsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func renderProgress(ctx context.Context, progress int) string { //nolint:contextcheck // templ Render passes ctx
+func renderProgress(ctx context.Context, progress int) string {
 	var buf bytes.Buffer
 
-	if err := progressContent(progress).Render(ctx, &buf); err != nil {
+	if err := progressContent(progress).Render(ctx, &buf); err != nil { //nolint:contextcheck // templ takes ctx
 		log.Printf("render progress fragment: %v", err)
 
 		return ""

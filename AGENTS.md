@@ -42,7 +42,7 @@ Two library dependencies, both `github.com/larsartmann/*`:
 
 One example-only dependency:
 
-- `a-h/templ` — type-safe HTML templates for the DataStar example (`example/datastar/`). The library itself does not import templ; it is only used by the example `main` package. The generated `*_templ.go` files are checked into git, so consumers of the library never need the `templ` CLI.
+- `a-h/templ` — type-safe HTML templates for the browser examples (`example/datastar/` and `example/htmx/`). The library itself does not import templ; it is only used by the example `main` packages. The generated `*_templ.go` files are checked into git, so consumers of the library never need the `templ` CLI.
 
 ## Architecture
 
@@ -107,21 +107,37 @@ Four layers, each in its own file, composable independently:
 - **`WriteKeyedLines`** (event.go) is the wire-only single-key convenience: `WriteEvent(w, Event{Event: eventType, Data: KeyedLines(key, value)})`. For consumers that use `WriteEvent` directly without a `Stream`.
 - **`Stream.SendKeyed`** (stream.go) is the stream-level single-key convenience: `Send(Event{Event: eventName, Data: KeyedLines(key, value)})`. For the common single-key DataStar pattern (e.g., `patch-signals`).
 
-## DataStar Example (`example/datastar/`)
+## Examples (`example/`)
 
-The DataStar example demonstrates a complete SSE-driven UI with embedded assets — no CDN required.
+Three runnable examples, each an independent `package main`:
 
-**Architecture:**
+- `example/server.go` — raw wire-format demo (curl-driven broadcast/fan-out), port `:8080`.
+- `example/datastar/` — DataStar reactive-signal + DOM-patch UI, port `:8765`.
+- `example/htmx/` — HTMX HTML-fragment-swap UI, port `:8766`.
+
+**`example/README.md` compares the DataStar vs HTMX approaches in detail** (mechanism, payload size, granularity, bundle size, trade-offs). The two browser examples render the _same_ progress-bar demo through different mechanisms:
+
+- **DataStar** uses go-sse's keyed-line helpers (`KeyedLines`/`SendKeyed`/`SendLines`) to patch reactive signals (`datastar-patch-signals`) and DOM elements (`datastar-patch-elements`).
+- **HTMX** uses plain `stream.Send(Event{...})` to stream HTML fragments; the HTMX SSE extension (`sse-swap="progress"` + `hx-swap="innerHTML"`) swaps them into the DOM. No HTMX-specific helpers are needed — HTMX speaks vanilla SSE.
+
+**Shared structure (both browser examples):**
 
 - `index.templ` — type-safe HTML template (templ). Run `templ generate` after editing.
 - `index_templ.go` — generated code (checked into git, excluded from treefmt and golangci-lint via `*_templ.go` path patterns).
-- `static/styles.css` — real CSS file with dark/light theme support via `prefers-color-scheme`.
-- `static/datastar.js` — DataStar v1.0.2 JS bundle, embedded via `go:embed`.
+- `static/styles.css` — CSS with dark/light theme support via `prefers-color-scheme`.
+- `static/*.js` — client JS bundles, embedded via `go:embed` (no CDN).
 - `main.go` — HTTP server: renders templ for `GET /`, serves embedded static files for `GET /static/`, SSE events for `GET /events`.
 
-**Running:** `go run ./example/datastar/` (must run the package, not a single file, because `indexPage()` is in the generated `index_templ.go`).
+**Running:** `go run ./example/datastar/` or `go run ./example/htmx/` (run the package, not a single file, because the page render lives in the generated `index_templ.go`).
+
+**Vendored client bundles:**
+
+- DataStar: `static/datastar.js` (DataStar v1.0.2).
+- HTMX: `static/htmx.min.js` (htmx 2.0.4) + `static/sse.min.js` (htmx-ext-sse 2.2.4). HTMX needs the separate SSE extension for `sse-connect`/`sse-swap`.
 
 **Editing the template:** After changing `index.templ`, run `templ generate` to regenerate `index_templ.go`. The `templ` CLI is in the devShell.
+
+**HTMX restart mechanism:** HTMX SSE connections are declared in markup (`sse-connect="/events"`). The Restart button fetches a fresh `#sse-container` fragment (`GET /sse-container`) and swaps it in (`outerHTML`), which tears down the old `EventSource` and opens a new one — no JavaScript. More ceremony than DataStar's one-attribute `@get('/events')`, but idiomatic HTMX.
 
 ## What This Library Is NOT
 
