@@ -75,6 +75,11 @@ yarn-error.log*
 .pnpm-debug.log*
 # <<< buildflow-managed (.gitignore) <<<
 
+## Go example binaries (produced by `go build ./example/<name>` from repo root)
+/htmx
+/datastar
+/server
+
 ## Nix
 result
 result-*

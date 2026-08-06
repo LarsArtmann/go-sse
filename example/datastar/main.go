@@ -15,6 +15,7 @@ package main
 import (
 	"context"
 	"embed"
+	"errors"
 	"fmt"
 	"io/fs"
 	"log"
@@ -36,6 +37,19 @@ const (
 	heartbeatEvery  = 15 * time.Second
 	maxStoredEvents = 50
 	shutdownTimeout = 5 * time.Second
+	readHeaderLimit = 5 * time.Second
+)
+
+const (
+	categoryAlert   = "alert"
+	categorySuccess = "success"
+	categoryInfo    = "info"
+)
+
+const (
+	badgeAlert   = "ALERT"
+	badgeSuccess = "OK"
+	badgeInfo    = "INFO"
 )
 
 //go:embed all:static
@@ -53,6 +67,7 @@ type memStore struct {
 
 func newMemStore(capacity int) *memStore {
 	return &memStore{
+		mu:     sync.RWMutex{},
 		events: make([]sse.Event, 0, capacity),
 		cap:    capacity,
 	}
@@ -166,30 +181,75 @@ type activityItem struct {
 	time     string
 }
 
-// msgTemplate pairs a display category with a random message generator.
+// randomN wraps math/rand/v2.IntN for demo data generation. Not crypto-safe;
+// this is a demo server generating fake activity messages.
+//
+//nolint:gosec // G404: non-crypto random for demo data
+func randomN(n int) int {
+	return rand.IntN(n)
+}
+
+// msgTemplates pairs a display category with a random message generator.
 type msgTemplate struct {
 	category string
 	badge    string
 	gen      func() string
 }
 
+//nolint:gochecknoglobals,mnd // read-only template pool, intentional for example
 var msgTemplates = []msgTemplate{
-	{"alert", "ALERT", func() string { return fmt.Sprintf("CPU usage above 90%% on node-%d", rand.IntN(20)+1) }},
-	{"alert", "ALERT", func() string { return fmt.Sprintf("Disk space below 10%% on node-%d", rand.IntN(20)+1) }},
-	{"alert", "ALERT", func() string { return fmt.Sprintf("Memory leak detected in service-%d", rand.IntN(50)+1) }},
-	{"alert", "ALERT", func() string { return fmt.Sprintf("Response time exceeding SLA on endpoint-%d", rand.IntN(10)+1) }},
-	{"success", "OK", func() string { return fmt.Sprintf("Deploy #%d passed all checks", rand.IntN(999)+1) }},
-	{"success", "OK", func() string { return fmt.Sprintf("Migration v1.%d.%d applied successfully", rand.IntN(9), rand.IntN(9)) }},
-	{"success", "OK", func() string { return fmt.Sprintf("Build #%d completed in %ds", rand.IntN(999)+1, rand.IntN(30)+1) }},
-	{"success", "OK", func() string { return fmt.Sprintf("Health check passed for service-%d", rand.IntN(50)+1) }},
-	{"info", "INFO", func() string { return fmt.Sprintf("User session-%d started", rand.IntN(9999)+1) }},
-	{"info", "INFO", func() string { return fmt.Sprintf("Cache invalidated for region-%d", rand.IntN(10)+1) }},
-	{"info", "INFO", func() string { return fmt.Sprintf("Scheduled task-%d completed", rand.IntN(500)+1) }},
-	{"info", "INFO", func() string { return fmt.Sprintf("Configuration reloaded for service-%d", rand.IntN(50)+1) }},
+	{
+		categoryAlert, badgeAlert,
+		func() string { return fmt.Sprintf("CPU usage above 90%% on node-%d", randomN(20)+1) },
+	},
+	{
+		categoryAlert, badgeAlert,
+		func() string { return fmt.Sprintf("Disk space below 10%% on node-%d", randomN(20)+1) },
+	},
+	{
+		categoryAlert, badgeAlert,
+		func() string { return fmt.Sprintf("Memory leak detected in service-%d", randomN(50)+1) },
+	},
+	{
+		categoryAlert, badgeAlert,
+		func() string { return fmt.Sprintf("Response time exceeding SLA on endpoint-%d", randomN(10)+1) },
+	},
+	{
+		categorySuccess, badgeSuccess,
+		func() string { return fmt.Sprintf("Deploy #%d passed all checks", randomN(999)+1) },
+	},
+	{
+		categorySuccess, badgeSuccess,
+		func() string { return fmt.Sprintf("Migration v1.%d.%d applied successfully", randomN(9), randomN(9)) },
+	},
+	{
+		categorySuccess, badgeSuccess,
+		func() string { return fmt.Sprintf("Build #%d completed in %ds", randomN(999)+1, randomN(30)+1) },
+	},
+	{
+		categorySuccess, badgeSuccess,
+		func() string { return fmt.Sprintf("Health check passed for service-%d", randomN(50)+1) },
+	},
+	{
+		categoryInfo, badgeInfo,
+		func() string { return fmt.Sprintf("User session-%d started", randomN(9999)+1) },
+	},
+	{
+		categoryInfo, badgeInfo,
+		func() string { return fmt.Sprintf("Cache invalidated for region-%d", randomN(10)+1) },
+	},
+	{
+		categoryInfo, badgeInfo,
+		func() string { return fmt.Sprintf("Scheduled task-%d completed", randomN(500)+1) },
+	},
+	{
+		categoryInfo, badgeInfo,
+		func() string { return fmt.Sprintf("Configuration reloaded for service-%d", randomN(50)+1) },
+	},
 }
 
 func generateItem() activityItem {
-	t := msgTemplates[rand.IntN(len(msgTemplates))]
+	t := msgTemplates[randomN(len(msgTemplates))]
 
 	return activityItem{
 		category: t.category,
@@ -252,6 +312,7 @@ func (s *activityServer) indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
+	//nolint:contextcheck // templ uses r.Context() correctly
 	if err := indexPage(alertsOnly).Render(r.Context(), w); err != nil {
 		log.Printf("render index page: %v", err)
 	}
@@ -294,6 +355,8 @@ func (s *activityServer) eventsHandler(w http.ResponseWriter, r *http.Request) {
 	defer s.broadcaster.Unsubscribe(ch)
 
 	// Heartbeat to keep the connection alive through reverse proxies.
+	//
+	//nolint:contextcheck // ctx is stream.Context() which is r.Context()
 	go stream.Heartbeat(ctx, heartbeatEvery)
 
 	// Event loop: forward broadcast events to the SSE stream.
@@ -329,15 +392,21 @@ func main() {
 	mux.HandleFunc("GET /events", server.eventsHandler)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(staticFS)))
 
+	//nolint:exhaustruct // example server, most fields are intentionally default
 	httpServer := &http.Server{
-		Addr:    datastarAddr,
-		Handler: mux,
+		Addr:              datastarAddr,
+		Handler:           mux,
+		ReadHeaderTimeout: readHeaderLimit,
 	}
 
 	go func() {
 		log.Printf("DataStar example on http://localhost%s", datastarAddr)
 		log.Print("Open the URL in multiple browser tabs to see real-time fan-out.")
-		log.Fatal(httpServer.ListenAndServe()) //nolint:gosec // G114: intentional for example server
+
+		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Printf("HTTP server: %v", err)
+			stop()
+		}
 	}()
 
 	<-ctx.Done()
