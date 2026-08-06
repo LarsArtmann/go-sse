@@ -310,13 +310,13 @@ A complete DataStar example lives in [`example/datastar/`](example/datastar/).
 It is a **live activity feed** that demonstrates every go-sse feature in under
 30 seconds of interaction.
 
-| You do this...                         | ...and see this go-sse feature         |
-| -------------------------------------- | -------------------------------------- |
-| Open multiple browser tabs             | All tabs receive the same events live — `Broadcaster` fan-out |
-| Watch the subscriber counter           | Updates in real time — `SubscriberCount` via `OnSubscribe`/`OnUnsubscribe` |
-| Click "Alerts only"                    | Feed instantly filters — `SubscribeFilter` with a predicate |
-| Close a tab, wait, reopen it           | "Replayed N missed events" banner — `EventStore` + `Replay` via `Last-Event-ID` |
-| Leave a tab idle                       | Connection stays alive — `Heartbeat`   |
+| You do this...               | ...and see this go-sse feature                                                  |
+| ---------------------------- | ------------------------------------------------------------------------------- |
+| Open multiple browser tabs   | All tabs receive the same events live — `Broadcaster` fan-out                   |
+| Watch the subscriber counter | Updates in real time — `SubscriberCount` via `OnSubscribe`/`OnUnsubscribe`      |
+| Click "Alerts only"          | Feed instantly filters — `SubscribeFilter` with a predicate                     |
+| Close a tab, wait, reopen it | "Replayed N missed events" banner — `EventStore` + `Replay` via `Last-Event-ID` |
+| Leave a tab idle             | Connection stays alive — `Heartbeat`                                            |
 
 The example uses [templ](https://templ.guide) for type-safe HTML, a real `.css`
 file with dark/light theme support, and embeds the DataStar JS bundle via

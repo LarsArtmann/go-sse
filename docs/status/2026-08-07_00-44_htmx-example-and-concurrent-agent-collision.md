@@ -12,46 +12,46 @@ I was asked to add an HTMX example and write a comparison README. I did that —
 
 ## a) FULLY DONE
 
-| Item | Evidence |
-|------|----------|
-| HTMX example server (`example/htmx/main.go`) | Builds, runs on `:8766`, streams `event: progress` with HTML fragments |
-| HTMX templ page (`example/htmx/index.templ` + generated `index_templ.go`) | Type-safe, embedded assets, no CDN |
-| HTMX vendored bundles | `htmx.min.js` (2.0.4, 51KB), `sse.min.js` (ext-sse 2.2.4, 3KB) |
-| HTMX static assets | `styles.css` matching DataStar visual design |
-| `example/README.md` rewritten | 214 lines, three-example overview, full DataStar-vs-HTMX comparison table + pros/cons + decision matrix |
-| `.golangci.yml` updated | `godoclint` exclusion for `example/htmx/` |
-| `AGENTS.md` updated | New "Examples" section documenting all three examples |
-| `.gitignore` updated | Ignores example build binaries (`/htmx`, `/datastar`, `/server`) |
-| Stray 9.6MB `htmx` binary removed | Was accidentally committed by concurrent agent; staged for deletion, gitignored |
-| Smoke test | HTMX `/events`, `/sse-container`, `/` all return correct output |
-| Build + vet + lint | All clean across library and examples |
+| Item                                                                      | Evidence                                                                                                |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| HTMX example server (`example/htmx/main.go`)                              | Builds, runs on `:8766`, streams `event: progress` with HTML fragments                                  |
+| HTMX templ page (`example/htmx/index.templ` + generated `index_templ.go`) | Type-safe, embedded assets, no CDN                                                                      |
+| HTMX vendored bundles                                                     | `htmx.min.js` (2.0.4, 51KB), `sse.min.js` (ext-sse 2.2.4, 3KB)                                          |
+| HTMX static assets                                                        | `styles.css` matching DataStar visual design                                                            |
+| `example/README.md` rewritten                                             | 214 lines, three-example overview, full DataStar-vs-HTMX comparison table + pros/cons + decision matrix |
+| `.golangci.yml` updated                                                   | `godoclint` exclusion for `example/htmx/`                                                               |
+| `AGENTS.md` updated                                                       | New "Examples" section documenting all three examples                                                   |
+| `.gitignore` updated                                                      | Ignores example build binaries (`/htmx`, `/datastar`, `/server`)                                        |
+| Stray 9.6MB `htmx` binary removed                                         | Was accidentally committed by concurrent agent; staged for deletion, gitignored                         |
+| Smoke test                                                                | HTMX `/events`, `/sse-container`, `/` all return correct output                                         |
+| Build + vet + lint                                                        | All clean across library and examples                                                                   |
 
 ---
 
 ## b) PARTIALLY DONE
 
-| Item | What's missing |
-|------|----------------|
-| **README comparison accuracy** | I wrote the comparison for a "same demo" framing (progress bar), then the concurrent agent replaced DataStar with an activity feed. I patched the README with `multiedit` to describe the new demo, but the prose is now a Frankenstein: some sentences reference progress bars, the table references activity-feed features. The *mechanism* comparison is still valid, but the narrative flow is broken. |
-| **HTMX example feature parity** | DataStar example is now a full go-sse showcase (Broadcaster fan-out, SubscribeFilter, EventStore replay, Heartbeat, OnSubscribe/OnUnsubscribe callbacks). HTMX example is just a progress bar. The comparison README claims they're comparable, but they're not the same scope. This makes the HTMX example look weak by contrast. |
-| **`flake.nix` integration** | The HTMX example has no `nix run .#` app or devShell entry. DataStar has the same gap, but for a "superb" example, this is a miss. |
+| Item                            | What's missing                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **README comparison accuracy**  | I wrote the comparison for a "same demo" framing (progress bar), then the concurrent agent replaced DataStar with an activity feed. I patched the README with `multiedit` to describe the new demo, but the prose is now a Frankenstein: some sentences reference progress bars, the table references activity-feed features. The _mechanism_ comparison is still valid, but the narrative flow is broken. |
+| **HTMX example feature parity** | DataStar example is now a full go-sse showcase (Broadcaster fan-out, SubscribeFilter, EventStore replay, Heartbeat, OnSubscribe/OnUnsubscribe callbacks). HTMX example is just a progress bar. The comparison README claims they're comparable, but they're not the same scope. This makes the HTMX example look weak by contrast.                                                                         |
+| **`flake.nix` integration**     | The HTMX example has no `nix run .#` app or devShell entry. DataStar has the same gap, but for a "superb" example, this is a miss.                                                                                                                                                                                                                                                                         |
 
 ---
 
 ## c) NOT STARTED
 
-| Item |
-|------|
-| Root `README.md` doesn't mention the HTMX example at all (only DataStar at line 309/326). No cross-reference to `example/README.md` or the comparison. |
-| `FEATURES.md` doesn't reference either example's status honestly (still says "DataStar example" without reflecting the activity-feed rewrite) |
-| `TODO_LIST.md` — no entries for example improvements |
-| `ROADMAP.md` — no mention of HTMX support as a showcase direction |
-| `CHANGELOG.md` — not updated for the HTMX example addition |
-| `flake.nix` — no `apps.htmx` or `apps.datastar` run target |
-| CI workflow (`.github/workflows/ci.yml`) — doesn't verify examples build (only checks 1 line mentioning "example"; doesn't `go build ./example/...`) |
-| No automated test for the HTMX example (DataStar has no test either, but the gap matters more now that the example is more complex) |
+| Item                                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Root `README.md` doesn't mention the HTMX example at all (only DataStar at line 309/326). No cross-reference to `example/README.md` or the comparison.                            |
+| `FEATURES.md` doesn't reference either example's status honestly (still says "DataStar example" without reflecting the activity-feed rewrite)                                     |
+| `TODO_LIST.md` — no entries for example improvements                                                                                                                              |
+| `ROADMAP.md` — no mention of HTMX support as a showcase direction                                                                                                                 |
+| `CHANGELOG.md` — not updated for the HTMX example addition                                                                                                                        |
+| `flake.nix` — no `apps.htmx` or `apps.datastar` run target                                                                                                                        |
+| CI workflow (`.github/workflows/ci.yml`) — doesn't verify examples build (only checks 1 line mentioning "example"; doesn't `go build ./example/...`)                              |
+| No automated test for the HTMX example (DataStar has no test either, but the gap matters more now that the example is more complex)                                               |
 | No browser-level verification (I only smoke-tested with `curl`/`curl`-equivalent — never actually loaded the page in a browser to confirm HTMX SSE extension swaps work visually) |
-| `doc.go` package comment doesn't mention the examples |
+| `doc.go` package comment doesn't mention the examples                                                                                                                             |
 
 ---
 
@@ -72,11 +72,11 @@ I was asked to add an HTMX example and write a comparison README. I did that —
 
 ### 2. I Didn't Catch the Binary Sooner
 
-The stray `htmx` binary was committed by the concurrent agent in commit `0940db9`. I only noticed it when reviewing `git show --stat` after seeing unexpected diffs. I should have reviewed *every* new commit in my branch, not just my own.
+The stray `htmx` binary was committed by the concurrent agent in commit `0940db9`. I only noticed it when reviewing `git show --stat` after seeing unexpected diffs. I should have reviewed _every_ new commit in my branch, not just my own.
 
 ### 3. The README Is Dishonest About Parity
 
-I wrote "The two browser examples take different scopes" as a patch, but the original task was to compare "pros and contras of both." A progress bar vs. an activity feed is NOT a fair comparison — it conflates mechanism differences with scope differences. A reader can't tell whether DataStar's richer feature usage is because DataStar *requires* it or because I happened to build more there.
+I wrote "The two browser examples take different scopes" as a patch, but the original task was to compare "pros and contras of both." A progress bar vs. an activity feed is NOT a fair comparison — it conflates mechanism differences with scope differences. A reader can't tell whether DataStar's richer feature usage is because DataStar _requires_ it or because I happened to build more there.
 
 ### 4. No Browser Verification
 
@@ -88,7 +88,7 @@ I verified the SSE wire format with `curl` but never confirmed that the HTMX SSE
 
 ### Immediate Fixes (under 1 hour each)
 
-1. **Rewrite `example/README.md` from scratch** — stop patching. Write it fresh with honest framing: DataStar is a full showcase, HTMX is a focused demo, the comparison is about *mechanism* not feature parity.
+1. **Rewrite `example/README.md` from scratch** — stop patching. Write it fresh with honest framing: DataStar is a full showcase, HTMX is a focused demo, the comparison is about _mechanism_ not feature parity.
 2. **Add HTMX to root `README.md`** — at minimum a cross-reference: "See [`example/README.md`](example/README.md) for a DataStar vs HTMX comparison."
 3. **Verify HTMX in a browser** — load `http://localhost:8766`, confirm the progress bar fills, confirm the Restart button works. Use `chromedp` or manual check.
 4. **Add a `flake.nix` app for HTMX** — `apps.htmx` so `nix run .#htmx` works.
@@ -113,6 +113,7 @@ I verified the SSE wire format with `curl` but never confirmed that the HTMX SSE
 ## f) Up to 50 Things to Get Done Next
 
 ### Documentation (12)
+
 1. Rewrite `example/README.md` from scratch with honest framing
 2. Add HTMX example cross-reference to root `README.md`
 3. Update `FEATURES.md` to reflect both examples honestly
@@ -127,6 +128,7 @@ I verified the SSE wire format with `curl` but never confirmed that the HTMX SSE
 12. Add a "browser support" note (EventSource + HTMX SSE extension requirements)
 
 ### HTMX Example Polish (10)
+
 13. Browser-verify the HTMX example works visually
 14. Add a Broadcaster to the HTMX example (currently single-connection, no fan-out)
 15. Add Heartbeat to the HTMX example
@@ -139,6 +141,7 @@ I verified the SSE wire format with `curl` but never confirmed that the HTMX SSE
 22. Add a `/sse-container` endpoint test
 
 ### DataStar Example (5)
+
 23. Review the concurrent agent's activity-feed rewrite for correctness
 24. Verify the activity-feed example builds and runs
 25. Check if the activity-feed example's EventStore implementation is correct
@@ -146,6 +149,7 @@ I verified the SSE wire format with `curl` but never confirmed that the HTMX SSE
 27. Browser-test the activity-feed example
 
 ### Infrastructure (8)
+
 28. Add `apps.htmx` to `flake.nix`
 29. Add `apps.datastar` to `flake.nix`
 30. Add `go build ./example/...` to CI
@@ -156,6 +160,7 @@ I verified the SSE wire format with `curl` but never confirmed that the HTMX SSE
 35. Consider a `nix run .#examples` aggregator app
 
 ### Testing (7)
+
 36. Write `httptest`-based test for `example/htmx/eventsHandler`
 37. Write `httptest`-based test for `example/htmx/containerHandler`
 38. Write `httptest`-based test for `example/htmx/indexHandler`
@@ -165,6 +170,7 @@ I verified the SSE wire format with `curl` but never confirmed that the HTMX SSE
 42. Test DataStar SubscribeFilter (`?filter=alerts`)
 
 ### Code Quality (5)
+
 43. Remove the `//nolint:contextcheck` workaround in `example/htmx/main.go` — find a proper fix
 44. Consider extracting shared CSS into `example/shared/styles.css`
 45. Review HTMX example for `gosec` findings (it has `//nolint:gosec` on ListenAndServe)
@@ -172,6 +178,7 @@ I verified the SSE wire format with `curl` but never confirmed that the HTMX SSE
 47. Verify the HTMX `index_templ.go` is in sync with `index.templ` (run `templ generate` in CI)
 
 ### Cleanup (3)
+
 48. Verify no stray binaries remain tracked in git
 49. Verify `.gitignore` covers all example build artifacts
 50. Clean up the concurrent agent's planning doc (`docs/planning/2026-08-06_23-54_SUPERB-datastar-activity-feed-showcase.md`) — keep or archive?
@@ -183,9 +190,10 @@ I verified the SSE wire format with `curl` but never confirmed that the HTMX SSE
 ### 1. Should the HTMX example match the DataStar example's scope (full activity feed), or should both be simplified to a focused, identical demo?
 
 The concurrent agent made DataStar a full feature showcase (Broadcaster, filtering, replay, heartbeat). My HTMX example is a simple progress bar. The comparison README is now comparing apples to oranges. I can't decide this unilaterally because:
+
 - Option A (elevate HTMX): more work, but makes the comparison fair and showcases more go-sse features
 - Option B (simplify DataStar): undoes the concurrent agent's work, which may be intentional
-- Option C (accept asymmetry): reframe the README to compare *mechanism only*, not scope
+- Option C (accept asymmetry): reframe the README to compare _mechanism only_, not scope
 
 ### 2. Was the concurrent agent's DataStar activity-feed rewrite intentional, or should it be reverted?
 
@@ -199,15 +207,15 @@ The concurrent agent created a 282-line planning document for the activity-feed 
 
 ## Build/Test/Lint Status (as of this writing)
 
-| Check | Status |
-|-------|--------|
-| `go build ./...` | ✅ PASS |
-| `go vet ./...` | ✅ PASS |
-| `golangci-lint run ./...` | ✅ PASS (0 issues) |
-| `go test ./... -count=1` | ✅ PASS (library tests only; no example tests) |
-| `nix flake check` | ⚠️ NOT RUN (would need vendorHash update for new example deps) |
-| Browser test (HTMX) | ❌ NOT DONE |
-| Browser test (DataStar) | ❌ NOT DONE |
+| Check                     | Status                                                         |
+| ------------------------- | -------------------------------------------------------------- |
+| `go build ./...`          | ✅ PASS                                                        |
+| `go vet ./...`            | ✅ PASS                                                        |
+| `golangci-lint run ./...` | ✅ PASS (0 issues)                                             |
+| `go test ./... -count=1`  | ✅ PASS (library tests only; no example tests)                 |
+| `nix flake check`         | ⚠️ NOT RUN (would need vendorHash update for new example deps) |
+| Browser test (HTMX)       | ❌ NOT DONE                                                    |
+| Browser test (DataStar)   | ❌ NOT DONE                                                    |
 
 ---
 

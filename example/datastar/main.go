@@ -211,7 +211,8 @@ var msgTemplates = []msgTemplate{
 		func() string { return fmt.Sprintf("Memory leak detected in service-%d", randomN(50)+1) },
 	},
 	{
-		categoryAlert, badgeAlert,
+		categoryAlert,
+		badgeAlert,
 		func() string { return fmt.Sprintf("Response time exceeding SLA on endpoint-%d", randomN(10)+1) },
 	},
 	{
@@ -219,11 +220,13 @@ var msgTemplates = []msgTemplate{
 		func() string { return fmt.Sprintf("Deploy #%d passed all checks", randomN(999)+1) },
 	},
 	{
-		categorySuccess, badgeSuccess,
+		categorySuccess,
+		badgeSuccess,
 		func() string { return fmt.Sprintf("Migration v1.%d.%d applied successfully", randomN(9), randomN(9)) },
 	},
 	{
-		categorySuccess, badgeSuccess,
+		categorySuccess,
+		badgeSuccess,
 		func() string { return fmt.Sprintf("Build #%d completed in %ds", randomN(999)+1, randomN(30)+1) },
 	},
 	{
@@ -243,7 +246,8 @@ var msgTemplates = []msgTemplate{
 		func() string { return fmt.Sprintf("Scheduled task-%d completed", randomN(500)+1) },
 	},
 	{
-		categoryInfo, badgeInfo,
+		categoryInfo,
+		badgeInfo,
 		func() string { return fmt.Sprintf("Configuration reloaded for service-%d", randomN(50)+1) },
 	},
 }

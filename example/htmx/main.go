@@ -103,7 +103,9 @@ func eventsHandler(w http.ResponseWriter, r *http.Request) {
 func renderProgress(ctx context.Context, progress int) string {
 	var buf bytes.Buffer
 
-	if err := progressContent(progress).Render(ctx, &buf); err != nil { //nolint:contextcheck // templ takes ctx
+	if err := progressContent(
+		progress,
+	).Render(ctx, &buf); err != nil {
 		log.Printf("render progress fragment: %v", err)
 
 		return ""
