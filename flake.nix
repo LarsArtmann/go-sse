@@ -40,7 +40,7 @@
           goPkg = pkgs.go_1_26;
           buildGoModule = pkgs.buildGoModule.override { go = goPkg; };
           version = self.rev or self.dirtyRev or "dev";
-          vendorHash = "sha256-TzgUuZw7DdKK4uSM/6wTU31yvMp8TyWtFp+1JP7l7Gg=";
+          vendorHash = "sha256-Gf8srGcQqteoGCUQSWcPrqZ+mSZKlmi8dkMobkkz464=";
 
           # go-sse is a pure library (no `main` package), so we do not publish a
           # binary `packages.default` or an overlay. Instead, buildGoModule is used
@@ -92,6 +92,13 @@
               goimports.enable = true;
               golines.enable = true;
               nixfmt.enable = true;
+            };
+            settings = {
+              formatter = {
+                gofumpt.excludes = [ "*_templ.go" ];
+                goimports.excludes = [ "*_templ.go" ];
+                golines.excludes = [ "*_templ.go" ];
+              };
             };
           };
 
