@@ -8,7 +8,7 @@ package main
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-func indexPage() templ.Component {
+func indexPage(alertsOnly bool) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -29,7 +29,37 @@ func indexPage() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>go-sse × DataStar</title><link rel=\"stylesheet\" href=\"/static/styles.css\"><script type=\"module\" src=\"/static/datastar.js\"></script></head><body><main class=\"card\"><div data-signals=\"{progress: 0}\"><h1>go-sse × DataStar</h1><p class=\"subtitle\">Live <strong>Server-Sent Events</strong> from a Go backend powered by <code>github.com/larsartmann/go-sse</code>, rendered with <a href=\"https://data-star.dev\">DataStar</a>. No frontend JavaScript required.</p><button data-on:click=\"@get('/events')\">Restart demo</button><div data-init=\"@get('/events')\"></div><div class=\"progress-bar\"><div class=\"progress-fill\" data-style:width=\"$progress + '%'\"></div></div><div class=\"status\" id=\"status\"><p>Connecting…</p></div><p class=\"signal-value\">Signal value: <span data-text=\"$progress\"></span>%</p></div></main></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>go-sse × DataStar — Live Activity Feed</title><link rel=\"stylesheet\" href=\"/static/styles.css\"><script type=\"module\" src=\"/static/datastar.js\"></script></head><body><main class=\"card\"><div data-signals=\"{subscriberCount: 0, replayed: 0}\"><header class=\"card__header\"><h1>go-sse × DataStar</h1><p class=\"subtitle\">Live activity feed powered by Server-Sent Events. Open multiple tabs to see real-time fan-out — every tab receives the same events simultaneously.</p></header><nav class=\"filter-bar\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if alertsOnly {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<a class=\"filter-bar__link\" href=\"/\">All events</a> <span class=\"filter-bar__active\">Alerts only</span>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<span class=\"filter-bar__active\">All events</span> <a class=\"filter-bar__link\" href=\"/?filter=alerts\">Alerts only</a>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</nav><div class=\"stats-bar\"><div class=\"stat\"><span class=\"stat__value\" data-text=\"$subscriberCount\"></span> <span class=\"stat__label\">clients connected</span></div></div><div class=\"replay-banner\" data-show=\"$replayed > 0\">Replayed <span data-text=\"$replayed\"></span> missed events on reconnect</div><div class=\"feed\" id=\"feed\"></div><footer class=\"card__footer\"><p>Powered by <code>github.com/larsartmann/go-sse</code>. Events fan out via <code>Broadcaster</code>, replay via <code>EventStore</code>, filtering via <code>SubscribeFilter</code>, keep-alive via <code>Heartbeat</code>.</p></footer>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if alertsOnly {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div data-init=\"@get('/events?filter=alerts')\"></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div data-init=\"@get('/events')\"></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></main></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
