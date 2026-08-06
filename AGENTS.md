@@ -112,6 +112,7 @@ Four layers, each in its own file, composable independently:
 The DataStar example demonstrates a complete SSE-driven UI with embedded assets — no CDN required.
 
 **Architecture:**
+
 - `index.templ` — type-safe HTML template (templ). Run `templ generate` after editing.
 - `index_templ.go` — generated code (checked into git, excluded from treefmt and golangci-lint via `*_templ.go` path patterns).
 - `static/styles.css` — real CSS file with dark/light theme support via `prefers-color-scheme`.
