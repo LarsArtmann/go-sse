@@ -112,7 +112,7 @@ Four layers, each in its own file, composable independently:
 Three runnable examples, each an independent `package main`:
 
 - `example/server.go` — raw wire-format demo (curl-driven broadcast/fan-out), port `:8080`.
-- `example/datastar/` — DataStar reactive-signal + DOM-patch UI, port `:8765`.
+- `example/datastar/` — DataStar activity feed (fan-out, filtering, replay, heartbeat), port `:8765`.
 - `example/htmx/` — HTMX HTML-fragment-swap UI, port `:8766`.
 
 **`example/README.md` compares the DataStar vs HTMX approaches in detail** (mechanism, payload size, granularity, bundle size, trade-offs). The two browser examples render the _same_ progress-bar demo through different mechanisms:

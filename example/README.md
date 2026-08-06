@@ -7,13 +7,14 @@ the two most popular ways to consume SSE in a Go backend.
 | Example                | Port  | What it shows                                                                                       | Audience                                     |
 | ---------------------- | ----- | --------------------------------------------------------------------------------------------------- | -------------------------------------------- |
 | [`server.go`](server.go) | `:8080`  | Bare wire format — subscribe and broadcast with `curl`. No browser.                                  | Learning the SSE wire format                 |
-| [`datastar/`](datastar/) | `:8765` | Reactive signals + surgical DOM patching via the DataStar keyed-line protocol.                       | Fine-grained, signal-driven UIs              |
+| [`datastar/`](datastar/) | `:8765` | Live activity feed: fan-out, filtering, replay, heartbeat — via DataStar reactive signals + keyed lines. | Rich, signal-driven UIs                      |
 | [`htmx/`](htmx/)         | `:8766` | HTML fragment swapping via HTMX + its SSE extension. The server streams HTML; HTMX swaps it in.      | Hypermedia / server-rendered HTML UIs        |
 
-The **DataStar** and **HTMX** examples render the *same* demo — a progress bar
-that fills 0 → 100% over Server-Sent Events — so you can compare them
-apples-to-apples. The difference is entirely in the *mechanism*, summarized
-below and explained in detail in [DataStar vs HTMX](#datastar-vs-htmx).
+The two browser examples take **different scopes** to highlight each tool's
+strengths: `datastar/` is a full go-sse feature showcase (a live activity feed
+with fan-out, filtering, replay, and heartbeat), while `htmx/` is a focused
+progress-bar demo. What's comparable is the *mechanism* each uses to consume
+SSE — summarized below and explained in detail in [DataStar vs HTMX](#datastar-vs-htmx).
 
 ---
 
@@ -73,11 +74,19 @@ header on reconnect, enabling replay of missed events.
 
 ## 2. DataStar example (`datastar/`)
 
-The server emits **two DataStar event types** over one SSE connection:
+A **live activity feed** that showcases the full go-sse feature set:
 
-- `datastar-patch-signals` — updates the client-side reactive state (`$progress`),
-  which the progress-bar width and percentage text bind to reactively.
-- `datastar-patch-elements` — patches a DOM element (`#status`) with new HTML.
+- **`Broadcaster`** — open multiple tabs; every client receives the same events
+  simultaneously (real-time fan-out).
+- **`SubscribeFilter`** — toggle "Alerts only" via `?filter=alerts`; each
+  subscriber's predicate filters events server-side.
+- **`EventStore` + `Replay`** — disconnect and reconnect; missed events replay
+  from the in-memory ring buffer using `Last-Event-ID`.
+- **`Heartbeat`** — comment-frame pings keep the connection alive through
+  proxies.
+- **Reactive signals** — `datastar-patch-signals` drives the live client count
+  (`$subscriberCount`) and replay banner (`$replayed`); `datastar-patch-elements`
+  appends entries to the `#feed`.
 
 Built with the go-sse DataStar helpers: [`KeyedLines`](../event.go),
 [`SendKeyed`](../stream.go), and [`SendLines`](../stream.go). The page is a
@@ -110,9 +119,10 @@ go run example/htmx/        # → http://localhost:8766
 
 ## DataStar vs HTMX
 
-Both examples produce the same on-screen result. They differ in what the server
-sends over the wire, how the client applies updates, and the trade-offs that
-follow.
+The two examples demonstrate different scopes (DataStar is a full feature
+showcase; HTMX is a focused demo), but what matters for comparison is the
+*mechanism*: what the server sends over the wire and how the client applies
+updates. The trade-offs below flow from that mechanism, not the specific demo.
 
 ### At a glance
 
@@ -120,11 +130,11 @@ follow.
 | ------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------- |
 | **Mental model**          | Reactive signals + surgical DOM patches                         | Hypermedia: swap HTML fragments into targets                  |
 | **Server sends**          | Keyed-line protocol (`selector …`, `mode …`, `signals {…}`)     | Raw HTML fragments                                            |
-| **go-sse API used**       | `KeyedLines`, `SendKeyed`, `SendLines` (purpose-built helpers)  | `Send(Event{...})` (vanilla SSE; no special helpers)          |
+| **go-sse API used**       | `Broadcaster`, `SubscribeFilter`, `EventStore`/`Replay`, `Heartbeat`, `KeyedLines` | `Send(Event{...})` (vanilla SSE; no special helpers)          |
 | **Client bundle**         | `datastar.js` (~56 KB, 1 file)                                  | `htmx.min.js` + `sse.min.js` (~54 KB, 2 files)               |
-| **Payload per tick**      | Small — only the changed signal / element                       | Larger — the whole fragment is re-rendered each tick          |
+| **Payload per event**     | Small — only the changed signal / element                       | Larger — the whole fragment is re-rendered each event         |
 | **Update granularity**    | Surgical — updates one value on a **stable** element            | Coarse — `innerHTML` swap **recreates** the children          |
-| **CSS transitions**       | Smooth — width animates because the element is never replaced   | Jumpy — replaced elements reset transitions (use `morph` ext) |
+| **In-place vs re-render** | Patches a stable node (CSS transitions & focus persist)         | Replaces children (transitions reset; use `morph` ext)        |
 | **Restart the stream**    | `data-on:click="@get('/events')"` — one attribute               | Swap the `sse-connect` container (`outerHTML`) — a fragment   |
 | **Reconnect / replay**    | Native `EventSource` → `Last-Event-ID` → go-sse replay          | Native `EventSource` → `Last-Event-ID` → go-sse replay        |
 | **Ecosystem / maturity**  | Newer, custom attribute DSL, growing                            | Mature, huge ecosystem, standard HTML attributes              |
@@ -136,13 +146,14 @@ follow.
 
 **Pros**
 
-- **Fine-grained updates.** Patch a single signal (`signals {"progress": 10}`)
-  or a single element without resending surrounding markup. Smaller payloads,
+- **Fine-grained updates.** Patch a single signal (`signals {"count": 3}`)
+  or append one element without resending surrounding markup. Smaller payloads,
   lower bandwidth at scale.
-- **Reactive by default.** Bind `data-style:width="$progress + '%'"` once and
-  every signal change flows into the DOM automatically — no manual targeting.
-- **Smooth animations.** Because the progress element is patched in place (not
-  replaced), CSS `transition: width` animates each step instead of jumping.
+- **Reactive by default.** Bind a signal once (`data-text="$subscriberCount"`)
+  and every server-side update flows into the DOM automatically — no manual
+  targeting or fragment endpoints.
+- **Stable elements.** Updates patch a node in place rather than replacing it,
+  so CSS transitions and input focus persist across updates.
 - **First-class in go-sse.** `KeyedLines` / `SendKeyed` / `SendLines` /
   `WriteKeyedLines` exist specifically to build the keyed-line wire format
   correctly (multi-line splitting, CRLF handling) with zero boilerplate.
@@ -175,8 +186,8 @@ follow.
 
 - **Coarse granularity.** `innerHTML` swap recreates the target's children on
   every event. Unchanged surrounding HTML is resent and re-rendered, and CSS
-  transitions on replaced elements reset (the bar "jumps" instead of gliding).
-  Smoother updates need the extra `idiomorph` extension (`hx-swap="morph"`).
+  transitions on replaced elements reset. Smoother updates need the extra
+  `idiomorph` extension (`hx-swap="morph"`).
 - **Larger payloads.** Each event carries the entire fragment, not just the
   delta — more bytes per tick, which adds up for high-frequency streams.
 - **Restart is more ceremony.** Re-establishing an SSE stream means replacing
