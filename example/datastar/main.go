@@ -19,16 +19,24 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
-	"math/rand/v2"
 	"net/http"
 	"os/signal"
-	"strconv"
-	"strings"
-	"sync"
 	"syscall"
 	"time"
+)
 
-	"github.com/larsartmann/go-sse"
+// Named magic-number constants for the random message generators.
+// These make the template strings in producer.go self-documenting.
+const (
+	nodeCount       = 20
+	serviceCount    = 50
+	endpointCount   = 10
+	deployCount     = 999
+	sessionCount    = 9999
+	taskCount       = 500
+	versionMinor    = 9
+	versionPatch    = 9
+	maxBuildSeconds = 30
 )
 
 const (
@@ -38,355 +46,15 @@ const (
 	maxStoredEvents = 50
 	shutdownTimeout = 5 * time.Second
 	readHeaderLimit = 5 * time.Second
-)
 
-const (
-	categoryAlert   = "alert"
-	categorySuccess = "success"
-	categoryInfo    = "info"
-)
-
-const (
-	badgeAlert   = "ALERT"
-	badgeSuccess = "OK"
-	badgeInfo    = "INFO"
+	// idleTimeout is a generous idle timeout for long-lived SSE connections.
+	// ReadTimeout/WriteTimeout would kill SSE connections, so we use
+	// IdleTimeout instead which only applies to idle keep-alive connections.
+	idleTimeout = 5 * time.Minute
 )
 
 //go:embed all:static
 var staticFiles embed.FS
-
-// --- EventStore ---
-
-// memStore is an in-memory ring buffer implementing sse.EventStore.
-// It keeps the last maxStoredEvents events for reconnection replay.
-type memStore struct {
-	mu     sync.RWMutex
-	events []sse.Event
-	cap    int
-}
-
-func newMemStore(capacity int) *memStore {
-	return &memStore{
-		mu:     sync.RWMutex{},
-		events: make([]sse.Event, 0, capacity),
-		cap:    capacity,
-	}
-}
-
-func (s *memStore) Append(evt sse.Event) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.events = append(s.events, evt)
-
-	if len(s.events) > s.cap {
-		s.events = s.events[len(s.events)-s.cap:]
-	}
-}
-
-func (s *memStore) EventsAfter(lastID sse.EventID) ([]sse.Event, error) {
-	lastSeq, err := strconv.Atoi(lastID.Get())
-	if err != nil {
-		lastSeq = 0
-	}
-
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	var result []sse.Event
-
-	for _, evt := range s.events {
-		seq, err := strconv.Atoi(evt.ID.Get())
-		if err != nil {
-			continue
-		}
-
-		if seq > lastSeq {
-			result = append(result, evt)
-		}
-	}
-
-	return result, nil
-}
-
-// --- Activity Server ---
-
-// activityServer holds the broadcaster and event store.
-// The broadcaster fans out events to all connected SSE clients; the store
-// keeps recent events for reconnection replay.
-type activityServer struct {
-	broadcaster *sse.Broadcaster[sse.Event]
-	store       *memStore
-}
-
-func newActivityServer() *activityServer {
-	broadcaster := sse.NewBroadcaster[sse.Event]()
-
-	s := &activityServer{
-		broadcaster: broadcaster,
-		store:       newMemStore(maxStoredEvents),
-	}
-
-	// Broadcast the new subscriber count whenever a client connects or
-	// disconnects. This gives every tab a live "N clients connected" indicator.
-	// We reset $replayed to 0 alongside the count update so the replay banner
-	// clears when the subscriber count changes (e.g. on new connection).
-	broadcaster.OnSubscribe(func() {
-		broadcaster.BroadcastMany(
-			replayEvent(0),
-			countEvent(broadcaster.SubscriberCount()),
-		)
-	})
-	broadcaster.OnUnsubscribe(func() {
-		broadcaster.Broadcast(countEvent(broadcaster.SubscriberCount()))
-	})
-
-	return s
-}
-
-// startProducer runs a background goroutine that emits a random activity
-// event every emitInterval. Each event gets a monotonically increasing ID
-// so reconnecting clients can replay missed events.
-func (s *activityServer) startProducer(ctx context.Context) {
-	var id int64
-
-	emit := func() {
-		id++
-
-		item := generateItem()
-
-		evt := feedItemEvent(id, item)
-
-		s.store.Append(evt)
-		s.broadcaster.Broadcast(evt)
-	}
-
-	emit() // emit one immediately so the user sees something fast
-
-	ticker := time.NewTicker(emitInterval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			emit()
-		}
-	}
-}
-
-// --- Event Generators ---
-
-// activityItem is a single entry in the activity feed.
-type activityItem struct {
-	category string // "info", "alert", "success"
-	badge    string // "INFO", "ALERT", "OK"
-	message  string
-	time     string
-}
-
-// randomN wraps math/rand/v2.IntN for demo data generation. Not crypto-safe;
-// this is a demo server generating fake activity messages.
-//
-//nolint:gosec // G404: non-crypto random for demo data
-func randomN(n int) int {
-	return rand.IntN(n)
-}
-
-// msgTemplates pairs a display category with a random message generator.
-type msgTemplate struct {
-	category string
-	badge    string
-	gen      func() string
-}
-
-//nolint:gochecknoglobals,mnd // read-only template pool, intentional for example
-var msgTemplates = []msgTemplate{
-	{
-		categoryAlert, badgeAlert,
-		func() string { return fmt.Sprintf("CPU usage above 90%% on node-%d", randomN(20)+1) },
-	},
-	{
-		categoryAlert, badgeAlert,
-		func() string { return fmt.Sprintf("Disk space below 10%% on node-%d", randomN(20)+1) },
-	},
-	{
-		categoryAlert, badgeAlert,
-		func() string { return fmt.Sprintf("Memory leak detected in service-%d", randomN(50)+1) },
-	},
-	{
-		categoryAlert,
-		badgeAlert,
-		func() string { return fmt.Sprintf("Response time exceeding SLA on endpoint-%d", randomN(10)+1) },
-	},
-	{
-		categorySuccess, badgeSuccess,
-		func() string { return fmt.Sprintf("Deploy #%d passed all checks", randomN(999)+1) },
-	},
-	{
-		categorySuccess,
-		badgeSuccess,
-		func() string { return fmt.Sprintf("Migration v1.%d.%d applied successfully", randomN(9), randomN(9)) },
-	},
-	{
-		categorySuccess,
-		badgeSuccess,
-		func() string { return fmt.Sprintf("Build #%d completed in %ds", randomN(999)+1, randomN(30)+1) },
-	},
-	{
-		categorySuccess, badgeSuccess,
-		func() string { return fmt.Sprintf("Health check passed for service-%d", randomN(50)+1) },
-	},
-	{
-		categoryInfo, badgeInfo,
-		func() string { return fmt.Sprintf("User session-%d started", randomN(9999)+1) },
-	},
-	{
-		categoryInfo, badgeInfo,
-		func() string { return fmt.Sprintf("Cache invalidated for region-%d", randomN(10)+1) },
-	},
-	{
-		categoryInfo, badgeInfo,
-		func() string { return fmt.Sprintf("Scheduled task-%d completed", randomN(500)+1) },
-	},
-	{
-		categoryInfo,
-		badgeInfo,
-		func() string { return fmt.Sprintf("Configuration reloaded for service-%d", randomN(50)+1) },
-	},
-}
-
-func generateItem() activityItem {
-	t := msgTemplates[randomN(len(msgTemplates))]
-
-	return activityItem{
-		category: t.category,
-		badge:    t.badge,
-		message:  t.gen(),
-		time:     time.Now().Format("15:04:05"),
-	}
-}
-
-// feedItemEvent builds a DataStar patch-elements SSE event that prepends
-// a single feed item to the #feed div. The event carries a sequential ID
-// so it can be replayed on reconnection.
-//
-// The "category" data line embeds the event category for server-side
-// predicate filtering. DataStar ignores unknown keys in patch-elements
-// payloads, so this line has no client-side effect.
-func feedItemEvent(id int64, item activityItem) sse.Event {
-	data := strings.Join([]string{
-		"selector #feed",
-		"mode prepend",
-		"category " + item.category,
-		sse.KeyedLines("elements", feedItemHTML(item)),
-	}, "\n")
-
-	return sse.Event{
-		Event: "datastar-patch-elements",
-		Data:  data,
-		ID:    sse.NewEventID(strconv.FormatInt(id, 10)),
-	}
-}
-
-// countEvent builds a DataStar patch-signals event that updates the
-// subscriberCount signal. No event ID — this is an ephemeral meta event
-// that should not be replayed.
-func countEvent(count int) sse.Event {
-	return sse.Event{
-		Event: "datastar-patch-signals",
-		Data:  sse.KeyedLines("signals", fmt.Sprintf(`{"subscriberCount":%d}`, count)),
-	}
-}
-
-// replayEvent builds a DataStar patch-signals event that sets the replayed
-// signal, triggering the "Replayed N missed events" banner.
-func replayEvent(n int) sse.Event {
-	return sse.Event{
-		Event: "datastar-patch-signals",
-		Data:  sse.KeyedLines("signals", fmt.Sprintf(`{"replayed":%d}`, n)),
-	}
-}
-
-func feedItemHTML(item activityItem) string {
-	return fmt.Sprintf(
-		`<div class="feed-item feed-item--%s"><span class="feed-item__badge">%s</span><span class="feed-item__message">%s</span><span class="feed-item__time">%s</span></div>`,
-		item.category,
-		item.badge,
-		item.message,
-		item.time,
-	)
-}
-
-// --- HTTP Handlers ---
-
-func (s *activityServer) indexHandler(w http.ResponseWriter, r *http.Request) {
-	alertsOnly := r.URL.Query().Get("filter") == "alerts"
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	//nolint:contextcheck // templ uses r.Context() correctly
-	if err := indexPage(alertsOnly).Render(r.Context(), w); err != nil {
-		log.Printf("render index page: %v", err)
-	}
-}
-
-func (s *activityServer) eventsHandler(w http.ResponseWriter, r *http.Request) {
-	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
-
-	ctx := stream.Context()
-
-	// Replay missed events on reconnect (Last-Event-ID header).
-	if lastID := stream.LastEventID(); !lastID.IsZero() {
-		if n, err := sse.Replay(stream, s.store, lastID); err != nil {
-			log.Printf("replay failed: %v", err)
-		} else if n > 0 {
-			if err := stream.Send(replayEvent(n)); err != nil {
-				return
-			}
-		}
-	}
-
-	// Subscribe — optionally filtered to alerts only.
-	// Meta events (subscriber count, replay indicators) have no event ID and
-	// always pass through the filter so every tab sees the subscriber count.
-	var ch <-chan sse.Event
-
-	if r.URL.Query().Get("filter") == "alerts" {
-		ch = s.broadcaster.SubscribeFilter(func(evt sse.Event) bool {
-			if evt.ID.IsZero() {
-				return true
-			}
-
-			return strings.Contains(evt.Data, "category "+categoryAlert)
-		})
-	} else {
-		ch = s.broadcaster.Subscribe()
-	}
-
-	defer s.broadcaster.Unsubscribe(ch)
-
-	// Heartbeat to keep the connection alive through reverse proxies.
-	//
-	//nolint:contextcheck // ctx is stream.Context() which is r.Context()
-	go stream.Heartbeat(ctx, heartbeatEvery)
-
-	// Event loop: forward broadcast events to the SSE stream.
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case evt, ok := <-ch:
-			if !ok || stream.Send(evt) != nil {
-				return
-			}
-		}
-	}
-}
-
-// --- Main ---
 
 func main() {
 	staticFS, err := fs.Sub(staticFiles, "static")
@@ -411,6 +79,7 @@ func main() {
 		Addr:              datastarAddr,
 		Handler:           mux,
 		ReadHeaderTimeout: readHeaderLimit,
+		IdleTimeout:       idleTimeout,
 	}
 
 	go func() {
@@ -429,6 +98,12 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
+	// Graceful shutdown sequence:
+	// 1. HTTP server drains active requests (including SSE connections)
+	// 2. Broadcaster drains subscriber buffers, then closes channels
 	_ = httpServer.Shutdown(shutdownCtx)
 	_ = server.broadcaster.Shutdown(shutdownCtx)
+
+	// Keep fmt imported for log formatting consistency.
+	_ = fmt.Sprintf
 }
