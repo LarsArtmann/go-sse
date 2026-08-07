@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"strings"
@@ -60,6 +59,10 @@ func (s *activityServer) indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *activityServer) eventsHandler(w http.ResponseWriter, r *http.Request) {
+	// Allow cross-origin SSE consumption (enables embedding the feed from
+	// other domains).
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	// NewStream sets the SSE headers (text/event-stream, no-cache, etc.)
 	// and writes 200 OK immediately. Do not write to w before this call.
 	stream := sse.NewStream(w, r)
@@ -121,6 +124,3 @@ func (s *activityServer) eventsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
-
-// Ensure unused import is referenced.
-var _ = context.Background

@@ -154,6 +154,16 @@ func replayEvent(n int) sse.Event {
 	}
 }
 
+// totalEventSignal builds a DataStar patch-signals event that updates the
+// totalEvents counter. Used for the empty-state check and the "N events sent"
+// stat in the UI.
+func totalEventSignal(n int64) sse.Event {
+	return sse.Event{
+		Event: "datastar-patch-signals",
+		Data:  sse.KeyedLines("signals", fmt.Sprintf(`{"totalEvents":%d}`, n)),
+	}
+}
+
 func feedItemHTML(item activityItem) string {
 	return fmt.Sprintf(
 		`<div class="feed-item feed-item--%s"><span class="feed-item__badge">%s</span><span class="feed-item__message">%s</span><span class="feed-item__time">%s</span></div>`,
@@ -178,7 +188,7 @@ func (s *activityServer) startProducer(ctx context.Context) {
 		evt := feedItemEvent(id, item)
 
 		s.store.Append(evt)
-		s.broadcaster.Broadcast(evt)
+		s.broadcaster.BroadcastMany(evt, totalEventSignal(id))
 	}
 
 	emit() // emit one immediately so the user sees something fast

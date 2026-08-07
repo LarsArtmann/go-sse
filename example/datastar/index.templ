@@ -7,14 +7,32 @@ templ indexPage(alertsOnly bool) {
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
 			<title>go-sse × DataStar — Live Activity Feed</title>
+			<meta property="og:title" content="go-sse × DataStar — Live Activity Feed"/>
+			<meta property="og:description" content="Server-Sent Events transport for Go with live fan-out, filtering, and reconnection replay."/>
+			<meta property="og:type" content="website"/>
+			<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E"/>
 			<link rel="stylesheet" href="/static/styles.css"/>
 			<script type="module" src="/static/datastar.js"></script>
 		</head>
 		<body>
 			<main class="card">
-				<div data-signals="{subscriberCount: 0, replayed: 0}">
+				<div data-signals="{subscriberCount: 0, replayed: 0, totalEvents: 0, paused: false, theme: 'auto'}">
+					if alertsOnly {
+						<script data-on-load="@set('theme', localStorage.getItem('theme') || 'auto')"></script>
+					} else {
+						<script data-on-load="@set('theme', localStorage.getItem('theme') || 'auto')"></script>
+					}
 					<header class="card__header">
-						<h1>go-sse × DataStar</h1>
+						<div class="header-row">
+							<h1>go-sse × DataStar</h1>
+							<button
+								class="theme-toggle"
+								data-on-click="@set('theme', $theme === 'dark' ? 'light' : 'dark'); localStorage.setItem('theme', $theme)"
+							>
+								<span data-show="$theme !== 'dark'">Dark</span>
+								<span data-show="$theme === 'dark'">Light</span>
+							</button>
+						</div>
 						<p class="subtitle">
 							Live activity feed powered by Server-Sent Events. Open multiple tabs
 							to see real-time fan-out — every tab receives the same events simultaneously.
@@ -28,17 +46,39 @@ templ indexPage(alertsOnly bool) {
 							<span class="filter-bar__active">All events</span>
 							<a class="filter-bar__link" href="/?filter=alerts">Alerts only</a>
 						}
+						<span class="filter-bar__hint">press 'a' for alerts</span>
 					</nav>
 					<div class="stats-bar">
 						<div class="stat">
 							<span class="stat__value" data-text="$subscriberCount"></span>
 							<span class="stat__label">clients connected</span>
 						</div>
+						<div class="stat">
+							<span class="stat__value" data-text="$totalEvents"></span>
+							<span class="stat__label">events sent</span>
+						</div>
+						<div class="stat stat--live">
+							<span class="live-dot"></span>
+							<span class="stat__label">live</span>
+						</div>
 					</div>
 					<div class="replay-banner" data-show="$replayed > 0">
 						Replayed <span data-text="$replayed"></span> missed events on reconnect
 					</div>
-					<div class="feed" id="feed"></div>
+					<div class="feed-controls">
+						<button
+							class="feed-controls__btn"
+							data-on-click="@set('paused', !$paused)"
+						>
+							<span data-show="!$paused">Pause</span>
+							<span data-show="$paused">Resume</span>
+						</button>
+					</div>
+					<div class="feed-empty" data-show="$totalEvents === 0 && !$paused">
+						Waiting for events…
+					</div>
+					<div class="feed-paused" data-show="$paused">Paused — updates will appear on resume</div>
+					<div class="feed" id="feed" data-show="$totalEvents > 0 && !$paused"></div>
 					<footer class="card__footer">
 						<p>
 							Powered by <code>github.com/larsartmann/go-sse</code>. Events fan out via
@@ -46,6 +86,13 @@ templ indexPage(alertsOnly bool) {
 							via <code>SubscribeFilter</code>, keep-alive via <code>Heartbeat</code>.
 						</p>
 					</footer>
+					<script>
+						document.addEventListener('keydown', function(e) {
+							if (e.target.matches('input,textarea')) return;
+							if (e.key === 'a') window.location.href = '/?filter=alerts';
+							if (e.key === 'e') window.location.href = '/';
+						});
+					</script>
 					if alertsOnly {
 						<div data-init="@get('/events?filter=alerts')"></div>
 					} else {

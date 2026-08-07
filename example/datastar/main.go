@@ -16,7 +16,6 @@ import (
 	"context"
 	"embed"
 	"errors"
-	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
@@ -103,7 +102,4 @@ func main() {
 	// 2. Broadcaster drains subscriber buffers, then closes channels
 	_ = httpServer.Shutdown(shutdownCtx)
 	_ = server.broadcaster.Shutdown(shutdownCtx)
-
-	// Keep fmt imported for log formatting consistency.
-	_ = fmt.Sprintf
 }
