@@ -19,12 +19,12 @@ dependency is `go-error-family`.
 
 These are real, and were verified rather than assumed.
 
-| # | Argument | Evidence |
-| - | -------- | -------- |
-| P1 | **Zero new transitive modules.** `go-retry`'s only dependency is `go-error-family v0.10.0`, which go-sse already requires at exactly that version. Adopting adds one line to `go.mod` and no new packages to the build graph. | `go list -deps github.com/larsartmann/go-retry` yields only stdlib + `go-error-family`. |
-| P2 | **Ecosystem consistency.** Same author, same error family, same stable-code convention (`retry.exhausted`) that go-sse already follows (`sse.write_failed`). No impedance mismatch in error handling. | `errorfamily.Wrapf` used identically in both. |
-| P3 | **Correct home for the logic *if* go-sse ever ships a client.** A `Dial` helper reconnecting an `EventSource` is the textbook retry-with-backoff use case, and `Event.Retry` (the server's suggested reconnect interval) would feed `InitialDelay` naturally. | ROADMAP §2. |
-| P4 | **Saves consumers hand-rolling backoff.** Four known consumers exist; a shared, tested loop beats four ad-hoc `time.Sleep` ladders. | — |
+| #   | Argument                                                                                                                                                                                                                                                      | Evidence                                                                                |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| P1  | **Zero new transitive modules.** `go-retry`'s only dependency is `go-error-family v0.10.0`, which go-sse already requires at exactly that version. Adopting adds one line to `go.mod` and no new packages to the build graph.                                 | `go list -deps github.com/larsartmann/go-retry` yields only stdlib + `go-error-family`. |
+| P2  | **Ecosystem consistency.** Same author, same error family, same stable-code convention (`retry.exhausted`) that go-sse already follows (`sse.write_failed`). No impedance mismatch in error handling.                                                         | `errorfamily.Wrapf` used identically in both.                                           |
+| P3  | **Correct home for the logic _if_ go-sse ever ships a client.** A `Dial` helper reconnecting an `EventSource` is the textbook retry-with-backoff use case, and `Event.Retry` (the server's suggested reconnect interval) would feed `InitialDelay` naturally. | ROADMAP §2.                                                                             |
+| P4  | **Saves consumers hand-rolling backoff.** Four known consumers exist; a shared, tested loop beats four ad-hoc `time.Sleep` ladders.                                                                                                                           | —                                                                                       |
 
 P1 deserves emphasis: the usual "another dependency" objection **does not
 apply here**. The cost is not dependency weight. The cost is everything below.
@@ -36,13 +36,13 @@ apply here**. The cost is not dependency weight. The cost is everything below.
 Every candidate site was examined. All four fail on technical grounds, not on
 taste:
 
-| Candidate site | Retryable? | Why not |
-| -------------- | ---------- | ------- |
-| `Stream.Send` / `WriteEvent` (`stream.go:99`) | **No** | A failed write to `http.ResponseWriter` means the TCP connection is dead or **partially written**. Retrying re-emits bytes already on the wire, corrupting SSE frames. There is no way to know how much of the frame landed. |
-| `Replay` store query (`replay.go:41`) | **No** | `EventStore` is a consumer-supplied interface. Whether a store's failure is worth retrying is the store implementer's policy, not the transport's. Baking in a retry would override the consumer's own DB retry layer. |
-| `Shutdown` drain poll (`fanout.go`) | **No** | The drain is a *condition-wait* ("are all buffers empty yet?"), not a failing operation. Exponential backoff would **increase** p50 shutdown latency versus the current 1 ms poll — strictly worse for the common fast-drain case. |
-| `Broadcast` channel send (`fanout.go`) | **No** | Concurrency invariant #2 (AGENTS.md) forbids blocking under the read lock. Drop-on-full is documented, intentional, and load-bearing; a retry loop is exactly the head-of-line blocking that invariant prevents. |
-| Client reconnection | **N/A** | go-sse is server-only. ROADMAP §2 explicitly defers the client `Dial` helper "until a concrete client consumer exists." |
+| Candidate site                                | Retryable? | Why not                                                                                                                                                                                                                            |
+| --------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Stream.Send` / `WriteEvent` (`stream.go:99`) | **No**     | A failed write to `http.ResponseWriter` means the TCP connection is dead or **partially written**. Retrying re-emits bytes already on the wire, corrupting SSE frames. There is no way to know how much of the frame landed.       |
+| `Replay` store query (`replay.go:41`)         | **No**     | `EventStore` is a consumer-supplied interface. Whether a store's failure is worth retrying is the store implementer's policy, not the transport's. Baking in a retry would override the consumer's own DB retry layer.             |
+| `Shutdown` drain poll (`fanout.go`)           | **No**     | The drain is a _condition-wait_ ("are all buffers empty yet?"), not a failing operation. Exponential backoff would **increase** p50 shutdown latency versus the current 1 ms poll — strictly worse for the common fast-drain case. |
+| `Broadcast` channel send (`fanout.go`)        | **No**     | Concurrency invariant #2 (AGENTS.md) forbids blocking under the read lock. Drop-on-full is documented, intentional, and load-bearing; a retry loop is exactly the head-of-line blocking that invariant prevents.                   |
+| Client reconnection                           | **N/A**    | go-sse is server-only. ROADMAP §2 explicitly defers the client `Dial` helper "until a concrete client consumer exists."                                                                                                            |
 
 The only place retry belongs is the one component the project has
 **deliberately decided not to build yet**.
@@ -60,16 +60,16 @@ go-sse classifies its **connection-death** errors as `Transient`:
 
 So the obvious-looking `retry.Do(ctx, retry.DefaultConfig(), send)` would, with
 the **default** config, retry a broken pipe three times with backoff. In
-go-sse, `Transient` means *"drop this connection and let the browser
-reconnect"* — it does **not** mean *"sleep and try the same dead socket
-again."* Adopting `go-retry` would put a footgun one autocomplete away.
+go-sse, `Transient` means _"drop this connection and let the browser
+reconnect"_ — it does **not** mean _"sleep and try the same dead socket
+again."_ Adopting `go-retry` would put a footgun one autocomplete away.
 
 ### 3.3 Backoff inside `Stream.Send` would stall the heartbeat
 
 `Send` holds `s.mu` for its whole duration, and that mutex also serializes
 `Heartbeat` (invariant #1). A backoff sleep inside the locked region would
 block the heartbeat goroutine for the entire retry window — turning a
-transient blip into a proxy-killed connection. Retrying *outside* the lock is
+transient blip into a proxy-killed connection. Retrying _outside_ the lock is
 the same as reconnecting, which the browser already does for free.
 
 ### 3.4 Naming collision inside one package
@@ -115,11 +115,11 @@ delay += time.Duration(rand.Int64N(int64(delay) / 2))
 
 `rand.Int64N` panics on a non-positive argument.
 
-| # | Trigger | Reachable via |
-| - | ------- | ------------- |
-| B1 | **`MaxDelay` is never validated.** `Config.Validate()` checks `MaxAttempts`, `InitialDelay`, and `Multiplier` — but not `MaxDelay`. A hand-built `Config` with `MaxDelay` unset gives `min(delay, 0) == 0` → `Int64N(0)` → panic. | `retry.Do` with any struct literal that omits `MaxDelay`. |
-| B2 | **Sub-2 ns delays.** Any `delay < 2ns` makes `int64(delay)/2 == 0` → panic. `InitialDelay: 1` passes `Validate()`. | `retry.Do`, `Backoff`, `ComputeDelay`. |
-| B3 | **`math.Pow` overflow.** `float64 → time.Duration` for an out-of-range value yields `INT64_MIN` on amd64; `min(negative, MaxDelay)` keeps the negative → panic. **Plain `DefaultConfig()` panics at attempt 38.** | `retry.Do` with `MaxAttempts >= 38`, or a large `Multiplier`. |
+| #   | Trigger                                                                                                                                                                                                                           | Reachable via                                                 |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| B1  | **`MaxDelay` is never validated.** `Config.Validate()` checks `MaxAttempts`, `InitialDelay`, and `Multiplier` — but not `MaxDelay`. A hand-built `Config` with `MaxDelay` unset gives `min(delay, 0) == 0` → `Int64N(0)` → panic. | `retry.Do` with any struct literal that omits `MaxDelay`.     |
+| B2  | **Sub-2 ns delays.** Any `delay < 2ns` makes `int64(delay)/2 == 0` → panic. `InitialDelay: 1` passes `Validate()`.                                                                                                                | `retry.Do`, `Backoff`, `ComputeDelay`.                        |
+| B3  | **`math.Pow` overflow.** `float64 → time.Duration` for an out-of-range value yields `INT64_MIN` on amd64; `min(negative, MaxDelay)` keeps the negative → panic. **Plain `DefaultConfig()` panics at attempt 38.**                 | `retry.Do` with `MaxAttempts >= 38`, or a large `Multiplier`. |
 
 Observed output:
 

@@ -177,7 +177,10 @@ func WriteEvent(w io.Writer, evt Event) error {
 			err,
 			errorfamily.Transient,
 			"sse.write_failed",
-			"write sse event %q (%d data bytes, %d lines)", evt.Event, len(evt.Data), len(dataLines),
+			"write sse event %q (%d data bytes, %d lines)",
+			evt.Event,
+			len(evt.Data),
+			len(dataLines),
 		)
 	}
 

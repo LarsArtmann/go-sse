@@ -15,38 +15,38 @@
 
 Complete DataStar protocol library. 15 Go source files, 8 test files, ~3,207 lines total. 250 test cases, 83.5% statement coverage.
 
-| Area | Files | Status |
-|------|-------|--------|
-| **Patch interface** | `patch.go` | Done — `Patch interface { Event() sse.Event }` |
-| **Constants** | `constants.go` | Done — EventType, ElementPatchMode (9 values), Namespace (3), dataline keys (8), DefaultRetryDuration |
-| **ElementsPatch** | `elements.go` | Done — struct, 8 functional options, `Event()` with exact SDK wire-format order |
-| **SignalsPatch** | `signals.go` | Done — struct, 3 options, `MarshalSignals`, `NewSignalsPatch`, `NewSignalsIfMissingPatch` (returns error, not panic) |
-| **ScriptPatch** | `script.go` | Done — struct, 5 options, `<script>` wrapping with auto-remove nil/true/false semantics |
-| **Script convenience** | `script_convenience.go` | Done — Redirect, Redirectf, ConsoleLog, ConsoleLogf, ConsoleError, DispatchCustomEvent, ReplaceURL, Prefetch |
-| **RemovePatch + sugar** | `sugar.go` | Done — NewRemovePatch, NewRemoveByIDPatch, all mode helpers, namespace helpers, validation (FromString, ValidLists) |
-| **Render adapters** | `adapters.go` | Done — ElementsFromTempl, ElementsFromGostar |
-| **HTTP verbs** | `http.go` | Done — GetSSE/PostSSE/PutSSE/PatchSSE/DeleteSSE |
-| **Inbound** | `inbound.go` | Done — ReadSignals (GET/DELETE query, POST body), LastEventID (header + query param fallback) |
-| **ScriptHandler** | `script_handler.go` | Done — embedded datastar.js v1.0.2, ETag, Cache-Control, conditional 304, Method check |
-| **Response** | `response.go` | Done — fluent builder wrapping sse.Stream, all patch methods, ApplyPatches, ErrorResponse, NotificationResponse |
-| **Example app** | `example/main.go` | Done — Broadcaster[sse.Event] + live feed |
-| **Project files** | `go.mod`, `flake.nix`, `.golangci.yml`, `.gitignore`, `LICENSE`, `README.md`, `AGENTS.md`, `doc.go`, `.github/workflows/ci.yml` | Done |
-| **Lint** | golangci-lint v2 | **0 issues** |
+| Area                    | Files                                                                                                                           | Status                                                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Patch interface**     | `patch.go`                                                                                                                      | Done — `Patch interface { Event() sse.Event }`                                                                       |
+| **Constants**           | `constants.go`                                                                                                                  | Done — EventType, ElementPatchMode (9 values), Namespace (3), dataline keys (8), DefaultRetryDuration                |
+| **ElementsPatch**       | `elements.go`                                                                                                                   | Done — struct, 8 functional options, `Event()` with exact SDK wire-format order                                      |
+| **SignalsPatch**        | `signals.go`                                                                                                                    | Done — struct, 3 options, `MarshalSignals`, `NewSignalsPatch`, `NewSignalsIfMissingPatch` (returns error, not panic) |
+| **ScriptPatch**         | `script.go`                                                                                                                     | Done — struct, 5 options, `<script>` wrapping with auto-remove nil/true/false semantics                              |
+| **Script convenience**  | `script_convenience.go`                                                                                                         | Done — Redirect, Redirectf, ConsoleLog, ConsoleLogf, ConsoleError, DispatchCustomEvent, ReplaceURL, Prefetch         |
+| **RemovePatch + sugar** | `sugar.go`                                                                                                                      | Done — NewRemovePatch, NewRemoveByIDPatch, all mode helpers, namespace helpers, validation (FromString, ValidLists)  |
+| **Render adapters**     | `adapters.go`                                                                                                                   | Done — ElementsFromTempl, ElementsFromGostar                                                                         |
+| **HTTP verbs**          | `http.go`                                                                                                                       | Done — GetSSE/PostSSE/PutSSE/PatchSSE/DeleteSSE                                                                      |
+| **Inbound**             | `inbound.go`                                                                                                                    | Done — ReadSignals (GET/DELETE query, POST body), LastEventID (header + query param fallback)                        |
+| **ScriptHandler**       | `script_handler.go`                                                                                                             | Done — embedded datastar.js v1.0.2, ETag, Cache-Control, conditional 304, Method check                               |
+| **Response**            | `response.go`                                                                                                                   | Done — fluent builder wrapping sse.Stream, all patch methods, ApplyPatches, ErrorResponse, NotificationResponse      |
+| **Example app**         | `example/main.go`                                                                                                               | Done — Broadcaster[sse.Event] + live feed                                                                            |
+| **Project files**       | `go.mod`, `flake.nix`, `.golangci.yml`, `.gitignore`, `LICENSE`, `README.md`, `AGENTS.md`, `doc.go`, `.github/workflows/ci.yml` | Done                                                                                                                 |
+| **Lint**                | golangci-lint v2                                                                                                                | **0 issues**                                                                                                         |
 
 ### cqrs-htmx migration (P17–P23)
 
-| Area | Status |
-|------|--------|
-| **go.mod dep swap** | Done — removed `starfederation/datastar-go`, added `go-datastar` + `go-sse` with local replace directives |
-| **Deleted files** | Done — `options.go`, `signals.go`, `response.go`, `errors.go`, `script_handler.go`, `script_embed.go` + 5 test files (~631 lines deleted) |
-| **Rewritten broadcaster.go** | Done — wraps `sse.Broadcaster[sse.Event]`, gains Shutdown/Health/OnSubscribe |
-| **Rewritten patch.go** | Done — thin re-export wrappers around go-datastar constructors + type aliases |
-| **Updated doc.go** | Done |
-| **Updated event_bridge.go** | Done — unchanged except `Broadcaster` type now uses new wrapper |
-| **Updated example handlers** | Done — `handlers_helpers.go`, `handlers_routes.go` updated for non-chaining Response API |
-| **Updated integration tests** | Done — `datastar_contract_test.go` updated, 8/8 datastar tests pass |
-| **CHANGELOG.md** | Done |
-| **go.mod/go.sum tidy** | Done for datastar, datastar-demo, integration_test modules |
+| Area                          | Status                                                                                                                                    |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **go.mod dep swap**           | Done — removed `starfederation/datastar-go`, added `go-datastar` + `go-sse` with local replace directives                                 |
+| **Deleted files**             | Done — `options.go`, `signals.go`, `response.go`, `errors.go`, `script_handler.go`, `script_embed.go` + 5 test files (~631 lines deleted) |
+| **Rewritten broadcaster.go**  | Done — wraps `sse.Broadcaster[sse.Event]`, gains Shutdown/Health/OnSubscribe                                                              |
+| **Rewritten patch.go**        | Done — thin re-export wrappers around go-datastar constructors + type aliases                                                             |
+| **Updated doc.go**            | Done                                                                                                                                      |
+| **Updated event_bridge.go**   | Done — unchanged except `Broadcaster` type now uses new wrapper                                                                           |
+| **Updated example handlers**  | Done — `handlers_helpers.go`, `handlers_routes.go` updated for non-chaining Response API                                                  |
+| **Updated integration tests** | Done — `datastar_contract_test.go` updated, 8/8 datastar tests pass                                                                       |
+| **CHANGELOG.md**              | Done                                                                                                                                      |
+| **go.mod/go.sum tidy**        | Done for datastar, datastar-demo, integration_test modules                                                                                |
 
 ### Cross-repo verification
 
@@ -159,36 +159,36 @@ I added a `HeartbeatInterval` helper function that is **never called anywhere**.
 
 ## f) Up to 50 Things We Should Get Done Next
 
-| # | Task | Impact | Effort |
-|---|------|--------|--------|
-| 1 | Wire `sse.EventStore` + `sse.Replay` into cqrs-htmx/datastar Broadcaster | Critical | 30m |
-| 2 | Fix `errorPatch` — propagate errors instead of returning empty events | Critical | 15m |
-| 3 | Delete orphaned `/home/lars/projects/cqrs-htmx/datastar/datastar/` directory | High | 1m |
-| 4 | Delete dead `HeartbeatInterval` function from cqrs-htmx/datastar/broadcaster.go | High | 1m |
-| 5 | Fix go-datastar example app — use proper DataStar attributes, remove broken JS | High | 20m |
-| 6 | Add tests for all Response methods with 0% coverage (11 methods) | High | 30m |
-| 7 | Compute real `vendorHash` for go-datastar flake.nix | High | 5m |
-| 8 | Run `nix flake check` on go-datastar | High | 5m |
-| 9 | Restore patch constructor tests in cqrs-htmx/datastar (deleted 8 tests) | Medium | 15m |
-| 10 | Restore response builder tests in cqrs-htmx/datastar (deleted 16 tests) | Medium | 20m |
-| 11 | Restore script handler tests in cqrs-htmx/datastar (deleted 8 tests) | Medium | 10m |
-| 12 | Add end-to-end HTTP round-trip test (HTTP client → SSE server → raw bytes) | Medium | 20m |
-| 13 | Update go-sse README to document `JoinLines` | Medium | 5m |
-| 14 | Write ADR for go-datastar/go-sse/SDK relationship | Medium | 15m |
-| 15 | Browser-test go-datastar example app | Medium | 10m |
-| 16 | Browser-test cqrs-htmx datastar-demo after migration | Medium | 10m |
-| 17 | Add replay test to cqrs-htmx/datastar broadcaster_test.go | Medium | 15m |
-| 18 | Consider returning `(*Response, error)` from Response methods to restore fluency | Medium | 15m |
-| 19 | Add compression support (middleware in go-sse or go-datastar) | Low | TBD |
-| 20 | Add DataStar JS version alignment guard (test that constant matches embedded file) | Low | 10m |
-| 21 | Consider `datastar.NewBroadcaster()` convenience in go-datastar itself | Low | 15m |
-| 22 | Add `ElementsFromTempl` test to go-datastar (currently 0% coverage) | Low | 5m |
-| 23 | Evaluate merging cqrs-htmx/datastar into root module | Low | TBD |
-| 24 | Add `Redirectf` test (the function exists but has no dedicated test) | Low | 3m |
-| 25 | Run golangci-lint on cqrs-htmx/datastar (never run after migration) | Low | 5m |
-| 26 | Update cqrs-htmx AGENTS.md architecture section to mention go-datastar | Low | 5m |
-| 27 | Add godoc examples to go-datastar (`ExampleElementsPatch`, etc.) | Low | 15m |
-| 28 | Consider `go:generate` guard for embedded datastar.js version constant | Low | 10m |
+| #   | Task                                                                               | Impact   | Effort |
+| --- | ---------------------------------------------------------------------------------- | -------- | ------ |
+| 1   | Wire `sse.EventStore` + `sse.Replay` into cqrs-htmx/datastar Broadcaster           | Critical | 30m    |
+| 2   | Fix `errorPatch` — propagate errors instead of returning empty events              | Critical | 15m    |
+| 3   | Delete orphaned `/home/lars/projects/cqrs-htmx/datastar/datastar/` directory       | High     | 1m     |
+| 4   | Delete dead `HeartbeatInterval` function from cqrs-htmx/datastar/broadcaster.go    | High     | 1m     |
+| 5   | Fix go-datastar example app — use proper DataStar attributes, remove broken JS     | High     | 20m    |
+| 6   | Add tests for all Response methods with 0% coverage (11 methods)                   | High     | 30m    |
+| 7   | Compute real `vendorHash` for go-datastar flake.nix                                | High     | 5m     |
+| 8   | Run `nix flake check` on go-datastar                                               | High     | 5m     |
+| 9   | Restore patch constructor tests in cqrs-htmx/datastar (deleted 8 tests)            | Medium   | 15m    |
+| 10  | Restore response builder tests in cqrs-htmx/datastar (deleted 16 tests)            | Medium   | 20m    |
+| 11  | Restore script handler tests in cqrs-htmx/datastar (deleted 8 tests)               | Medium   | 10m    |
+| 12  | Add end-to-end HTTP round-trip test (HTTP client → SSE server → raw bytes)         | Medium   | 20m    |
+| 13  | Update go-sse README to document `JoinLines`                                       | Medium   | 5m     |
+| 14  | Write ADR for go-datastar/go-sse/SDK relationship                                  | Medium   | 15m    |
+| 15  | Browser-test go-datastar example app                                               | Medium   | 10m    |
+| 16  | Browser-test cqrs-htmx datastar-demo after migration                               | Medium   | 10m    |
+| 17  | Add replay test to cqrs-htmx/datastar broadcaster_test.go                          | Medium   | 15m    |
+| 18  | Consider returning `(*Response, error)` from Response methods to restore fluency   | Medium   | 15m    |
+| 19  | Add compression support (middleware in go-sse or go-datastar)                      | Low      | TBD    |
+| 20  | Add DataStar JS version alignment guard (test that constant matches embedded file) | Low      | 10m    |
+| 21  | Consider `datastar.NewBroadcaster()` convenience in go-datastar itself             | Low      | 15m    |
+| 22  | Add `ElementsFromTempl` test to go-datastar (currently 0% coverage)                | Low      | 5m     |
+| 23  | Evaluate merging cqrs-htmx/datastar into root module                               | Low      | TBD    |
+| 24  | Add `Redirectf` test (the function exists but has no dedicated test)               | Low      | 3m     |
+| 25  | Run golangci-lint on cqrs-htmx/datastar (never run after migration)                | Low      | 5m     |
+| 26  | Update cqrs-htmx AGENTS.md architecture section to mention go-datastar             | Low      | 5m     |
+| 27  | Add godoc examples to go-datastar (`ExampleElementsPatch`, etc.)                   | Low      | 15m    |
+| 28  | Consider `go:generate` guard for embedded datastar.js version constant             | Low      | 10m    |
 
 ---
 
