@@ -36,17 +36,25 @@ func main() {
 func eventsHandler(bc *sse.Broadcaster[sse.Event]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		stream := sse.NewStream(w, r)
-		defer func() { _ = stream.Close() }()
+		defer func() {
+			if err := stream.Close(); err != nil {
+				log.Printf("close stream: %v", err)
+			}
+		}()
 
 		if lastID := stream.LastEventID(); !lastID.IsZero() {
 			log.Printf("client reconnecting from %s", lastID.Get()) //nolint:gosec // example
 		}
 
-		_ = stream.Send(sse.Event{
+		if err := stream.Send(sse.Event{
 			Event: sse.EventConnected,
 			Data:  "connected",
 			ID:    sse.NewEventID("0"),
-		})
+		}); err != nil {
+			log.Printf("send connected event: %v", err)
+
+			return
+		}
 
 		ch := bc.Subscribe()
 		defer bc.Unsubscribe(ch)

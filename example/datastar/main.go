@@ -100,6 +100,11 @@ func main() {
 	// Graceful shutdown sequence:
 	// 1. HTTP server drains active requests (including SSE connections)
 	// 2. Broadcaster drains subscriber buffers, then closes channels
-	_ = httpServer.Shutdown(shutdownCtx)
-	_ = server.broadcaster.Shutdown(shutdownCtx)
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		log.Printf("http server shutdown: %v", err)
+	}
+
+	if err := server.broadcaster.Shutdown(shutdownCtx); err != nil {
+		log.Printf("broadcaster shutdown: %v", err)
+	}
 }

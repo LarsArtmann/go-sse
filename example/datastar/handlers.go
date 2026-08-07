@@ -66,7 +66,11 @@ func (s *activityServer) eventsHandler(w http.ResponseWriter, r *http.Request) {
 	// NewStream sets the SSE headers (text/event-stream, no-cache, etc.)
 	// and writes 200 OK immediately. Do not write to w before this call.
 	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	defer func() {
+		if err := stream.Close(); err != nil {
+			log.Printf("close stream: %v", err)
+		}
+	}()
 
 	ctx := stream.Context()
 

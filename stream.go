@@ -102,7 +102,9 @@ func (s *Stream) Send(event Event) error {
 
 	err := WriteEvent(s.w, event)
 	if err != nil {
-		return err
+		return errorfamily.Wrapf(err, errorfamily.Transient,
+			"sse.send_failed",
+			"send event %q to client", event.Event)
 	}
 
 	if s.fw != nil {

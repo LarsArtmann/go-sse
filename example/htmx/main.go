@@ -72,7 +72,11 @@ func containerHandler(w http.ResponseWriter, r *http.Request) {
 
 func eventsHandler(w http.ResponseWriter, r *http.Request) {
 	stream := sse.NewStream(w, r)
-	defer func() { _ = stream.Close() }()
+	defer func() {
+		if err := stream.Close(); err != nil {
+			log.Printf("close stream: %v", err)
+		}
+	}()
 
 	ctx := r.Context()
 

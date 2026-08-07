@@ -55,7 +55,8 @@ func ParseEventID(s string) (EventID, error) {
 func MustParseEventID(s string) EventID {
 	id, err := ParseEventID(s)
 	if err != nil {
-		panic(fmt.Errorf("MustParseEventID: %w", err))
+		panic(errorfamily.Wrapf(err, errorfamily.Rejection,
+			"sse.event_id_invalid", "MustParseEventID(%q)", s))
 	}
 
 	return id
@@ -175,7 +176,7 @@ func WriteEvent(w io.Writer, evt Event) error {
 			err,
 			errorfamily.Transient,
 			"sse.write_failed",
-			"write sse event",
+			"write sse event %q", evt.Event,
 		)
 	}
 

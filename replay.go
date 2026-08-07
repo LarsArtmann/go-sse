@@ -50,7 +50,7 @@ func Replay(stream *Stream, store EventStore, lastID EventID) (int, error) {
 		if err != nil {
 			return i, errorfamily.Wrapf(err, errorfamily.Transient,
 				"sse.replay_failed",
-				"replay after %q (sent %d of %d)", lastID.Get(), i, len(events))
+				"replay after %q: send event %q failed (sent %d of %d)", lastID.Get(), evt.Event, i, len(events))
 		}
 	}
 
@@ -90,14 +90,14 @@ func ReplayFiltered(
 		if err != nil {
 			return 0, errorfamily.Wrapf(err, errorfamily.Rejection,
 				"sse.replay_store_failed",
-				"retrieve filtered events after %q from store", lastID.Get())
+				"retrieve filtered events after %q from store (%T)", lastID.Get(), fs)
 		}
 	} else {
 		all, err := store.EventsAfter(lastID)
 		if err != nil {
 			return 0, errorfamily.Wrapf(err, errorfamily.Rejection,
 				"sse.replay_store_failed",
-				"retrieve events after %q from store", lastID.Get())
+				"retrieve events after %q from store (%T)", lastID.Get(), store)
 		}
 
 		events = make([]Event, 0, len(all))
@@ -113,7 +113,7 @@ func ReplayFiltered(
 		if err != nil {
 			return i, errorfamily.Wrapf(err, errorfamily.Transient,
 				"sse.replay_failed",
-				"replay filtered after %q (sent %d of %d)", lastID.Get(), i, len(events))
+				"replay filtered after %q: send event %q failed (sent %d of %d)", lastID.Get(), evt.Event, i, len(events))
 		}
 	}
 
