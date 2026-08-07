@@ -168,6 +168,17 @@
               go tool cover -func=coverage.out
             '';
 
+            coverage-gate = mkApp "coverage-gate" [ goPkg pkgs.bc ] ''
+              export GOEXPERIMENT=jsonv2
+              cov=$(go test . -count=1 -coverprofile=/tmp/sse-cov >/dev/null 2>&1 && go tool cover -func=/tmp/sse-cov | tail -1 | grep -oP '\d+\.\d+(?=%)')
+              echo "library coverage: ''${cov}% (threshold: 90%)"
+              if (( $(echo "$cov < 90" | bc -l) )); then
+                echo "FAIL: library coverage ''${cov}% < 90%"
+                exit 1
+              fi
+              echo "OK"
+            '';
+
             clean =
               mkApp "clean"
                 [
