@@ -155,3 +155,10 @@ The DataStar example is split across four Go files for readability:
 ## What This Library Is NOT
 
 No CQRS, no dashboard/routes/templates, no WebSockets, no event bus, no payload-format opinion. Adding any of these breaks the library's scope. Consumers build domain layers on top.
+
+## Companion Library: go-datastar
+
+[`go-datastar`](https://github.com/LarsArtmann/go-datastar) is a standalone DataStar protocol library built on go-sse. It provides `Patch` interface (`Event() sse.Event`) with `ElementsPatch`, `SignalsPatch`, `ScriptPatch`, `RedirectPatch`, etc. as first-class values — storable, filterable, replayable, broadcastable via `sse.Broadcaster[sse.Event]`.
+
+go-sse deliberately has no DataStar-specific types or event-name constants — it remains a transport library. The `JoinLines`, `KeyedLines`, `SendLines`, `SendKeyed`, and `WriteKeyedLines` helpers are general SSE primitives that DataStar happens to consume. Absorbing DataStar patch types would turn a clean transport library into a protocol-coupled one.
+
