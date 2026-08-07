@@ -2,7 +2,9 @@ package sse
 
 import (
 	"context"
+	"maps"
 	"reflect"
+	"slices"
 	"sync"
 	"time"
 
@@ -306,10 +308,7 @@ func (f *fanOut[T]) Shutdown(ctx context.Context) error {
 	}
 
 	// Snapshot the subscriber set; we need to wait outside the lock.
-	subs := make([]*subscriber[T], 0, len(f.subscribers))
-	for _, sub := range f.subscribers {
-		subs = append(subs, sub)
-	}
+	subs := slices.Collect(maps.Values(f.subscribers))
 
 	// Mark draining so new Subscribe calls return a closed channel.
 	f.draining = true
