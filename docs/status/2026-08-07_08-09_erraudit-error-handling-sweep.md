@@ -25,12 +25,12 @@ GOWORK=off GOEXPERIMENT=jsonv2 erraudit ./... --type-aware --enforce-go-error-fa
 
 ### Initial audit: 19 violations (14 ERROR + 5 WARNING)
 
-| Category | Type | Count | Location(s) |
-|---|---|---|---|
-| Ignored errors | `ignored` | 6 | `example/` (server.go, htmx, datastar) |
-| Context loss | `context_loss` | 7 | `event.go`, `fanout.go`, `replay.go`, `stream.go` |
-| Stdlib constructor | `stdlib_constructor` | 1 | `event.go:58` (`fmt.Errorf` in `MustParseEventID`) |
-| Generic return | `generic_return` | 5 | `event.go`, `fanout.go`, `replay.go`, `stream.go` |
+| Category           | Type                 | Count | Location(s)                                        |
+| ------------------ | -------------------- | ----- | -------------------------------------------------- |
+| Ignored errors     | `ignored`            | 6     | `example/` (server.go, htmx, datastar)             |
+| Context loss       | `context_loss`       | 7     | `event.go`, `fanout.go`, `replay.go`, `stream.go`  |
+| Stdlib constructor | `stdlib_constructor` | 1     | `event.go:58` (`fmt.Errorf` in `MustParseEventID`) |
+| Generic return     | `generic_return`     | 5     | `event.go`, `fanout.go`, `replay.go`, `stream.go`  |
 
 ### Fixes applied
 
@@ -63,6 +63,7 @@ GOWORK=off GOEXPERIMENT=jsonv2 erraudit ./... --type-aware --enforce-go-error-fa
 #### 5. `ReplayFiltered` — enriched store + send context (replay.go:89-118)
 
 Three error paths enriched:
+
 - `FilteredEventStore` path: added `%T` store type to error message
 - Fallback `EventsAfter` path: added `%T` store type
 - Send loop: added event name + "filtered" qualifier
@@ -87,14 +88,14 @@ Also renamed loop variable `fs` → `filtered` (clearer, avoids single-letter am
 
 All `defer func() { _ = stream.Close() }()` patterns replaced with proper error-logging defers:
 
-| File | Line | Fix |
-|---|---|---|
-| `example/server.go:39` | `stream.Close()` | Log on error |
-| `example/server.go:45` | `stream.Send(connected)` | Log + return on error |
-| `example/htmx/main.go:75` | `stream.Close()` | Log on error |
-| `example/datastar/handlers.go:69` | `stream.Close()` | Log on error |
-| `example/datastar/main.go:103` | `httpServer.Shutdown()` | Log on error |
-| `example/datastar/main.go:104` | `broadcaster.Shutdown()` | Log on error |
+| File                              | Line                     | Fix                   |
+| --------------------------------- | ------------------------ | --------------------- |
+| `example/server.go:39`            | `stream.Close()`         | Log on error          |
+| `example/server.go:45`            | `stream.Send(connected)` | Log + return on error |
+| `example/htmx/main.go:75`         | `stream.Close()`         | Log on error          |
+| `example/datastar/handlers.go:69` | `stream.Close()`         | Log on error          |
+| `example/datastar/main.go:103`    | `httpServer.Shutdown()`  | Log on error          |
+| `example/datastar/main.go:104`    | `broadcaster.Shutdown()` | Log on error          |
 
 #### 8. AGENTS.md updated
 
@@ -109,6 +110,7 @@ erraudit ./... --type-aware --enforce-go-error-family --no-suppress --enforce-sa
 ```
 
 **Build/vet/test:**
+
 ```
 go build ./...   → PASS
 go vet ./...     → PASS
@@ -155,6 +157,7 @@ go test -race    → PASS (all packages)
 ### Error design
 
 1. **Typed error code constants (HIGH ROI, LOW EFFORT).** Currently error codes are bare string literals scattered across 4 files. A typo like `"sse.write_faild"` compiles fine but silently breaks caller-side matching. A typed constant prevents this at compile time:
+
    ```go
    type Code string
    const (
@@ -168,6 +171,7 @@ go test -race    → PASS (all packages)
        CodeShutdownDrainExceeded Code = "sse.shutdown_drain_deadline_exceeded"
    )
    ```
+
    This is the #1 improvement. Whether `errorfamily.Wrapf` accepts a `Code` type or raw `string` determines enforcement level.
 
 2. **Exported sentinel errors for caller-critical paths (MEDIUM ROI).** For errors that callers programmatically branch on (e.g., shutdown timeout in graceful-shutdown logic), export sentinel values so callers write `errors.Is(err, sse.ErrShutdownDrainExceeded)` instead of string matching. Only worth it for the 1-2 errors that callers actually handle programmatically.
@@ -179,9 +183,11 @@ go test -race    → PASS (all packages)
 ### Process
 
 5. **Wire `erraudit` into `flake.nix`.** Add a `lint-erraudit` or fold it into the existing `lint` target so it runs in CI. The command would be:
+
    ```bash
    erraudit ./... --type-aware --enforce-go-error-family --severity error
    ```
+
    (Drop `--no-suppress` and `--enforce-samber-oops` for CI — they produce too many false positives for a `go-error-family` project.)
 
 6. **`--enforce-samber-oops` doesn't fit this project.** The flag is designed for projects using `samber/oops`. This project uses `go-error-family`. The only violation it caught (the `fmt.Errorf` in `MustParseEventID`) was also caught by `--enforce-go-error-family`. For ongoing use, drop `--enforce-samber-oops` and keep only `--enforce-go-error-family`.
@@ -276,6 +282,7 @@ go test -race    → PASS (all packages)
 The original `for _, line := range splitLines(evt.Data)` was more readable. I changed it to an index-based loop solely to satisfy `erraudit --no-suppress`, which flags the `line` variable as "context loss" even though it's a loop variable that Go scoping rules exclude from the post-loop error site. The tool's analysis is technically wrong here (confirmed by the Go compiler: `undefined: line`).
 
 **Options:**
+
 - **A:** Keep the index-based loop (satisfies `--no-suppress`, slightly less readable).
 - **B:** Revert to `for _, line := range` and add a `//nolint:contextloss` comment.
 - **C:** Revert and use `--no-suppress` without the context-loss check in CI.
