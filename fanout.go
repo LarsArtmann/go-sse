@@ -351,7 +351,7 @@ func (f *fanOut[T]) waitForDrain(ctx context.Context, subs []*subscriber[T]) err
 	for {
 		notDrained := 0
 
-		for i := range len(subs) {
+		for i := range subs {
 			if len(subs[i].ch) > 0 {
 				notDrained++
 			}
@@ -366,10 +366,14 @@ func (f *fanOut[T]) waitForDrain(ctx context.Context, subs []*subscriber[T]) err
 			// Drain deadline exceeded. Leave draining=true so Subscribe
 			// continues to reject new subscribers; the caller can either
 			// retry Shutdown with a fresh context or call Close.
-			return errorfamily.Wrapf(ctx.Err(), errorfamily.Transient,
+			return errorfamily.Wrapf(
+				ctx.Err(),
+				errorfamily.Transient,
 				"sse.shutdown_drain_deadline_exceeded",
 				"broadcaster drain did not complete before context deadline: %d of %d subscribers still have buffered events",
-				notDrained, len(subs))
+				notDrained,
+				len(subs),
+			)
 		case <-time.After(drainPollInterval):
 		}
 	}

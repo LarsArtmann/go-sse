@@ -107,6 +107,7 @@ func eventsHandler(w http.ResponseWriter, r *http.Request) {
 func renderProgress(ctx context.Context, progress int) string {
 	var buf bytes.Buffer
 
+	//nolint:contextcheck // templ-generated Render uses ctx correctly
 	if err := progressContent(
 		progress,
 	).Render(ctx, &buf); err != nil {

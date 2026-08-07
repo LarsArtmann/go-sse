@@ -111,9 +111,16 @@ func ReplayFiltered(
 	for i, evt := range events {
 		err := stream.Send(evt)
 		if err != nil {
-			return i, errorfamily.Wrapf(err, errorfamily.Transient,
+			return i, errorfamily.Wrapf(
+				err,
+				errorfamily.Transient,
 				"sse.replay_failed",
-				"replay filtered after %q: send event %q failed (sent %d of %d)", lastID.Get(), evt.Event, i, len(events))
+				"replay filtered after %q: send event %q failed (sent %d of %d)",
+				lastID.Get(),
+				evt.Event,
+				i,
+				len(events),
+			)
 		}
 	}
 

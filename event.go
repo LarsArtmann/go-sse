@@ -151,7 +151,7 @@ func WriteEvent(w io.Writer, evt Event) error {
 	}
 
 	dataLines := splitLines(evt.Data)
-	for i := range len(dataLines) {
+	for i := range dataLines {
 		buf = append(buf, 'd', 'a', 't', 'a', ':', ' ')
 		buf = append(buf, dataLines[i]...)
 		buf = append(buf, '\n')
