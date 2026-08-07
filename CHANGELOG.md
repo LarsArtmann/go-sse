@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- `JoinLines(lines ...string) string` — joins variadic arguments with `\n`, producing the `Event.Data` string for multi-line SSE events. Composes with `KeyedLines` for multi-key protocols like DataStar (e.g., `JoinLines("selector #feed", "mode inner", KeyedLines("elements", html))`).
+
 - `ExampleReplayFiltered` — godoc example demonstrating predicate-based reconnection replay. Completes example coverage for every public replay/filter API.
 - `TestSubscribeFilter_DropPolicyRespected` — verifies a filtered subscriber with a full buffer drops matching events (non-matching events never enter the buffer), confirming the filter+drop interaction.
 - `TestSubscribeFilter_BroadcastManyMixedSubscribers` — verifies correct event partition when half the subscribers have predicates and half do not across a single `BroadcastMany` batch.
