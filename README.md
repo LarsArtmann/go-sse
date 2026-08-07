@@ -169,6 +169,7 @@ sse.WriteHeartbeat(w)       // ": heartbeat\n\n"
 sse.WriteRetry(w, 5000)     // "retry: 5000\n\n"
 
 sse.KeyedLines("elements", html) // prefix each line with "elements " (DataStar pattern)
+sse.JoinLines("selector #feed", "mode inner", sse.KeyedLines("elements", html)) // multi-line Event.Data
 sse.WriteKeyedLines(w, "event", "key", "value") // wire-only: WriteEvent + KeyedLines
 
 // Event.String() — compact debug representation (NOT the wire format)
@@ -295,7 +296,7 @@ mux.HandleFunc("GET /events", func(w http.ResponseWriter, r *http.Request) {
 | ----------------------------- | ------------------------------------------------------------ |
 | `text/event-stream` + headers | `NewStream` sets all required headers automatically          |
 | `event: datastar-*` field     | `Event.Event`                                                |
-| `data: key value` multi-line  | `KeyedLines` + `SendLines` + `WriteKeyedLines` + `SendKeyed` |
+| `data: key value` multi-line  | `JoinLines` + `KeyedLines` + `SendLines` + `WriteKeyedLines` + `SendKeyed` |
 | `id:` / `retry:` fields       | `Event.ID` / `Event.Retry`                                   |
 | `Last-Event-ID` reconnection  | `Stream.LastEventID()` + `Replay`                            |
 | Heartbeat (proxy keep-alive)  | `Stream.Heartbeat`                                           |
