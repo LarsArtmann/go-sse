@@ -317,43 +317,8 @@ func (f *fanOut[T]) Shutdown(ctx context.Context) error {
 	f.mu.Unlock()
 
 	// Wait for each snapshot subscriber's buffer to empty, or ctx to fire.
-	ticker := time.NewTicker(drainPollInterval)
-	defer ticker.Stop()
-
-	for {
-		allDrained := true
-
-		for _, sub := range subs {
-			if len(sub.ch) > 0 {
-				allDrained = false
-
-				break
-			}
-		}
-
-		if allDrained {
-			break
-		}
-
-		select {
-		case <-ctx.Done():
-			// Drain deadline exceeded. Leave draining=true so Subscribe
-			// continues to reject new subscribers; the caller can either
-			// retry Shutdown with a fresh context or call Close.
-			notDrained := 0
-
-			for _, sub := range subs {
-				if len(sub.ch) > 0 {
-					notDrained++
-				}
-			}
-
-			return errorfamily.Wrapf(ctx.Err(), errorfamily.Transient,
-				"sse.shutdown_drain_deadline_exceeded",
-				"broadcaster drain did not complete before context deadline: %d of %d subscribers still have buffered events",
-				notDrained, len(subs))
-		case <-ticker.C:
-		}
+	if err := f.waitForDrain(ctx, subs); err != nil {
+		return err
 	}
 
 	// Drain complete. Re-acquire the lock to close any subscribers that
@@ -375,6 +340,38 @@ func (f *fanOut[T]) Shutdown(ctx context.Context) error {
 	f.draining = false
 
 	return nil
+}
+
+// waitForDrain blocks until every subscriber's buffer is empty or ctx is
+// cancelled. Returns nil once all buffers drain, or a wrapped context error
+// if the deadline fires first. Uses index-based loops and time.After (not a
+// named ticker) so no structural variables leak into the error scope.
+func (f *fanOut[T]) waitForDrain(ctx context.Context, subs []*subscriber[T]) error {
+	for {
+		notDrained := 0
+
+		for i := range len(subs) {
+			if len(subs[i].ch) > 0 {
+				notDrained++
+			}
+		}
+
+		if notDrained == 0 {
+			return nil
+		}
+
+		select {
+		case <-ctx.Done():
+			// Drain deadline exceeded. Leave draining=true so Subscribe
+			// continues to reject new subscribers; the caller can either
+			// retry Shutdown with a fresh context or call Close.
+			return errorfamily.Wrapf(ctx.Err(), errorfamily.Transient,
+				"sse.shutdown_drain_deadline_exceeded",
+				"broadcaster drain did not complete before context deadline: %d of %d subscribers still have buffered events",
+				notDrained, len(subs))
+		case <-time.After(drainPollInterval):
+		}
+	}
 }
 
 // Health returns a snapshot of the broadcaster's lifecycle state. It is
