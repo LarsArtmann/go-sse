@@ -129,8 +129,13 @@ func newActivityServer() *activityServer {
 
 	// Broadcast the new subscriber count whenever a client connects or
 	// disconnects. This gives every tab a live "N clients connected" indicator.
+	// We reset $replayed to 0 alongside the count update so the replay banner
+	// clears when the subscriber count changes (e.g. on new connection).
 	broadcaster.OnSubscribe(func() {
-		broadcaster.Broadcast(countEvent(broadcaster.SubscriberCount()))
+		broadcaster.BroadcastMany(
+			replayEvent(0),
+			countEvent(broadcaster.SubscriberCount()),
+		)
 	})
 	broadcaster.OnUnsubscribe(func() {
 		broadcaster.Broadcast(countEvent(broadcaster.SubscriberCount()))
@@ -266,10 +271,15 @@ func generateItem() activityItem {
 // feedItemEvent builds a DataStar patch-elements SSE event that prepends
 // a single feed item to the #feed div. The event carries a sequential ID
 // so it can be replayed on reconnection.
+//
+// The "category" data line embeds the event category for server-side
+// predicate filtering. DataStar ignores unknown keys in patch-elements
+// payloads, so this line has no client-side effect.
 func feedItemEvent(id int64, item activityItem) sse.Event {
 	data := strings.Join([]string{
 		"selector #feed",
 		"mode prepend",
+		"category " + item.category,
 		sse.KeyedLines("elements", feedItemHTML(item)),
 	}, "\n")
 
@@ -350,7 +360,7 @@ func (s *activityServer) eventsHandler(w http.ResponseWriter, r *http.Request) {
 				return true
 			}
 
-			return strings.Contains(evt.Data, "feed-item--alert")
+			return strings.Contains(evt.Data, "category "+categoryAlert)
 		})
 	} else {
 		ch = s.broadcaster.Subscribe()
