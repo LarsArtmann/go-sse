@@ -147,7 +147,9 @@ a:hover {
   font-size: 0.8rem;
   color: var(--text-muted);
   cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
   font-family: var(--sans);
 }
 
@@ -156,10 +158,18 @@ a:hover {
   color: var(--accent);
 }
 
-.theme-toggle__dark { display: inline; }
-.theme-toggle__light { display: none; }
-html[data-theme="dark"] .theme-toggle__dark { display: none; }
-html[data-theme="dark"] .theme-toggle__light { display: inline; }
+.theme-toggle__dark {
+  display: inline;
+}
+.theme-toggle__light {
+  display: none;
+}
+html[data-theme="dark"] .theme-toggle__dark {
+  display: none;
+}
+html[data-theme="dark"] .theme-toggle__light {
+  display: inline;
+}
 
 /* --- Filter bar --- */
 
@@ -246,8 +256,15 @@ html[data-theme="dark"] .theme-toggle__light { display: inline; }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-  50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
 }
 
 /* --- Replay banner --- */
@@ -264,10 +281,22 @@ html[data-theme="dark"] .theme-toggle__light { display: inline; }
 }
 
 @keyframes bannerFade {
-  0% { opacity: 0; transform: translateY(-8px); }
-  10% { opacity: 1; transform: translateY(0); }
-  75% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-4px); }
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 
 /* --- Feed controls --- */
@@ -284,7 +313,9 @@ html[data-theme="dark"] .theme-toggle__light { display: inline; }
   font-size: 0.8rem;
   color: var(--text-muted);
   cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
   font-family: var(--sans);
 }
 

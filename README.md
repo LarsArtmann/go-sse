@@ -362,16 +362,16 @@ browser (DataStar SDK)
 
 **Feature mapping:**
 
-| Example behavior          | go-sse API                                                                 |
-| ------------------------- | -------------------------------------------------------------------------- |
-| All tabs see same events  | `Broadcaster.Broadcast` / `BroadcastMany` — non-blocking fan-out           |
-| "N clients connected"     | `OnSubscribe` / `OnUnsubscribe` callbacks + `SubscriberCount()`            |
-| "Alerts only" filter      | `SubscribeFilter(func(evt) bool)` — predicate under fan-out read lock      |
-| Reconnect replay          | `EventStore` (memStore) + `Replay` via `Last-Event-ID` header             |
-| Connection stays alive    | `Stream.Heartbeat(ctx, interval)` — sends SSE comment every 15s            |
-| Graceful drain on SIGINT  | `Broadcaster.Shutdown(ctx)` — drains buffers, then closes channels         |
-| Health/status snapshot    | `Broadcaster.Health()` — value-type for k8s liveness/readiness probes      |
-| DataStar keyed data lines | `KeyedLines` + `SendLines` / `SendKeyed`                                   |
+| Example behavior          | go-sse API                                                            |
+| ------------------------- | --------------------------------------------------------------------- |
+| All tabs see same events  | `Broadcaster.Broadcast` / `BroadcastMany` — non-blocking fan-out      |
+| "N clients connected"     | `OnSubscribe` / `OnUnsubscribe` callbacks + `SubscriberCount()`       |
+| "Alerts only" filter      | `SubscribeFilter(func(evt) bool)` — predicate under fan-out read lock |
+| Reconnect replay          | `EventStore` (memStore) + `Replay` via `Last-Event-ID` header         |
+| Connection stays alive    | `Stream.Heartbeat(ctx, interval)` — sends SSE comment every 15s       |
+| Graceful drain on SIGINT  | `Broadcaster.Shutdown(ctx)` — drains buffers, then closes channels    |
+| Health/status snapshot    | `Broadcaster.Health()` — value-type for k8s liveness/readiness probes |
+| DataStar keyed data lines | `KeyedLines` + `SendLines` / `SendKeyed`                              |
 
 **Shutdown sequence:**
 

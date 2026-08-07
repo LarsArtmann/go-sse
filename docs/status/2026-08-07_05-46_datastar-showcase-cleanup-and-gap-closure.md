@@ -22,11 +22,13 @@ This session was a cleanup and gap-closure pass. The prior session left 3 open q
 The prior session added `EventsAfterSince(lastID, since time.Duration)` + a `timestamps []time.Time` field to `memStore`, but never called it from any handler. The auto-commit daemon committed it as `feat(datastar): add time-based event filtering to in-memory store` — a lie.
 
 **Why removed instead of wired up:**
+
 - `sse.Event` has no timestamp field. Time-based filtering is not part of the library's `EventStore` abstraction. Adding it to the demo's store teaches a non-library pattern.
 - The canonical time-filter path (if ever wanted) is `FilteredEventStore` / `ReplayFiltered` — a library-level interface, not a bespoke store method. That's a separate Tier 5 idea.
 - Dead code is worse than no code. The code lied about having a feature.
 
 **What was removed:**
+
 - `timestamps []time.Time` field from `memStore` struct
 - `time.Now()` tracking in `Append()`
 - Parallel slice trimming in ring buffer eviction
@@ -51,6 +53,7 @@ Implemented via `MutationObserver` in `static/app.js`. Watches `#feed` for `chil
 The prior session put theme toggle, keyboard shortcuts, and localStorage logic in an inline `<script>` tag inside `index.templ`. This works but violates Content-Security-Policy best practices (`unsafe-inline`).
 
 **What changed:**
+
 - Created `static/app.js` with all client-side behavior
 - Removed inline `<script>` from `index.templ`
 - Removed `onclick="toggleTheme()"` from the theme toggle button (now wired via `addEventListener`)
@@ -59,14 +62,14 @@ The prior session put theme toggle, keyboard shortcuts, and localStorage logic i
 
 ### 5. Test Improvements
 
-| Test | Change | Why |
-|------|--------|-----|
-| `TestConcurrentFanOut` | Collection window 6s -> 3s | Faster suite, still catches shared events |
-| `TestFilterPredicate_AlertsOnly` | NEW — deterministic | Broadcasts 1 alert + 1 success + 1 info, asserts only alert passes filter. Prior session's version relied on random producer output (flaky). |
-| `TestEventsHandler_CORSHeader` | NEW | Verifies `Access-Control-Allow-Origin: *` on `/events` |
-| `TestReplayedSignalResetOnSubscribe` | NEW | Verifies `replayEvent(0)` is broadcast on subscribe |
-| `collectSSEEvents` | Rewritten | Goroutine+select pattern; proper `scanner.Err()` |
-| `extractEventIDs` | Modernized | `strings.SplitSeq` + `strings.CutPrefix` (Go 1.24+ idioms) |
+| Test                                 | Change                     | Why                                                                                                                                          |
+| ------------------------------------ | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TestConcurrentFanOut`               | Collection window 6s -> 3s | Faster suite, still catches shared events                                                                                                    |
+| `TestFilterPredicate_AlertsOnly`     | NEW — deterministic        | Broadcasts 1 alert + 1 success + 1 info, asserts only alert passes filter. Prior session's version relied on random producer output (flaky). |
+| `TestEventsHandler_CORSHeader`       | NEW                        | Verifies `Access-Control-Allow-Origin: *` on `/events`                                                                                       |
+| `TestReplayedSignalResetOnSubscribe` | NEW                        | Verifies `replayEvent(0)` is broadcast on subscribe                                                                                          |
+| `collectSSEEvents`                   | Rewritten                  | Goroutine+select pattern; proper `scanner.Err()`                                                                                             |
+| `extractEventIDs`                    | Modernized                 | `strings.SplitSeq` + `strings.CutPrefix` (Go 1.24+ idioms)                                                                                   |
 
 **Test suite: 10 tests, 3x deterministic with `-race`, 4.1s total** (down from 9s prior session).
 
@@ -74,14 +77,14 @@ The prior session put theme toggle, keyboard shortcuts, and localStorage logic i
 
 The prior session never ran golangci-lint. This session ran it and fixed all issues in the datastar example:
 
-| Issue | Fix |
-|-------|-----|
+| Issue                                             | Fix                                                            |
+| ------------------------------------------------- | -------------------------------------------------------------- |
 | `goconst`: `"datastar-patch-signals"` repeated 3x | Extracted `eventPatchElements` / `eventPatchSignals` constants |
-| `nolintlint`: unused `mnd` nolint directive | Removed `mnd` from `//nolint:gochecknoglobals,mnd` |
-| `varnamelen`: `tc` too short | Renamed to `testCase` |
-| `varnamelen`: `sl` too short | Renamed to `line` |
-| `nlreturn`: missing blank lines before return | Added blank lines |
-| `gci`/`golines` | Auto-fixed by `nix fmt` |
+| `nolintlint`: unused `mnd` nolint directive       | Removed `mnd` from `//nolint:gochecknoglobals,mnd`             |
+| `varnamelen`: `tc` too short                      | Renamed to `testCase`                                          |
+| `varnamelen`: `sl` too short                      | Renamed to `line`                                              |
+| `nlreturn`: missing blank lines before return     | Added blank lines                                              |
+| `gci`/`golines`                                   | Auto-fixed by `nix fmt`                                        |
 
 **Result: 0 issues in `example/datastar/`.** (1 pre-existing issue in `example/htmx/main.go` — `contextcheck` — not touched, not my code.)
 
@@ -297,13 +300,13 @@ c8c1726 refactor(example/datastar): extract inline javascript to external app.js
 
 ## Scorecard
 
-| Category | Items | Done | Quality |
-|----------|-------|------|---------|
-| Dead code removal | 1 | 1 | Clean — all traces removed |
-| Test infrastructure fixes | 2 | 2 | Root cause fixed (goroutine+select), not just `scanner.Err()` |
-| New tests | 3 | 3 | Deterministic, targeted, fast |
-| UI features (T3-30 scroll-to-top) | 1 | 1 | MutationObserver with user-respect threshold |
-| CSP extraction (app.js) | 1 | 1 | Clean separation, no inline scripts remain |
-| golangci-lint compliance | 1 | 1 | 0 issues in datastar (6 issues found and fixed) |
-| Documentation | 2 | 2 | AGENTS.md + VERIFY.md both current |
-| **Total** | **11** | **11** | **All verified** |
+| Category                          | Items  | Done   | Quality                                                       |
+| --------------------------------- | ------ | ------ | ------------------------------------------------------------- |
+| Dead code removal                 | 1      | 1      | Clean — all traces removed                                    |
+| Test infrastructure fixes         | 2      | 2      | Root cause fixed (goroutine+select), not just `scanner.Err()` |
+| New tests                         | 3      | 3      | Deterministic, targeted, fast                                 |
+| UI features (T3-30 scroll-to-top) | 1      | 1      | MutationObserver with user-respect threshold                  |
+| CSP extraction (app.js)           | 1      | 1      | Clean separation, no inline scripts remain                    |
+| golangci-lint compliance          | 1      | 1      | 0 issues in datastar (6 issues found and fixed)               |
+| Documentation                     | 2      | 2      | AGENTS.md + VERIFY.md both current                            |
+| **Total**                         | **11** | **11** | **All verified**                                              |

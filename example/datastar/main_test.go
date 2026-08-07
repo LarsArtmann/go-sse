@@ -140,8 +140,7 @@ func TestConcurrentFanOut(t *testing.T) {
 	server := newActivityServer()
 	defer server.broadcaster.Close()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	go server.startProducer(ctx)
 
@@ -224,8 +223,7 @@ func TestSubscriberCountIncrements(t *testing.T) {
 	server.broadcaster.OnSubscribe(func() {})
 	server.broadcaster.OnUnsubscribe(func() {})
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	go server.startProducer(ctx)
 
@@ -414,8 +412,7 @@ func TestReplayedSignalResetOnSubscribe(t *testing.T) {
 	server := newActivityServer()
 	defer server.broadcaster.Close()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	go server.startProducer(ctx)
 
@@ -587,11 +584,7 @@ func connectSSEClient(t *testing.T, url string) context.CancelFunc {
 
 	var wg sync.WaitGroup
 
-	wg.Add(1)
-
-	go func() {
-		defer wg.Done()
-
+	wg.Go(func() {
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return
@@ -600,7 +593,7 @@ func connectSSEClient(t *testing.T, url string) context.CancelFunc {
 		defer func() { _ = resp.Body.Close() }()
 
 		_, _ = io.Copy(io.Discard, resp.Body)
-	}()
+	})
 
 	return func() {
 		cancel()
