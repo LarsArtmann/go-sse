@@ -179,24 +179,24 @@ func TestConcurrentFanOut(t *testing.T) {
 	}
 
 	if len(eventsA) == 0 {
-		t.Fatal("client A received 0 events — fan-out or producer is broken")
+		t.Fatal("client A received 0 events: fan-out or producer is broken")
 	}
 
 	if len(eventsB) == 0 {
-		t.Fatal("client B received 0 events — fan-out or producer is broken")
+		t.Fatal("client B received 0 events: fan-out or producer is broken")
 	}
 
 	idsA := extractEventIDs(eventsA)
 	idsB := extractEventIDs(eventsB)
 
 	if len(idsA) == 0 {
-		t.Fatal("client A received 0 events with IDs — expected feed-item events")
+		t.Fatal("client A received 0 events with IDs; expected feed-item events")
 	}
 
 	common := commonIDs(idsA, idsB)
 	if len(common) == 0 {
 		t.Fatalf(
-			"no common event IDs between clients A and B — fan-out is broken\nA: %v\nB: %v",
+			"no common event IDs between clients A and B; fan-out is broken\nA: %v\nB: %v",
 			idsA,
 			idsB,
 		)
@@ -294,18 +294,26 @@ func TestFilterPredicate_AlertsOnly(t *testing.T) {
 	server := newActivityServer()
 	defer server.broadcaster.Close()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	go server.startProducer(ctx)
-
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /events", server.eventsHandler)
 
 	httpServer := httptest.NewServer(mux)
 	defer httpServer.Close()
 
-	events, err := collectSSEEvents(httpServer.URL+"/events?filter=alerts", 3*time.Second)
+	// Broadcast known events after a short delay so the subscriber
+	// is connected first. One alert, one success, one info â only
+	// the alert should pass the ?filter=alerts predicate.
+	go func() {
+		time.Sleep(200 * time.Millisecond)
+
+		server.broadcaster.BroadcastMany(
+			feedItemEvent(1, activityItem{category: categoryAlert, badge: badgeAlert, message: "test alert", time: "00:00:01"}),
+			feedItemEvent(2, activityItem{category: categorySuccess, badge: badgeSuccess, message: "test ok", time: "00:00:02"}),
+			feedItemEvent(3, activityItem{category: categoryInfo, badge: badgeInfo, message: "test info", time: "00:00:03"}),
+		)
+	}()
+
+	events, err := collectSSEEvents(httpServer.URL+"/events?filter=alerts", 2*time.Second)
 	if err != nil {
 		t.Fatalf("collect filtered events: %v", err)
 	}
@@ -314,26 +322,27 @@ func TestFilterPredicate_AlertsOnly(t *testing.T) {
 
 	for _, evt := range events {
 		if !strings.Contains(evt, "id:") {
-			continue // meta event (no ID) — filter always passes these
+			continue // meta event (no ID) â filter always passes these
 		}
 
 		feedItems++
 
 		if !strings.Contains(evt, "category alert") {
-			t.Errorf("non-alert feed item passed through alerts-only filter:\n%s", evt)
+			t.Errorf("non-alert feed item passed through alerts-only filter:\\n%s", evt)
 		}
 
 		if strings.Contains(evt, "category success") || strings.Contains(evt, "category info") {
-			t.Errorf("non-alert category leaked through alerts-only filter:\n%s", evt)
+			t.Errorf("non-alert category leaked through alerts-only filter:\\n%s", evt)
 		}
 	}
 
-	if feedItems == 0 {
-		t.Fatal("expected at least one alert feed item in 3s collection window")
+	if feedItems != 1 {
+		t.Fatalf("expected exactly 1 alert feed item through filter, got %d", feedItems)
 	}
 
-	t.Logf("filter verified: %d alert feed items, 0 non-alert leaks", feedItems)
+	t.Log("filter verified: 1 alert feed item passed, 0 non-alert leaks")
 }
+
 
 // --- CORS header test ---
 
@@ -390,7 +399,7 @@ func TestReplayedSignalResetOnSubscribe(t *testing.T) {
 
 	// OnSubscribe broadcasts replayEvent(0) to clear the replay banner.
 	// It fires immediately when our subscriber connects, so it arrives
-	// among the first events — well within a short collection window.
+	// among the first events, well within a short collection window.
 	events, err := collectSSEEvents(httpServer.URL+"/events", 2*time.Second)
 	if err != nil {
 		t.Fatalf("collect events: %v", err)
@@ -404,7 +413,7 @@ func TestReplayedSignalResetOnSubscribe(t *testing.T) {
 		}
 	}
 
-	t.Fatal("no replayed:0 signal found — OnSubscribe replayEvent(0) not firing")
+	t.Fatal("no replayed:0 signal found; OnSubscribe replayEvent(0) not firing")
 }
 
 // --- Helpers ---
@@ -436,15 +445,33 @@ func collectSSEEvents(url string, duration time.Duration) ([]string, error) {
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	var events []string
-
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 
-	var current strings.Builder
+	// Read lines on a goroutine so the timer fires even when no new
+	// data is arriving on the stream (the old busy-wait pattern
+	// blocked indefinitely inside scanner.Scan between events).
+	type scanLine struct {
+		text string
+		ok   bool
+	}
+
+	lineCh := make(chan scanLine)
+
+	go func() {
+		for scanner.Scan() {
+			lineCh <- scanLine{text: scanner.Text(), ok: true}
+		}
+		lineCh <- scanLine{ok: false}
+	}()
 
 	timer := time.NewTimer(duration)
 	defer timer.Stop()
+
+	var (
+		events  []string
+		current strings.Builder
+	)
 
 	for {
 		select {
@@ -452,42 +479,29 @@ func collectSSEEvents(url string, duration time.Duration) ([]string, error) {
 			if current.Len() > 0 {
 				events = append(events, current.String())
 			}
-
 			return events, nil
-		default:
-		}
-
-		if !scanner.Scan() {
-			if current.Len() > 0 {
-				events = append(events, current.String())
+		case sl := <-lineCh:
+			if !sl.ok {
+				if current.Len() > 0 {
+					events = append(events, current.String())
+				}
+				if scanErr := scanner.Err(); scanErr != nil &&
+					!errors.Is(scanErr, context.Canceled) &&
+					!errors.Is(scanErr, context.DeadlineExceeded) {
+					return events, fmt.Errorf("scan SSE stream: %w", scanErr)
+				}
+				return events, nil
 			}
-
-			// A non-nil scanner error means a genuine read failure (e.g. a line
-			// exceeding the buffer, or a dropped connection). A context
-			// deadline/cancellation from the bounded collection window is the
-			// normal stop and must not fail the test.
-			if scanErr := scanner.Err(); scanErr != nil &&
-				!errors.Is(scanErr, context.Canceled) &&
-				!errors.Is(scanErr, context.DeadlineExceeded) {
-				return events, fmt.Errorf("scan SSE stream: %w", scanErr)
+			if sl.text == "" {
+				if current.Len() > 0 {
+					events = append(events, current.String())
+					current.Reset()
+				}
+			} else {
+				current.WriteString(sl.text)
+				current.WriteString("\n")
 			}
-
-			return events, nil
 		}
-
-		line := scanner.Text()
-
-		if line == "" {
-			if current.Len() > 0 {
-				events = append(events, current.String())
-				current.Reset()
-			}
-
-			continue
-		}
-
-		current.WriteString(line)
-		current.WriteString("\n")
 	}
 }
 
