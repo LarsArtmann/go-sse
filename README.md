@@ -327,6 +327,61 @@ go run ./example/datastar/
 # open http://localhost:8765
 ```
 
+### Try It (60-second checklist)
+
+1. **Fan-out** — Open `http://localhost:8765` in 2+ browser tabs. All tabs show the same events arriving simultaneously. The "clients connected" counter updates in real time.
+2. **Filtering** — Click "Alerts only" in one tab. Only ALERT events appear. Other tabs stay unfiltered. Press `a` / `e` as keyboard shortcuts.
+3. **Reconnection replay** — Close a tab, wait 6+ seconds (3+ missed events), reopen it. The "Replayed N missed events" banner appears briefly with the gap filled.
+4. **Heartbeat** — Leave a tab idle for 60+ seconds. The connection stays alive through the green pulsing "live" indicator.
+5. **Shutdown** — Press `Ctrl+C` in the terminal. Connected clients are drained gracefully within 5 seconds.
+
+### How It Works
+
+**Data flow:**
+
+```
+background producer goroutine
+    │  generates a random activity item every 2s
+    │  assigns a sequential event ID
+    ▼
+memStore.Append(evt) ──── stores last 50 events for replay
+    │
+    ▼
+Broadcaster.BroadcastMany(evt, totalSignal)
+    │  non-blocking fan-out: each subscriber gets the event
+    │  via a 64-deep buffered channel (drops on overflow)
+    ▼
+per-client event loop (eventsHandler)
+    │  reads from subscriber channel
+    │  stream.Send(evt) → WriteEvent → ResponseWriter + Flush
+    ▼
+browser (DataStar SDK)
+    parses SSE event → patches DOM (prepend feed item)
+    or patches signals (update subscriber count, total events)
+```
+
+**Feature mapping:**
+
+| Example behavior          | go-sse API                                                                 |
+| ------------------------- | -------------------------------------------------------------------------- |
+| All tabs see same events  | `Broadcaster.Broadcast` / `BroadcastMany` — non-blocking fan-out           |
+| "N clients connected"     | `OnSubscribe` / `OnUnsubscribe` callbacks + `SubscriberCount()`            |
+| "Alerts only" filter      | `SubscribeFilter(func(evt) bool)` — predicate under fan-out read lock      |
+| Reconnect replay          | `EventStore` (memStore) + `Replay` via `Last-Event-ID` header             |
+| Connection stays alive    | `Stream.Heartbeat(ctx, interval)` — sends SSE comment every 15s            |
+| Graceful drain on SIGINT  | `Broadcaster.Shutdown(ctx)` — drains buffers, then closes channels         |
+| Health/status snapshot    | `Broadcaster.Health()` — value-type for k8s liveness/readiness probes      |
+| DataStar keyed data lines | `KeyedLines` + `SendLines` / `SendKeyed`                                   |
+
+**Shutdown sequence:**
+
+1. `SIGINT` / `SIGTERM` received → context cancelled → producer goroutine exits
+2. `httpServer.Shutdown(ctx)` drains active HTTP requests (SSE connections close)
+3. `broadcaster.Shutdown(ctx)` marks the hub as draining (rejects new `Subscribe` calls), waits for subscriber buffers to empty, then closes all channels
+4. If the deadline (5s) fires before the drain completes, the broadcaster returns a `context.DeadlineExceeded` error wrapped with code `sse.shutdown_drain_deadline_exceeded`
+
+The example source is split into focused files: `main.go` (server setup + embed), `store.go` (in-memory ring buffer), `producer.go` (event generation), `handlers.go` (HTTP handlers + broadcaster wiring). See [`VERIFY.md`](example/datastar/VERIFY.md) for a manual browser verification checklist.
+
 ## Companion Libraries
 
 - [go-error-family](https://github.com/larsartmann/go-error-family) — structured error wrapping with severity categories (used by go-sse for error codes)

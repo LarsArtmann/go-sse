@@ -194,7 +194,11 @@ func TestConcurrentFanOut(t *testing.T) {
 
 	common := commonIDs(idsA, idsB)
 	if len(common) == 0 {
-		t.Fatalf("no common event IDs between clients A and B — fan-out is broken\nA: %v\nB: %v", idsA, idsB)
+		t.Fatalf(
+			"no common event IDs between clients A and B — fan-out is broken\nA: %v\nB: %v",
+			idsA,
+			idsB,
+		)
 	}
 
 	t.Logf("fan-out verified: %d events to client A, %d to client B, %d shared IDs",

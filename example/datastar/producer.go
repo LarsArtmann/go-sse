@@ -49,38 +49,60 @@ type msgTemplate struct {
 //nolint:gochecknoglobals,mnd // read-only template pool, intentional for example
 var msgTemplates = []msgTemplate{
 	{
-		categoryAlert, badgeAlert,
+		categoryAlert,
+		badgeAlert,
 		func() string { return fmt.Sprintf("CPU usage above 90%% on node-%d", randomN(nodeCount)+1) },
 	},
 	{
-		categoryAlert, badgeAlert,
+		categoryAlert,
+		badgeAlert,
 		func() string { return fmt.Sprintf("Disk space below 10%% on node-%d", randomN(nodeCount)+1) },
 	},
 	{
-		categoryAlert, badgeAlert,
+		categoryAlert,
+		badgeAlert,
 		func() string { return fmt.Sprintf("Memory leak detected in service-%d", randomN(serviceCount)+1) },
 	},
 	{
 		categoryAlert,
 		badgeAlert,
-		func() string { return fmt.Sprintf("Response time exceeding SLA on endpoint-%d", randomN(endpointCount)+1) },
+		func() string {
+			return fmt.Sprintf(
+				"Response time exceeding SLA on endpoint-%d",
+				randomN(endpointCount)+1,
+			)
+		},
 	},
 	{
-		categorySuccess, badgeSuccess,
+		categorySuccess,
+		badgeSuccess,
 		func() string { return fmt.Sprintf("Deploy #%d passed all checks", randomN(deployCount)+1) },
 	},
 	{
 		categorySuccess,
 		badgeSuccess,
-		func() string { return fmt.Sprintf("Migration v1.%d.%d applied successfully", randomN(versionMinor), randomN(versionPatch)) },
+		func() string {
+			return fmt.Sprintf(
+				"Migration v1.%d.%d applied successfully",
+				randomN(versionMinor),
+				randomN(versionPatch),
+			)
+		},
 	},
 	{
 		categorySuccess,
 		badgeSuccess,
-		func() string { return fmt.Sprintf("Build #%d completed in %ds", randomN(deployCount)+1, randomN(maxBuildSeconds)+1) },
+		func() string {
+			return fmt.Sprintf(
+				"Build #%d completed in %ds",
+				randomN(deployCount)+1,
+				randomN(maxBuildSeconds)+1,
+			)
+		},
 	},
 	{
-		categorySuccess, badgeSuccess,
+		categorySuccess,
+		badgeSuccess,
 		func() string { return fmt.Sprintf("Health check passed for service-%d", randomN(serviceCount)+1) },
 	},
 	{
@@ -88,7 +110,8 @@ var msgTemplates = []msgTemplate{
 		func() string { return fmt.Sprintf("User session-%d started", randomN(sessionCount)+1) },
 	},
 	{
-		categoryInfo, badgeInfo,
+		categoryInfo,
+		badgeInfo,
 		func() string { return fmt.Sprintf("Cache invalidated for region-%d", randomN(endpointCount)+1) },
 	},
 	{

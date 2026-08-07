@@ -16,21 +16,13 @@ templ indexPage(alertsOnly bool) {
 		</head>
 		<body>
 			<main class="card">
-				<div data-signals="{subscriberCount: 0, replayed: 0, totalEvents: 0, paused: false, theme: 'auto'}">
-					if alertsOnly {
-						<script data-on-load="@set('theme', localStorage.getItem('theme') || 'auto')"></script>
-					} else {
-						<script data-on-load="@set('theme', localStorage.getItem('theme') || 'auto')"></script>
-					}
+				<div data-signals="{subscriberCount: 0, replayed: 0, totalEvents: 0, paused: false}">
 					<header class="card__header">
 						<div class="header-row">
 							<h1>go-sse × DataStar</h1>
-							<button
-								class="theme-toggle"
-								data-on-click="@set('theme', $theme === 'dark' ? 'light' : 'dark'); localStorage.setItem('theme', $theme)"
-							>
-								<span data-show="$theme !== 'dark'">Dark</span>
-								<span data-show="$theme === 'dark'">Light</span>
+							<button class="theme-toggle" onclick="toggleTheme()">
+								<span class="theme-toggle__dark">Dark</span>
+								<span class="theme-toggle__light">Light</span>
 							</button>
 						</div>
 						<p class="subtitle">
@@ -66,10 +58,7 @@ templ indexPage(alertsOnly bool) {
 						Replayed <span data-text="$replayed"></span> missed events on reconnect
 					</div>
 					<div class="feed-controls">
-						<button
-							class="feed-controls__btn"
-							data-on-click="@set('paused', !$paused)"
-						>
+						<button class="feed-controls__btn" data-on-click="@set('paused', !$paused)">
 							<span data-show="!$paused">Pause</span>
 							<span data-show="$paused">Resume</span>
 						</button>
@@ -87,6 +76,17 @@ templ indexPage(alertsOnly bool) {
 						</p>
 					</footer>
 					<script>
+						function toggleTheme() {
+							var html = document.documentElement;
+							var current = html.getAttribute('data-theme') || 'auto';
+							var next = current === 'dark' ? 'light' : 'dark';
+							html.setAttribute('data-theme', next);
+							localStorage.setItem('theme', next);
+						}
+						(function() {
+							var saved = localStorage.getItem('theme');
+							if (saved) document.documentElement.setAttribute('data-theme', saved);
+						})();
 						document.addEventListener('keydown', function(e) {
 							if (e.target.matches('input,textarea')) return;
 							if (e.key === 'a') window.location.href = '/?filter=alerts';
