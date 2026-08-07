@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -145,10 +146,36 @@ func TestConcurrentFanOut(t *testing.T) {
 	httpServer := httptest.NewServer(mux)
 	defer httpServer.Close()
 
-	const collectDuration = 3 * time.Second
+	const collectDuration = 6 * time.Second
 
-	eventsA := collectSSEEvents(t, httpServer.URL+"/events", collectDuration)
-	eventsB := collectSSEEvents(t, httpServer.URL+"/events", collectDuration)
+	var (
+		eventsA, eventsB []string
+		errA, errB       error
+		wg               sync.WaitGroup
+	)
+
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		eventsA, errA = collectSSEEvents(httpServer.URL+"/events", collectDuration)
+	}()
+
+	go func() {
+		defer wg.Done()
+		time.Sleep(100 * time.Millisecond) // slight offset so both overlap
+		eventsB, errB = collectSSEEvents(httpServer.URL+"/events", collectDuration)
+	}()
+
+	wg.Wait()
+
+	if errA != nil {
+		t.Fatalf("client A error: %v", errA)
+	}
+
+	if errB != nil {
+		t.Fatalf("client B error: %v", errB)
+	}
 
 	if len(eventsA) == 0 {
 		t.Fatal("client A received 0 events — fan-out or producer is broken")
@@ -225,21 +252,20 @@ func TestGracefulShutdown(t *testing.T) {
 	server := newActivityServer()
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	go server.startProducer(ctx)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /events", server.eventsHandler)
 
-	httpServer := &http.Server{Handler: mux}
-	defer func() { _ = httpServer.Close() }()
+	httpServer := httptest.NewServer(mux)
+	defer httpServer.Close()
 
-	listener := httptest.NewServer(httpServer)
-	defer listener.Close()
-	httpServer.Handler = mux
-
-	stop := connectSSEClient(t, listener.URL+"/events")
+	stop := connectSSEClient(t, httpServer.URL+"/events")
 	defer stop()
+
+	time.Sleep(200 * time.Millisecond)
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer shutdownCancel()
@@ -267,22 +293,20 @@ func makeTestEvent(id int64) sse.Event {
 
 // collectSSEEvents connects to an SSE endpoint, reads events for the given
 // duration, and returns the raw event blocks as strings.
-func collectSSEEvents(t *testing.T, url string, duration time.Duration) []string {
-	t.Helper()
-
+func collectSSEEvents(url string, duration time.Duration) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), duration+2*time.Second)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		t.Fatalf("create request: %v", err)
+		return nil, fmt.Errorf("create request: %w", err)
 	}
 
 	req.Header.Set("Accept", "text/event-stream")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		t.Fatalf("connect to SSE endpoint: %v", err)
+		return nil, fmt.Errorf("connect to SSE endpoint: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
@@ -303,7 +327,7 @@ func collectSSEEvents(t *testing.T, url string, duration time.Duration) []string
 				events = append(events, current.String())
 			}
 
-			return events
+			return events, nil
 		default:
 		}
 
@@ -312,7 +336,7 @@ func collectSSEEvents(t *testing.T, url string, duration time.Duration) []string
 				events = append(events, current.String())
 			}
 
-			return events
+			return events, nil
 		}
 
 		line := scanner.Text()
