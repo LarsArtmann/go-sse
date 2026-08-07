@@ -5,7 +5,6 @@ import (
 	"encoding/json/v2"
 	"io"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -154,7 +153,7 @@ func (s *Stream) SendJSON(eventName string, v any) error {
 //
 // [DataStar]: https://data-star.dev
 func (s *Stream) SendLines(eventName string, lines ...string) error {
-	return s.Send(Event{Event: eventName, Data: strings.Join(lines, "\n")})
+	return s.Send(Event{Event: eventName, Data: JoinLines(lines...)})
 }
 
 // SendKeyed sends a single-key SSE event, prefixing every line of value with

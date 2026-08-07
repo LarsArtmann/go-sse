@@ -204,6 +204,23 @@ func WriteRetry(w io.Writer, ms uint) error {
 	return err //nolint:wrapcheck // raw write error is already actionable
 }
 
+// JoinLines joins lines with "\n", producing the data string for a multi-line
+// [Event]. This is the inverse of [splitLines] at the data level: [WriteEvent]
+// will split the result back into individual "data:" lines.
+//
+// Use [JoinLines] to compose multiple keyed data lines (e.g., DataStar wire
+// format) without manual string concatenation:
+//
+//	evt := sse.Event{
+//	    Event: "datastar-patch-elements",
+//	    Data:  sse.JoinLines("selector #feed", "mode inner", sse.KeyedLines("elements", html)),
+//	}
+//
+// For the stream-level convenience, see [Stream.SendLines].
+func JoinLines(lines ...string) string {
+	return strings.Join(lines, "\n")
+}
+
 // KeyedLines prefixes every line of value with "key ", producing the
 // newline-joined string that [WriteEvent] splits into individual "data:" lines.
 //

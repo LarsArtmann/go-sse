@@ -423,6 +423,62 @@ func TestEvent_String(t *testing.T) {
 	}
 }
 
+func TestJoinLines(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		lines []string
+		want  string
+	}{
+		{"single line", []string{"hello"}, "hello"},
+		{"two lines", []string{"a", "b"}, "a\nb"},
+		{"three lines", []string{"a", "b", "c"}, "a\nb\nc"},
+		{"empty result", []string{}, ""},
+		{"empty line", []string{""}, ""},
+		{"with empty strings", []string{"a", "", "b"}, "a\n\nb"},
+		{"datastar pattern", []string{"selector #feed", "mode inner", "elements <div>"}, "selector #feed\nmode inner\nelements <div>"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := sse.JoinLines(tc.lines...)
+			if got != tc.want {
+				t.Errorf("got %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestJoinLines_ProducesCorrectWireFormat(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+
+	html := "<div>\n  <span>hi</span>\n</div>"
+
+	err := sse.WriteEvent(&buf, sse.Event{
+		Event: "datastar-patch-elements",
+		Data:  sse.JoinLines("selector #feed", "mode inner", sse.KeyedLines("elements", html)),
+	})
+	if err != nil {
+		t.Fatalf("WriteEvent: %v", err)
+	}
+
+	want := "event: datastar-patch-elements\n" +
+		"data: selector #feed\n" +
+		"data: mode inner\n" +
+		"data: elements <div>\n" +
+		"data: elements   <span>hi</span>\n" +
+		"data: elements </div>\n\n"
+
+	if buf.String() != want {
+		t.Errorf("got %q, want %q", buf.String(), want)
+	}
+}
+
 func TestKeyedLines_SingleLine(t *testing.T) {
 	t.Parallel()
 
