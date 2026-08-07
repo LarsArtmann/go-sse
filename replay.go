@@ -83,14 +83,14 @@ func ReplayFiltered(
 
 	var events []Event
 
-	if fs, ok := store.(FilteredEventStore); ok {
+	if filtered, ok := store.(FilteredEventStore); ok {
 		var err error
 
-		events, err = fs.EventsAfterFiltered(lastID, pred)
+		events, err = filtered.EventsAfterFiltered(lastID, pred)
 		if err != nil {
 			return 0, errorfamily.Wrapf(err, errorfamily.Rejection,
 				"sse.replay_store_failed",
-				"retrieve filtered events after %q from store (%T)", lastID.Get(), fs)
+				"retrieve filtered events after %q from store (%T)", lastID.Get(), filtered)
 		}
 	} else {
 		all, err := store.EventsAfter(lastID)

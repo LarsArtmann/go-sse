@@ -412,12 +412,12 @@ func TestEvent_String(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			if got := tc.evt.String(); got != tc.want {
-				t.Errorf("String(): got %q, want %q", got, tc.want)
+			if got := test.evt.String(); got != test.want {
+				t.Errorf("String(): got %q, want %q", got, test.want)
 			}
 		})
 	}
@@ -444,13 +444,13 @@ func TestJoinLines(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := sse.JoinLines(tc.lines...)
-			if got != tc.want {
-				t.Errorf("got %q, want %q", got, tc.want)
+			got := sse.JoinLines(test.lines...)
+			if got != test.want {
+				t.Errorf("got %q, want %q", got, test.want)
 			}
 		})
 	}

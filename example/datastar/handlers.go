@@ -74,38 +74,11 @@ func (s *activityServer) eventsHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := stream.Context()
 
-	// Replay missed events on reconnect (Last-Event-ID header).
-	// sse.Replay reads EventsAfter from the store and sends each event
-	// in order via stream.Send.
-	if lastID := stream.LastEventID(); !lastID.IsZero() {
-		if n, err := sse.Replay(stream, s.store, lastID); err != nil {
-			log.Printf("replay failed: %v", err)
-		} else if n > 0 {
-			if err := stream.Send(replayEvent(n)); err != nil {
-				return
-			}
-		}
+	if !s.replayMissedEvents(stream) {
+		return
 	}
 
-	// Subscribe — optionally filtered to alerts only.
-	// SubscribeFilter registers a predicate that runs under the fanOut read
-	// lock for every broadcast. Meta events (subscriber count, replay
-	// indicators) have no event ID and always pass through the filter so
-	// every tab sees the subscriber count.
-	var ch <-chan sse.Event
-
-	if r.URL.Query().Get("filter") == "alerts" {
-		ch = s.broadcaster.SubscribeFilter(func(evt sse.Event) bool {
-			if evt.ID.IsZero() {
-				return true
-			}
-
-			return strings.Contains(evt.Data, "category "+categoryAlert)
-		})
-	} else {
-		ch = s.broadcaster.Subscribe()
-	}
-
+	ch := s.subscribeForRequest(r)
 	defer s.broadcaster.Unsubscribe(ch)
 
 	// Heartbeat to keep the connection alive through reverse proxies.
@@ -127,4 +100,51 @@ func (s *activityServer) eventsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+}
+
+// replayMissedEvents replays events from the store based on the Last-Event-ID
+// header and signals the count of replayed events to the client. Returns false
+// if a write failed and the handler should abort.
+func (s *activityServer) replayMissedEvents(stream *sse.Stream) bool {
+	lastID := stream.LastEventID()
+	if lastID.IsZero() {
+		return true
+	}
+
+	// sse.Replay reads EventsAfter from the store and sends each event
+	// in order via stream.Send.
+	n, err := sse.Replay(stream, s.store, lastID)
+	if err != nil {
+		log.Printf("replay failed: %v", err)
+
+		return true
+	}
+
+	if n == 0 {
+		return true
+	}
+
+	if err := stream.Send(replayEvent(n)); err != nil {
+		return false
+	}
+
+	return true
+}
+
+// subscribeForRequest registers a subscriber for this request, optionally
+// filtered to alerts only. Meta events (subscriber count, replay indicators)
+// have no event ID and always pass through the filter so every tab sees the
+// subscriber count.
+func (s *activityServer) subscribeForRequest(r *http.Request) <-chan sse.Event {
+	if r.URL.Query().Get("filter") != "alerts" {
+		return s.broadcaster.Subscribe()
+	}
+
+	return s.broadcaster.SubscribeFilter(func(evt sse.Event) bool {
+		if evt.ID.IsZero() {
+			return true
+		}
+
+		return strings.Contains(evt.Data, "category "+categoryAlert)
+	})
 }
