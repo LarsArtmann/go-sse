@@ -150,9 +150,10 @@ func WriteEvent(w io.Writer, evt Event) error {
 		buf = append(buf, '\n')
 	}
 
-	for _, line := range splitLines(evt.Data) {
+	dataLines := splitLines(evt.Data)
+	for i := range len(dataLines) {
 		buf = append(buf, 'd', 'a', 't', 'a', ':', ' ')
-		buf = append(buf, line...)
+		buf = append(buf, dataLines[i]...)
 		buf = append(buf, '\n')
 	}
 
@@ -176,7 +177,7 @@ func WriteEvent(w io.Writer, evt Event) error {
 			err,
 			errorfamily.Transient,
 			"sse.write_failed",
-			"write sse event %q (last data line: %q)", evt.Event, line,
+			"write sse event %q (%d data bytes, %d lines)", evt.Event, len(evt.Data), len(dataLines),
 		)
 	}
 

@@ -318,7 +318,9 @@ func (f *fanOut[T]) Shutdown(ctx context.Context) error {
 
 	// Wait for each snapshot subscriber's buffer to empty, or ctx to fire.
 	if err := f.waitForDrain(ctx, subs); err != nil {
-		return err
+		return errorfamily.Wrapf(err, errorfamily.Transient,
+			"sse.shutdown_failed",
+			"drain %d subscribers", len(subs))
 	}
 
 	// Drain complete. Re-acquire the lock to close any subscribers that
