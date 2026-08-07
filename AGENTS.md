@@ -124,9 +124,22 @@ Three runnable examples, each an independent `package main`:
 
 - `index.templ` — type-safe HTML template (templ). Run `templ generate` after editing.
 - `index_templ.go` — generated code (checked into git, excluded from treefmt and golangci-lint via `*_templ.go` path patterns).
-- `static/styles.css` — CSS with dark/light theme support via `prefers-color-scheme`.
+- `static/styles.css` — CSS with dark/light theme support via `prefers-color-scheme` and manual `data-theme` toggle.
 - `static/*.js` — client JS bundles, embedded via `go:embed` (no CDN).
-- `main.go` — HTTP server: renders templ for `GET /`, serves embedded static files for `GET /static/`, SSE events for `GET /events`.
+
+**DataStar example file split** (`example/datastar/`):
+
+The DataStar example is split across four Go files for readability:
+
+- `main.go` — constants, `go:embed`, and `main()` (server setup, signal handling, graceful shutdown).
+- `store.go` — `memStore`: in-memory ring-buffer `EventStore` for reconnection replay.
+- `producer.go` — `activityItem` struct, message templates, event builders (`feedItemEvent`, `countEvent`, `replayEvent`, `totalEventSignal`), `startProducer` goroutine.
+- `handlers.go` — `activityServer` struct, `newActivityServer` (broadcaster + store wiring with OnSubscribe/OnUnsubscribe), `indexHandler`, `eventsHandler` (CORS, replay, SubscribeFilter, heartbeat, event loop).
+- `static/app.js` — theme toggle (localStorage persistence), keyboard shortcuts (`a`/`e`), smart scroll-to-top on new feed items.
+- `main_test.go` — unit tests (memStore replay/ring-buffer), integration tests (fan-out, subscriber count, graceful shutdown, filter predicate, CORS header, `$replayed` reset).
+- `VERIFY.md` — 2-minute browser verification checklist.
+
+**HTMX** (`example/htmx/`) uses a single `main.go`.
 
 **Running:** `go run ./example/datastar/` or `go run ./example/htmx/` (run the package, not a single file, because the page render lives in the generated `index_templ.go`).
 

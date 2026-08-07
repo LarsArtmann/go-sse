@@ -52,17 +52,22 @@ func TestMemStore_InvalidID(t *testing.T) {
 		{"zero ID gets all", "0", 2},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			events, err := store.EventsAfter(sse.NewEventID(tc.idStr))
+			events, err := store.EventsAfter(sse.NewEventID(testCase.idStr))
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if len(events) != tc.want {
-				t.Errorf("id=%q: expected %d events, got %d", tc.idStr, tc.want, len(events))
+			if len(events) != testCase.want {
+				t.Errorf(
+					"id=%q: expected %d events, got %d",
+					testCase.idStr,
+					testCase.want,
+					len(events),
+				)
 			}
 		})
 	}
@@ -301,15 +306,39 @@ func TestFilterPredicate_AlertsOnly(t *testing.T) {
 	defer httpServer.Close()
 
 	// Broadcast known events after a short delay so the subscriber
-	// is connected first. One alert, one success, one info â only
+	// is connected first. One alert, one success, one info ; only
 	// the alert should pass the ?filter=alerts predicate.
 	go func() {
 		time.Sleep(200 * time.Millisecond)
 
 		server.broadcaster.BroadcastMany(
-			feedItemEvent(1, activityItem{category: categoryAlert, badge: badgeAlert, message: "test alert", time: "00:00:01"}),
-			feedItemEvent(2, activityItem{category: categorySuccess, badge: badgeSuccess, message: "test ok", time: "00:00:02"}),
-			feedItemEvent(3, activityItem{category: categoryInfo, badge: badgeInfo, message: "test info", time: "00:00:03"}),
+			feedItemEvent(
+				1,
+				activityItem{
+					category: categoryAlert,
+					badge:    badgeAlert,
+					message:  "test alert",
+					time:     "00:00:01",
+				},
+			),
+			feedItemEvent(
+				2,
+				activityItem{
+					category: categorySuccess,
+					badge:    badgeSuccess,
+					message:  "test ok",
+					time:     "00:00:02",
+				},
+			),
+			feedItemEvent(
+				3,
+				activityItem{
+					category: categoryInfo,
+					badge:    badgeInfo,
+					message:  "test info",
+					time:     "00:00:03",
+				},
+			),
 		)
 	}()
 
@@ -322,7 +351,7 @@ func TestFilterPredicate_AlertsOnly(t *testing.T) {
 
 	for _, evt := range events {
 		if !strings.Contains(evt, "id:") {
-			continue // meta event (no ID) â filter always passes these
+			continue // meta event (no ID) ; filter always passes these
 		}
 
 		feedItems++
@@ -342,7 +371,6 @@ func TestFilterPredicate_AlertsOnly(t *testing.T) {
 
 	t.Log("filter verified: 1 alert feed item passed, 0 non-alert leaks")
 }
-
 
 // --- CORS header test ---
 
@@ -420,7 +448,7 @@ func TestReplayedSignalResetOnSubscribe(t *testing.T) {
 
 func makeTestEvent(id int64) sse.Event {
 	return sse.Event{
-		Event: "datastar-patch-elements",
+		Event: eventPatchElements,
 		Data:  "selector #feed\nmode prepend\ncategory info\nelements <div>test</div>",
 		ID:    sse.NewEventID(strconv.FormatInt(id, 10)),
 	}
@@ -479,9 +507,10 @@ func collectSSEEvents(url string, duration time.Duration) ([]string, error) {
 			if current.Len() > 0 {
 				events = append(events, current.String())
 			}
+
 			return events, nil
-		case sl := <-lineCh:
-			if !sl.ok {
+		case line := <-lineCh:
+			if !line.ok {
 				if current.Len() > 0 {
 					events = append(events, current.String())
 				}
@@ -490,15 +519,16 @@ func collectSSEEvents(url string, duration time.Duration) ([]string, error) {
 					!errors.Is(scanErr, context.DeadlineExceeded) {
 					return events, fmt.Errorf("scan SSE stream: %w", scanErr)
 				}
+
 				return events, nil
 			}
-			if sl.text == "" {
+			if line.text == "" {
 				if current.Len() > 0 {
 					events = append(events, current.String())
 					current.Reset()
 				}
 			} else {
-				current.WriteString(sl.text)
+				current.WriteString(line.text)
 				current.WriteString("\n")
 			}
 		}
@@ -510,9 +540,9 @@ func extractEventIDs(events []string) []string {
 	var ids []string
 
 	for _, evt := range events {
-		for _, line := range strings.Split(evt, "\n") {
-			if strings.HasPrefix(line, "id:") {
-				id := strings.TrimSpace(strings.TrimPrefix(line, "id:"))
+		for line := range strings.SplitSeq(evt, "\n") {
+			if rest, ok := strings.CutPrefix(line, "id:"); ok {
+				id := strings.TrimSpace(rest)
 				if id != "" {
 					ids = append(ids, id)
 				}

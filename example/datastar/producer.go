@@ -18,6 +18,11 @@ const (
 )
 
 const (
+	eventPatchElements = "datastar-patch-elements"
+	eventPatchSignals  = "datastar-patch-signals"
+)
+
+const (
 	badgeAlert   = "ALERT"
 	badgeSuccess = "OK"
 	badgeInfo    = "INFO"
@@ -46,7 +51,7 @@ type msgTemplate struct {
 	gen      func() string
 }
 
-//nolint:gochecknoglobals,mnd // read-only template pool, intentional for example
+//nolint:gochecknoglobals // read-only template pool, intentional for example
 var msgTemplates = []msgTemplate{
 	{
 		categoryAlert,
@@ -152,7 +157,7 @@ func feedItemEvent(id int64, item activityItem) sse.Event {
 	}, "\n")
 
 	return sse.Event{
-		Event: "datastar-patch-elements",
+		Event: eventPatchElements,
 		Data:  data,
 		ID:    sse.NewEventID(strconv.FormatInt(id, 10)),
 	}
@@ -163,7 +168,7 @@ func feedItemEvent(id int64, item activityItem) sse.Event {
 // that should not be replayed.
 func countEvent(count int) sse.Event {
 	return sse.Event{
-		Event: "datastar-patch-signals",
+		Event: eventPatchSignals,
 		Data:  sse.KeyedLines("signals", fmt.Sprintf(`{"subscriberCount":%d}`, count)),
 	}
 }
@@ -172,7 +177,7 @@ func countEvent(count int) sse.Event {
 // signal, triggering the "Replayed N missed events" banner.
 func replayEvent(n int) sse.Event {
 	return sse.Event{
-		Event: "datastar-patch-signals",
+		Event: eventPatchSignals,
 		Data:  sse.KeyedLines("signals", fmt.Sprintf(`{"replayed":%d}`, n)),
 	}
 }
@@ -182,7 +187,7 @@ func replayEvent(n int) sse.Event {
 // stat in the UI.
 func totalEventSignal(n int64) sse.Event {
 	return sse.Event{
-		Event: "datastar-patch-signals",
+		Event: eventPatchSignals,
 		Data:  sse.KeyedLines("signals", fmt.Sprintf(`{"totalEvents":%d}`, n)),
 	}
 }
