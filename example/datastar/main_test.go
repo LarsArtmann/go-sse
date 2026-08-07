@@ -147,7 +147,7 @@ func TestConcurrentFanOut(t *testing.T) {
 	httpServer := httptest.NewServer(mux)
 	defer httpServer.Close()
 
-	const collectDuration = 6 * time.Second
+	const collectDuration = 3 * time.Second
 
 	var (
 		eventsA, eventsB []string
