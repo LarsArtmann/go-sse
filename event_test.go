@@ -437,7 +437,11 @@ func TestJoinLines(t *testing.T) {
 		{"empty result", []string{}, ""},
 		{"empty line", []string{""}, ""},
 		{"with empty strings", []string{"a", "", "b"}, "a\n\nb"},
-		{"datastar pattern", []string{"selector #feed", "mode inner", "elements <div>"}, "selector #feed\nmode inner\nelements <div>"},
+		{
+			"datastar pattern",
+			[]string{"selector #feed", "mode inner", "elements <div>"},
+			"selector #feed\nmode inner\nelements <div>",
+		},
 	}
 
 	for _, tc := range tests {
