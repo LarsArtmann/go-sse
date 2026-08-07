@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -338,6 +339,16 @@ func collectSSEEvents(url string, duration time.Duration) ([]string, error) {
 		if !scanner.Scan() {
 			if current.Len() > 0 {
 				events = append(events, current.String())
+			}
+
+			// A non-nil scanner error means a genuine read failure (e.g. a line
+			// exceeding the buffer, or a dropped connection). A context
+			// deadline/cancellation from the bounded collection window is the
+			// normal stop and must not fail the test.
+			if scanErr := scanner.Err(); scanErr != nil &&
+				!errors.Is(scanErr, context.Canceled) &&
+				!errors.Is(scanErr, context.DeadlineExceeded) {
+				return events, fmt.Errorf("scan SSE stream: %w", scanErr)
 			}
 
 			return events, nil
