@@ -286,6 +286,127 @@ func TestGracefulShutdown(t *testing.T) {
 	}
 }
 
+// --- Filter predicate test ---
+
+func TestFilterPredicate_AlertsOnly(t *testing.T) {
+	t.Parallel()
+
+	server := newActivityServer()
+	defer server.broadcaster.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go server.startProducer(ctx)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /events", server.eventsHandler)
+
+	httpServer := httptest.NewServer(mux)
+	defer httpServer.Close()
+
+	events, err := collectSSEEvents(httpServer.URL+"/events?filter=alerts", 3*time.Second)
+	if err != nil {
+		t.Fatalf("collect filtered events: %v", err)
+	}
+
+	var feedItems int
+
+	for _, evt := range events {
+		if !strings.Contains(evt, "id:") {
+			continue // meta event (no ID) — filter always passes these
+		}
+
+		feedItems++
+
+		if !strings.Contains(evt, "category alert") {
+			t.Errorf("non-alert feed item passed through alerts-only filter:\n%s", evt)
+		}
+
+		if strings.Contains(evt, "category success") || strings.Contains(evt, "category info") {
+			t.Errorf("non-alert category leaked through alerts-only filter:\n%s", evt)
+		}
+	}
+
+	if feedItems == 0 {
+		t.Fatal("expected at least one alert feed item in 3s collection window")
+	}
+
+	t.Logf("filter verified: %d alert feed items, 0 non-alert leaks", feedItems)
+}
+
+// --- CORS header test ---
+
+func TestEventsHandler_CORSHeader(t *testing.T) {
+	t.Parallel()
+
+	server := newActivityServer()
+	defer server.broadcaster.Close()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /events", server.eventsHandler)
+
+	httpServer := httptest.NewServer(mux)
+	defer httpServer.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, httpServer.URL+"/events", nil)
+	if err != nil {
+		t.Fatalf("create request: %v", err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("connect to /events: %v", err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if got := resp.Header.Get("Access-Control-Allow-Origin"); got != "*" {
+		t.Errorf("Access-Control-Allow-Origin: expected %q, got %q", "*", got)
+	}
+}
+
+// --- $replayed reset on subscribe ---
+
+func TestReplayedSignalResetOnSubscribe(t *testing.T) {
+	t.Parallel()
+
+	server := newActivityServer()
+	defer server.broadcaster.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go server.startProducer(ctx)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /events", server.eventsHandler)
+
+	httpServer := httptest.NewServer(mux)
+	defer httpServer.Close()
+
+	// OnSubscribe broadcasts replayEvent(0) to clear the replay banner.
+	// It fires immediately when our subscriber connects, so it arrives
+	// among the first events — well within a short collection window.
+	events, err := collectSSEEvents(httpServer.URL+"/events", 2*time.Second)
+	if err != nil {
+		t.Fatalf("collect events: %v", err)
+	}
+
+	for _, evt := range events {
+		if strings.Contains(evt, `"replayed":0`) {
+			t.Log("replayed reset verified: OnSubscribe broadcasts replayEvent(0)")
+
+			return
+		}
+	}
+
+	t.Fatal("no replayed:0 signal found — OnSubscribe replayEvent(0) not firing")
+}
+
 // --- Helpers ---
 
 func makeTestEvent(id int64) sse.Event {
