@@ -682,9 +682,10 @@ func BenchmarkKeyedLines(b *testing.B) {
 func BenchmarkWriteEvent(b *testing.B) {
 	simple := sse.Event{Event: "update", Data: "hello"}
 
+	articleHTML := strings.Repeat("<article>\n  <h3>Title</h3>\n  <p>Body</p>\n</article>\n", 50)
 	multiLine := sse.Event{
 		Event: "datastar-patch-elements",
-		Data:  "selector #feed\nmode inner\n" + sse.KeyedLines("elements", strings.Repeat("<article>\n  <h3>Title</h3>\n  <p>Body</p>\n</article>\n", 50)),
+		Data:  "selector #feed\nmode inner\n" + sse.KeyedLines("elements", articleHTML),
 		ID:    sse.NewEventID("evt-42"),
 		Retry: 5000,
 	}
@@ -697,15 +698,15 @@ func BenchmarkWriteEvent(b *testing.B) {
 		{"multiline_50", multiLine},
 	}
 
-	for _, tc := range cases {
-		b.Run(tc.name, func(b *testing.B) {
+	for _, benchCase := range cases {
+		b.Run(benchCase.name, func(b *testing.B) {
 			var buf bytes.Buffer
 			b.ReportAllocs()
 			b.ResetTimer()
 
 			for range b.N {
 				buf.Reset()
-				if err := sse.WriteEvent(&buf, tc.evt); err != nil {
+				if err := sse.WriteEvent(&buf, benchCase.evt); err != nil {
 					b.Fatal(err)
 				}
 			}
