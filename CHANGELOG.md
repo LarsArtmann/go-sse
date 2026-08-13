@@ -8,21 +8,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- `JoinLines(lines ...string) string` — joins variadic arguments with `\n`, producing the `Event.Data` string for multi-line SSE events. Composes with `KeyedLines` for multi-key protocols like DataStar (e.g., `JoinLines("selector #feed", "mode inner", KeyedLines("elements", html))`).
-
-- `ExampleReplayFiltered` — godoc example demonstrating predicate-based reconnection replay. Completes example coverage for every public replay/filter API.
-- `TestSubscribeFilter_DropPolicyRespected` — verifies a filtered subscriber with a full buffer drops matching events (non-matching events never enter the buffer), confirming the filter+drop interaction.
-- `TestSubscribeFilter_BroadcastManyMixedSubscribers` — verifies correct event partition when half the subscribers have predicates and half do not across a single `BroadcastMany` batch.
-- `BenchmarkMemoryPerSubscriber` — measures steady-state heap memory per subscriber at 100/1k/10k subscribers (~4 KiB each, buffer-dominated).
-- `docs/performance/scale-profile.md` — memory and latency characterization at 100/1k/10k subscribers. Conclusion: the default 64-buffer and non-blocking drop policy are well-calibrated; no change needed.
+- Nothing yet.
 
 ### Fixed
 
-- `example/datastar/main.go` progress bar corrected: `data-bind:style` → `data-style:width="$progress + '%'"`. `data-bind` is DataStar's form-element two-way binding; CSS styles use `data-style`. Verified against the DataStar v1.0.2 attributes reference.
-- `broadcaster.go` `NewBroadcaster` removed an unnecessary explicit type argument (`newFanOut[T]` → `newFanOut`) flagged by gopls `infertypeargs`.
-- `.envrc` now exports `GOEXPERIMENT=jsonv2` alongside `GOWORK=off`, so `buildflow`, `gopls`, and direct `go` invocations launched outside the Nix devShell inherit the flag via direnv (AGENTS.md already documented this as a gotcha).
-- README.md and doc.go predicate panic-policy documentation corrected: both now state that panicking predicates are recovered and treated as non-matches (matching v0.4.0 code behavior). The v0.4.0 tag permanently contains the old "crashes the broadcaster" wording; this fix lands on master for consumers reading HEAD.
-- `example/datastar/main.go` CDN URL corrected: `[email protected]` (Cloudflare email-protection placeholder leaked into the URL) → `datastar@1.0.2` (current stable DataStar release). The previous URL returned `400 Bad Request` from jsdelivr and prevented the browser from loading the DataStar runtime at all. The page now renders, the progress bar advances, and the status text patches as designed.
+- Nothing yet.
+
+## [0.5.0] - 2026-08-13
+
+### Added
+
+- `WithOnDrop[T](fn func(T)) Option[T]` — constructor option that registers a callback invoked each time a message is dropped because a subscriber's buffer is full. The callback receives the dropped message and fires once per full subscriber per broadcast. Runs on the broadcasting goroutine inside the fan-out read lock; must be fast and non-blocking (atomic increment, buffered channel send). Pass nil to clear.
+- `Broadcaster.OnDrop(fn func(T))` — runtime setter equivalent to the constructor option, for consumers that wire callbacks after construction (e.g. metrics registry handed in after `NewBroadcaster`). Pass nil to clear.
+- `JoinLines(lines ...string) string` — joins variadic arguments with `\n`, producing the `Event.Data` string for multi-line SSE events. Composes with `KeyedLines` for multi-key protocols like DataStar (e.g., `JoinLines("selector #feed", "mode inner", KeyedLines("elements", html))`).
+- DataStar example overhauled into a full activity feed showcasing every go-sse feature: `Broadcaster` fan-out (multiple tabs), `SubscriberCount` (live counter via `OnSubscribe`/`OnUnsubscribe`), `SubscribeFilter` (`?filter=alerts`), `EventStore` + `Replay` (close/reopen tab), and `Heartbeat` (proxy keep-alive). Background producer emits events every 2s.
+- HTMX example (`example/htmx/`) — progress-bar demo using plain `stream.Send` to stream HTML fragments; HTMX SSE extension swaps them into the DOM.
+- `example/README.md` — detailed DataStar vs HTMX comparison (mechanism, payload size, granularity, bundle size, trade-offs).
+- DataStar example migrated to `a-h/templ` type-safe HTML templates with embedded static assets (no CDN). Generated `*_templ.go` checked into git.
+- Theme toggle (dark/light via `prefers-color-scheme` + manual `data-theme`), pause control, CORS headers, and live event counter in the DataStar example.
+- `flake.nix` coverage-gate app enforcing 90% library coverage threshold (`nix run .#coverage`).
+- Vendored client bundles: DataStar v1.0.2, HTMX 2.0.4 + htmx-ext-sse 2.2.4 (no CDN dependencies).
+- `docs/performance/scale-profile.md` — memory and latency characterization at 100/1k/10k subscribers (~4 KiB each, buffer-dominated). Conclusion: default 64-buffer and non-blocking drop policy are well-calibrated.
+- `BenchmarkMemoryPerSubscriber` — steady-state heap memory per subscriber at 100/1k/10k subscribers.
+- `BenchmarkWriteEvent` — measures `WriteEvent` allocation behavior.
+- `ExampleReplayFiltered` — godoc example demonstrating predicate-based reconnection replay.
+- `TestSubscribeFilter_DropPolicyRespected`, `TestSubscribeFilter_BroadcastManyMixedSubscribers`, `TestWithOnDrop_FiresWhenBufferFull`, `TestWithOnDrop_FiresPerSubscriber`, `TestWithOnDrop_BroadcastMany`, `TestOnDrop_RuntimeRegistration` — new tests pinning drop semantics, filter+drop interaction, and onDrop callback behavior.
+
+### Changed
+
+- Error wrapping improved across the library: `WriteEvent`, `Send`, `Replay`, and `Shutdown` now use `errorfamily.Wrapf` with stable severity categories (`Transient`, `Rejection`) and machine-readable codes, enabling consumers to classify errors programmatically.
+- Internal refactors for clarity: subscription helpers extracted, drain-wait logic moved to `waitForDrain` helper, subscriber snapshot uses `slices.Collect(maps.Values(...))`, event-writing loop optimized with direct byte appends.
+- Go 1.26 idioms adopted throughout: integer range loops (`for i := range len(s)`), `sync.WaitGroup.Go`, `slices`/`maps` packages.
+- `Shutdown` error context enriched: wraps the underlying `context.Canceled`/`context.DeadlineExceeded` with code `sse.shutdown_drain_deadline_exceeded` while preserving `errors.Is` compatibility.
+- DataStar example split across four files (`main.go`, `store.go`, `producer.go`, `handlers.go`) for readability.
+
+### Fixed
+
+- `example/datastar/main.go` progress bar corrected: `data-bind:style` → `data-style:width="$progress + '%'"`. `data-bind` is DataStar's form-element two-way binding; CSS styles use `data-style`.
+- `NewBroadcaster` removed an unnecessary explicit type argument (`newFanOut[T]` → `newFanOut`) flagged by gopls `infertypeargs`.
+- `.envrc` now exports `GOEXPERIMENT=jsonv2` alongside `GOWORK=off`, so `buildflow`, `gopls`, and direct `go` invocations launched outside the Nix devShell inherit the flag via direnv.
+- README.md and doc.go predicate panic-policy documentation corrected: both now state that panicking predicates are recovered and treated as non-matches (matching v0.4.0 code behavior).
+- `example/datastar/main.go` CDN URL corrected: Cloudflare email-protection placeholder leaked into the URL → `datastar@1.0.2`. The previous URL returned `400 Bad Request` from jsdelivr. (Now moot — assets are vendored.)
+- `TestSubscribeFilter_ConcurrentRace` threshold lowered from 500 to 100 to eliminate CI flakiness on contended runners while still proving non-blocking delivery.
 
 ## [0.4.0] - 2026-08-03
 
@@ -136,7 +163,8 @@ and the subsequent DataStar integration work.
 
 - `LastEventIDFromRequest` validates header input with `ParseEventID`, preventing SSE wire-format injection via crafted `Last-Event-ID` headers
 
-[Unreleased]: https://github.com/larsartmann/go-sse/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/larsartmann/go-sse/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/larsartmann/go-sse/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/larsartmann/go-sse/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/larsartmann/go-sse/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/larsartmann/go-sse/compare/v0.2.0...v0.2.1
