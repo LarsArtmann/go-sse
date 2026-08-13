@@ -13,7 +13,7 @@ func TestWithOnDrop_FiresWhenBufferFull(t *testing.T) {
 	var drops atomic.Int64
 
 	bc := sse.NewBroadcaster[int](
-		sse.WithBufferSize[int](1),      // buffer of 1 — second send drops
+		sse.WithBufferSize[int](1), // buffer of 1 — second send drops
 		sse.WithOnDrop[int](func(msg int) {
 			drops.Add(1)
 		}),
