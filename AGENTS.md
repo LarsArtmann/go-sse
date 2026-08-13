@@ -52,7 +52,7 @@ Four layers, each in its own file, composable independently:
 | ----------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Wire format       | `event.go`                     | `Event`, `EventID`, `WriteEvent`, `WriteHeartbeat`, `WriteRetry`, `KeyedLines`, `WriteKeyedLines`                                                                                                                              |
 | Single connection | `stream.go`                    | `Stream` — headers, mutex-guarded send, heartbeat, disconnect hooks, `SendLines`, `SendKeyed`                                                                                                                                  |
-| Fan-out           | `broadcaster.go` + `fanout.go` | `Broadcaster[T]` (public) embeds `fanOut[T]` (unexported hub). `SubscribeFilter` for predicate-based filtering. `Shutdown(ctx)` + `Health()` for graceful lifecycle. `WithBufferSize[T]` for configurable subscriber capacity. |
+| Fan-out           | `broadcaster.go` + `fanout.go` | `Broadcaster[T]` (public) embeds `fanOut[T]` (unexported hub). `SubscribeFilter` for predicate-based filtering. `Shutdown(ctx)` + `Health()` for graceful lifecycle. `WithBufferSize[T]` for configurable subscriber capacity. `WithOnDrop[T]` + `OnDrop` for drop observability. |
 | Reconnection      | `replay.go`                    | `EventStore` interface + `Replay` function. `FilteredEventStore` + `ReplayFiltered` for predicate-aware replay.                                                                                                                |
 
 **Data flow:** `Broadcaster.Broadcast(evt)` → non-blocking `select` send into each subscriber's buffered channel → handler's `select` loop reads channel → `stream.Send(evt)` → `WriteEvent` → `ResponseWriter.Write` + `Flush`.
@@ -67,6 +67,7 @@ Four layers, each in its own file, composable independently:
 2. **`fanOut` uses RWMutex with non-blocking sends.** `Broadcast` holds `RLock` during iteration and sends via `select { case ch <- msg: default: }` (drop). The read lock guarantees `Unsubscribe` cannot close a channel mid-send. Never change Broadcast to a blocking send under the read lock. **SubscribeFilter predicates are called under this same read lock** — they must be pure, fast, and non-blocking.
 3. **`fanOut.Close()` sets `subscribers = nil` as the closed sentinel.** `Subscribe` checks for nil and returns an already-closed channel. Don't repurpose nil to mean "uninitialized."
 4. **`fanOut.draining` is the "shutdown in progress" sentinel.** Distinct from the closed sentinel so `Subscribe` can keep returning closed channels during a drain while `Close` is not yet meaningful. Always set draining under the write lock and check it under the read or write lock.
+5. **`fanOut.onDrop` runs inside the read lock during `sendAllLocked`.** The callback fires on the broadcasting goroutine for each subscriber whose buffer is full. The `OnDrop` setter takes the write lock, so the field is stable mid-iteration — but the callback itself must be fast and non-blocking (same contract as `SubscribeFilter` predicates). Nil means no callback (nil-guarded in the drop branch).
 
 ## Lifecycle API
 
@@ -75,13 +76,15 @@ Four layers, each in its own file, composable independently:
 - `Close()` — instant shutdown; closes all subscriber channels immediately. Use for hard shutdown.
 - `Shutdown(ctx)` — graceful drain; marks the broadcaster as draining (rejects new `Subscribe` calls), waits for every active subscriber's buffer to be empty (consumers caught up), then closes the channels. Returns the context's error (wrapped via `errorfamily` with code `sse.shutdown_drain_deadline_exceeded`) if the deadline fires before the drain completes. The caller can retry with a fresh context or fall back to `Close`.
 - `Health() BroadcasterHealth` — value-type snapshot of `Closed`, `Draining`, `SubscriberCount`, and `BufferSize`. Cheap (read-lock + struct copy). Suitable for k8s liveness/readiness probes.
-- `NewBroadcaster[T](opts ...Option[T])` — accepts functional options at construction. The only option today is `WithBufferSize[T](size int)`. Buffer size is read once and not changed later; non-positive values are silently ignored (default kept).
+- `NewBroadcaster[T](opts ...Option[T])` — accepts functional options at construction. Options today are `WithBufferSize[T](size int)` and `WithOnDrop[T](fn func(T))`. Buffer size is read once and not changed later; non-positive values are silently ignored (default kept).
+- `OnDrop(fn func(T))` — runtime setter for the drop callback, equivalent to the `WithOnDrop` constructor option but callable after construction (e.g. when the metrics registry is wired later). Pass nil to clear.
 
 ## Gotchas
 
 - **`NewStream` writes `200 OK` immediately** and sets headers — it is not lazy. Call it once per handler; do not write to `w` before `NewStream`.
 - **`flusher` is an unexported interface** (`interface{ Flush() }`), not `http.Flusher`. `NewStream` does `w.(flusher)` which silently yields `nil` for non-flushing writers; `Send`/`Heartbeat` nil-check before flushing.
 - **Broadcast is intentionally lossy.** A 64-deep buffer per subscriber (`defaultSubscriberBuffer`); overflow drops silently. Consumers needing guaranteed delivery must implement app-level ack/replay. Do not "fix" this into a blocking send — it would cause head-of-line blocking.
+- **`onDrop` fires per-subscriber, not per-message.** A single `Broadcast` to N subscribers with full buffers invokes `onDrop` N times with the same `msg`. A drop counter counts per-subscriber drops, not unique messages lost. This also applies to `BroadcastMany` — each message in the batch that overflows a buffer fires independently.
 - **`MustParseEventID` panics** — it is for tests and constants only, never untrusted input. Use `ParseEventID` (rejects `\n`/`\r` that would corrupt the wire format) for request-header values.
 - **Empty `EventID` is the zero/initial-connection value**, not an error. `Replay` with an empty ID replays everything (the store decides semantics).
 - **`OnDisconnect` callbacks fire inside `Close()`**, after the mutex is released, in registration order.

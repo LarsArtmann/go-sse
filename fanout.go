@@ -48,6 +48,11 @@ func WithBufferSize[T any](size int) Option[T] {
 // so it must be fast and non-blocking (e.g. an atomic increment or a buffered
 // channel send). Passing nil clears the callback.
 //
+// The callback fires once per full subscriber, not once per broadcast: a single
+// Broadcast to N subscribers with full buffers invokes onDrop N times with the
+// same msg. A drop counter therefore counts per-subscriber drops, not unique
+// messages lost.
+//
 // Use this for metrics (e.g. a drop counter) or alerting without coupling the
 // broadcaster to a metrics package.
 func WithOnDrop[T any](fn func(T)) Option[T] {
@@ -437,6 +442,9 @@ func (f *fanOut[T]) OnUnsubscribe(fn func()) {
 // subscriber's buffer is full. The callback receives the dropped message and
 // runs on the broadcasting goroutine inside the fan-out read lock, so it must
 // be fast and non-blocking. Pass nil to clear a previously registered callback.
+//
+// The callback fires once per full subscriber per broadcast: a single Broadcast
+// to N full subscribers invokes onDrop N times with the same msg.
 func (f *fanOut[T]) OnDrop(fn func(T)) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
