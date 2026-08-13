@@ -42,6 +42,20 @@ func WithBufferSize[T any](size int) Option[T] {
 	}
 }
 
+// WithOnDrop registers a callback invoked each time a message is dropped
+// because a subscriber's buffer is full. The callback receives the dropped
+// message and runs on the broadcasting goroutine inside the fan-out read lock,
+// so it must be fast and non-blocking (e.g. an atomic increment or a buffered
+// channel send). Passing nil clears the callback.
+//
+// Use this for metrics (e.g. a drop counter) or alerting without coupling the
+// broadcaster to a metrics package.
+func WithOnDrop[T any](fn func(T)) Option[T] {
+	return func(f *fanOut[T]) {
+		f.onDrop = fn
+	}
+}
+
 // BroadcasterHealth is a snapshot of a [Broadcaster]'s lifecycle state,
 // returned by [Broadcaster.Health]. It is the structured-status counterpart
 // to the unstructured boolean [Broadcaster.SubscriberCount]; consumers wire
@@ -89,6 +103,7 @@ type fanOut[T any] struct {
 	draining      bool // true while Shutdown is in progress; rejects new Subscribe
 	onSubscribe   func()
 	onUnsubscribe func()
+	onDrop        func(T) // fired for each subscriber whose buffer is full
 }
 
 func newFanOut[T any](opts ...Option[T]) *fanOut[T] {
@@ -99,6 +114,7 @@ func newFanOut[T any](opts ...Option[T]) *fanOut[T] {
 		draining:      false,
 		onSubscribe:   nil,
 		onUnsubscribe: nil,
+		onDrop:        nil,
 	}
 
 	for _, opt := range opts {
@@ -244,6 +260,9 @@ func (f *fanOut[T]) sendAllLocked(msg T) {
 		select {
 		case sub.ch <- msg:
 		default:
+			if f.onDrop != nil {
+				f.onDrop(msg)
+			}
 		}
 	}
 }
@@ -412,6 +431,17 @@ func (f *fanOut[T]) OnUnsubscribe(fn func()) {
 	defer f.mu.Unlock()
 
 	f.onUnsubscribe = fn
+}
+
+// OnDrop registers a callback fired each time a message is dropped because a
+// subscriber's buffer is full. The callback receives the dropped message and
+// runs on the broadcasting goroutine inside the fan-out read lock, so it must
+// be fast and non-blocking. Pass nil to clear a previously registered callback.
+func (f *fanOut[T]) OnDrop(fn func(T)) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	f.onDrop = fn
 }
 
 // channelPtr returns the pointer identity of a channel, regardless of direction.
