@@ -55,7 +55,12 @@ func CollectWithRequest(
 
 // CollectPost is a convenience wrapper around [CollectWithRequest] for POST
 // requests with a JSON body.
-func CollectPost(tb testing.TB, handler http.Handler, jsonBody string, opts ...RequestOption) []Event {
+func CollectPost(
+	tb testing.TB,
+	handler http.Handler,
+	jsonBody string,
+	opts ...RequestOption,
+) []Event {
 	tb.Helper()
 
 	return CollectWithRequest(
