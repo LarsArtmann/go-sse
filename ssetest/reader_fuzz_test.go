@@ -31,7 +31,7 @@ func FuzzReadEvents(f *testing.F) {
 		"data:\ttest\rdata: \ndata:test\n\n", // format-leading-space
 		"data:\x00\ndata:  2\rData:1\ndata\x00:2\ndata:1\r\x00data:4\nda-ta:3\rdata_5\ndata:3\rdata:\r\n data:32\ndata:4\n\n", // format-field-parsing
 		"data:1\r:\x00\n:\r\ndata:2\n:x\rdata:3\n:data:fail\r:x\ndata:4\n\n",                                                  // format-comments (short comments)
-		"data:\n\ndata\ndata\n\ndata:test\n\n",                                                                                // format-field-data
+		"data:\n\ndata\ndata\n\ndata:test\n\n",                                                                                //nolint:dupword // format-field-data WPT vector (byte-exact)
 		"data:\x00\n\n",                                                                                                       // format-null-character
 		"\xEF\xBB\xBFdata:1\n\n\xEF\xBB\xBFdata:2\n\ndata:3\n\n",                                                              // format-bom
 		"\xEF\xBB\xBF\xEF\xBB\xBFdata:1\n\ndata:2\n\n",                                                                        // format-bom-2

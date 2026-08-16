@@ -13,7 +13,7 @@ type chunkedReader struct {
 	size int
 }
 
-func (r *chunkedReader) Read(p []byte) (int, error) {
+func (r *chunkedReader) Read(buf []byte) (int, error) {
 	if r.off >= len(r.data) {
 		return 0, io.EOF
 	}
@@ -22,7 +22,7 @@ func (r *chunkedReader) Read(p []byte) (int, error) {
 		r.size = 1
 	}
 
-	n := copy(p, r.data[r.off:min(r.off+r.size, len(r.data))])
+	n := copy(buf, r.data[r.off:min(r.off+r.size, len(r.data))])
 	r.off += n
 
 	return n, nil

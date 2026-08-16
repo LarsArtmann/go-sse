@@ -19,7 +19,7 @@ const (
 
 // utf8BOM is the UTF-8 byte-order mark (U+FEFF). The SSE spec decodes the
 // stream with UTF-8 decode, which strips exactly one leading BOM.
-var utf8BOM = [...]byte{0xEF, 0xBB, 0xBF} //nolint:gochecknoglobals // constant; byte arrays cannot be const
+var utf8BOM = [...]byte{0xEF, 0xBB, 0xBF} //nolint:gochecknoglobals // byte arrays cannot be const
 
 // ReadEvents parses the SSE wire format from r and returns all decoded events.
 // It reads until EOF, so the source must close or end the stream (e.g., an HTTP
@@ -212,6 +212,10 @@ func newSSEScanner(r io.Reader) *bufio.Scanner {
 	return scanner
 }
 
+// crlfLen is the number of bytes consumed when a CR is followed by its LF
+// partner: a CRLF pair counts as one end-of-line, not two.
+const crlfLen = 2
+
 // splitSSELines is a bufio.SplitFunc that splits a byte stream into lines on
 // CR, LF, or CRLF — the three terminators the SSE spec allows (§ 9.2.5:
 // "end-of-line = cr lf / cr / lf"). bufio.ScanLines is not sufficient: it only
@@ -220,8 +224,6 @@ func newSSEScanner(r io.Reader) *bufio.Scanner {
 //
 // A CR as the last buffered byte is held back until one more byte arrives (or
 // EOF) so a CRLF pair is always recognized as a single terminator.
-const crlfLen = 2 // bytes consumed when a CR is followed by its LF partner
-
 func splitSSELines(data []byte, atEOF bool) (int, []byte, error) {
 	if atEOF && len(data) == 0 {
 		return 0, nil, nil
@@ -261,7 +263,7 @@ func splitSSELines(data []byte, atEOF bool) (int, []byte, error) {
 // pin that a second (mid-stream) BOM is NOT stripped — it poisons the first
 // field name, so the line is ignored as an unknown field.
 func stripLeadingBOM(r io.Reader) io.Reader {
-	return &bomStripReader{r: r} //nolint:exhaustruct // zero value for everything except the wrapped reader
+	return &bomStripReader{r: r} //nolint:exhaustruct // zero values are correct for the rest
 }
 
 // bomStripReader probes the first bytes of the underlying reader once, drops

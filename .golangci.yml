@@ -175,6 +175,7 @@ linters:
         - err
         - ok
         - tt
+        - tc
         - fn
         - tb
         - t

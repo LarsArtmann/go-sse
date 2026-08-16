@@ -161,7 +161,7 @@ var wptCorpus = []sseCase{
 			"data" + "\n" +
 			"data:test" + "\r\r" +
 			"\n",
-		want: []wantEvent{{Data: "test\n\ntest"}},
+		want: []wantEvent{{Data: "test\n\ntest"}}, //nolint:dupword // byte-exact WPT vector
 	},
 	{
 		// https://github.com/web-platform-tests/wpt/blob/master/eventsource/format-leading-space.any.js
@@ -172,7 +172,7 @@ var wptCorpus = []sseCase{
 		wire: "data:\ttest" + "\r" +
 			"data: " + "\n" +
 			"data:test" + "\n\n",
-		want: []wantEvent{{Data: "\ttest\n\ntest"}},
+		want: []wantEvent{{Data: "\ttest\n\ntest"}}, //nolint:dupword // byte-exact WPT vector
 	},
 	{
 		// https://github.com/web-platform-tests/wpt/blob/master/eventsource/format-comments.any.js
