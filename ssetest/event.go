@@ -11,10 +11,16 @@ import (
 //
 // Fields:
 //   - Type is the SSE event type (the event: field; empty for unnamed events,
-//     which browsers deliver as "message").
+//     which browsers deliver as "message"). It is reset after every dispatch.
 //   - DataLines are the individual data: lines, values only (no "data: " prefix).
-//   - ID is the optional SSE event ID (the id: field).
-//   - Retry is the optional reconnection interval in milliseconds (the retry: field).
+//   - ID is the last event ID in effect at dispatch time. Per the SSE spec the
+//     id: field is connection-level state: it persists across frames (an event
+//     without an id: line reports the most recent one), an empty id: resets it
+//     to "", and an id: value containing NUL is ignored.
+//   - Retry is the reconnection interval in milliseconds in effect at dispatch
+//     time. Like ID it is connection-level state: a retry: line updates it even
+//     in frames that never dispatch, and invalid values are ignored without
+//     resetting a previously set value.
 type Event struct {
 	Type      string
 	DataLines []string

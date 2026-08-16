@@ -21,8 +21,8 @@ func (eventBrand) Name() string { return "SSEEvent" }
 // with other string-typed IDs.
 //
 // SSE event IDs are arbitrary server-defined strings — they are NOT ULIDs.
-// Use [ParseEventID] to construct from a string (rejects control characters
-// and newlines, which would corrupt the SSE wire format).
+// Use [ParseEventID] to construct from a string (rejects NUL and line
+// terminators per the spec's Last-Event-ID value space, § 9.2.4).
 type EventID = brandid.ID[eventBrand, string]
 
 // NewEventID constructs an [EventID] from a string. Performs no validation —
@@ -35,14 +35,17 @@ const base10 = 10
 // errEventIDInvalid is returned by [ParseEventID] for malformed values.
 var errEventIDInvalid = errorfamily.NewRejection(
 	"sse.event_id_invalid",
-	"sse event id: contains forbidden character (newline or carriage return)",
+	"sse event id: contains forbidden character (NUL, newline, or carriage return)",
 )
 
-// ParseEventID converts a string to an [EventID], rejecting values that
-// would corrupt the SSE wire format (newlines, carriage returns). Empty strings
-// are allowed (representing "no ID" / initial connection).
+// ParseEventID converts a string to an [EventID], rejecting values outside
+// the Last-Event-ID value space the SSE spec allows (§ 9.2.4): U+0000 NULL,
+// U+000A LF, and U+000D CR are forbidden — NUL would be silently dropped by
+// browser parsers (§ 9.2.6 ignores id fields containing it) and line
+// terminators would corrupt the wire format. Empty strings are allowed
+// (representing "no ID" / initial connection).
 func ParseEventID(s string) (EventID, error) {
-	if strings.ContainsAny(s, "\n\r") {
+	if strings.ContainsAny(s, "\n\r\x00") {
 		return EventID{}, errorfamily.Wrapf(errEventIDInvalid, errorfamily.Rejection,
 			"sse.event_id_invalid", "%q", s)
 	}
@@ -51,7 +54,8 @@ func ParseEventID(s string) (EventID, error) {
 }
 
 // MustParseEventID is the panicking variant of [ParseEventID] for tests
-// and constants. Panics if the input contains newlines.
+// and constants. Panics if the input contains NUL, newline, or carriage
+// return.
 func MustParseEventID(s string) EventID {
 	id, err := ParseEventID(s)
 	if err != nil {

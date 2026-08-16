@@ -53,6 +53,32 @@ Per the SSE specification, frames without a `data:` line (comments, heartbeats,
 id/retry-only frames) never surface as events — the parser matches browser
 behavior, so heartbeated streams test cleanly.
 
+## Spec conformance
+
+The parser implements the WHATWG HTML Living Standard
+[§ 9.2.6](https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream)
+and is pinned by the official browser test suite: the Web Platform Tests
+`eventsource/format-*` corpus, the spec's own example streams, and Chromium's
+`event_source_parser_test.cc` unit cases are transcribed as Go tests
+(`wpt_format_corpus_test.go`), re-run through 1–4096 byte chunked readers to
+prove TCP-chunking independence, and closed against the writer via round-trip
+property tests. In short, `ReadEvents` parses exactly what a browser's
+`EventSource` parses:
+
+- Lines end with CR, LF, or CRLF; a blank line dispatches a frame.
+- Exactly one leading UTF-8 BOM is stripped; a mid-stream BOM is data.
+- Field names are case-sensitive; unknown fields and `:` comments are ignored;
+  one space after the colon is stripped (never a tab).
+- A `data:` line with an empty value still dispatches an event (empty payload);
+  frames with no `data:` line never dispatch.
+- `id:` is sticky connection state: events report the most recent `id:` value
+  (empty `id:` resets it; NUL-containing `id:` is ignored).
+- `retry:` is sticky connection state too: all-ASCII-digit values (leading
+  zeros allowed) update it even in frames that never dispatch; invalid values
+  never reset it.
+- An incomplete final frame at EOF is discarded, per the spec's
+  "any pending data must be discarded" rule.
+
 ## Request options
 
 Every `Collect*` helper accepts options:

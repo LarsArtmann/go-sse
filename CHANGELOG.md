@@ -8,12 +8,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- `ssetest/` — consumer test helpers as a separate Go module (`github.com/larsartmann/go-sse/ssetest`): SSE wire-format parser (`ReadEvents`/`ReadNEvents` with dataless-frame suppression per the SSE spec), end-to-end `Collect*` helpers that drive a real HTTP server (`Collect`, `CollectPost`, `CollectWithRequest`, `CollectN`, `CollectWithTimeout`), request options (`WithPath`, `WithHeader`, `WithLastEventID` for reconnect/replay testing), `Require*` assertions, `FindByType`/`FilterByType` search, and `EventsString` debugging. All helpers accept `testing.TB` (works with `*testing.T`, `*testing.B`, and Ginkgo's `GinkgoT()`). Because it is its own module, `testing` never leaks into consumer production builds. 94.6% statement coverage (0 erraudit violations with `--enforce-go-error-family`); includes `FuzzReadEvents` and dogfood E2E tests over `Stream`, `Broadcaster`, `Replay`, and heartbeats.
+- Spec-based conformance test suite pinning go-sse to the WHATWG HTML Living Standard § 9.2 (Server-Sent Events):
+  - `ssetest/wpt_format_corpus_test.go` — the official Web Platform Tests (WPT) `eventsource/format-*.any.js` corpus transcribed into executable Go tests (17 WPT vectors, 4 spec § 9.2.6 example streams, 8 Chromium `event_source_parser_test.cc` unit cases, each with its upstream citation). The official browser suite now runs in our CI forever.
+  - `ssetest/chunk_boundary_test.go` — the entire corpus re-parsed through readers delivering 1–4096 byte chunks (Chromium's `EnqueueOneByOne` trick), proving parse results are independent of TCP chunking, including CRLF pairs and BOM bytes split across reads.
+  - `ssetest/roundtrip_test.go` — writer/reader round-trip table plus `FuzzWriteReadRoundTrip` property: everything `sse.WriteEvent` writes reads back as the identical observable event (modulo the spec-mandated CR/CRLF→LF normalization and the structural trailing newline).
+  - `event_spec_test.go` (root) — writer golden vectors transcribed from spec § 9.2.6 (stock ticker, space-after-colon note, field order, empty-data dispatch, CR/CRLF line splitting, heartbeat comment form) and `ParseEventID` value-space tests.
+  - `FuzzReadEvents` extended with 25 conformance seeds (BOM, NUL id, sticky id, lone CR, EOF-discard shapes) and a byte-by-byte chunk-invariance property.
 - `flake.nix` build/test/lint/coverage apps now cover the `ssetest/` module alongside the root module, and `nix flake check` builds a hermetic compile+test derivation (`checks.build-ssetest`) for it; CI runs test/vet/lint/coverage/vulncheck/fuzz for both modules.
+- `ssetest/` — consumer test helpers as a separate Go module (`github.com/larsartmann/go-sse/ssetest`): SSE wire-format parser (`ReadEvents`/`ReadNEvents` with dataless-frame suppression per the SSE spec), end-to-end `Collect*` helpers that drive a real HTTP server (`Collect`, `CollectPost`, `CollectWithRequest`, `CollectN`, `CollectWithTimeout`), request options (`WithPath`, `WithHeader`, `WithLastEventID` for reconnect/replay testing), `Require*` assertions, `FindByType`/`FilterByType` search, and `EventsString` debugging. All helpers accept `testing.TB` (works with `*testing.T`, `*testing.B`, and Ginkgo's `GinkgoT()`). Because it is its own module, `testing` never leaks into consumer production builds. 94.6% statement coverage (0 erraudit violations with `--enforce-go-error-family`); includes `FuzzReadEvents` and dogfood E2E tests over `Stream`, `Broadcaster`, `Replay`, and heartbeats.
 
 ### Fixed
 
-- Nothing yet.
+- `ssetest.ReadEvents`/`ReadNEvents` parser brought into spec conformance (WHATWG HTML § 9.2.6; verified against WPT). Six deviations corrected, all behavioral (no API signature changes):
+  - **Lone CR is a line terminator** (§ 9.2.5 `end-of-line = cr lf / cr / lf`). Previously only LF terminated lines (with CRLF tolerated), so CR-terminated streams — which every browser parses — mis-parsed. The reader now uses a dedicated CR/LF/CRLF split function.
+  - **An incomplete final frame at EOF is discarded**, per "Once the end of the file is reached, any pending data must be discarded" (WPT `format-data-before-final-empty-line`). Previously the trailing frame was leniently dispatched.
+  - **Exactly one leading UTF-8 BOM is stripped** (WPT `format-bom`, `format-bom-2`). Previously a BOM poisoned the first field name. A second, mid-stream BOM is data and still poisons the field name, exactly as in browsers.
+  - **An `id:` field containing U+0000 NULL is ignored** (WPT `format-field-id-null`), instead of being accepted as the event ID.
+  - **The last event ID is sticky** (§ 9.2.6 dispatch step 1; Chromium `LastEventIdShouldNotBeReset`): `Event.ID` now reports the most recent `id:` value in effect at dispatch time — it persists across frames that don't restate it, an id-only frame's value reaches the next dispatched event, and an empty `id:` resets it to `""`. Previously IDs were per-frame.
+  - The `retry:` reconnection time is likewise connection-level state (Chromium `RetryTakesEffectEvenWhenNotDispatching`): a `retry:` line updates it even in frames that never dispatch, invalid values never reset a previously set value, and parsing widened to 64-bit width before assignment.
+- `sse.ParseEventID` now rejects U+0000 NULL in addition to LF/CR, completing the spec § 9.2.4 Last-Event-ID value space (browsers ignore id fields containing NUL, so accepting one produced IDs no browser would ever echo back). Error message updated to name all three forbidden character classes.
+
+### Changed
+
+- **`ssetest.Event.ID` and `Event.Retry` semantics are now "value in effect at dispatch"** (sticky, per spec) instead of "value restated in this frame". Tests that asserted `ID == ""` for events following an `id:` frame, or `Retry == 0` for events following a `retry:` frame, must be updated. The struct fields keep their names and types.
+- `ssetest` reader internals restructured into a `streamParser` with explicit per-frame vs connection-level state (the spec's event type/data buffers vs last-event-ID buffer/reconnection time). No public API change.
 
 ## [0.5.0] - 2026-08-13
 

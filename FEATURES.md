@@ -102,8 +102,11 @@ Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never
 
 | Feature                                                            | Status           | Evidence                                                                                                        |
 | ------------------------------------------------------------------ | ---------------- | --------------------------------------------------------------------------------------------------------------- |
-| SSE wire-format parser (event/data/id/retry, CRLF, comments)       | FULLY_FUNCTIONAL | `ReadEvents`, `ReadNEvents`, `MustRead*` in `ssetest/reader.go`; `reader_test.go`, `BenchmarkReadEvents`        |
-| Dataless-frame suppression (heartbeats/id-only frames never dispatch) | FULLY_FUNCTIONAL | `dispatchFrame` in `ssetest/reader.go`; `TestReadEvents_DatalessFramesNeverDispatch`, `FuzzReadEvents`       |
+| SSE wire-format parser, WHATWG § 9.2.6-conformant                  | FULLY_FUNCTIONAL | `ReadEvents`, `ReadNEvents`, `MustRead*` in `ssetest/reader.go` (custom CR/LF/CRLF split, BOM strip-once, sticky id/retry, NUL-id ignore, EOF discard); `reader_test.go`, `BenchmarkReadEvents` |
+| WPT conformance corpus (official browser suite as Go tests)        | FULLY_FUNCTIONAL | `wpt_format_corpus_test.go` — 17 WPT `eventsource/format-*` vectors, 4 spec § 9.2.6 example streams, 8 Chromium `event_source_parser_test.cc` cases, each with upstream citation |
+| Chunk-boundary independence (TCP chunking never changes parse)     | FULLY_FUNCTIONAL | `chunk_boundary_test.go` — full corpus re-parsed through 1–4096 byte chunked readers; byte-by-byte property in `FuzzReadEvents` |
+| Writer/reader round-trip identity                                  | FULLY_FUNCTIONAL | `roundtrip_test.go` table + `FuzzWriteReadRoundTrip` (root `sse.Event` → `WriteEvent` → `ReadEvents` → identity, CR/CRLF→LF normalization pinned) |
+| Dataless-frame suppression (heartbeats/id-only frames never dispatch) | FULLY_FUNCTIONAL | `streamParser.dispatchFrame` in `ssetest/reader.go`; `TestReadEvents_DatalessFramesNeverDispatch`, `FuzzReadEvents`       |
 | End-to-end Collect helpers (real HTTP server via httptest)         | FULLY_FUNCTIONAL | `Collect`, `CollectPost`, `CollectWithRequest`, `CollectN`, `CollectWithTimeout` in `ssetest/collect.go`        |
 | Request options (path/query, headers, Last-Event-ID)               | FULLY_FUNCTIONAL | `WithPath`, `WithHeader`, `WithLastEventID` in `ssetest/options.go`; `options_test.go`                          |
 | `Require*` assertions (count, type, data, ID, retry)               | FULLY_FUNCTIONAL | `ssetest/assert.go`; `assert_test.go` (failure paths via recordingTB)                                            |

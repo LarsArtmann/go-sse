@@ -89,10 +89,25 @@ func TestReadEvents_CRLFLineEndings(t *testing.T) {
 	ssetest.RequireData(t, events[0], "hello")
 }
 
-func TestReadEvents_NoTrailingBlankLine(t *testing.T) {
+// TestReadEvents_IncompleteFinalFrameDiscarded pins spec § 9.2.6: "Once the
+// end of the file is reached, any pending data must be discarded." A frame
+// without a blank line before EOF never dispatches — this is also pinned by
+// the WPT format-data-before-final-empty-line vector. (Before the spec
+// conformance fixes, this test asserted the opposite, lenient behavior.)
+func TestReadEvents_IncompleteFinalFrameDiscarded(t *testing.T) {
 	t.Parallel()
 
 	events, err := ssetest.ReadEvents(strings.NewReader("data: tail\n"))
+	if err != nil {
+		t.Fatalf("read events: %v", err)
+	}
+
+	if len(events) != 0 {
+		t.Errorf("incomplete final frame: got %d events, want 0", len(events))
+	}
+
+	// The blank line is what dispatches: with it, the same frame surfaces.
+	events, err = ssetest.ReadEvents(strings.NewReader("data: tail\n\n"))
 	if err != nil {
 		t.Fatalf("read events: %v", err)
 	}
@@ -240,21 +255,24 @@ func TestReadNEvents_FailingReader(t *testing.T) {
 	}
 }
 
-// partialReader returns valid SSE bytes once, then fails — simulating a
-// connection drop mid-stream.
+// partialReader serves its valid SSE bytes across successive reads — like a
+// network connection chunking the stream — then fails, simulating a connection
+// drop mid-stream. It must tolerate multiple partial reads: the reader's BOM
+// probe consumes the first bytes through its own read.
 type partialReader struct {
-	valid  string
-	served bool
+	valid string
+	off   int
 }
 
 func (p *partialReader) Read(b []byte) (int, error) {
-	if p.served {
+	if p.off >= len(p.valid) {
 		return 0, errTestReadFailure
 	}
 
-	p.served = true
+	n := copy(b, p.valid[p.off:])
+	p.off += n
 
-	return copy(b, p.valid), nil
+	return n, nil
 }
 
 func BenchmarkReadEvents(b *testing.B) {
