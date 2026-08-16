@@ -146,6 +146,28 @@ sse.ReplayFiltered(stream, store, lastID, func(evt sse.Event) bool {
 })
 ```
 
+## Testing Your Handlers
+
+[`ssetest`](./ssetest/) is a companion module with deep-testing helpers: it spins up a real HTTP server, drives your handler, parses the SSE wire format, and hands back typed, assertable events. No hand-rolled parser required.
+
+```go
+import "github.com/larsartmann/go-sse/ssetest"
+
+func TestFeedHandler(t *testing.T) {
+    t.Parallel()
+
+    events := ssetest.Collect(t, myHandler)
+    ssetest.RequireEventCount(t, events, 2)
+    ssetest.RequireEventType(t, events[0], "feed")
+    ssetest.RequireData(t, events[0], "hello")
+
+    // Simulate a reconnecting browser for replay testing:
+    replayed := ssetest.Collect(t, myHandler, ssetest.WithLastEventID("42"))
+}
+```
+
+`CollectN` handles streaming handlers (reads exactly N events), `CollectWithTimeout` returns whatever arrived before a deadline, and `ReadEvents`/`ReadNEvents` parse any `io.Reader`. Per the SSE spec, dataless frames (heartbeats, id-only) never surface as events. All helpers accept `testing.TB`, so they work with `*testing.T`, `*testing.B`, and Ginkgo's `GinkgoT()`. See [ssetest/README.md](./ssetest/README.md).
+
 ## API Reference
 
 ### Event Types

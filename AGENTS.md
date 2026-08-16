@@ -1,16 +1,16 @@
 # AGENTS.md — go-sse
 
-Server-Sent Events transport library for Go. Single package (`sse`), flat layout. Wire format + connection lifecycle + fan-out + reconnection replay. Two small dependencies (`go-branded-id`, `go-error-family`); no domain opinions.
+Server-Sent Events transport library for Go. Single package (`sse`), flat layout, plus a separate `ssetest/` module for consumer test helpers. Wire format + connection lifecycle + fan-out + reconnection replay. Two small dependencies (`go-branded-id`, `go-error-family`); no domain opinions.
 
 ## Commands
 
 `flake.nix` provides hermetic build/test/lint. The devShell sets `GOWORK=off` and `GOEXPERIMENT=jsonv2` automatically:
 
 ```bash
-nix run .#test-race          # tests with race detector
-nix run .#vet                # go vet
-nix run .#lint               # golangci-lint
-nix run .#coverage           # test + coverage report
+nix run .#test-race          # tests with race detector (root + ssetest)
+nix run .#vet                # go vet (root + ssetest)
+nix run .#lint               # golangci-lint (root + ssetest)
+nix run .#coverage           # test + coverage report (root + ssetest)
 nix flake check              # full hermetic check (compile + test)
 nix develop                  # enter dev shell (Go 1.26, golangci-lint, gopls, govulncheck, templ)
 ```
@@ -24,8 +24,11 @@ Raw `go` tooling (for environments without Nix):
 GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race -count=1   # tests
 GOWORK=off GOEXPERIMENT=jsonv2 go vet ./...                    # vet
 GOWORK=off GOEXPERIMENT=jsonv2 golangci-lint run ./...         # lint
+(cd ssetest && GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race -count=1)  # ssetest module
 templ generate                                                 # regenerate *_templ.go from .templ files
 ```
+
+`ssetest/` is its own Go module (`github.com/larsartmann/go-sse/ssetest`) with a `replace go-sse => ..` directive — always `cd ssetest` to build/test/lint it; `go test ./ssetest/...` from the root fails (module boundary). golangci-lint discovers the root `.golangci.yml` from inside `ssetest/` automatically (parent-directory search), so no separate config exists.
 
 **`GOEXPERIMENT=jsonv2` is required** to build, transitively via `go-branded-id`. Without it, compilation fails. Always prefix build/test/vet commands with it.
 
@@ -46,7 +49,7 @@ One example-only dependency:
 
 ## Architecture
 
-Four layers, each in its own file, composable independently:
+Four layers, each in its own file, composable independently, plus a separate test-helpers module:
 
 | Layer             | File                           | Role                                                                                                                                                                                                                           |
 | ----------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -54,6 +57,7 @@ Four layers, each in its own file, composable independently:
 | Single connection | `stream.go`                    | `Stream` — headers, mutex-guarded send, heartbeat, disconnect hooks, `SendLines`, `SendKeyed`                                                                                                                                  |
 | Fan-out           | `broadcaster.go` + `fanout.go` | `Broadcaster[T]` (public) embeds `fanOut[T]` (unexported hub). `SubscribeFilter` for predicate-based filtering. `Shutdown(ctx)` + `Health()` for graceful lifecycle. `WithBufferSize[T]` for configurable subscriber capacity. `WithOnDrop[T]` + `OnDrop` for drop observability. |
 | Reconnection      | `replay.go`                    | `EventStore` interface + `Replay` function. `FilteredEventStore` + `ReplayFiltered` for predicate-aware replay.                                                                                                                |
+| Test helpers      | `ssetest/` (separate module)   | Consumer-side E2E testing: SSE wire parser (`ReadEvents`/`ReadNEvents`), `Collect*` HTTP helpers, request options, `Require*` assertions. Mirrors go-datastar's `datastartest`.                                               |
 
 **Data flow:** `Broadcaster.Broadcast(evt)` → non-blocking `select` send into each subscriber's buffered channel → handler's `select` loop reads channel → `stream.Send(evt)` → `WriteEvent` → `ResponseWriter.Write` + `Flush`.
 
@@ -96,6 +100,8 @@ Four layers, each in its own file, composable independently:
 - **`Shutdown`'s deadline error preserves `errors.Is(err, context.Canceled)` / `context.DeadlineExceeded`.** The error is wrapped with `errorfamily.Wrapf` but the underlying ctx.Err() is the Unwrap target, so existing context-cancellation checks keep working.
 - **`Shutdown` is safe to call from multiple goroutines but only the first call's drain takes effect.** Subsequent calls return nil once the hub is already closed.
 - **`WithBufferSize` non-positive values are silently ignored.** The default (`defaultSubscriberBuffer = 64`) is kept. This means `WithBufferSize(0)` and `WithBufferSize(-1)` are no-ops; pass a positive integer.
+- **`ssetest`'s parser is deliberately duplicated from `datastartest`** (same `dispatchFrame` design, independent implementations). The two modules do not depend on each other — each stays a single-dependency module for its consumers. Bug fixes to the dispatch rule (e.g., the 2026-08-16 dataless-frame fix) must be applied to both.
+- **`bufio.ScanLines` already strips a trailing `\r`** — any `strings.TrimSuffix(text, "\r")` after `scanner.Text()` is dead code. CRLF input is handled by the scanner itself.
 
 ## Conventions
 
@@ -104,6 +110,7 @@ Four layers, each in its own file, composable independently:
 - **Errors use `go-error-family`** with stable codes (`"sse.write_failed"`, `"sse.send_failed"`, `"sse.event_id_invalid"`, `"sse.replay_failed"`, `"sse.replay_store_failed"`, `"sse.json_marshal_failed"`, `"sse.shutdown_failed"`, `"sse.shutdown_drain_deadline_exceeded"`) and severity categories (`Transient`, `Rejection`). Match this pattern for new errors.
 - **Go 1.26 idioms in use:** integer range loops (`for i := range len(s)`, `for range 65`).
 - **Tests:** external package `sse_test`, every test starts with `t.Parallel()`, `httptest` for stream tests, `bytes.Buffer` for serialization, `errorWriter`/`errorResponseWriter` fakes for failure paths. Race tests exist (`TestBroadcaster_BroadcastUnsubscribeRace`).
+- **`ssetest` public helpers take `tb testing.TB`** (never `*testing.T`) so they work with `*testing.B` and Ginkgo's `GinkgoT()`; the `thelper` linter enforces the param name `tb`. The root `sse` package must never require `ssetest` (module boundary, guarded by `module_boundary_test.go`); `ssetest` reaches the root via `replace go-sse => ..`.
 - **`splitLines`** (event.go) handles the SSE multi-line `data:` requirement and CRLF stripping; the no-newline fast path returns a single-element slice without allocating a backing array.
 - **`KeyedLines`** (event.go) prefixes each line of a multi-line value with `key `, producing the newline-joined string for `Event.Data`. This is the building block for keyed-data-line protocols like DataStar (`data: elements <div>` / `data: elements </div>`). It delegates to `splitLines` for line splitting. Returns `""` for empty input (no data line emitted).
 - **`Stream.SendLines`** (stream.go) is a convenience wrapper around `Send` that joins variadic string arguments with `\n` into `Event.Data`. Composes with `KeyedLines` for the DataStar pattern: each `KeyedLines` result (which may contain embedded `\n`) is one argument, and `splitLines` in `WriteEvent` handles the final split.

@@ -96,6 +96,22 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 | Benchmarks            | FULLY_FUNCTIONAL | `BenchmarkBroadcasterFanOut` (1–10k subs), `BenchmarkSubscribeUnsubscribe`, `BenchmarkBroadcastManyVsLoop` in `broadcaster_test.go`; `BenchmarkKeyedLines` in `event_test.go`; `BenchmarkSubscribeFilter_PredicateOverhead` in `filter_test.go`; `BenchmarkMemoryPerSubscriber` (per-subscriber heap at 100/1k/10k) in `broadcaster_test.go` |
 | CI pipeline           | FULLY_FUNCTIONAL | `.github/workflows/ci.yml`                                                                                                                                                                                                                                                                                                                   |
 
+## Consumer test helpers (`ssetest/`)
+
+Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never leaks into consumer production builds. 96.9% statement coverage.
+
+| Feature                                                            | Status           | Evidence                                                                                                        |
+| ------------------------------------------------------------------ | ---------------- | --------------------------------------------------------------------------------------------------------------- |
+| SSE wire-format parser (event/data/id/retry, CRLF, comments)       | FULLY_FUNCTIONAL | `ReadEvents`, `ReadNEvents`, `MustRead*` in `ssetest/reader.go`; `reader_test.go`, `BenchmarkReadEvents`        |
+| Dataless-frame suppression (heartbeats/id-only frames never dispatch) | FULLY_FUNCTIONAL | `dispatchFrame` in `ssetest/reader.go`; `TestReadEvents_DatalessFramesNeverDispatch`, `FuzzReadEvents`       |
+| End-to-end Collect helpers (real HTTP server via httptest)         | FULLY_FUNCTIONAL | `Collect`, `CollectPost`, `CollectWithRequest`, `CollectN`, `CollectWithTimeout` in `ssetest/collect.go`        |
+| Request options (path/query, headers, Last-Event-ID)               | FULLY_FUNCTIONAL | `WithPath`, `WithHeader`, `WithLastEventID` in `ssetest/options.go`; `options_test.go`                          |
+| `Require*` assertions (count, type, data, ID, retry)               | FULLY_FUNCTIONAL | `ssetest/assert.go`; `assert_test.go` (failure paths via recordingTB)                                            |
+| Event search without index math                                    | FULLY_FUNCTIONAL | `FindByType`, `FilterByType` in `ssetest/search.go`                                                             |
+| `testing.TB` compatibility (T, B, GinkgoT)                         | FULLY_FUNCTIONAL | All public helpers take `tb testing.TB`; `TestHelpers_AcceptTestingB`                                           |
+| Dogfood E2E over real go-sse types                                 | FULLY_FUNCTIONAL | `e2e_test.go` (Stream round-trip, Broadcaster fan-out, Replay+LastEventID, heartbeat invisibility, timeout read) |
+| Debug rendering for failure messages                               | FULLY_FUNCTIONAL | `Event.String`, `EventsString` in `ssetest/event.go`; `example_test.go` (godoc examples with output)            |
+
 ## Explicit non-goals
 
 These are deliberately out of scope. They are documented here so contributors

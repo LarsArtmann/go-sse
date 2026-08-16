@@ -1,8 +1,8 @@
 package ssetest_test
 
 import (
-	"fmt"
 	"net/http"
+	"strconv"
 	"testing"
 
 	"github.com/larsartmann/go-sse"

@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- Nothing yet.
+- `ssetest/` — consumer test helpers as a separate Go module (`github.com/larsartmann/go-sse/ssetest`): SSE wire-format parser (`ReadEvents`/`ReadNEvents` with dataless-frame suppression per the SSE spec), end-to-end `Collect*` helpers that drive a real HTTP server (`Collect`, `CollectPost`, `CollectWithRequest`, `CollectN`, `CollectWithTimeout`), request options (`WithPath`, `WithHeader`, `WithLastEventID` for reconnect/replay testing), `Require*` assertions, `FindByType`/`FilterByType` search, and `EventsString` debugging. All helpers accept `testing.TB` (works with `*testing.T`, `*testing.B`, and Ginkgo's `GinkgoT()`). Because it is its own module, `testing` never leaks into consumer production builds. 96.9% statement coverage; includes `FuzzReadEvents` and dogfood E2E tests over `Stream`, `Broadcaster`, `Replay`, and heartbeats.
+- `flake.nix` build/test/lint/coverage apps now cover the `ssetest/` module alongside the root module; CI runs test/vet/lint/coverage/vulncheck/fuzz for both modules.
 
 ### Fixed
 
