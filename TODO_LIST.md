@@ -16,7 +16,9 @@
 
 ## Verification & correctness
 
-No open items.
+| Status    | Item                                                                              | Notes                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔴 `TODO` | Port the ssetest fuzz regression seeds to `datastartest` (go-datastar)            | ssetest now pins the trailing-LF regression (`testdata/fuzz/FuzzWriteReadRoundTrip/2ba7b6a0aaf94e65`) plus WPT seed vectors; `datastartest/testdata/fuzz/` is empty, so the same parser bug class would regress unnoticed there. The two parsers are deliberately duplicated and must stay in lockstep (AGENTS.md). |
 
 > ✅ 2026-08-05 — Real DataStar JS client manually tested against `example/datastar` example server (browser session). Progress bar and status patches confirmed working end-to-end after the CDN URL fix (`docs/status/2026-08-05_10-15_datastar-example-cdn-url-fix.md`). Both `data-style:width` (data attribute) and the `[email protected]` placeholder bug are simultaneously verified.
 

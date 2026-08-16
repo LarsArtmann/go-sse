@@ -1,7 +1,7 @@
 # SUPERB: Spec-Based Hardcore SSE Conformance Testing
 
 **Date:** 2026-08-16 09:21
-**Status:** EXECUTING
+**Status:** DONE (2026-08-16) — execution report: [docs/status/2026-08-16_10-14_sse-spec-conformance-execution.md](../status/2026-08-16_10-14_sse-spec-conformance-execution.md)
 **Goal:** Make go-sse provably conformant to the WHATWG HTML Living Standard § 9.2 (Server-Sent Events) by transcribing the official Web Platform Tests (WPT) corpus into executable Go tests — and fixing every deviation it exposes.
 
 ---

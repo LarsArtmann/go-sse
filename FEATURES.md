@@ -98,7 +98,7 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 
 ## Consumer test helpers (`ssetest/`)
 
-Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never leaks into consumer production builds. 94.6% statement coverage; 0 erraudit violations with `--enforce-go-error-family`.
+Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never leaks into consumer production builds. 95.5% statement coverage; 0 erraudit violations with `--enforce-go-error-family`.
 
 | Feature                                                            | Status           | Evidence                                                                                                        |
 | ------------------------------------------------------------------ | ---------------- | --------------------------------------------------------------------------------------------------------------- |
