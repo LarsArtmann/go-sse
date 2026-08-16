@@ -40,7 +40,11 @@
           goPkg = pkgs.go_1_26;
           buildGoModule = pkgs.buildGoModule.override { go = goPkg; };
           version = self.rev or self.dirtyRev or "dev";
+          # Separate hashes: the two modules resolve different go.mod graphs
+          # (ssetest replaces go-sse with a local path), so their vendored
+          # module sets — and therefore FOD hashes — differ.
           vendorHash = "sha256-Gf8srGcQqteoGCUQSWcPrqZ+mSZKlmi8dkMobkkz464=";
+          vendorHashSsetest = "sha256-TzgUuZw7DdKK4uSM/6wTU31yvMp8TyWtFp+1JP7l7Gg=";
 
           # go-sse is a pure library (no `main` package), so we do not publish a
           # binary `packages.default` or an overlay. Instead, buildGoModule is used
@@ -74,12 +78,13 @@
           # Same hermetic compile + test check for the separate ssetest/ module.
           # buildGoModule assumes the module at the source root, but ssetest is a
           # nested module with its own go.mod (`replace go-sse => ..`), so
-          # preBuild cds into it and the package patterns resolve inside it. The
-          # proxyVendor cache is a superset of ssetest's deps (root's module
-          # graph includes them all), which is why the vendorHash matches.
+          # preBuild cds into it and the package patterns resolve inside it. Its
+          # vendored module set differs from the root module's, hence the
+          # dedicated vendorHashSsetest.
           hermeticCheckSsetest = buildGoModule {
             pname = "go-sse-ssetest";
-            inherit version vendorHash;
+            inherit version;
+            vendorHash = vendorHashSsetest;
             src = lib.fileset.toSource {
               root = ./.;
               fileset = lib.fileset.gitTracked ./.;
