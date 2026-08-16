@@ -20,6 +20,12 @@ jobs:
         with:
           go-version-file: go.mod
       - run: go test ./... -race -count=1
+      # ssetest is a separate Go module (resolved via its replace directive);
+      # GOWORK=off keeps it out of any ambient workspace.
+      - run: go test ./... -race -count=1
+        working-directory: ssetest
+        env:
+          GOWORK: off
 
   lint:
     name: Lint
@@ -44,6 +50,12 @@ jobs:
           # versions entirely ("golangci-lint v2 is not supported by
           # golangci-lint-action v6").
           version: v2.12.2
+      - uses: golangci/golangci-lint-action@9fae48acfc02a90574d7c304a1758ef9895495fa # v7
+        with:
+          version: v2.12.2
+          working-directory: ssetest
+        env:
+          GOWORK: "off"
 
   vet:
     name: Vet
@@ -56,6 +68,10 @@ jobs:
         with:
           go-version-file: go.mod
       - run: go vet ./...
+      - run: go vet ./...
+        working-directory: ssetest
+        env:
+          GOWORK: off
 
   coverage:
     name: Coverage
@@ -71,6 +87,11 @@ jobs:
       # demonstration code, not library logic under test.
       - run: go test . -coverprofile=coverage.out -covermode=atomic
       - run: go tool cover -func=coverage.out
+      - run: go test ./... -coverprofile=ssetest-coverage.out -covermode=atomic
+        working-directory: ssetest
+        env:
+          GOWORK: off
+      - run: go tool cover -func=ssetest-coverage.out
 
   vulncheck:
     name: Vulncheck
@@ -84,6 +105,10 @@ jobs:
           go-version-file: go.mod
       - run: go install golang.org/x/vuln/cmd/govulncheck@latest
       - run: govulncheck ./...
+      - run: govulncheck ./...
+        working-directory: ssetest
+        env:
+          GOWORK: off
 
   fuzz:
     name: Fuzz
@@ -99,3 +124,7 @@ jobs:
       # so one invocation per target with -fuzztime=1m each.
       - run: go test . -fuzz=FuzzWriteEvent -fuzztime=1m
       - run: go test . -fuzz=FuzzParseEventID -fuzztime=1m
+      - run: go test . -fuzz=FuzzReadEvents -fuzztime=1m
+        working-directory: ssetest
+        env:
+          GOWORK: off

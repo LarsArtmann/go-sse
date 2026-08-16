@@ -47,6 +47,10 @@
           # solely as a hermetic compile + test check: it vendors the public deps
           # (go-branded-id, go-error-family) via vendorHash, so `nix flake check`
           # and CI are fully reproducible with no network access.
+          #
+          # TODO: add a hermeticCheckSsetest buildGoModule derivation for the
+          # separate ssetest/ module (full multi-module Nix CI). The flake apps
+          # (`nix run .#test-race` etc.) and GitHub Actions already cover ssetest.
           hermeticCheck = buildGoModule {
             pname = "go-sse";
             inherit version vendorHash;
@@ -140,32 +144,38 @@
             test = mkApp "test" [ goPkg ] ''
               export GOEXPERIMENT=jsonv2
               go test ./... -count=1 "$@"
+              (cd ssetest && GOWORK=off go test ./... -count=1)
             '';
 
             test-race = mkApp "test-race" [ goPkg ] ''
               export GOEXPERIMENT=jsonv2
               go test ./... -race -count=1 "$@"
+              (cd ssetest && GOWORK=off go test ./... -race -count=1)
             '';
 
             build = mkApp "build" [ goPkg ] ''
               export GOEXPERIMENT=jsonv2
               go build ./...
+              (cd ssetest && GOWORK=off go build ./...)
             '';
 
             vet = mkApp "vet" [ goPkg ] ''
               export GOEXPERIMENT=jsonv2
               go vet ./...
+              (cd ssetest && GOWORK=off go vet ./...)
             '';
 
             lint = mkApp "lint" [ pkgs.golangci-lint ] ''
               export GOEXPERIMENT=jsonv2
               golangci-lint run ./...
+              (cd ssetest && GOWORK=off golangci-lint run ./...)
             '';
 
             coverage = mkApp "coverage" [ goPkg ] ''
               export GOEXPERIMENT=jsonv2
               go test ./... -coverprofile=coverage.out -covermode=atomic "$@"
               go tool cover -func=coverage.out
+              (cd ssetest && GOWORK=off go test ./... -coverprofile=../ssetest-coverage.out -covermode=atomic && go tool cover -func=../ssetest-coverage.out)
             '';
 
             coverage-gate = mkApp "coverage-gate" [ goPkg pkgs.bc ] ''

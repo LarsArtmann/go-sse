@@ -141,6 +141,7 @@ linters:
       exclude:
         - os/exec.Cmd
         - github\.com/larsartmann/go-sse\.Event$
+        - github\.com/larsartmann/go-sse/ssetest\.Event$
     ginkgolinter:
       forbid-focus-container: true
       forbid-spec-pollution: true
