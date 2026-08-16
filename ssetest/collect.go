@@ -26,7 +26,11 @@ func Collect(tb testing.TB, handler http.Handler, opts ...RequestOption) []Event
 	tb.Helper()
 
 	resp := doRequest(tb, handler, http.MethodGet, nil, "", context.Background(), opts)
-	defer func() { _ = resp.Body.Close() }()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			tb.Errorf("close response body: %v", err)
+		}
+	}()
 
 	return MustReadEvents(tb, resp.Body)
 }
@@ -48,7 +52,11 @@ func CollectWithRequest(
 	tb.Helper()
 
 	resp := doRequest(tb, handler, method, body, contentType, context.Background(), opts)
-	defer func() { _ = resp.Body.Close() }()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			tb.Errorf("close response body: %v", err)
+		}
+	}()
 
 	return MustReadEvents(tb, resp.Body)
 }
@@ -86,7 +94,11 @@ func CollectN(tb testing.TB, handler http.Handler, count int, opts ...RequestOpt
 	}
 
 	resp := doRequest(tb, handler, http.MethodGet, nil, "", context.Background(), opts)
-	defer func() { _ = resp.Body.Close() }()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			tb.Errorf("close response body: %v", err)
+		}
+	}()
 
 	events, err := ReadNEvents(resp.Body, count)
 	if err != nil {
@@ -114,7 +126,11 @@ func CollectWithTimeout(
 	defer cancel()
 
 	resp := doRequest(tb, handler, http.MethodGet, nil, "", ctx, opts)
-	defer func() { _ = resp.Body.Close() }()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			tb.Errorf("close response body: %v", err)
+		}
+	}()
 
 	// A large count so ReadNEvents reads everything; the timeout enforces the deadline.
 	const maxEvents = 1 << 30

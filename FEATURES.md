@@ -98,7 +98,7 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 
 ## Consumer test helpers (`ssetest/`)
 
-Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never leaks into consumer production builds. 96.9% statement coverage.
+Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never leaks into consumer production builds. 94.6% statement coverage; 0 erraudit violations with `--enforce-go-error-family`.
 
 | Feature                                                            | Status           | Evidence                                                                                                        |
 | ------------------------------------------------------------------ | ---------------- | --------------------------------------------------------------------------------------------------------------- |
@@ -110,6 +110,7 @@ Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never
 | Event search without index math                                    | FULLY_FUNCTIONAL | `FindByType`, `FilterByType` in `ssetest/search.go`                                                             |
 | `testing.TB` compatibility (T, B, GinkgoT)                         | FULLY_FUNCTIONAL | All public helpers take `tb testing.TB`; `TestHelpers_AcceptTestingB`                                           |
 | Dogfood E2E over real go-sse types                                 | FULLY_FUNCTIONAL | `e2e_test.go` (Stream round-trip, Broadcaster fan-out, Replay+LastEventID, heartbeat invisibility, timeout read) |
+| Hermetic Nix check for the nested module                           | FULLY_FUNCTIONAL | `hermeticCheckSsetest` (`checks.build-ssetest`) in `flake.nix`; `preBuild = "cd ssetest"` bridges buildGoModule's root-module assumption |
 | Debug rendering for failure messages                               | FULLY_FUNCTIONAL | `Event.String`, `EventsString` in `ssetest/event.go`; `example_test.go` (godoc examples with output)            |
 
 ## Explicit non-goals

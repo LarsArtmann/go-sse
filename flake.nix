@@ -47,10 +47,6 @@
           # solely as a hermetic compile + test check: it vendors the public deps
           # (go-branded-id, go-error-family) via vendorHash, so `nix flake check`
           # and CI are fully reproducible with no network access.
-          #
-          # TODO: add a hermeticCheckSsetest buildGoModule derivation for the
-          # separate ssetest/ module (full multi-module Nix CI). The flake apps
-          # (`nix run .#test-race` etc.) and GitHub Actions already cover ssetest.
           hermeticCheck = buildGoModule {
             pname = "go-sse";
             inherit version vendorHash;
@@ -65,6 +61,37 @@
 
             meta = {
               description = "Server-Sent Events transport for Go";
+              license = lib.licenses.mit;
+              maintainers = [
+                {
+                  name = "Lars Artmann";
+                  github = "LarsArtmann";
+                }
+              ];
+            };
+          };
+
+          # Same hermetic compile + test check for the separate ssetest/ module.
+          # buildGoModule assumes the module at the source root, but ssetest is a
+          # nested module with its own go.mod (`replace go-sse => ..`), so
+          # preBuild cds into it and the package patterns resolve inside it. The
+          # proxyVendor cache is a superset of ssetest's deps (root's module
+          # graph includes them all), which is why the vendorHash matches.
+          hermeticCheckSsetest = buildGoModule {
+            pname = "go-sse-ssetest";
+            inherit version vendorHash;
+            src = lib.fileset.toSource {
+              root = ./.;
+              fileset = lib.fileset.gitTracked ./.;
+            };
+            subPackages = [ "./..." ];
+            proxyVendor = true;
+            doCheck = true;
+            env.GOEXPERIMENT = "jsonv2";
+            preBuild = "cd ssetest";
+
+            meta = {
+              description = "Consumer test helpers for go-sse";
               license = lib.licenses.mit;
               maintainers = [
                 {
@@ -108,6 +135,7 @@
 
           checks.format = config.treefmt.build.check self;
           checks.build = hermeticCheck;
+          checks.build-ssetest = hermeticCheckSsetest;
 
           devShells.default = pkgs.mkShellNoCC {
             packages = [

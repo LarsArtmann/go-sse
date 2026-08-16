@@ -11,7 +11,7 @@ nix run .#test-race          # tests with race detector (root + ssetest)
 nix run .#vet                # go vet (root + ssetest)
 nix run .#lint               # golangci-lint (root + ssetest)
 nix run .#coverage           # test + coverage report (root + ssetest)
-nix flake check              # full hermetic check (compile + test)
+nix flake check              # full hermetic check (compile + test, root + ssetest)
 nix develop                  # enter dev shell (Go 1.26, golangci-lint, gopls, govulncheck, templ)
 ```
 
