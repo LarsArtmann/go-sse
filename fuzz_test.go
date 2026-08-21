@@ -51,9 +51,9 @@ func FuzzParseEventID(f *testing.F) {
 	f.Fuzz(func(t *testing.T, input string) {
 		id, err := sse.ParseEventID(input)
 
-		if strings.ContainsAny(input, "\n\r") {
+		if strings.ContainsAny(input, "\n\r\x00") {
 			if err == nil {
-				t.Errorf("ParseEventID(%q): expected error for newline-containing input", input)
+				t.Errorf("ParseEventID(%q): expected error for forbidden-character input", input)
 			}
 
 			return
