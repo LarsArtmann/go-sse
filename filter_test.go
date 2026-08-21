@@ -186,7 +186,19 @@ func TestSubscribeFilter_BroadcastManyRespectsPredicates(t *testing.T) {
 func TestSubscribeFilter_ConcurrentRace(t *testing.T) {
 	t.Parallel()
 
-	b := sse.NewBroadcaster[sse.Event]()
+	const broadcastsPerGoroutine = 2000
+	const numBroadcasters = 4
+	// matchEvents = every other broadcast per goroutine is a "match"
+	const matchEvents = numBroadcasters * broadcastsPerGoroutine / 2
+
+	// The subscriber buffer holds the full burst so the non-blocking drop
+	// policy can never fire for the persistent subscriber, no matter how the
+	// race detector deschedules its collector goroutine. This turns the
+	// received-count assertion into an exact, deterministic equality instead
+	// of a flaky lower bound under CI contention.
+	b := sse.NewBroadcaster[sse.Event](
+		sse.WithBufferSize[sse.Event](matchEvents),
+	)
 	defer b.Close()
 
 	// Persistent filtered subscriber: only "match" events
@@ -210,9 +222,6 @@ func TestSubscribeFilter_ConcurrentRace(t *testing.T) {
 			}
 		}
 	}()
-
-	const broadcastsPerGoroutine = 2000
-	const numBroadcasters = 4
 
 	var wg sync.WaitGroup
 
@@ -251,14 +260,12 @@ func TestSubscribeFilter_ConcurrentRace(t *testing.T) {
 			wrong.Load(), received.Load())
 	}
 
-	// Sanity: with 4 broadcasters × 1000 "match" events each, we expect ~4000
-	// matching events (minus drops during churn). Use a low threshold that
-	// proves the subscriber is functional without flaking under CI contention
-	// where heavy subscribe/unsubscribe churn causes legitimate channel drops.
-	if received.Load() < 100 {
+	// No-loss: the buffer held the entire burst, so the subscriber must have
+	// received every matching event — drops are only legal on a full buffer.
+	if got := received.Load(); got != matchEvents {
 		t.Errorf(
-			"filtered subscriber received only %d matching events out of ~4000 sent",
-			received.Load(),
+			"filtered subscriber received %d matching events, want exactly %d",
+			got, matchEvents,
 		)
 	}
 }
