@@ -74,6 +74,12 @@ func ReadEvents(r io.Reader) ([]Event, error) {
 //
 // A scanner error after events have been collected is treated as a clean
 // connection close, not a failure.
+//
+// Note: ReadNEvents creates a new [bufio.Scanner] per call. If the underlying
+// reader has buffered more data than the returned events, that data is lost
+// when the scanner is discarded. For repeated reads on the same live stream
+// (e.g., read event, trigger action, read next event), use [StreamReader] to
+// keep a single scanner across calls.
 func ReadNEvents(r io.Reader, count int) ([]Event, error) {
 	if count <= 0 {
 		return nil, nil
@@ -117,6 +123,9 @@ func MustReadEvents(tb testing.TB, r io.Reader) []Event {
 // MustReadNEvents is like [ReadNEvents] but calls t.Fatal on error.
 // Use this with streaming SSE connections that do not close on their own.
 // Accepts [testing.TB], so it works with *testing.T, *testing.B, and GinkgoT().
+//
+// For repeated reads on the same live stream, prefer [StreamReader] +
+// [MustReadNextEvent] to avoid losing buffered data between calls.
 func MustReadNEvents(tb testing.TB, r io.Reader, count int) []Event {
 	tb.Helper()
 
@@ -126,6 +135,64 @@ func MustReadNEvents(tb testing.TB, r io.Reader, count int) []Event {
 	}
 
 	return events
+}
+
+// StreamReader reads SSE events from a live stream one at a time. It wraps a
+// single [bufio.Scanner], so it can be called repeatedly on the same
+// connection without losing buffered data — the key advantage over calling
+// [ReadNEvents] multiple times, where each call creates and discards a new
+// scanner.
+//
+// Use [NewStreamReader] to create a reader, then call [StreamReader.Next] (or
+// the fatal [MustReadNextEvent] helper) for each event. The reader is not safe
+// for concurrent use; use it from a single goroutine.
+type StreamReader struct {
+	parser  streamParser
+	scanner *bufio.Scanner
+	sent    int
+}
+
+// NewStreamReader creates a [StreamReader] that parses the SSE wire format
+// from r. Wire-format semantics are identical to [ReadEvents] (spec § 9.2.6).
+func NewStreamReader(r io.Reader) *StreamReader {
+	return &StreamReader{ //nolint:exhaustruct // scanner/parser zero values are correct
+		scanner: newSSEScanner(r),
+	}
+}
+
+// Next reads and returns the next event from the stream. It blocks until an
+// event is dispatched, the stream ends (io.EOF), or a scan error occurs.
+// Wire-format semantics are identical to [ReadEvents] (spec § 9.2.6).
+func (sr *StreamReader) Next() (Event, error) {
+	for sr.sent >= len(sr.parser.events) {
+		if !sr.scanner.Scan() {
+			if err := sr.scanner.Err(); err != nil {
+				return Event{}, errorfamily.WrapTransient(err, CodeSSEScanFailed, "scan SSE stream")
+			}
+
+			return Event{}, io.EOF
+		}
+
+		sr.parser.acceptLine(sr.scanner.Text())
+	}
+
+	evt := sr.parser.events[sr.sent]
+	sr.sent++
+
+	return evt, nil
+}
+
+// MustReadNextEvent reads the next event from sr and calls tb.Fatal on error.
+// Accepts [testing.TB], so it works with *testing.T, *testing.B, and GinkgoT().
+func MustReadNextEvent(tb testing.TB, sr *StreamReader) Event {
+	tb.Helper()
+
+	evt, err := sr.Next()
+	if err != nil {
+		tb.Fatalf("read SSE event: %v", err)
+	}
+
+	return evt
 }
 
 // streamParser holds the spec-mandated parsing state of one event stream.
