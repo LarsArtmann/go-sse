@@ -30,14 +30,14 @@
         --warning: var(--color-yellow);
         --radius: 0px;
         --font-heading:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-body:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono:
-          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
-          monospace;
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono",
+          Menlo, Consolas, monospace;
       }
       * {
         box-sizing: border-box;
@@ -390,11 +390,19 @@
       }
       .callout-solution {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 10%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 10%,
+          var(--surface-raised)
+        );
       }
       .callout-warning {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 10%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 10%,
+          var(--surface-raised)
+        );
       }
       table {
         width: 100%;
@@ -526,9 +534,9 @@
           <div class="hero-badge">PARETO PLANNING &middot; 2026-07-23</div>
           <h1>go-sse Deep Review &amp; Execution Plan</h1>
           <p class="hero-subtitle">
-            Full-codebase review of all 7 source files and 4 test files (1,901 lines). 15
-            medium-granularity tasks broken into 61 fine-grained subtasks, sorted by Pareto impact
-            tiers (1% / 4% / 20% / remaining).
+            Full-codebase review of all 7 source files and 4 test files (1,901
+            lines). 15 medium-granularity tasks broken into 61 fine-grained
+            subtasks, sorted by Pareto impact tiers (1% / 4% / 20% / remaining).
           </p>
           <div class="meta">
             <span class="tag teal">11 source files</span>
@@ -542,9 +550,10 @@
         <section id="baseline">
           <h2><span class="num">00</span>Review Baseline</h2>
           <p>
-            Every Go source file and test file was read end-to-end. All documentation files, config
-            files (<code>flake.nix</code>, <code>.golangci.yml</code>, <code>go.mod</code>), and
-            prior status reports were reviewed.
+            Every Go source file and test file was read end-to-end. All
+            documentation files, config files (<code>flake.nix</code>,
+            <code>.golangci.yml</code>, <code>go.mod</code>), and prior status
+            reports were reviewed.
           </p>
 
           <div class="stat-grid">
@@ -577,10 +586,14 @@
           <div class="card card-solution">
             <h3>Quality Gate: PASSING</h3>
             <p>
-              <code>GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race -count=1</code> &mdash; 44
-              tests pass, 11 benchmarks pass (0 allocs on fan-out hot path).
-              <code>go vet</code> clean. <code>golangci-lint run ./...</code> &mdash; 0 issues. The
-              library is in excellent shape; this plan is about raising the bar further.
+              <code
+                >GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race
+                -count=1</code
+              >
+              &mdash; 44 tests pass, 11 benchmarks pass (0 allocs on fan-out hot
+              path). <code>go vet</code> clean.
+              <code>golangci-lint run ./...</code> &mdash; 0 issues. The library
+              is in excellent shape; this plan is about raising the bar further.
             </p>
           </div>
         </section>
@@ -588,41 +601,52 @@
         <section id="pareto">
           <h2><span class="num">01</span>Pareto Breakdown</h2>
           <p>
-            The 80/20 principle applied to go-sse. What are the few tasks that deliver the majority
-            of the value?
+            The 80/20 principle applied to go-sse. What are the few tasks that
+            deliver the majority of the value?
           </p>
 
           <div class="pareto-tier pareto-tier-1">
-            <span class="severity severity-critical">Tier 1% &rarr; 51% of value</span>
+            <span class="severity severity-critical"
+              >Tier 1% &rarr; 51% of value</span
+            >
             <h3>The Foundation: CI + Security</h3>
             <p>
-              Two tasks unlock everything else. <strong>M1: CI workflow</strong> &mdash; one YAML
-              file that runs test, lint, vet, race, and coverage on every push. Without CI, quality
-              is manual forever. <strong>M2: LastEventIDFromRequest validation</strong> &mdash; the
-              one security gap: untrusted HTTP header parsed without <code>ParseEventID</code>,
-              allowing wire-format injection. For a transport library, closing the trust boundary is
-              non-negotiable.
+              Two tasks unlock everything else.
+              <strong>M1: CI workflow</strong> &mdash; one YAML file that runs
+              test, lint, vet, race, and coverage on every push. Without CI,
+              quality is manual forever.
+              <strong>M2: LastEventIDFromRequest validation</strong> &mdash; the
+              one security gap: untrusted HTTP header parsed without
+              <code>ParseEventID</code>, allowing wire-format injection. For a
+              transport library, closing the trust boundary is non-negotiable.
             </p>
           </div>
 
           <div class="pareto-tier pareto-tier-4">
-            <span class="severity severity-important">Tier 4% &rarr; 64% of value</span>
+            <span class="severity severity-important"
+              >Tier 4% &rarr; 64% of value</span
+            >
             <h3>Quality &amp; Correctness</h3>
             <p>
-              Fuzz tests (M3), integration test with real <code>http.Server</code> (M4), test
-              quality cleanup (M7), heartbeat duplication elimination (M8), edge-case test suite
-              (M9). These catch the bugs CI surfaces and eliminate technical debt in the test layer.
+              Fuzz tests (M3), integration test with real
+              <code>http.Server</code> (M4), test quality cleanup (M7),
+              heartbeat duplication elimination (M8), edge-case test suite (M9).
+              These catch the bugs CI surfaces and eliminate technical debt in
+              the test layer.
             </p>
           </div>
 
           <div class="pareto-tier pareto-tier-20">
-            <span class="severity severity-nice">Tier 20% &rarr; 80% of value</span>
+            <span class="severity severity-nice"
+              >Tier 20% &rarr; 80% of value</span
+            >
             <h3>Type Safety &amp; API Hardening</h3>
             <p>
               <code>Event.Retry</code> &rarr; <code>uint</code> (M5),
-              <code>EventStore.EventsAfter</code> &rarr; <code>EventID</code> param (M6),
-              <code>Stream.Close</code> &rarr; <code>io.Closer</code> (M10), example/ directory
-              (M11). These make impossible states unrepresentable and lower the adoption barrier.
+              <code>EventStore.EventsAfter</code> &rarr;
+              <code>EventID</code> param (M6), <code>Stream.Close</code> &rarr;
+              <code>io.Closer</code> (M10), example/ directory (M11). These make
+              impossible states unrepresentable and lower the adoption barrier.
             </p>
           </div>
 
@@ -630,18 +654,21 @@
             <span class="badge badge-low">Tier 80% &rarr; 20% of value</span>
             <h3>Release &amp; Polish</h3>
             <p>
-              First git tag v0.1.0 (M12), FEATURES.md line-ref precision (M13), README polish (M14),
-              verify spec URL + build-tags note (M15). Important for credibility but not blocking
-              functionality.
+              First git tag v0.1.0 (M12), FEATURES.md line-ref precision (M13),
+              README polish (M14), verify spec URL + build-tags note (M15).
+              Important for credibility but not blocking functionality.
             </p>
           </div>
         </section>
 
         <section id="medium">
-          <h2><span class="num">02</span>Medium-Granularity Plan (30&ndash;100min tasks)</h2>
+          <h2>
+            <span class="num">02</span>Medium-Granularity Plan (30&ndash;100min
+            tasks)
+          </h2>
           <p>
-            15 tasks covering all review findings and existing TODO_LIST.md items. Sorted by Pareto
-            tier, then impact/effort ratio.
+            15 tasks covering all review findings and existing TODO_LIST.md
+            items. Sorted by Pareto tier, then impact/effort ratio.
           </p>
 
           <table>
@@ -659,7 +686,10 @@
               <tr>
                 <td><strong>M1</strong></td>
                 <td><span class="badge badge-critical">1%</span></td>
-                <td>CI workflow: test + lint + vet + race + coverage + format check</td>
+                <td>
+                  CI workflow: test + lint + vet + race + coverage + format
+                  check
+                </td>
                 <td>Critical</td>
                 <td>90min</td>
                 <td>Infrastructure</td>
@@ -667,7 +697,10 @@
               <tr>
                 <td><strong>M2</strong></td>
                 <td><span class="badge badge-critical">1%</span></td>
-                <td>LastEventIDFromRequest: validate untrusted header via ParseEventID</td>
+                <td>
+                  LastEventIDFromRequest: validate untrusted header via
+                  ParseEventID
+                </td>
                 <td>Critical</td>
                 <td>45min</td>
                 <td>Security</td>
@@ -675,7 +708,10 @@
               <tr>
                 <td><strong>M3</strong></td>
                 <td><span class="badge badge-high">4%</span></td>
-                <td>Fuzz tests: WriteEvent serializer + ParseEventID validator with corpus</td>
+                <td>
+                  Fuzz tests: WriteEvent serializer + ParseEventID validator
+                  with corpus
+                </td>
                 <td>High</td>
                 <td>100min</td>
                 <td>Testing</td>
@@ -691,7 +727,10 @@
               <tr>
                 <td><strong>M5</strong></td>
                 <td><span class="badge badge-high">4%</span></td>
-                <td>Type safety: Event.Retry int &rarr; uint (make negative impossible)</td>
+                <td>
+                  Type safety: Event.Retry int &rarr; uint (make negative
+                  impossible)
+                </td>
                 <td>High</td>
                 <td>45min</td>
                 <td>Type Safety</td>
@@ -699,7 +738,10 @@
               <tr>
                 <td><strong>M6</strong></td>
                 <td><span class="badge badge-high">4%</span></td>
-                <td>Type safety: EventStore.EventsAfter(string) &rarr; EventsAfter(EventID)</td>
+                <td>
+                  Type safety: EventStore.EventsAfter(string) &rarr;
+                  EventsAfter(EventID)
+                </td>
                 <td>High</td>
                 <td>45min</td>
                 <td>Type Safety</td>
@@ -708,8 +750,8 @@
                 <td><strong>M7</strong></td>
                 <td><span class="badge badge-medium">4%</span></td>
                 <td>
-                  Test quality: strings.Contains, strconv.Itoa, errorResponseWriter, b.Loop,
-                  t.Context, WaitGroup.Go
+                  Test quality: strings.Contains, strconv.Itoa,
+                  errorResponseWriter, b.Loop, t.Context, WaitGroup.Go
                 </td>
                 <td>Medium</td>
                 <td>60min</td>
@@ -719,8 +761,8 @@
                 <td><strong>M8</strong></td>
                 <td><span class="badge badge-medium">4%</span></td>
                 <td>
-                  Heartbeat constant extraction + eliminate WriteHeartbeat/Stream.Heartbeat
-                  duplication
+                  Heartbeat constant extraction + eliminate
+                  WriteHeartbeat/Stream.Heartbeat duplication
                 </td>
                 <td>Medium</td>
                 <td>30min</td>
@@ -730,8 +772,8 @@
                 <td><strong>M9</strong></td>
                 <td><span class="badge badge-medium">4%</span></td>
                 <td>
-                  Edge-case tests: double-Close, BroadcastAfterClose, WriteRetry, lone-CR, unicode
-                  EventID, large payload
+                  Edge-case tests: double-Close, BroadcastAfterClose,
+                  WriteRetry, lone-CR, unicode EventID, large payload
                 </td>
                 <td>Medium</td>
                 <td>60min</td>
@@ -748,7 +790,10 @@
               <tr>
                 <td><strong>M11</strong></td>
                 <td><span class="badge badge-medium">20%</span></td>
-                <td>example/ directory: minimal runnable server + client + compile test</td>
+                <td>
+                  example/ directory: minimal runnable server + client + compile
+                  test
+                </td>
                 <td>Medium</td>
                 <td>45min</td>
                 <td>DX</td>
@@ -756,7 +801,9 @@
               <tr>
                 <td><strong>M12</strong></td>
                 <td><span class="badge badge-low">80%</span></td>
-                <td>Publish: first git tag v0.1.0 + pkg.go.dev badge in README</td>
+                <td>
+                  Publish: first git tag v0.1.0 + pkg.go.dev badge in README
+                </td>
                 <td>Low</td>
                 <td>30min</td>
                 <td>Release</td>
@@ -764,7 +811,10 @@
               <tr>
                 <td><strong>M13</strong></td>
                 <td><span class="badge badge-low">80%</span></td>
-                <td>FEATURES.md: fix ~11 imprecise line refs + remove hardcoded test count</td>
+                <td>
+                  FEATURES.md: fix ~11 imprecise line refs + remove hardcoded
+                  test count
+                </td>
                 <td>Low</td>
                 <td>45min</td>
                 <td>Docs</td>
@@ -772,7 +822,10 @@
               <tr>
                 <td><strong>M14</strong></td>
                 <td><span class="badge badge-low">80%</span></td>
-                <td>README: Event struct match source + non-blocking drop policy section</td>
+                <td>
+                  README: Event struct match source + non-blocking drop policy
+                  section
+                </td>
                 <td>Low</td>
                 <td>30min</td>
                 <td>Docs</td>
@@ -780,7 +833,9 @@
               <tr>
                 <td><strong>M15</strong></td>
                 <td><span class="badge badge-low">80%</span></td>
-                <td>Verify SSE spec URL live + build-tags note in CONTRIBUTING.md</td>
+                <td>
+                  Verify SSE spec URL live + build-tags note in CONTRIBUTING.md
+                </td>
                 <td>Low</td>
                 <td>15min</td>
                 <td>Docs</td>
@@ -789,16 +844,19 @@
           </table>
 
           <div class="callout callout-solution">
-            <strong>Total effort:</strong> ~15 hours for all 15 tasks. The 1% tier (M1+M2) is ~2.25
-            hours and unlocks 51% of the value.
+            <strong>Total effort:</strong> ~15 hours for all 15 tasks. The 1%
+            tier (M1+M2) is ~2.25 hours and unlocks 51% of the value.
           </div>
         </section>
 
         <section id="fine">
-          <h2><span class="num">03</span>Fine-Granularity Breakdown (max 15min each)</h2>
+          <h2>
+            <span class="num">03</span>Fine-Granularity Breakdown (max 15min
+            each)
+          </h2>
           <p>
-            61 subtasks. Each independently completable, testable, and committable. Sorted by parent
-            task then execution order.
+            61 subtasks. Each independently completable, testable, and
+            committable. Sorted by parent task then execution order.
           </p>
 
           <h3 style="margin-top: 1.5rem">M1: CI Workflow (6 subtasks)</h3>
@@ -814,8 +872,8 @@
               <tr>
                 <td>F1.1</td>
                 <td>
-                  Create <code>.github/workflows/ci.yml</code> skeleton: checkout + Go 1.26 setup +
-                  GOEXPERIMENT
+                  Create <code>.github/workflows/ci.yml</code> skeleton:
+                  checkout + Go 1.26 setup + GOEXPERIMENT
                 </td>
                 <td>10min</td>
               </tr>
@@ -826,7 +884,9 @@
               </tr>
               <tr>
                 <td>F1.3</td>
-                <td>Add lint job: <code>golangci-lint run</code> with build-tags</td>
+                <td>
+                  Add lint job: <code>golangci-lint run</code> with build-tags
+                </td>
                 <td>10min</td>
               </tr>
               <tr>
@@ -836,12 +896,18 @@
               </tr>
               <tr>
                 <td>F1.5</td>
-                <td>Add coverage step: <code>-coverprofile</code> + artifact upload</td>
+                <td>
+                  Add coverage step: <code>-coverprofile</code> + artifact
+                  upload
+                </td>
                 <td>10min</td>
               </tr>
               <tr>
                 <td>F1.6</td>
-                <td>Add format check: <code>gofumpt -l</code> or <code>nix fmt --check</code></td>
+                <td>
+                  Add format check: <code>gofumpt -l</code> or
+                  <code>nix fmt --check</code>
+                </td>
                 <td>10min</td>
               </tr>
             </tbody>
@@ -860,20 +926,24 @@
               <tr>
                 <td>F2.1</td>
                 <td>
-                  Update <code>LastEventIDFromRequest</code>: validate via ParseEventID, return zero
-                  on invalid
+                  Update <code>LastEventIDFromRequest</code>: validate via
+                  ParseEventID, return zero on invalid
                 </td>
                 <td>10min</td>
               </tr>
               <tr>
                 <td>F2.2</td>
-                <td>Update <code>Stream.LastEventID()</code> method if signature changes</td>
+                <td>
+                  Update <code>Stream.LastEventID()</code> method if signature
+                  changes
+                </td>
                 <td>5min</td>
               </tr>
               <tr>
                 <td>F2.3</td>
                 <td>
-                  Add test: malicious <code>Last-Event-ID: foo\nbar</code> &rarr; treated as empty
+                  Add test: malicious
+                  <code>Last-Event-ID: foo\nbar</code> &rarr; treated as empty
                 </td>
                 <td>10min</td>
               </tr>
@@ -884,7 +954,9 @@
               </tr>
               <tr>
                 <td>F2.5</td>
-                <td>Update doc.go and stream.go doc comments noting validation</td>
+                <td>
+                  Update doc.go and stream.go doc comments noting validation
+                </td>
                 <td>5min</td>
               </tr>
             </tbody>
@@ -902,19 +974,25 @@
             <tbody>
               <tr>
                 <td>F3.1</td>
-                <td>Create <code>fuzz_test.go</code> with <code>FuzzWriteEvent</code> skeleton</td>
+                <td>
+                  Create <code>fuzz_test.go</code> with
+                  <code>FuzzWriteEvent</code> skeleton
+                </td>
                 <td>10min</td>
               </tr>
               <tr>
                 <td>F3.2</td>
-                <td>Add WriteEvent fuzz corpus seeds (multi-line, CRLF, unicode, empty)</td>
+                <td>
+                  Add WriteEvent fuzz corpus seeds (multi-line, CRLF, unicode,
+                  empty)
+                </td>
                 <td>15min</td>
               </tr>
               <tr>
                 <td>F3.3</td>
                 <td>
-                  Write WriteEvent fuzz target: serialize &rarr; no panic, valid SSE output
-                  structure
+                  Write WriteEvent fuzz target: serialize &rarr; no panic, valid
+                  SSE output structure
                 </td>
                 <td>15min</td>
               </tr>
@@ -925,13 +1003,17 @@
               </tr>
               <tr>
                 <td>F3.5</td>
-                <td>Add ParseEventID fuzz corpus seeds (valid IDs, newlines, CR, unicode)</td>
+                <td>
+                  Add ParseEventID fuzz corpus seeds (valid IDs, newlines, CR,
+                  unicode)
+                </td>
                 <td>15min</td>
               </tr>
               <tr>
                 <td>F3.6</td>
                 <td>
-                  Write ParseEventID fuzz target: valid &rarr; roundtrip, invalid &rarr; error
+                  Write ParseEventID fuzz target: valid &rarr; roundtrip,
+                  invalid &rarr; error
                 </td>
                 <td>15min</td>
               </tr>
@@ -956,7 +1038,8 @@
               <tr>
                 <td>F4.1</td>
                 <td>
-                  Create <code>integration_test.go</code> with <code>httptest.Server</code> setup
+                  Create <code>integration_test.go</code> with
+                  <code>httptest.Server</code> setup
                 </td>
                 <td>15min</td>
               </tr>
@@ -970,12 +1053,18 @@
               </tr>
               <tr>
                 <td>F4.3</td>
-                <td>Send events via Broadcaster, verify client receives correct data</td>
+                <td>
+                  Send events via Broadcaster, verify client receives correct
+                  data
+                </td>
                 <td>15min</td>
               </tr>
               <tr>
                 <td>F4.4</td>
-                <td>Test client disconnect &rarr; context cancellation &rarr; stream cleanup</td>
+                <td>
+                  Test client disconnect &rarr; context cancellation &rarr;
+                  stream cleanup
+                </td>
                 <td>15min</td>
               </tr>
             </tbody>
@@ -994,14 +1083,18 @@
               <tr>
                 <td>F5.1</td>
                 <td>
-                  Change <code>Event.Retry</code> field type from <code>int</code> to
+                  Change <code>Event.Retry</code> field type from
+                  <code>int</code> to
                   <code>uint</code>
                 </td>
                 <td>10min</td>
               </tr>
               <tr>
                 <td>F5.2</td>
-                <td>Update WriteEvent: <code>strconv.AppendUint</code> for retry field</td>
+                <td>
+                  Update WriteEvent: <code>strconv.AppendUint</code> for retry
+                  field
+                </td>
                 <td>10min</td>
               </tr>
               <tr>
@@ -1030,7 +1123,8 @@
               <tr>
                 <td>F6.1</td>
                 <td>
-                  Change <code>EventStore.EventsAfter</code> signature: <code>string</code> &rarr;
+                  Change <code>EventStore.EventsAfter</code> signature:
+                  <code>string</code> &rarr;
                   <code>EventID</code>
                 </td>
                 <td>10min</td>
@@ -1038,14 +1132,16 @@
               <tr>
                 <td>F6.2</td>
                 <td>
-                  Update <code>Replay</code> function to pass EventID directly (no
-                  <code>.Get()</code>)
+                  Update <code>Replay</code> function to pass EventID directly
+                  (no <code>.Get()</code>)
                 </td>
                 <td>5min</td>
               </tr>
               <tr>
                 <td>F6.3</td>
-                <td>Update replay_test.go memoryStore + README EventStore example</td>
+                <td>
+                  Update replay_test.go memoryStore + README EventStore example
+                </td>
                 <td>15min</td>
               </tr>
             </tbody>
@@ -1072,14 +1168,16 @@
               <tr>
                 <td>F7.2</td>
                 <td>
-                  Remove <code>contains()</code> and <code>startsWith()</code> helper functions
+                  Remove <code>contains()</code> and
+                  <code>startsWith()</code> helper functions
                 </td>
                 <td>5min</td>
               </tr>
               <tr>
                 <td>F7.3</td>
                 <td>
-                  Replace <code>itoa()</code> with <code>strconv.Itoa</code> in broadcaster_test.go
+                  Replace <code>itoa()</code> with <code>strconv.Itoa</code> in
+                  broadcaster_test.go
                 </td>
                 <td>5min</td>
               </tr>
@@ -1091,7 +1189,8 @@
               <tr>
                 <td>F7.5</td>
                 <td>
-                  Fix <code>errorResponseWriter</code>: initialize <code>writer</code> field to
+                  Fix <code>errorResponseWriter</code>: initialize
+                  <code>writer</code> field to
                   <code>&amp;errorWriter{}</code>
                 </td>
                 <td>10min</td>
@@ -1099,7 +1198,8 @@
               <tr>
                 <td>F7.6</td>
                 <td>
-                  Modernize benchmarks: <code>b.N</code> &rarr; <code>b.Loop()</code>, WaitGroup.Go,
+                  Modernize benchmarks: <code>b.N</code> &rarr;
+                  <code>b.Loop()</code>, WaitGroup.Go,
                   <code>t.Context()</code>
                 </td>
                 <td>15min</td>
@@ -1119,20 +1219,24 @@
             <tbody>
               <tr>
                 <td>F8.1</td>
-                <td>Extract <code>heartbeatFrame</code> constant in event.go</td>
+                <td>
+                  Extract <code>heartbeatFrame</code> constant in event.go
+                </td>
                 <td>10min</td>
               </tr>
               <tr>
                 <td>F8.2</td>
                 <td>
-                  Use <code>WriteHeartbeat</code> in <code>Stream.Heartbeat</code> instead of raw
-                  bytes
+                  Use <code>WriteHeartbeat</code> in
+                  <code>Stream.Heartbeat</code> instead of raw bytes
                 </td>
                 <td>10min</td>
               </tr>
               <tr>
                 <td>F8.3</td>
-                <td>Update AGENTS.md convention note about heartbeat constant</td>
+                <td>
+                  Update AGENTS.md convention note about heartbeat constant
+                </td>
                 <td>5min</td>
               </tr>
             </tbody>
@@ -1160,17 +1264,25 @@
               </tr>
               <tr>
                 <td>F9.3</td>
-                <td>Add <code>TestWriteRetry</code> (0% coverage on exported function)</td>
+                <td>
+                  Add <code>TestWriteRetry</code> (0% coverage on exported
+                  function)
+                </td>
                 <td>10min</td>
               </tr>
               <tr>
                 <td>F9.4</td>
-                <td>Add <code>TestWriteEvent_LoneCarriageReturn</code> (spec compliance)</td>
+                <td>
+                  Add <code>TestWriteEvent_LoneCarriageReturn</code> (spec
+                  compliance)
+                </td>
                 <td>10min</td>
               </tr>
               <tr>
                 <td>F9.5</td>
-                <td>Add <code>TestParseEventID_Unicode</code> (unicode edge cases)</td>
+                <td>
+                  Add <code>TestParseEventID_Unicode</code> (unicode edge cases)
+                </td>
                 <td>10min</td>
               </tr>
             </tbody>
@@ -1189,19 +1301,24 @@
               <tr>
                 <td>F10.1</td>
                 <td>
-                  Change <code>Stream.Close()</code> to return <code>error</code> (always nil for
-                  now)
+                  Change <code>Stream.Close()</code> to return
+                  <code>error</code> (always nil for now)
                 </td>
                 <td>10min</td>
               </tr>
               <tr>
                 <td>F10.2</td>
-                <td>Update all <code>defer stream.Close()</code> call sites in tests/docs</td>
+                <td>
+                  Update all <code>defer stream.Close()</code> call sites in
+                  tests/docs
+                </td>
                 <td>10min</td>
               </tr>
               <tr>
                 <td>F10.3</td>
-                <td>Update doc comments, README, AGENTS.md, DOMAIN_LANGUAGE.md</td>
+                <td>
+                  Update doc comments, README, AGENTS.md, DOMAIN_LANGUAGE.md
+                </td>
                 <td>5min</td>
               </tr>
             </tbody>
@@ -1220,13 +1337,17 @@
               <tr>
                 <td>F11.1</td>
                 <td>
-                  Create <code>example/server.go</code>: Broadcaster + SSE endpoint + heartbeat
+                  Create <code>example/server.go</code>: Broadcaster + SSE
+                  endpoint + heartbeat
                 </td>
                 <td>15min</td>
               </tr>
               <tr>
                 <td>F11.2</td>
-                <td>Create <code>example/README.md</code> with curl + JS client examples</td>
+                <td>
+                  Create <code>example/README.md</code> with curl + JS client
+                  examples
+                </td>
                 <td>15min</td>
               </tr>
               <tr>
@@ -1282,17 +1403,25 @@
             <tbody>
               <tr>
                 <td>F13.1</td>
-                <td>Fix ~11 imprecise file:line refs to point at declarations not comments</td>
+                <td>
+                  Fix ~11 imprecise file:line refs to point at declarations not
+                  comments
+                </td>
                 <td>15min</td>
               </tr>
               <tr>
                 <td>F13.2</td>
-                <td>Replace hardcoded "52 tests" with <code>go test -v</code> command reference</td>
+                <td>
+                  Replace hardcoded "52 tests" with
+                  <code>go test -v</code> command reference
+                </td>
                 <td>5min</td>
               </tr>
               <tr>
                 <td>F13.3</td>
-                <td>Add splitLines CR fix and any new features from this review</td>
+                <td>
+                  Add splitLines CR fix and any new features from this review
+                </td>
                 <td>10min</td>
               </tr>
             </tbody>
@@ -1310,7 +1439,9 @@
             <tbody>
               <tr>
                 <td>F14.1</td>
-                <td>Update Event struct in README to match actual source style</td>
+                <td>
+                  Update Event struct in README to match actual source style
+                </td>
                 <td>10min</td>
               </tr>
               <tr>
@@ -1353,8 +1484,8 @@
         <section id="graph">
           <h2><span class="num">04</span>Execution Dependency Graph</h2>
           <p>
-            Phase dependencies: Foundation gates Quality, Quality gates API, API gates Release.
-            Within phases, tasks are mostly parallelizable.
+            Phase dependencies: Foundation gates Quality, Quality gates API, API
+            gates Release. Within phases, tasks are mostly parallelizable.
           </p>
 
           <div class="svg-container" id="d2graph">
@@ -1927,7 +2058,9 @@
                     style="text-anchor: middle; font-size: 16px"
                   >
                     <tspan x="528.500000" dy="0.000000">M1: CI Workflow</tspan>
-                    <tspan x="528.500000" dy="18.500000">test + lint + vet + race + coverage</tspan>
+                    <tspan x="528.500000" dy="18.500000">
+                      test + lint + vet + race + coverage
+                    </tspan>
                   </text>
                 </g>
                 <g class="cGhhc2UxLm0y">
@@ -1950,8 +2083,12 @@
                     class="text-bold fill-N1"
                     style="text-anchor: middle; font-size: 16px"
                   >
-                    <tspan x="854.000000" dy="0.000000">M2: LastEventIDFromRequest</tspan>
-                    <tspan x="854.000000" dy="18.500000">Validate untrusted header</tspan>
+                    <tspan x="854.000000" dy="0.000000">
+                      M2: LastEventIDFromRequest
+                    </tspan>
+                    <tspan x="854.000000" dy="18.500000">
+                      Validate untrusted header
+                    </tspan>
                   </text>
                 </g>
                 <g class="cGhhc2UyLm0z">
@@ -1975,7 +2112,9 @@
                     style="text-anchor: middle; font-size: 16px"
                   >
                     <tspan x="276.500000" dy="0.000000">M3: Fuzz Tests</tspan>
-                    <tspan x="276.500000" dy="18.500000">WriteEvent + ParseEventID</tspan>
+                    <tspan x="276.500000" dy="18.500000">
+                      WriteEvent + ParseEventID
+                    </tspan>
                   </text>
                 </g>
                 <g class="cGhhc2UyLm00">
@@ -1998,8 +2137,12 @@
                     class="text-bold fill-N1"
                     style="text-anchor: middle; font-size: 16px"
                   >
-                    <tspan x="573.000000" dy="0.000000">M4: Integration Test</tspan>
-                    <tspan x="573.000000" dy="18.500000">Real http.Server round-trip</tspan>
+                    <tspan x="573.000000" dy="0.000000">
+                      M4: Integration Test
+                    </tspan>
+                    <tspan x="573.000000" dy="18.500000">
+                      Real http.Server round-trip
+                    </tspan>
                   </text>
                 </g>
                 <g class="cGhhc2UyLm03">
@@ -2023,7 +2166,9 @@
                     style="text-anchor: middle; font-size: 16px"
                   >
                     <tspan x="854.500000" dy="0.000000">M7: Test Cleanup</tspan>
-                    <tspan x="854.500000" dy="18.500000">stdlib + modernization</tspan>
+                    <tspan x="854.500000" dy="18.500000">
+                      stdlib + modernization
+                    </tspan>
                   </text>
                 </g>
                 <g class="cGhhc2UyLm04">
@@ -2046,8 +2191,12 @@
                     class="text-bold fill-N1"
                     style="text-anchor: middle; font-size: 16px"
                   >
-                    <tspan x="1114.500000" dy="0.000000">M8: Heartbeat Dedup</tspan>
-                    <tspan x="1114.500000" dy="18.500000">Constant extraction</tspan>
+                    <tspan x="1114.500000" dy="0.000000">
+                      M8: Heartbeat Dedup
+                    </tspan>
+                    <tspan x="1114.500000" dy="18.500000">
+                      Constant extraction
+                    </tspan>
                   </text>
                 </g>
                 <g class="cGhhc2UyLm05">
@@ -2070,9 +2219,15 @@
                     class="text-bold fill-N1"
                     style="text-anchor: middle; font-size: 16px"
                   >
-                    <tspan x="1420.000000" dy="0.000000">M9: Edge-Case Tests</tspan>
-                    <tspan x="1420.000000" dy="17.666667">double-Close, BroadcastAfterClose,</tspan>
-                    <tspan x="1420.000000" dy="17.666667">WriteRetry, unicode</tspan>
+                    <tspan x="1420.000000" dy="0.000000">
+                      M9: Edge-Case Tests
+                    </tspan>
+                    <tspan x="1420.000000" dy="17.666667">
+                      double-Close, BroadcastAfterClose,
+                    </tspan>
+                    <tspan x="1420.000000" dy="17.666667">
+                      WriteRetry, unicode
+                    </tspan>
                   </text>
                 </g>
                 <g class="cGhhc2UzLm01">
@@ -2095,8 +2250,12 @@
                     class="text-bold fill-N1"
                     style="text-anchor: middle; font-size: 16px"
                   >
-                    <tspan x="153.500000" dy="0.000000">M5: Event.Retry → uint</tspan>
-                    <tspan x="153.500000" dy="18.500000">Make negative impossible</tspan>
+                    <tspan x="153.500000" dy="0.000000">
+                      M5: Event.Retry → uint
+                    </tspan>
+                    <tspan x="153.500000" dy="18.500000">
+                      Make negative impossible
+                    </tspan>
                   </text>
                 </g>
                 <g class="cGhhc2UzLm02">
@@ -2119,8 +2278,12 @@
                     class="text-bold fill-N1"
                     style="text-anchor: middle; font-size: 16px"
                   >
-                    <tspan x="480.500000" dy="0.000000">M6: EventStore.EventsAfter(EventID)</tspan>
-                    <tspan x="480.500000" dy="18.500000">Lose the stringly-typed boundary</tspan>
+                    <tspan x="480.500000" dy="0.000000">
+                      M6: EventStore.EventsAfter(EventID)
+                    </tspan>
+                    <tspan x="480.500000" dy="18.500000">
+                      Lose the stringly-typed boundary
+                    </tspan>
                   </text>
                 </g>
                 <g class="cGhhc2UzLm0xMA==">
@@ -2143,7 +2306,9 @@
                     class="text-bold fill-N1"
                     style="text-anchor: middle; font-size: 16px"
                   >
-                    <tspan x="854.000000" dy="0.000000">M10: Stream.Close → io.Closer</tspan>
+                    <tspan x="854.000000" dy="0.000000">
+                      M10: Stream.Close → io.Closer
+                    </tspan>
                     <tspan x="854.000000" dy="18.500000">
                       Return error for interface conformance
                     </tspan>
@@ -2169,8 +2334,12 @@
                     class="text-bold fill-N1"
                     style="text-anchor: middle; font-size: 16px"
                   >
-                    <tspan x="1183.000000" dy="0.000000">M11: example/ Directory</tspan>
-                    <tspan x="1183.000000" dy="18.500000">Runnable server + client</tspan>
+                    <tspan x="1183.000000" dy="0.000000">
+                      M11: example/ Directory
+                    </tspan>
+                    <tspan x="1183.000000" dy="18.500000">
+                      Runnable server + client
+                    </tspan>
                   </text>
                 </g>
                 <g class="cGhhc2U0Lm0xMg==">
@@ -2194,7 +2363,9 @@
                     style="text-anchor: middle; font-size: 16px"
                   >
                     <tspan x="254.000000" dy="0.000000">M12: Tag v0.1.0</tspan>
-                    <tspan x="254.000000" dy="18.500000">First release + pkg.go.dev</tspan>
+                    <tspan x="254.000000" dy="18.500000">
+                      First release + pkg.go.dev
+                    </tspan>
                   </text>
                 </g>
                 <g class="cGhhc2U0Lm0xMw==">
@@ -2217,8 +2388,12 @@
                     class="text-bold fill-N1"
                     style="text-anchor: middle; font-size: 16px"
                   >
-                    <tspan x="552.500000" dy="0.000000">M13: FEATURES.md Precision</tspan>
-                    <tspan x="552.500000" dy="18.500000">Fix line refs + counts</tspan>
+                    <tspan x="552.500000" dy="0.000000">
+                      M13: FEATURES.md Precision
+                    </tspan>
+                    <tspan x="552.500000" dy="18.500000">
+                      Fix line refs + counts
+                    </tspan>
                   </text>
                 </g>
                 <g class="cGhhc2U0Lm0xNA==">
@@ -2241,8 +2416,12 @@
                     class="text-bold fill-N1"
                     style="text-anchor: middle; font-size: 16px"
                   >
-                    <tspan x="854.500000" dy="0.000000">M14: README Polish</tspan>
-                    <tspan x="854.500000" dy="18.500000">Struct match + drop policy</tspan>
+                    <tspan x="854.500000" dy="0.000000">
+                      M14: README Polish
+                    </tspan>
+                    <tspan x="854.500000" dy="18.500000">
+                      Struct match + drop policy
+                    </tspan>
                   </text>
                 </g>
                 <g class="cGhhc2U0Lm0xNQ==">
@@ -2265,8 +2444,12 @@
                     class="text-bold fill-N1"
                     style="text-anchor: middle; font-size: 16px"
                   >
-                    <tspan x="1156.500000" dy="0.000000">M15: Verify URLs + Build Tags</tspan>
-                    <tspan x="1156.500000" dy="18.500000">Spec URL + CONTRIBUTING</tspan>
+                    <tspan x="1156.500000" dy="0.000000">
+                      M15: Verify URLs + Build Tags
+                    </tspan>
+                    <tspan x="1156.500000" dy="18.500000">
+                      Spec URL + CONTRIBUTING
+                    </tspan>
                   </text>
                 </g>
                 <g class="KG0xIC0mZ3Q7IG0zKVswXQ==">
@@ -2323,8 +2506,12 @@
                     class="text-italic fill-N2"
                     style="text-anchor: middle; font-size: 16px"
                   >
-                    <tspan x="2154.500000" dy="0.000000">heartbeat constant</tspan>
-                    <tspan x="2154.500000" dy="18.500000">before edge tests</tspan>
+                    <tspan x="2154.500000" dy="0.000000">
+                      heartbeat constant
+                    </tspan>
+                    <tspan x="2154.500000" dy="18.500000">
+                      before edge tests
+                    </tspan>
                   </text>
                 </g>
                 <g class="KG0yIC0mZ3Q7IG05KVswXQ==">
@@ -2345,7 +2532,9 @@
                     style="text-anchor: middle; font-size: 16px"
                   >
                     <tspan x="2290.000000" dy="0.000000">security test</tspan>
-                    <tspan x="2290.000000" dy="18.500000">before edge suite</tspan>
+                    <tspan x="2290.000000" dy="18.500000">
+                      before edge suite
+                    </tspan>
                   </text>
                 </g>
                 <g class="KG01IC0mZ3Q7IG0xMilbMF0=">
@@ -2447,7 +2636,9 @@
                     style="text-anchor: middle; font-size: 16px"
                   >
                     <tspan x="2060.000000" dy="0.000000">test changes</tspan>
-                    <tspan x="2060.000000" dy="18.500000">reflected in docs</tspan>
+                    <tspan x="2060.000000" dy="18.500000">
+                      reflected in docs
+                    </tspan>
                   </text>
                 </g>
                 <g class="KG05IC0mZ3Q7IG0xMylbMF0=">
@@ -2489,7 +2680,9 @@
                     style="text-anchor: middle; font-size: 16px"
                   >
                     <tspan x="2420.000000" dy="0.000000">fuzz confidence</tspan>
-                    <tspan x="2420.000000" dy="18.500000">for README claims</tspan>
+                    <tspan x="2420.000000" dy="18.500000">
+                      for README claims
+                    </tspan>
                   </text>
                 </g>
                 <g class="KG00IC0mZ3Q7IG0xNClbMF0=">
@@ -2580,29 +2773,120 @@
                   width="2803"
                   height="1341"
                 >
-                  <rect x="-91" y="-121" width="2803" height="1341" fill="white"></rect>
-                  <rect x="2370.000000" y="244.000000" width="94" height="21" fill="black"></rect>
-                  <rect x="2089.000000" y="247.000000" width="131" height="37" fill="black"></rect>
-                  <rect x="2231.000000" y="238.000000" width="118" height="37" fill="black"></rect>
-                  <rect x="1587.000000" y="288.000000" width="121" height="21" fill="black"></rect>
-                  <rect x="1706.000000" y="249.000000" width="101" height="21" fill="black"></rect>
-                  <rect x="1832.000000" y="249.000000" width="101" height="21" fill="black"></rect>
-                  <rect x="1950.000000" y="283.000000" width="97" height="37" fill="black"></rect>
-                  <rect x="2004.000000" y="587.000000" width="112" height="37" fill="black"></rect>
-                  <rect x="2205.000000" y="568.000000" width="87" height="37" fill="black"></rect>
-                  <rect x="2357.000000" y="574.000000" width="126" height="37" fill="black"></rect>
-                  <rect x="2495.000000" y="573.000000" width="119" height="21" fill="black"></rect>
-                  <rect x="771.000000" y="220.000000" width="166" height="21" fill="black"></rect>
-                  <rect x="797.000000" y="555.000000" width="114" height="21" fill="black"></rect>
-                  <rect x="796.000000" y="866.000000" width="117" height="21" fill="black"></rect>
+                  <rect
+                    x="-91"
+                    y="-121"
+                    width="2803"
+                    height="1341"
+                    fill="white"
+                  ></rect>
+                  <rect
+                    x="2370.000000"
+                    y="244.000000"
+                    width="94"
+                    height="21"
+                    fill="black"
+                  ></rect>
+                  <rect
+                    x="2089.000000"
+                    y="247.000000"
+                    width="131"
+                    height="37"
+                    fill="black"
+                  ></rect>
+                  <rect
+                    x="2231.000000"
+                    y="238.000000"
+                    width="118"
+                    height="37"
+                    fill="black"
+                  ></rect>
+                  <rect
+                    x="1587.000000"
+                    y="288.000000"
+                    width="121"
+                    height="21"
+                    fill="black"
+                  ></rect>
+                  <rect
+                    x="1706.000000"
+                    y="249.000000"
+                    width="101"
+                    height="21"
+                    fill="black"
+                  ></rect>
+                  <rect
+                    x="1832.000000"
+                    y="249.000000"
+                    width="101"
+                    height="21"
+                    fill="black"
+                  ></rect>
+                  <rect
+                    x="1950.000000"
+                    y="283.000000"
+                    width="97"
+                    height="37"
+                    fill="black"
+                  ></rect>
+                  <rect
+                    x="2004.000000"
+                    y="587.000000"
+                    width="112"
+                    height="37"
+                    fill="black"
+                  ></rect>
+                  <rect
+                    x="2205.000000"
+                    y="568.000000"
+                    width="87"
+                    height="37"
+                    fill="black"
+                  ></rect>
+                  <rect
+                    x="2357.000000"
+                    y="574.000000"
+                    width="126"
+                    height="37"
+                    fill="black"
+                  ></rect>
+                  <rect
+                    x="2495.000000"
+                    y="573.000000"
+                    width="119"
+                    height="21"
+                    fill="black"
+                  ></rect>
+                  <rect
+                    x="771.000000"
+                    y="220.000000"
+                    width="166"
+                    height="21"
+                    fill="black"
+                  ></rect>
+                  <rect
+                    x="797.000000"
+                    y="555.000000"
+                    width="114"
+                    height="21"
+                    fill="black"
+                  ></rect>
+                  <rect
+                    x="796.000000"
+                    y="866.000000"
+                    width="117"
+                    height="21"
+                    fill="black"
+                  ></rect>
                 </mask>
               </svg>
             </svg>
           </div>
 
           <div class="callout callout-warning">
-            <strong>Critical path:</strong> M1 (CI) &rarr; M3 (Fuzz) &rarr; M5/M6 (Type Safety)
-            &rarr; M12 (v0.1.0). Everything else can be parallelized within each phase.
+            <strong>Critical path:</strong> M1 (CI) &rarr; M3 (Fuzz) &rarr;
+            M5/M6 (Type Safety) &rarr; M12 (v0.1.0). Everything else can be
+            parallelized within each phase.
           </div>
         </section>
 
@@ -2612,15 +2896,20 @@
           <div class="issue issue-critical">
             <span class="severity severity-critical">Fixed on spot</span>
             <h3>splitLines does not handle lone CR per SSE spec</h3>
-            <div class="where">event.go:160 (splitLines) &mdash; FIXED in this review</div>
+            <div class="where">
+              event.go:160 (splitLines) &mdash; FIXED in this review
+            </div>
             <p>
-              The SSE spec mandates that CR (<code>\r</code>), LF (<code>\n</code>), and CRLF
-              (<code>\r\n</code>) are all valid line endings. The original code only split on
+              The SSE spec mandates that CR (<code>\r</code>), LF
+              (<code>\n</code>), and CRLF (<code>\r\n</code>) are all valid line
+              endings. The original code only split on
               <code>\n</code> and stripped a preceding <code>\r</code>. A lone
-              <code>\r</code> without <code>\n</code> was passed through unsplit, corrupting the
-              wire format. <strong>Fixed:</strong> <code>splitLines</code> now handles all three
-              line-ending styles per spec. Existing tests pass; a new
-              <code>TestWriteEvent_LoneCarriageReturn</code> test is planned (F9.4).
+              <code>\r</code> without <code>\n</code> was passed through
+              unsplit, corrupting the wire format. <strong>Fixed:</strong>
+              <code>splitLines</code> now handles all three line-ending styles
+              per spec. Existing tests pass; a new
+              <code>TestWriteEvent_LoneCarriageReturn</code> test is planned
+              (F9.4).
             </p>
           </div>
 
@@ -2629,28 +2918,35 @@
             <h3>LastEventIDFromRequest bypasses ParseEventID validation</h3>
             <div class="where">stream.go:201 (LastEventIDFromRequest)</div>
             <p>
-              The <code>ParseEventID</code> function exists specifically to reject
-              <code>\n</code>/<code>\r</code> in event IDs (which corrupt the SSE wire format). But
+              The <code>ParseEventID</code> function exists specifically to
+              reject <code>\n</code>/<code>\r</code> in event IDs (which corrupt
+              the SSE wire format). But
               <code>LastEventIDFromRequest</code> reads from the untrusted
-              <code>Last-Event-ID</code> HTTP header using <code>NewEventID</code> (no validation).
-              A malicious client can send <code>Last-Event-ID: foo\nbar</code> and get back an
-              <code>EventID</code> containing a newline. If that ID is ever written back to the wire
-              (e.g., echoed in a diagnostic event), it injects additional SSE fields.
-              <strong>Fix (M2):</strong> validate via <code>ParseEventID</code>, return zero EventID
-              on invalid input.
+              <code>Last-Event-ID</code> HTTP header using
+              <code>NewEventID</code> (no validation). A malicious client can
+              send <code>Last-Event-ID: foo\nbar</code> and get back an
+              <code>EventID</code> containing a newline. If that ID is ever
+              written back to the wire (e.g., echoed in a diagnostic event), it
+              injects additional SSE fields. <strong>Fix (M2):</strong> validate
+              via <code>ParseEventID</code>, return zero EventID on invalid
+              input.
             </p>
           </div>
 
           <div class="issue issue-important">
             <span class="severity severity-important">Duplication</span>
-            <h3>Heartbeat string duplicated between WriteHeartbeat and Stream.Heartbeat</h3>
+            <h3>
+              Heartbeat string duplicated between WriteHeartbeat and
+              Stream.Heartbeat
+            </h3>
             <div class="where">event.go:142 and stream.go:164</div>
             <p>
               The string <code>": heartbeat\n\n"</code> appears in both
-              <code>WriteHeartbeat</code> and <code>Stream.Heartbeat</code>. Changing one without
-              the other creates a split brain. <strong>Fix (M8):</strong> extract
-              <code>heartbeatFrame</code> constant, use <code>WriteHeartbeat</code> in
-              <code>Stream.Heartbeat</code>.
+              <code>WriteHeartbeat</code> and <code>Stream.Heartbeat</code>.
+              Changing one without the other creates a split brain.
+              <strong>Fix (M8):</strong> extract
+              <code>heartbeatFrame</code> constant, use
+              <code>WriteHeartbeat</code> in <code>Stream.Heartbeat</code>.
             </p>
           </div>
 
@@ -2659,10 +2955,12 @@
             <h3>Event.Retry is int, allowing negative values</h3>
             <div class="where">event.go:90 (Retry field)</div>
             <p>
-              <code>Retry int</code> allows negative values. The SSE spec says retry is milliseconds
-              (a positive integer). <code>WriteEvent</code> only writes retry when
-              <code>&gt; 0</code>, so negatives are silently skipped, but the type doesn't prevent
-              the impossible state. <strong>Fix (M5):</strong> change to <code>uint</code>.
+              <code>Retry int</code> allows negative values. The SSE spec says
+              retry is milliseconds (a positive integer).
+              <code>WriteEvent</code> only writes retry when
+              <code>&gt; 0</code>, so negatives are silently skipped, but the
+              type doesn't prevent the impossible state.
+              <strong>Fix (M5):</strong> change to <code>uint</code>.
             </p>
           </div>
 
@@ -2671,10 +2969,12 @@
             <h3>EventStore.EventsAfter takes string, not EventID</h3>
             <div class="where">replay.go:13 (EventsAfter interface)</div>
             <p>
-              The <code>EventStore</code> interface uses <code>string</code> for the
-              <code>lastID</code> parameter, losing the branded <code>EventID</code> type safety.
-              <code>Replay</code> calls <code>store.EventsAfter(lastID.Get())</code> &mdash; the
-              <code>.Get()</code> unwrap is the leak. <strong>Fix (M6):</strong> change to
+              The <code>EventStore</code> interface uses <code>string</code> for
+              the <code>lastID</code> parameter, losing the branded
+              <code>EventID</code> type safety. <code>Replay</code> calls
+              <code>store.EventsAfter(lastID.Get())</code> &mdash; the
+              <code>.Get()</code> unwrap is the leak.
+              <strong>Fix (M6):</strong> change to
               <code>EventsAfter(lastID EventID)</code>.
             </p>
           </div>
@@ -2683,7 +2983,8 @@
             <span class="severity severity-nice">Code Quality</span>
             <h3>Test helpers reinvent the standard library</h3>
             <div class="where">
-              stream_test.go:317-334 (contains/startsWith), broadcaster_test.go:414 (itoa)
+              stream_test.go:317-334 (contains/startsWith),
+              broadcaster_test.go:414 (itoa)
             </div>
             <p>
               Hand-rolled <code>contains()</code> (O(n&sup2;) recursive) and
@@ -2696,10 +2997,13 @@
           <div class="issue issue-nice">
             <span class="severity severity-nice">Coverage Gap</span>
             <h3>WriteRetry has 0% test coverage</h3>
-            <div class="where">event.go:150 (WriteRetry) &mdash; 0.0% coverage</div>
+            <div class="where">
+              event.go:150 (WriteRetry) &mdash; 0.0% coverage
+            </div>
             <p>
-              The exported <code>WriteRetry</code> function is never called by any test.
-              <strong>Fix (M9/F9.3):</strong> add <code>TestWriteRetry</code>.
+              The exported <code>WriteRetry</code> function is never called by
+              any test. <strong>Fix (M9/F9.3):</strong> add
+              <code>TestWriteRetry</code>.
             </p>
           </div>
 
@@ -2708,9 +3012,10 @@
             <h3>errorResponseWriter relies on nil-method-call semantics</h3>
             <div class="where">replay_test.go:152-161</div>
             <p>
-              The <code>writer</code> field is nil-initialized. <code>errorWriter.Write</code> works
-              on a nil pointer because it never dereferences the receiver, but the wiring is fragile
-              and confusing. <strong>Fix (M7/F7.5):</strong> initialize
+              The <code>writer</code> field is nil-initialized.
+              <code>errorWriter.Write</code> works on a nil pointer because it
+              never dereferences the receiver, but the wiring is fragile and
+              confusing. <strong>Fix (M7/F7.5):</strong> initialize
               <code>writer: &amp;errorWriter{}</code>.
             </p>
           </div>
@@ -2719,8 +3024,8 @@
         <section id="strengths">
           <h2><span class="num">&diams;</span>Strengths to Preserve</h2>
           <p>
-            This library does many things exceptionally well. These patterns should be maintained,
-            not changed:
+            This library does many things exceptionally well. These patterns
+            should be maintained, not changed:
           </p>
 
           <div class="strengths">
@@ -2729,9 +3034,10 @@
               <div class="text">
                 <strong>Allocation-free hot path</strong
                 ><span
-                  ><code>WriteEvent</code> uses direct byte appends, not <code>fmt.Fprintf</code>.
-                  Benchmarks confirm 0 allocs on the fan-out path. This is the right call for a
-                  transport library.</span
+                  ><code>WriteEvent</code> uses direct byte appends, not
+                  <code>fmt.Fprintf</code>. Benchmarks confirm 0 allocs on the
+                  fan-out path. This is the right call for a transport
+                  library.</span
                 >
               </div>
             </div>
@@ -2740,9 +3046,9 @@
               <div class="text">
                 <strong>Branded EventID type</strong
                 ><span
-                  >Using <code>go-branded-id</code> phantom types prevents cross-assignment with
-                  other string IDs. This is exactly the kind of type safety the AGENTS.md philosophy
-                  demands.</span
+                  >Using <code>go-branded-id</code> phantom types prevents
+                  cross-assignment with other string IDs. This is exactly the
+                  kind of type safety the AGENTS.md philosophy demands.</span
                 >
               </div>
             </div>
@@ -2751,18 +3057,22 @@
               <div class="text">
                 <strong>Clean Broadcaster/fanOut split</strong
                 ><span
-                  >The public <code>Broadcaster[T]</code> wraps the unexported transport-agnostic
-                  <code>fanOut[T]</code>. Good composition, no leaky abstractions.</span
+                  >The public <code>Broadcaster[T]</code> wraps the unexported
+                  transport-agnostic <code>fanOut[T]</code>. Good composition,
+                  no leaky abstractions.</span
                 >
               </div>
             </div>
             <div class="strength">
               <div class="check">+</div>
               <div class="text">
-                <strong>Non-blocking broadcast with documented drop policy</strong
+                <strong
+                  >Non-blocking broadcast with documented drop policy</strong
                 ><span
-                  >The <code>select { case ch &larr; msg: default: }</code> pattern prevents
-                  head-of-line blocking. The drop policy is documented and intentional.</span
+                  >The
+                  <code>select { case ch &larr; msg: default: }</code> pattern
+                  prevents head-of-line blocking. The drop policy is documented
+                  and intentional.</span
                 >
               </div>
             </div>
@@ -2771,8 +3081,9 @@
               <div class="text">
                 <strong>Excellent concurrency documentation</strong
                 ><span
-                  >AGENTS.md documents three critical concurrency invariants with precise
-                  explanations. This is the gold standard for concurrent Go library docs.</span
+                  >AGENTS.md documents three critical concurrency invariants
+                  with precise explanations. This is the gold standard for
+                  concurrent Go library docs.</span
                 >
               </div>
             </div>
@@ -2781,8 +3092,8 @@
               <div class="text">
                 <strong>Race-tested</strong
                 ><span
-                  >Multiple race tests with <code>-race</code>. 95.9% coverage with real concurrent
-                  scenarios.</span
+                  >Multiple race tests with <code>-race</code>. 95.9% coverage
+                  with real concurrent scenarios.</span
                 >
               </div>
             </div>
@@ -2791,8 +3102,8 @@
               <div class="text">
                 <strong>Hermetic Nix flake</strong
                 ><span
-                  ><code>flake.nix</code> provides fully reproducible build/test/lint/format. Zero
-                  setup friction.</span
+                  ><code>flake.nix</code> provides fully reproducible
+                  build/test/lint/format. Zero setup friction.</span
                 >
               </div>
             </div>
@@ -2808,10 +3119,13 @@
               <code
                 >docs/status/2026-07-23_22-33_full-todo-execution-and-honest-self-review.md</code
               >
-              for the per-task commit log and honest self-review. The library subsequently released
-              <code>v0.1.0</code> (2026-07-23) and <code>v0.2.0</code> (2026-07-24). Coverage rose
-              from 95.9% to 97.9% with 94 tests. Residual quality debt (2 flaky tests, 4 coverage
-              gaps, test modernization) is tracked in <code>TODO_LIST.md</code>.
+              for the per-task commit log and honest self-review. The library
+              subsequently released
+              <code>v0.1.0</code> (2026-07-23) and
+              <code>v0.2.0</code> (2026-07-24). Coverage rose from 95.9% to
+              97.9% with 94 tests. Residual quality debt (2 flaky tests, 4
+              coverage gaps, test modernization) is tracked in
+              <code>TODO_LIST.md</code>.
             </p>
           </div>
         </section>
@@ -2819,8 +3133,8 @@
     </div>
 
     <footer class="footer">
-      Generated 2026-07-23 21:40 &middot; Pareto planning based on full-codebase review of go-sse @
-      commit d49fa82
+      Generated 2026-07-23 21:40 &middot; Pareto planning based on full-codebase
+      review of go-sse @ commit d49fa82
     </footer>
   </body>
 </html>

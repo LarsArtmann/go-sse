@@ -10,7 +10,8 @@
   --border: #2a2a3e;
   --radius: 12px;
   --radius-sm: 8px;
-  --mono: "JetBrains Mono", "Fira Code", ui-monospace, "Cascadia Code", monospace;
+  --mono:
+    "JetBrains Mono", "Fira Code", ui-monospace, "Cascadia Code", monospace;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 }
 

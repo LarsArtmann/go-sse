@@ -207,15 +207,15 @@ The concurrent agent created a 282-line planning document for the activity-feed 
 
 ## Build/Test/Lint Status (as of this writing)
 
-| Check                     | Status                                                         |
-| ------------------------- | -------------------------------------------------------------- |
-| `go build ./...`          | ✅ PASS                                                        |
-| `go vet ./...`            | ✅ PASS                                                        |
-| `golangci-lint run ./...` | ✅ PASS (0 issues)                                             |
-| `go test ./... -count=1`  | ✅ PASS (library tests only; no example tests)                 |
+| Check                     | Status                                                        |
+| ------------------------- | ------------------------------------------------------------- |
+| `go build ./...`          | ✅ PASS                                                       |
+| `go vet ./...`            | ✅ PASS                                                       |
+| `golangci-lint run ./...` | ✅ PASS (0 issues)                                            |
+| `go test ./... -count=1`  | ✅ PASS (library tests only; no example tests)                |
 | `nix flake check`         | ⚠️ NOT RUN (would need vendorHash update for new example deps) |
-| Browser test (HTMX)       | ❌ NOT DONE                                                    |
-| Browser test (DataStar)   | ❌ NOT DONE                                                    |
+| Browser test (HTMX)       | ❌ NOT DONE                                                   |
+| Browser test (DataStar)   | ❌ NOT DONE                                                   |
 
 ---
 

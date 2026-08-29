@@ -14,6 +14,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Nothing yet.
 
+## [ssetest 0.2.0] - 2026-08-22
+
+### Added
+
+- `StreamReader` type and `NewStreamReader` constructor for reading SSE events one at a time from a live stream. Unlike calling `ReadNEvents` repeatedly (which creates and discards a new `bufio.Scanner` per call, losing buffered data), `StreamReader` wraps a single scanner across all `Next()` calls — the correct API for test patterns that interleave reading SSE events with triggering actions (POST, mutate state, then read the next event).
+- `MustReadNextEvent(tb testing.TB, sr *StreamReader) Event` — fatal helper for `StreamReader.Next`, accepts `testing.TB` so it works with `*testing.T`, `*testing.B`, and `GinkgoT()`.
+
+### Changed
+
+- `ReadNEvents` and `MustReadNEvents` doc comments now warn that each call creates a new scanner and recommend `StreamReader` for repeated reads on the same live stream.
+
 ## [ssetest 0.1.0] - 2026-08-22
 
 First release of the consumer test-helper module (`github.com/larsartmann/go-sse/ssetest`). Import it in tests only — because it is its own module, `testing` never leaks into consumer production builds.
@@ -203,7 +214,8 @@ and the subsequent DataStar integration work.
 
 - `LastEventIDFromRequest` validates header input with `ParseEventID`, preventing SSE wire-format injection via crafted `Last-Event-ID` headers
 
-[Unreleased]: https://github.com/larsartmann/go-sse/compare/ssetest/v0.1.0...HEAD
+[Unreleased]: https://github.com/larsartmann/go-sse/compare/ssetest/v0.2.0...HEAD
+[ssetest 0.2.0]: https://github.com/larsartmann/go-sse/compare/ssetest/v0.1.0...ssetest/v0.2.0
 [ssetest 0.1.0]: https://github.com/larsartmann/go-sse/compare/v0.5.1...ssetest/v0.1.0
 [0.5.1]: https://github.com/larsartmann/go-sse/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/larsartmann/go-sse/compare/v0.4.0...v0.5.0

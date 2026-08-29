@@ -11,30 +11,30 @@
 
 ### docs-health: living docs rebuilt and verified
 
-| #   | Item                                                                                                                                                             | File(s)                   | Verification                                                                               |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------ |
-| 1   | Added missing `[0.3.0]` CHANGELOG entry (tag existed but had no section)                                                                                         | `CHANGELOG.md`            | Tag `v0.3.0` existed (2026-07-27) with 0 code changes; section now documents this honestly |
-| 2   | Fixed CHANGELOG compare links (`[Unreleased]` now references `v0.3.0...HEAD` not `v0.2.1...HEAD`)                                                                | `CHANGELOG.md`            | All 5 compare links verified against tag list                                              |
-| 3   | Rebuilt TODO_LIST.md from scratch — removed 2 DONE items (in CHANGELOG), updated release target to v0.4.0, harvested 4 open predicate-filtering correctness gaps | `TODO_LIST.md`            | Zero completed items remain; every item verified against code                              |
-| 4   | Fixed FEATURES.md test counts: SubscribeFilter (6→7 tests), Shutdown evidence (missing `_Empty`), integration test list (4→6 entries)                            | `FEATURES.md`             | Counts verified via `go test -v` output                                                    |
-| 5   | Added missing `Broadcaster.ServeSSE` non-goal to README.md — 3-way non-goals consistency now (README ↔ FEATURES ↔ ROADMAP)                                       | `README.md`               | `grep` confirms all 6 non-goals match across all 3 files                                   |
-| 6   | Replaced ALL DOMAIN_LANGUAGE.md stale `file.go:NN` line refs with maintenance-free symbol-only references                                                        | `docs/DOMAIN_LANGUAGE.md` | Every entry now says "`Symbol` in `file.go`" — no line numbers to rot                      |
-| 7   | Fixed `_ = i` code smell in `filter_test.go:123-125` — changed `for i := range 10 { _ = i }` to `for range 10`                                                   | `filter_test.go`          | `go vet` clean, `golangci-lint` 0 issues                                                   |
-| 8   | Verified ROADMAP.md is accurate — sequencing table, non-goals, shipped-item claims all correct                                                                   | `ROADMAP.md`              | No changes needed                                                                          |
+| # | Item                                                                                                                                                             | File(s)                   | Verification                                                                               |
+| - | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------ |
+| 1 | Added missing `[0.3.0]` CHANGELOG entry (tag existed but had no section)                                                                                         | `CHANGELOG.md`            | Tag `v0.3.0` existed (2026-07-27) with 0 code changes; section now documents this honestly |
+| 2 | Fixed CHANGELOG compare links (`[Unreleased]` now references `v0.3.0...HEAD` not `v0.2.1...HEAD`)                                                                | `CHANGELOG.md`            | All 5 compare links verified against tag list                                              |
+| 3 | Rebuilt TODO_LIST.md from scratch — removed 2 DONE items (in CHANGELOG), updated release target to v0.4.0, harvested 4 open predicate-filtering correctness gaps | `TODO_LIST.md`            | Zero completed items remain; every item verified against code                              |
+| 4 | Fixed FEATURES.md test counts: SubscribeFilter (6→7 tests), Shutdown evidence (missing `_Empty`), integration test list (4→6 entries)                            | `FEATURES.md`             | Counts verified via `go test -v` output                                                    |
+| 5 | Added missing `Broadcaster.ServeSSE` non-goal to README.md — 3-way non-goals consistency now (README ↔ FEATURES ↔ ROADMAP)                                       | `README.md`               | `grep` confirms all 6 non-goals match across all 3 files                                   |
+| 6 | Replaced ALL DOMAIN_LANGUAGE.md stale `file.go:NN` line refs with maintenance-free symbol-only references                                                        | `docs/DOMAIN_LANGUAGE.md` | Every entry now says "`Symbol` in `file.go`" — no line numbers to rot                      |
+| 7 | Fixed `_ = i` code smell in `filter_test.go:123-125` — changed `for i := range 10 { _ = i }` to `for range 10`                                                   | `filter_test.go`          | `go vet` clean, `golangci-lint` 0 issues                                                   |
+| 8 | Verified ROADMAP.md is accurate — sequencing table, non-goals, shipped-item claims all correct                                                                   | `ROADMAP.md`              | No changes needed                                                                          |
 
 ### update-old-docs: 9 historical files annotated
 
-| #   | File                                                                                       | Action                   | Key resolutions marked                                                              |
-| --- | ------------------------------------------------------------------------------------------ | ------------------------ | ----------------------------------------------------------------------------------- |
-| 9   | `docs/status/2026-08-03_00-18_datastar-integration-keyed-lines-and-self-review.md`         | ANNOTATE                 | All section-c items shipped; Q1=no subpackage; Q3=raw HTML                          |
-| 10  | `docs/status/2026-08-03_00-51_datastar-integration-wave1-4-execution-and-self-review.md`   | ANNOTATE + inline update | 9.7MB binary FIXED (`2c029b4`); `data-bind:style` still open; all Q1/Q2/Q3 resolved |
-| 11  | `docs/status/2026-08-03_01-09_roadmap-restructure-and-docs-split-brain-fix.md`             | ANNOTATE                 | All section-b/c items resolved; 3 questions answered                                |
-| 12  | `docs/status/2026-08-03_02-50_docs-health-execution-samber-do-research-and-self-review.md` | ANNOTATE                 | Binary FIXED; HARVEST done; samber/do Option C shipped                              |
-| 13  | `docs/status/2026-08-03_07-03_predicate-filtering-self-review.md`                          | ANNOTATE                 | All section-b/c gaps closed by 09-00 session; 3 questions routed                    |
-| 14  | `docs/status/2026-08-03_09-00_predicate-filtering-gap-closure.md`                          | ANNOTATE                 | DOMAIN_LANGUAGE refs FIXED; `_ = i` FIXED; remaining items in TODO_LIST             |
-| 15  | `docs/planning/2026-08-03_04-51_SUPERB-predicate-filtering.md`                             | ARCHIVE                  | All 32 tasks executed; moved to `docs/planning/archived/`                           |
-| 16  | `docs/planning/2026-08-03_datastar-integration-execution-plan.md`                          | ARCHIVE                  | Waves 1-4 shipped; YAGNI items rejected; moved to `docs/planning/archived/`         |
-| 17  | `docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md`                         | ANNOTATE                 | Option C adopted and shipped (`Shutdown`, `Health`); trigger criteria preserved     |
+| #  | File                                                                                       | Action                   | Key resolutions marked                                                              |
+| -- | ------------------------------------------------------------------------------------------ | ------------------------ | ----------------------------------------------------------------------------------- |
+| 9  | `docs/status/2026-08-03_00-18_datastar-integration-keyed-lines-and-self-review.md`         | ANNOTATE                 | All section-c items shipped; Q1=no subpackage; Q3=raw HTML                          |
+| 10 | `docs/status/2026-08-03_00-51_datastar-integration-wave1-4-execution-and-self-review.md`   | ANNOTATE + inline update | 9.7MB binary FIXED (`2c029b4`); `data-bind:style` still open; all Q1/Q2/Q3 resolved |
+| 11 | `docs/status/2026-08-03_01-09_roadmap-restructure-and-docs-split-brain-fix.md`             | ANNOTATE                 | All section-b/c items resolved; 3 questions answered                                |
+| 12 | `docs/status/2026-08-03_02-50_docs-health-execution-samber-do-research-and-self-review.md` | ANNOTATE                 | Binary FIXED; HARVEST done; samber/do Option C shipped                              |
+| 13 | `docs/status/2026-08-03_07-03_predicate-filtering-self-review.md`                          | ANNOTATE                 | All section-b/c gaps closed by 09-00 session; 3 questions routed                    |
+| 14 | `docs/status/2026-08-03_09-00_predicate-filtering-gap-closure.md`                          | ANNOTATE                 | DOMAIN_LANGUAGE refs FIXED; `_ = i` FIXED; remaining items in TODO_LIST             |
+| 15 | `docs/planning/2026-08-03_04-51_SUPERB-predicate-filtering.md`                             | ARCHIVE                  | All 32 tasks executed; moved to `docs/planning/archived/`                           |
+| 16 | `docs/planning/2026-08-03_datastar-integration-execution-plan.md`                          | ARCHIVE                  | Waves 1-4 shipped; YAGNI items rejected; moved to `docs/planning/archived/`         |
+| 17 | `docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md`                         | ANNOTATE                 | Option C adopted and shipped (`Shutdown`, `Health`); trigger criteria preserved     |
 
 ### Quality gates (all green)
 
@@ -50,26 +50,26 @@
 
 ## b) PARTIALLY DONE
 
-| #   | Item                                | What's done                                                                                                         | What's missing                                                                                                                                                                                                                     |
-| --- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Cross-file consistency verification | README ↔ FEATURES ↔ ROADMAP non-goals now 3-way consistent; FEATURES test counts verified; CHANGELOG links verified | Did not verify every internal markdown link resolves (`grep -roE '\]\([^)]+\)' *.md docs/`); did not verify all ROADMAP sequencing anchor links render correctly in a browser                                                      |
-| 2   | FEATURES.md coverage claim          | Changed DOMAIN_LANGUAGE refs (maintenance-free)                                                                     | Did not update FEATURES.md header claim "Verified by running `go test ./... -race`" — this is accurate but the implied 100% coverage from CHANGELOG `[0.2.1]` is stale (actual: 98.9%). Did not add a coverage line to FEATURES.md |
-| 3   | Historical doc completeness gate    | All 9 `2026-08-*` files annotated with resolution appendices                                                        | Did not check whether older `2026-07-*` status reports in `docs/status/` have stale ROADMAP references that now point to wrong sections (section renaming from "Theme N" to numbered sections)                                     |
+| # | Item                                | What's done                                                                                                         | What's missing                                                                                                                                                                                                                     |
+| - | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | Cross-file consistency verification | README ↔ FEATURES ↔ ROADMAP non-goals now 3-way consistent; FEATURES test counts verified; CHANGELOG links verified | Did not verify every internal markdown link resolves (`grep -roE '\]\([^)]+\)' *.md docs/`); did not verify all ROADMAP sequencing anchor links render correctly in a browser                                                      |
+| 2 | FEATURES.md coverage claim          | Changed DOMAIN_LANGUAGE refs (maintenance-free)                                                                     | Did not update FEATURES.md header claim "Verified by running `go test ./... -race`" — this is accurate but the implied 100% coverage from CHANGELOG `[0.2.1]` is stale (actual: 98.9%). Did not add a coverage line to FEATURES.md |
+| 3 | Historical doc completeness gate    | All 9 `2026-08-*` files annotated with resolution appendices                                                        | Did not check whether older `2026-07-*` status reports in `docs/status/` have stale ROADMAP references that now point to wrong sections (section renaming from "Theme N" to numbered sections)                                     |
 
 ---
 
 ## c) NOT STARTED
 
-| #   | Item                                                       | Why                                                                                     |
-| --- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| 1   | `TestIntegration_ReplayFiltered`                           | Not in this session's scope (docs-health, not code feature work). Tracked in TODO_LIST. |
-| 2   | `TestSubscribeFilter_ShutdownDrainsFilteredSubscribers`    | Same — TODO_LIST item.                                                                  |
-| 3   | Strengthen race test assertion (`received.Load() >= 500`)  | TODO_LIST item.                                                                         |
-| 4   | Document panic contract on `ReplayFiltered` in `replay.go` | TODO_LIST item.                                                                         |
-| 5   | v0.4.0 release cut                                         | TODO_LIST item — requires user approval (irreversible tag).                             |
-| 6   | Push 9+ commits to origin/master                           | User decision — not pushing without explicit instruction.                               |
-| 7   | DiscordSync migration decision                             | Cross-project — separate repo, unverified auto-committed commits.                       |
-| 8   | cqrs-htmx `JournalSSEStore` → `FilteredEventStore`         | Cross-project — ROADMAP §2.                                                             |
+| # | Item                                                       | Why                                                                                     |
+| - | ---------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 1 | `TestIntegration_ReplayFiltered`                           | Not in this session's scope (docs-health, not code feature work). Tracked in TODO_LIST. |
+| 2 | `TestSubscribeFilter_ShutdownDrainsFilteredSubscribers`    | Same — TODO_LIST item.                                                                  |
+| 3 | Strengthen race test assertion (`received.Load() >= 500`)  | TODO_LIST item.                                                                         |
+| 4 | Document panic contract on `ReplayFiltered` in `replay.go` | TODO_LIST item.                                                                         |
+| 5 | v0.4.0 release cut                                         | TODO_LIST item — requires user approval (irreversible tag).                             |
+| 6 | Push 9+ commits to origin/master                           | User decision — not pushing without explicit instruction.                               |
+| 7 | DiscordSync migration decision                             | Cross-project — separate repo, unverified auto-committed commits.                       |
+| 8 | cqrs-htmx `JournalSSEStore` → `FilteredEventStore`         | Cross-project — ROADMAP §2.                                                             |
 
 ---
 
@@ -131,123 +131,123 @@
 
 ### High priority — predicate filtering correctness gaps (from TODO_LIST)
 
-| #   | Task                                                                                            | Source    | Effort |
-| --- | ----------------------------------------------------------------------------------------------- | --------- | ------ |
-| 1   | Add `TestIntegration_ReplayFiltered` — HTTP round-trip with FilteredEventStore + fallback store | TODO_LIST | M      |
-| 2   | Add `TestSubscribeFilter_ShutdownDrainsFilteredSubscribers`                                     | TODO_LIST | S      |
-| 3   | Strengthen race test assertion: `received.Load() >= 500` not just `> 0`                         | TODO_LIST | S      |
-| 4   | Document panic contract on `ReplayFiltered` in `replay.go` (match `broadcaster.go`)             | TODO_LIST | S      |
+| # | Task                                                                                            | Source    | Effort |
+| - | ----------------------------------------------------------------------------------------------- | --------- | ------ |
+| 1 | Add `TestIntegration_ReplayFiltered` — HTTP round-trip with FilteredEventStore + fallback store | TODO_LIST | M      |
+| 2 | Add `TestSubscribeFilter_ShutdownDrainsFilteredSubscribers`                                     | TODO_LIST | S      |
+| 3 | Strengthen race test assertion: `received.Load() >= 500` not just `> 0`                         | TODO_LIST | S      |
+| 4 | Document panic contract on `ReplayFiltered` in `replay.go` (match `broadcaster.go`)             | TODO_LIST | S      |
 
 ### High priority — release
 
-| #   | Task                                                   | Source    | Effort |
-| --- | ------------------------------------------------------ | --------- | ------ |
-| 5   | Get user approval for v0.4.0 cut                       | TODO_LIST | —      |
-| 6   | Move `[Unreleased]` → `[0.4.0]` in CHANGELOG with date | TODO_LIST | S      |
-| 7   | Tag `v0.4.0`                                           | TODO_LIST | S      |
-| 8   | Push to origin/master (9+ commits ahead)               | TODO_LIST | S      |
+| # | Task                                                   | Source    | Effort |
+| - | ------------------------------------------------------ | --------- | ------ |
+| 5 | Get user approval for v0.4.0 cut                       | TODO_LIST | —      |
+| 6 | Move `[Unreleased]` → `[0.4.0]` in CHANGELOG with date | TODO_LIST | S      |
+| 7 | Tag `v0.4.0`                                           | TODO_LIST | S      |
+| 8 | Push to origin/master (9+ commits ahead)               | TODO_LIST | S      |
 
 ### High priority — verification gaps from this session
 
-| #   | Task                                                                     | Source           | Effort |
-| --- | ------------------------------------------------------------------------ | ---------------- | ------ |
-| 9   | Verify all internal markdown links resolve after archiving planning docs | This report (e5) | S      |
-| 10  | Check `2026-07-*` status reports for stale ROADMAP references            | This report (e4) | M      |
-| 11  | Add current coverage percentage to FEATURES.md (98.9%, not "100%")       | This report (e6) | S      |
+| #  | Task                                                                     | Source           | Effort |
+| -- | ------------------------------------------------------------------------ | ---------------- | ------ |
+| 9  | Verify all internal markdown links resolve after archiving planning docs | This report (e5) | S      |
+| 10 | Check `2026-07-*` status reports for stale ROADMAP references            | This report (e4) | M      |
+| 11 | Add current coverage percentage to FEATURES.md (98.9%, not "100%")       | This report (e6) | S      |
 
 ### Medium priority — cross-project
 
-| #   | Task                                                                       | Source          | Effort |
-| --- | -------------------------------------------------------------------------- | --------------- | ------ |
-| 12  | Decide: keep or revert DiscordSync cqrs-htmx→go-sse migration commits      | 07-03 report Q1 | S      |
-| 13  | Extend cqrs-htmx `JournalSSEStore` to implement `FilteredEventStore`       | ROADMAP §2      | M      |
-| 14  | Re-export `SubscribeFilter`/`ReplayFiltered` through cqrs-htmx alias layer | 07-03 report    | S      |
+| #  | Task                                                                       | Source          | Effort |
+| -- | -------------------------------------------------------------------------- | --------------- | ------ |
+| 12 | Decide: keep or revert DiscordSync cqrs-htmx→go-sse migration commits      | 07-03 report Q1 | S      |
+| 13 | Extend cqrs-htmx `JournalSSEStore` to implement `FilteredEventStore`       | ROADMAP §2      | M      |
+| 14 | Re-export `SubscribeFilter`/`ReplayFiltered` through cqrs-htmx alias layer | 07-03 report    | S      |
 
 ### Medium priority — testing hardening
 
-| #   | Task                                                                                         | Source           | Effort |
-| --- | -------------------------------------------------------------------------------------------- | ---------------- | ------ |
-| 15  | Add `TestReplayFiltered_FallbackPredicatePanic` — consistency with SubscribeFilter contract  | 09-00 report f9  | S      |
-| 16  | Run `BenchmarkSubscribeFilter_PredicateOverhead` with `-benchtime=3s` (not 10x)              | 09-00 report e5  | S      |
-| 17  | Add `TestSubscribeFilter_DropPolicyRespected` — full buffer drops matching, not non-matching | 09-00 report f12 | S      |
-| 18  | Add `TestSubscribeFilter_BroadcastManyMixedSubscribers` — half filtered, half unfiltered     | 09-00 report f11 | S      |
-| 19  | Add fuzz test for fallback `ReplayFiltered` post-filter loop                                 | 09-00 report f32 | M      |
+| #  | Task                                                                                         | Source           | Effort |
+| -- | -------------------------------------------------------------------------------------------- | ---------------- | ------ |
+| 15 | Add `TestReplayFiltered_FallbackPredicatePanic` — consistency with SubscribeFilter contract  | 09-00 report f9  | S      |
+| 16 | Run `BenchmarkSubscribeFilter_PredicateOverhead` with `-benchtime=3s` (not 10x)              | 09-00 report e5  | S      |
+| 17 | Add `TestSubscribeFilter_DropPolicyRespected` — full buffer drops matching, not non-matching | 09-00 report f12 | S      |
+| 18 | Add `TestSubscribeFilter_BroadcastManyMixedSubscribers` — half filtered, half unfiltered     | 09-00 report f11 | S      |
+| 19 | Add fuzz test for fallback `ReplayFiltered` post-filter loop                                 | 09-00 report f32 | M      |
 
 ### Medium priority — documentation
 
-| #   | Task                                                                              | Source           | Effort |
-| --- | --------------------------------------------------------------------------------- | ---------------- | ------ |
-| 20  | Add `SubscribeFilter` to doc.go "Concurrency and Memory Model" section            | 09-00 report f13 | S      |
-| 21  | Add `ReplayFiltered` to doc.go "Reconnection" section                             | 09-00 report f14 | S      |
-| 22  | Add `SubscribeFilter` usage to `example/` server package                          | 09-00 report f17 | M      |
-| 23  | Consider a "Predicate design guide" doc: SubscribeFilter vs multiple broadcasters | 09-00 report f16 | M      |
+| #  | Task                                                                              | Source           | Effort |
+| -- | --------------------------------------------------------------------------------- | ---------------- | ------ |
+| 20 | Add `SubscribeFilter` to doc.go "Concurrency and Memory Model" section            | 09-00 report f13 | S      |
+| 21 | Add `ReplayFiltered` to doc.go "Reconnection" section                             | 09-00 report f14 | S      |
+| 22 | Add `SubscribeFilter` usage to `example/` server package                          | 09-00 report f17 | M      |
+| 23 | Consider a "Predicate design guide" doc: SubscribeFilter vs multiple broadcasters | 09-00 report f16 | M      |
 
 ### Medium priority — DataStar follow-up
 
-| #   | Task                                                         | Source              | Effort |
-| --- | ------------------------------------------------------------ | ------------------- | ------ |
-| 24  | Point a real DataStar JS client at example server            | TODO_LIST           | M      |
-| 25  | Fix `data-bind:style` attribute in example HTML (unverified) | 00-51 report d2     | S      |
-| 26  | CI headless browser test                                     | TODO_LIST (blocked) | L      |
+| #  | Task                                                         | Source              | Effort |
+| -- | ------------------------------------------------------------ | ------------------- | ------ |
+| 24 | Point a real DataStar JS client at example server            | TODO_LIST           | M      |
+| 25 | Fix `data-bind:style` attribute in example HTML (unverified) | 00-51 report d2     | S      |
+| 26 | CI headless browser test                                     | TODO_LIST (blocked) | L      |
 
 ### Lower priority — production readiness
 
-| #   | Task                                                               | Source     | Effort |
-| --- | ------------------------------------------------------------------ | ---------- | ------ |
-| 27  | Scale profile: 64-buffer × N subscribers (memory + latency report) | TODO_LIST  | M      |
-| 28  | Narrow backpressure policy to a recommendation                     | ROADMAP §1 | L      |
-| 29  | Design observability approach                                      | ROADMAP §1 | L      |
+| #  | Task                                                               | Source     | Effort |
+| -- | ------------------------------------------------------------------ | ---------- | ------ |
+| 27 | Scale profile: 64-buffer × N subscribers (memory + latency report) | TODO_LIST  | M      |
+| 28 | Narrow backpressure policy to a recommendation                     | ROADMAP §1 | L      |
+| 29 | Design observability approach                                      | ROADMAP §1 | L      |
 
 ### Lower priority — developer experience
 
-| #   | Task                                  | Source     | Effort |
-| --- | ------------------------------------- | ---------- | ------ |
-| 30  | In-memory `EventStore` implementation | ROADMAP §2 | M      |
-| 31  | Redis `EventStore` implementation     | ROADMAP §2 | L      |
-| 32  | Client-side `Dial` helper             | ROADMAP §2 | L      |
+| #  | Task                                  | Source     | Effort |
+| -- | ------------------------------------- | ---------- | ------ |
+| 30 | In-memory `EventStore` implementation | ROADMAP §2 | M      |
+| 31 | Redis `EventStore` implementation     | ROADMAP §2 | L      |
+| 32 | Client-side `Dial` helper             | ROADMAP §2 | L      |
 
 ### Lower priority — spec compliance
 
-| #   | Task                                                            | Source     | Effort |
-| --- | --------------------------------------------------------------- | ---------- | ------ |
-| 33  | SSE extension fields (CLTY, custom fields)                      | ROADMAP §3 | M      |
-| 34  | Full HTTP/2 streaming verification                              | ROADMAP §3 | M      |
-| 35  | Full HTTP/3 streaming verification                              | ROADMAP §3 | M      |
-| 36  | Decide whether `LastEventID` should validate via `ParseEventID` | ROADMAP §3 | S      |
+| #  | Task                                                            | Source     | Effort |
+| -- | --------------------------------------------------------------- | ---------- | ------ |
+| 33 | SSE extension fields (CLTY, custom fields)                      | ROADMAP §3 | M      |
+| 34 | Full HTTP/2 streaming verification                              | ROADMAP §3 | M      |
+| 35 | Full HTTP/3 streaming verification                              | ROADMAP §3 | M      |
+| 36 | Decide whether `LastEventID` should validate via `ParseEventID` | ROADMAP §3 | S      |
 
 ### Lower priority — architecture
 
-| #   | Task                                                                          | Source           | Effort |
-| --- | ----------------------------------------------------------------------------- | ---------------- | ------ |
-| 37  | Consider `FilteredBroadcaster[T]` wrapper (single-filter construction)        | 09-00 report f27 | M      |
-| 38  | Consider `WithFilter[T](pred)` option for `NewBroadcaster`                    | 09-00 report f28 | M      |
-| 39  | Evaluate whether `FilteredEventStore` should take `context.Context`           | 09-00 report f29 | S      |
-| 40  | Consider metrics hooks for filtered drops (predicate-rejected vs buffer-full) | 09-00 report f30 | M      |
-| 41  | Consider `BroadcastFiltered(pred, msg)` — meta-filtering                      | 09-00 report f31 | S      |
+| #  | Task                                                                          | Source           | Effort |
+| -- | ----------------------------------------------------------------------------- | ---------------- | ------ |
+| 37 | Consider `FilteredBroadcaster[T]` wrapper (single-filter construction)        | 09-00 report f27 | M      |
+| 38 | Consider `WithFilter[T](pred)` option for `NewBroadcaster`                    | 09-00 report f28 | M      |
+| 39 | Evaluate whether `FilteredEventStore` should take `context.Context`           | 09-00 report f29 | S      |
+| 40 | Consider metrics hooks for filtered drops (predicate-rejected vs buffer-full) | 09-00 report f30 | M      |
+| 41 | Consider `BroadcastFiltered(pred, msg)` — meta-filtering                      | 09-00 report f31 | S      |
 
 ### Lower priority — docs polish
 
-| #   | Task                                                            | Source           | Effort |
-| --- | --------------------------------------------------------------- | ---------------- | ------ |
-| 42  | Verify ROADMAP sequencing table anchor links render correctly   | 01-09 report c3  | S      |
-| 43  | Add CONTRIBUTING.md with release checklist                      | Prior reports    | M      |
-| 44  | Add `ExampleReplayFiltered` to `example_test.go`                | 07-03 report f32 | S      |
-| 45  | Add `SubscribeFilter` to `example/datastar` example if relevant | 09-00 report f38 | S      |
+| #  | Task                                                            | Source           | Effort |
+| -- | --------------------------------------------------------------- | ---------------- | ------ |
+| 42 | Verify ROADMAP sequencing table anchor links render correctly   | 01-09 report c3  | S      |
+| 43 | Add CONTRIBUTING.md with release checklist                      | Prior reports    | M      |
+| 44 | Add `ExampleReplayFiltered` to `example_test.go`                | 07-03 report f32 | S      |
+| 45 | Add `SubscribeFilter` to `example/datastar` example if relevant | 09-00 report f38 | S      |
 
 ### Lower priority — dependency hygiene
 
-| #   | Task                                                         | Source           | Effort |
-| --- | ------------------------------------------------------------ | ---------------- | ------ |
-| 46  | Verify `go-branded-id`, `go-error-family` at latest versions | 01-09 report f41 | S      |
-| 47  | Run `govulncheck` after dependency changes                   | AGENTS.md        | S      |
-| 48  | Verify CI pipeline passes on new test additions              | 09-00 report f36 | S      |
+| #  | Task                                                         | Source           | Effort |
+| -- | ------------------------------------------------------------ | ---------------- | ------ |
+| 46 | Verify `go-branded-id`, `go-error-family` at latest versions | 01-09 report f41 | S      |
+| 47 | Run `govulncheck` after dependency changes                   | AGENTS.md        | S      |
+| 48 | Verify CI pipeline passes on new test additions              | 09-00 report f36 | S      |
 
 ### Cleanup
 
-| #   | Task                                                                                | Source              | Effort |
-| --- | ----------------------------------------------------------------------------------- | ------------------- | ------ |
-| 49  | Consider history rewrite to fix v0.3.0 tag message ("dependency bumps" is wrong)    | This report (e7)    | M      |
-| 50  | Consider replacing all `file.go:NN` refs across ALL docs (not just DOMAIN_LANGUAGE) | 09-00 report f33-34 | M      |
+| #  | Task                                                                                | Source              | Effort |
+| -- | ----------------------------------------------------------------------------------- | ------------------- | ------ |
+| 49 | Consider history rewrite to fix v0.3.0 tag message ("dependency bumps" is wrong)    | This report (e7)    | M      |
+| 50 | Consider replacing all `file.go:NN` refs across ALL docs (not just DOMAIN_LANGUAGE) | 09-00 report f33-34 | M      |
 
 ---
 

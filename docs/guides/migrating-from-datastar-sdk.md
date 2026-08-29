@@ -92,7 +92,7 @@ stream.SendLines("datastar-patch-elements",
 )
 ```
 
-`KeyedLines` prefixes every line with `elements ` and `WriteEvent` splits the
+`KeyedLines` prefixes every line with `elements` and `WriteEvent` splits the
 result into individual `data:` lines automatically.
 
 ### Patch signals (from struct/map)

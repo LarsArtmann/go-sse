@@ -88,78 +88,78 @@
 
 ### High priority (correctness & verification)
 
-| #   | Task                                                                                            | Impact | Effort |
-| --- | ----------------------------------------------------------------------------------------------- | ------ | ------ |
-| 1   | Write a concurrent multi-tab integration test (2+ SSE clients, verify both receive same events) | 10     | 30min  |
-| 2   | Verify in a real browser that DataStar DOM patching works (feed items appear, signals update)   | 10     | 15min  |
-| 3   | Test Ctrl+C / SIGTERM graceful shutdown path                                                    | 8      | 10min  |
-| 4   | Run `nix flake check` to verify hermetic build                                                  | 7      | 5min   |
-| 5   | Run `nix fmt` to verify treefmt compliance                                                      | 7      | 5min   |
-| 6   | Write unit tests for `memStore.EventsAfter` (empty store, unknown ID, wrap-around, boundary)    | 8      | 30min  |
-| 7   | Fix filter predicate — use structured category instead of HTML string matching                  | 7      | 20min  |
+| # | Task                                                                                            | Impact | Effort |
+| - | ----------------------------------------------------------------------------------------------- | ------ | ------ |
+| 1 | Write a concurrent multi-tab integration test (2+ SSE clients, verify both receive same events) | 10     | 30min  |
+| 2 | Verify in a real browser that DataStar DOM patching works (feed items appear, signals update)   | 10     | 15min  |
+| 3 | Test Ctrl+C / SIGTERM graceful shutdown path                                                    | 8      | 10min  |
+| 4 | Run `nix flake check` to verify hermetic build                                                  | 7      | 5min   |
+| 5 | Run `nix fmt` to verify treefmt compliance                                                      | 7      | 5min   |
+| 6 | Write unit tests for `memStore.EventsAfter` (empty store, unknown ID, wrap-around, boundary)    | 8      | 30min  |
+| 7 | Fix filter predicate — use structured category instead of HTML string matching                  | 7      | 20min  |
 
 ### Medium priority (code quality)
 
-| #   | Task                                                                                          | Impact | Effort |
-| --- | --------------------------------------------------------------------------------------------- | ------ | ------ |
-| 8   | Split `main.go` into `store.go` + `producer.go` + `handlers.go` + `main.go`                   | 6      | 20min  |
-| 9   | Reset `$replayed` signal to 0 before sending new replay count                                 | 5      | 5min   |
-| 10  | Add fade-out animation for replay banner (CSS `data-show` transition)                         | 4      | 10min  |
-| 11  | Document the subscriber count race condition in a code comment                                | 4      | 5min   |
-| 12  | Document `memStore` O(n) scan as demo-only in a comment                                       | 3      | 2min   |
-| 13  | Add `IdleTimeout` to `http.Server` (long enough for SSE) with a comment explaining the choice | 4      | 10min  |
-| 14  | Extract magic numbers in message templates to named constants                                 | 3      | 10min  |
+| #  | Task                                                                                          | Impact | Effort |
+| -- | --------------------------------------------------------------------------------------------- | ------ | ------ |
+| 8  | Split `main.go` into `store.go` + `producer.go` + `handlers.go` + `main.go`                   | 6      | 20min  |
+| 9  | Reset `$replayed` signal to 0 before sending new replay count                                 | 5      | 5min   |
+| 10 | Add fade-out animation for replay banner (CSS `data-show` transition)                         | 4      | 10min  |
+| 11 | Document the subscriber count race condition in a code comment                                | 4      | 5min   |
+| 12 | Document `memStore` O(n) scan as demo-only in a comment                                       | 3      | 2min   |
+| 13 | Add `IdleTimeout` to `http.Server` (long enough for SSE) with a comment explaining the choice | 4      | 10min  |
+| 14 | Extract magic numbers in message templates to named constants                                 | 3      | 10min  |
 
 ### Low priority (polish)
 
-| #   | Task                                                                            | Impact | Effort |
-| --- | ------------------------------------------------------------------------------- | ------ | ------ |
-| 15  | Add a "connection status" indicator (green dot = connected, red = disconnected) | 4      | 15min  |
-| 16  | Add empty-state message for the feed ("Waiting for events...")                  | 3      | 10min  |
-| 17  | Add scroll-to-top button when feed overflows                                    | 2      | 15min  |
-| 18  | Add a "pause" button (client-side signal that hides feed updates)               | 3      | 15min  |
-| 19  | Add timestamp-based filtering (e.g., "last 5 minutes only")                     | 3      | 20min  |
-| 20  | Add event count total in the stats bar ("42 events sent")                       | 3      | 10min  |
-| 21  | Add favicon                                                                     | 1      | 5min   |
-| 22  | Add Open Graph meta tags for link previews                                      | 1      | 5min   |
+| #  | Task                                                                            | Impact | Effort |
+| -- | ------------------------------------------------------------------------------- | ------ | ------ |
+| 15 | Add a "connection status" indicator (green dot = connected, red = disconnected) | 4      | 15min  |
+| 16 | Add empty-state message for the feed ("Waiting for events...")                  | 3      | 10min  |
+| 17 | Add scroll-to-top button when feed overflows                                    | 2      | 15min  |
+| 18 | Add a "pause" button (client-side signal that hides feed updates)               | 3      | 15min  |
+| 19 | Add timestamp-based filtering (e.g., "last 5 minutes only")                     | 3      | 20min  |
+| 20 | Add event count total in the stats bar ("42 events sent")                       | 3      | 10min  |
+| 21 | Add favicon                                                                     | 1      | 5min   |
+| 22 | Add Open Graph meta tags for link previews                                      | 1      | 5min   |
 
 ### Documentation
 
-| #   | Task                                                                                | Impact | Effort |
-| --- | ----------------------------------------------------------------------------------- | ------ | ------ |
-| 23  | Add a "How it works" section to the example README explaining the data flow         | 5      | 20min  |
-| 24  | Add inline architecture comments in `main.go` pointing to the relevant go-sse types | 4      | 15min  |
-| 25  | Add a "Try it" checklist to the README (open 2 tabs, click alerts, close/reopen)    | 4      | 10min  |
-| 26  | Document the example's shutdown behavior (SIGINT → drain → close)                   | 3      | 10min  |
+| #  | Task                                                                                | Impact | Effort |
+| -- | ----------------------------------------------------------------------------------- | ------ | ------ |
+| 23 | Add a "How it works" section to the example README explaining the data flow         | 5      | 20min  |
+| 24 | Add inline architecture comments in `main.go` pointing to the relevant go-sse types | 4      | 15min  |
+| 25 | Add a "Try it" checklist to the README (open 2 tabs, click alerts, close/reopen)    | 4      | 10min  |
+| 26 | Document the example's shutdown behavior (SIGINT → drain → close)                   | 3      | 10min  |
 
 ### Future enhancements (not started, ideas only)
 
-| #   | Task                                                                                 | Impact | Effort |
-| --- | ------------------------------------------------------------------------------------ | ------ | ------ |
-| 27  | Add a WebSocket transport example for comparison with SSE                            | 6      | 60min  |
-| 28  | Add a `WithBufferSize` demonstration (show what happens with buffer=1 vs buffer=64)  | 5      | 30min  |
-| 29  | Add a `Shutdown` demonstration (drain indicator in UI during graceful shutdown)      | 5      | 30min  |
-| 30  | Add a `BroadcastMany` batch demonstration (burst of events)                          | 4      | 20min  |
-| 31  | Add a `ReplayFiltered` demonstration (replay only matching events)                   | 5      | 25min  |
-| 32  | Add a "broadcast your own event" form (POST → broadcaster.Broadcast)                 | 6      | 30min  |
-| 33  | Add metrics endpoint (`/health` returning `BroadcasterHealth` as JSON)               | 5      | 15min  |
-| 34  | Add prometheus metrics for subscriber count, broadcast rate, drop rate               | 4      | 30min  |
-| 35  | Add a second broadcaster for a different event stream (multi-room demo)              | 4      | 30min  |
-| 36  | Add TLS support to the example server                                                | 3      | 20min  |
-| 37  | Add Dockerfile for the example                                                       | 3      | 15min  |
-| 38  | Add a simple chat room example (user input → broadcast → all clients)                | 7      | 45min  |
-| 39  | Add CSS for mobile responsive layout (feed items stack, smaller text)                | 3      | 15min  |
-| 40  | Add keyboard shortcut to toggle filter (press 'a' for alerts only)                   | 2      | 10min  |
-| 41  | Add a sound notification on alert events (optional, toggleable)                      | 2      | 15min  |
-| 42  | Add event persistence to SQLite (replace `memStore` with a real `EventStore`)        | 6      | 45min  |
-| 43  | Add a diagram (mermaid or image) of the data flow to the example README              | 4      | 20min  |
-| 44  | Add a "copy curl command" button for testing the SSE endpoint manually               | 3      | 15min  |
-| 45  | Add rate limiting to the example (show how to protect an SSE endpoint)               | 4      | 25min  |
-| 46  | Add CORS headers for cross-origin SSE consumption                                    | 3      | 10min  |
-| 47  | Add a `Last-Event-ID` inspector in the UI (show what the browser sends on reconnect) | 4      | 20min  |
-| 48  | Add gzip compression middleware for the HTML/CSS/JS static files                     | 2      | 15min  |
-| 49  | Add a dark/light theme toggle button (instead of `prefers-color-scheme` only)        | 3      | 15min  |
-| 50  | Add an animated connection diagram that updates live as events flow                  | 4      | 45min  |
+| #  | Task                                                                                 | Impact | Effort |
+| -- | ------------------------------------------------------------------------------------ | ------ | ------ |
+| 27 | Add a WebSocket transport example for comparison with SSE                            | 6      | 60min  |
+| 28 | Add a `WithBufferSize` demonstration (show what happens with buffer=1 vs buffer=64)  | 5      | 30min  |
+| 29 | Add a `Shutdown` demonstration (drain indicator in UI during graceful shutdown)      | 5      | 30min  |
+| 30 | Add a `BroadcastMany` batch demonstration (burst of events)                          | 4      | 20min  |
+| 31 | Add a `ReplayFiltered` demonstration (replay only matching events)                   | 5      | 25min  |
+| 32 | Add a "broadcast your own event" form (POST → broadcaster.Broadcast)                 | 6      | 30min  |
+| 33 | Add metrics endpoint (`/health` returning `BroadcasterHealth` as JSON)               | 5      | 15min  |
+| 34 | Add prometheus metrics for subscriber count, broadcast rate, drop rate               | 4      | 30min  |
+| 35 | Add a second broadcaster for a different event stream (multi-room demo)              | 4      | 30min  |
+| 36 | Add TLS support to the example server                                                | 3      | 20min  |
+| 37 | Add Dockerfile for the example                                                       | 3      | 15min  |
+| 38 | Add a simple chat room example (user input → broadcast → all clients)                | 7      | 45min  |
+| 39 | Add CSS for mobile responsive layout (feed items stack, smaller text)                | 3      | 15min  |
+| 40 | Add keyboard shortcut to toggle filter (press 'a' for alerts only)                   | 2      | 10min  |
+| 41 | Add a sound notification on alert events (optional, toggleable)                      | 2      | 15min  |
+| 42 | Add event persistence to SQLite (replace `memStore` with a real `EventStore`)        | 6      | 45min  |
+| 43 | Add a diagram (mermaid or image) of the data flow to the example README              | 4      | 20min  |
+| 44 | Add a "copy curl command" button for testing the SSE endpoint manually               | 3      | 15min  |
+| 45 | Add rate limiting to the example (show how to protect an SSE endpoint)               | 4      | 25min  |
+| 46 | Add CORS headers for cross-origin SSE consumption                                    | 3      | 10min  |
+| 47 | Add a `Last-Event-ID` inspector in the UI (show what the browser sends on reconnect) | 4      | 20min  |
+| 48 | Add gzip compression middleware for the HTML/CSS/JS static files                     | 2      | 15min  |
+| 49 | Add a dark/light theme toggle button (instead of `prefers-color-scheme` only)        | 3      | 15min  |
+| 50 | Add an animated connection diagram that updates live as events flow                  | 4      | 45min  |
 
 ---
 

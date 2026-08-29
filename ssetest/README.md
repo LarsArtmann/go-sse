@@ -40,14 +40,14 @@ func TestFeedHandler(t *testing.T) {
 
 ## Collecting events
 
-| Helper | Use when |
-| ------ | -------- |
-| `Collect(t, handler, opts...)` | Handler sends its events and returns (GET) |
-| `CollectPost(t, handler, jsonBody, opts...)` | POST with a JSON body |
-| `CollectWithRequest(t, h, method, body, ct, opts...)` | Any method/body/content-type |
-| `CollectN(t, handler, count, opts...)` | Streaming handler; reads exactly N events, then closes |
-| `CollectWithTimeout(t, handler, timeout, opts...)` | Time-bounded read; returns the events that arrived |
-| `ReadEvents(r)` / `ReadNEvents(r, n)` | Parse SSE from any `io.Reader` yourself |
+| Helper                                                | Use when                                               |
+| ----------------------------------------------------- | ------------------------------------------------------ |
+| `Collect(t, handler, opts...)`                        | Handler sends its events and returns (GET)             |
+| `CollectPost(t, handler, jsonBody, opts...)`          | POST with a JSON body                                  |
+| `CollectWithRequest(t, h, method, body, ct, opts...)` | Any method/body/content-type                           |
+| `CollectN(t, handler, count, opts...)`                | Streaming handler; reads exactly N events, then closes |
+| `CollectWithTimeout(t, handler, timeout, opts...)`    | Time-bounded read; returns the events that arrived     |
+| `ReadEvents(r)` / `ReadNEvents(r, n)`                 | Parse SSE from any `io.Reader` yourself                |
 
 Per the SSE specification, frames without a `data:` line (comments, heartbeats,
 id/retry-only frames) never surface as events — the parser matches browser

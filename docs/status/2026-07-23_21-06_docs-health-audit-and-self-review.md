@@ -125,78 +125,78 @@ Already covered in section B. This is both a "partially done" (quality gate bloc
 
 ### Critical / Immediate
 
-| #   | Task                                                                                             | Impact                       |
-| --- | ------------------------------------------------------------------------------------------------ | ---------------------------- |
-| 1   | **Fix LICENSE/README mismatch** — decide if this is MIT or proprietary, make them agree          | Critical legal risk          |
-| 2   | **Fix the build environment** — try `GOPRIVATE=github.com/larsartmann/*` or `go clean -modcache` | Blocks all verification      |
-| 3   | **Run tests** — once build is fixed, verify all 54 test/benchmark functions pass with `-race`    | Validates FEATURES.md claims |
-| 4   | **Run golangci-lint** — `.golangci.yml` exists with many linters enabled, never been run         | Unknown lint debt            |
-| 5   | **Fix FEATURES.md statuses** — downgrade to PARTIALLY_FUNCTIONAL or add caveat until tests pass  | Honesty                      |
+| # | Task                                                                                             | Impact                       |
+| - | ------------------------------------------------------------------------------------------------ | ---------------------------- |
+| 1 | **Fix LICENSE/README mismatch** — decide if this is MIT or proprietary, make them agree          | Critical legal risk          |
+| 2 | **Fix the build environment** — try `GOPRIVATE=github.com/larsartmann/*` or `go clean -modcache` | Blocks all verification      |
+| 3 | **Run tests** — once build is fixed, verify all 54 test/benchmark functions pass with `-race`    | Validates FEATURES.md claims |
+| 4 | **Run golangci-lint** — `.golangci.yml` exists with many linters enabled, never been run         | Unknown lint debt            |
+| 5 | **Fix FEATURES.md statuses** — downgrade to PARTIALLY_FUNCTIONAL or add caveat until tests pass  | Honesty                      |
 
 ### Documentation
 
-| #   | Task                                                                        | Impact           |
-| --- | --------------------------------------------------------------------------- | ---------------- |
-| 6   | Fix "Go 1.26 idioms" → "Go 1.22+ idioms" in AGENTS.md                       | Factual accuracy |
-| 7   | Replace `NOT_INCLUDED` in FEATURES.md with a plain non-goals table          | Skill compliance |
-| 8   | Create `TODO_LIST.md` with actionable items from this report                | Project tracking |
-| 9   | Create `ROADMAP.md` for library direction                                   | Long-term vision |
-| 10  | Add build tags (`goexperiment.jsonv2`) to CONTRIBUTING.md lint instructions | Completeness     |
-| 11  | Verify SSE spec URL is live and correct                                     | Link integrity   |
-| 12  | Review README tone consistency after first-line edit                        | Polish           |
-| 13  | Add `pkg.go.dev` reference URL once published                               | Discoverability  |
+| #  | Task                                                                        | Impact           |
+| -- | --------------------------------------------------------------------------- | ---------------- |
+| 6  | Fix "Go 1.26 idioms" → "Go 1.22+ idioms" in AGENTS.md                       | Factual accuracy |
+| 7  | Replace `NOT_INCLUDED` in FEATURES.md with a plain non-goals table          | Skill compliance |
+| 8  | Create `TODO_LIST.md` with actionable items from this report                | Project tracking |
+| 9  | Create `ROADMAP.md` for library direction                                   | Long-term vision |
+| 10 | Add build tags (`goexperiment.jsonv2`) to CONTRIBUTING.md lint instructions | Completeness     |
+| 11 | Verify SSE spec URL is live and correct                                     | Link integrity   |
+| 12 | Review README tone consistency after first-line edit                        | Polish           |
+| 13 | Add `pkg.go.dev` reference URL once published                               | Discoverability  |
 
 ### Code Quality
 
-| #   | Task                                                                                      | Impact                |
-| --- | ----------------------------------------------------------------------------------------- | --------------------- |
-| 14  | Replace recursive `contains()`/`startsWith()` with `strings.Contains` in `stream_test.go` | Performance + clarity |
-| 15  | Replace custom `itoa()` with `strconv.Itoa` in `broadcaster_test.go`                      | Clarity               |
-| 16  | Add fuzz tests for `WriteEvent` (serializer)                                              | Robustness            |
-| 17  | Add fuzz tests for `ParseEventID` (validator)                                             | Robustness            |
-| 18  | Verify `errorResponseWriter` in `replay_test.go` doesn't have a nil-pointer path          | Correctness           |
-| 19  | Add test for double-`Close()` safety on `Stream`                                          | Edge case             |
-| 20  | Add test for `Broadcast` after `Close` on `Broadcaster`                                   | Edge case             |
-| 21  | Add test for very large `Data` payloads in `WriteEvent`                                   | Performance           |
-| 22  | Add test for unicode/special chars in `EventID`                                           | Edge case             |
-| 23  | Add integration test with real `http.Server` (not just `httptest.NewRecorder`)            | Real-world coverage   |
+| #  | Task                                                                                      | Impact                |
+| -- | ----------------------------------------------------------------------------------------- | --------------------- |
+| 14 | Replace recursive `contains()`/`startsWith()` with `strings.Contains` in `stream_test.go` | Performance + clarity |
+| 15 | Replace custom `itoa()` with `strconv.Itoa` in `broadcaster_test.go`                      | Clarity               |
+| 16 | Add fuzz tests for `WriteEvent` (serializer)                                              | Robustness            |
+| 17 | Add fuzz tests for `ParseEventID` (validator)                                             | Robustness            |
+| 18 | Verify `errorResponseWriter` in `replay_test.go` doesn't have a nil-pointer path          | Correctness           |
+| 19 | Add test for double-`Close()` safety on `Stream`                                          | Edge case             |
+| 20 | Add test for `Broadcast` after `Close` on `Broadcaster`                                   | Edge case             |
+| 21 | Add test for very large `Data` payloads in `WriteEvent`                                   | Performance           |
+| 22 | Add test for unicode/special chars in `EventID`                                           | Edge case             |
+| 23 | Add integration test with real `http.Server` (not just `httptest.NewRecorder`)            | Real-world coverage   |
 
 ### Infrastructure
 
-| #   | Task                                                                                   | Impact               |
-| --- | -------------------------------------------------------------------------------------- | -------------------- |
-| 24  | Create `flake.nix` with devShell, build, test, lint automation (per global convention) | Build system         |
-| 25  | Create CI workflow (`.github/workflows/ci.yml`) with test + lint + build               | Automation           |
-| 26  | Add `gofmt -l` check to CI                                                             | Format enforcement   |
-| 27  | Add `go vet` to CI                                                                     | Static analysis      |
-| 28  | Add race detector (`-race`) to CI test step                                            | Concurrency safety   |
-| 29  | Add benchmark reporting to CI                                                          | Performance tracking |
-| 30  | Add coverage reporting                                                                 | Test visibility      |
-| 31  | Add godoc generation / publishing check                                                | Documentation        |
+| #  | Task                                                                                   | Impact               |
+| -- | -------------------------------------------------------------------------------------- | -------------------- |
+| 24 | Create `flake.nix` with devShell, build, test, lint automation (per global convention) | Build system         |
+| 25 | Create CI workflow (`.github/workflows/ci.yml`) with test + lint + build               | Automation           |
+| 26 | Add `gofmt -l` check to CI                                                             | Format enforcement   |
+| 27 | Add `go vet` to CI                                                                     | Static analysis      |
+| 28 | Add race detector (`-race`) to CI test step                                            | Concurrency safety   |
+| 29 | Add benchmark reporting to CI                                                          | Performance tracking |
+| 30 | Add coverage reporting                                                                 | Test visibility      |
+| 31 | Add godoc generation / publishing check                                                | Documentation        |
 
 ### Feature Considerations (for ROADMAP)
 
-| #   | Task                                                                         | Rationale            |
-| --- | ---------------------------------------------------------------------------- | -------------------- |
-| 32  | Consider configurable subscriber buffer size (currently hardcoded 64)        | Flexibility          |
-| 33  | Consider `SendJSON` convenience method (parallel to `SendHTML`)              | Convenience          |
-| 34  | Consider context-aware `Replay` (cancel mid-replay)                          | Cancellation         |
-| 35  | Consider backpressure policy options (drop vs block vs spill-to-disk)        | Flexibility          |
-| 36  | Consider graceful shutdown helper (drain subscribers on SIGTERM)             | Production readiness |
-| 37  | Consider exporting `fanOut` for non-SSE fan-out use cases                    | Reusability          |
-| 38  | Consider topic/channel-based multi-broadcaster                               | Routing              |
-| 39  | Consider metrics/observability beyond OnSubscribe/OnUnsubscribe hooks        | Operations           |
-| 40  | Consider `Stream.SendMultiple` or batch send                                 | Efficiency           |
-| 41  | Consider SSE extension support (CLTY, custom fields)                         | Spec extensions      |
-| 42  | Consider client-side `Dial` helper                                           | Full stack           |
-| 43  | Consider `Event.String()` for debugging                                      | DX                   |
-| 44  | Review memory characteristics at scale (64 buffer × N subscribers)           | Production           |
-| 45  | Consider `EventStore` implementations (in-memory, Redis, etc.)               | Batteries-included   |
-| 46  | Consider versioning strategy documentation (semver, branching)               | Release management   |
-| 47  | Consider adding example/ directory with runnable examples                    | DX                   |
-| 48  | Review whether `LastEventID` should validate via `ParseEventID`              | Safety               |
-| 49  | Consider thread-safety test for `OnDisconnect` registration during `Close`   | Concurrency          |
-| 50  | Consider documenting the non-blocking drop policy implications for consumers | Transparency         |
+| #  | Task                                                                         | Rationale            |
+| -- | ---------------------------------------------------------------------------- | -------------------- |
+| 32 | Consider configurable subscriber buffer size (currently hardcoded 64)        | Flexibility          |
+| 33 | Consider `SendJSON` convenience method (parallel to `SendHTML`)              | Convenience          |
+| 34 | Consider context-aware `Replay` (cancel mid-replay)                          | Cancellation         |
+| 35 | Consider backpressure policy options (drop vs block vs spill-to-disk)        | Flexibility          |
+| 36 | Consider graceful shutdown helper (drain subscribers on SIGTERM)             | Production readiness |
+| 37 | Consider exporting `fanOut` for non-SSE fan-out use cases                    | Reusability          |
+| 38 | Consider topic/channel-based multi-broadcaster                               | Routing              |
+| 39 | Consider metrics/observability beyond OnSubscribe/OnUnsubscribe hooks        | Operations           |
+| 40 | Consider `Stream.SendMultiple` or batch send                                 | Efficiency           |
+| 41 | Consider SSE extension support (CLTY, custom fields)                         | Spec extensions      |
+| 42 | Consider client-side `Dial` helper                                           | Full stack           |
+| 43 | Consider `Event.String()` for debugging                                      | DX                   |
+| 44 | Review memory characteristics at scale (64 buffer × N subscribers)           | Production           |
+| 45 | Consider `EventStore` implementations (in-memory, Redis, etc.)               | Batteries-included   |
+| 46 | Consider versioning strategy documentation (semver, branching)               | Release management   |
+| 47 | Consider adding example/ directory with runnable examples                    | DX                   |
+| 48 | Review whether `LastEventID` should validate via `ParseEventID`              | Safety               |
+| 49 | Consider thread-safety test for `OnDisconnect` registration during `Close`   | Concurrency          |
+| 50 | Consider documenting the non-blocking drop policy implications for consumers | Transparency         |
 
 ---
 

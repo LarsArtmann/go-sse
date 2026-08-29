@@ -10,16 +10,17 @@ This report covers what was done, what was missed, and what should happen next.
 
 ## a) FULLY DONE
 
-| # | Task | Files | Verified |
-|---|------|-------|----------|
-| 1 | **Test bug fix**: `WithBufferSize(0)` → `WithBufferSize(1)` in `TestWithOnDrop_NoCallbackNoPanic` | `drop_test.go` | Tests pass `-race` |
-| 2 | **Doc: per-subscriber firing** added to `WithOnDrop` and `OnDrop` public doc comments | `fanout.go` | Lint clean |
-| 3 | **New test**: `TestWithOnDrop_FiresPerSubscriber` — pins N-drops-for-N-full-subscribers | `drop_test.go` | Passes `-race` |
-| 4 | **New test**: `TestWithOnDrop_BroadcastMany` — pins BroadcastMany drop path | `drop_test.go` | Passes `-race` |
-| 5 | **AGENTS.md updated**: invariant #5, architecture table, lifecycle API, gotchas | `AGENTS.md` | — |
-| 6 | **Lint fix**: `makezero` on slice allocation in multi-subscriber test | `drop_test.go` | golangci-lint clean |
+| # | Task                                                                                              | Files          | Verified            |
+| - | ------------------------------------------------------------------------------------------------- | -------------- | ------------------- |
+| 1 | **Test bug fix**: `WithBufferSize(0)` → `WithBufferSize(1)` in `TestWithOnDrop_NoCallbackNoPanic` | `drop_test.go` | Tests pass `-race`  |
+| 2 | **Doc: per-subscriber firing** added to `WithOnDrop` and `OnDrop` public doc comments             | `fanout.go`    | Lint clean          |
+| 3 | **New test**: `TestWithOnDrop_FiresPerSubscriber` — pins N-drops-for-N-full-subscribers           | `drop_test.go` | Passes `-race`      |
+| 4 | **New test**: `TestWithOnDrop_BroadcastMany` — pins BroadcastMany drop path                       | `drop_test.go` | Passes `-race`      |
+| 5 | **AGENTS.md updated**: invariant #5, architecture table, lifecycle API, gotchas                   | `AGENTS.md`    | —                   |
+| 6 | **Lint fix**: `makezero` on slice allocation in multi-subscriber test                             | `drop_test.go` | golangci-lint clean |
 
 **Verification commands run (all clean):**
+
 - `go test ./... -race -count=1` — PASS
 - `go vet ./...` — PASS
 - `golangci-lint run ./...` — 0 issues
@@ -30,7 +31,7 @@ This report covers what was done, what was missed, and what should happen next.
 
 ### `Broadcast` and `BroadcastMany` doc comments — NOT updated
 
-The `Broadcast` doc comment (`fanout.go:202-213`) says "Slow subscribers with full buffers have the message dropped" but does **not** mention `WithOnDrop`/`OnDrop` as the observability hook. Same for `BroadcastMany` (`fanout.go:221-234`). A forward-reference like "Use [WithOnDrop] to observe drops" would connect callers to the feature. I updated the *new* doc comments but didn't cross-reference the *existing* ones.
+The `Broadcast` doc comment (`fanout.go:202-213`) says "Slow subscribers with full buffers have the message dropped" but does **not** mention `WithOnDrop`/`OnDrop` as the observability hook. Same for `BroadcastMany` (`fanout.go:221-234`). A forward-reference like "Use [WithOnDrop] to observe drops" would connect callers to the feature. I updated the _new_ doc comments but didn't cross-reference the _existing_ ones.
 
 ---
 
@@ -53,6 +54,7 @@ Nothing catastrophically broken. But two **significant design gaps were missed d
 **`onDrop` has no such protection.** If the callback panics (e.g. nil-pointer in a metrics struct, index out of range), the panic propagates up through `sendAllLocked` → `Broadcast` / `BroadcastMany` and **crashes the calling goroutine**. For a library whose entire design philosophy is "one broken X cannot crash the broadcaster," this is an asymmetric oversight.
 
 The commit message says `onDrop` is for "metrics (e.g. a drop counter)" — exactly the kind of code that touches shared state and can panic. This should either:
+
 - Be wrapped in `safeDropCall` (matching `safePredCall` pattern), or
 - Be explicitly documented as "must not panic" with the rationale stated
 
@@ -61,6 +63,7 @@ The commit message says `onDrop` is for "metrics (e.g. a drop counter)" — exac
 `onDrop` fires inside `sendAllLocked`, which runs under the fan-out **read lock**. `Broadcast`/`BroadcastMany` acquire `RLock`. `OnDrop` (the setter) acquires the **write lock**. `Subscribe`/`Unsubscribe` acquire the **write lock**.
 
 If a user's `onDrop` callback calls back into the broadcaster:
+
 - `bc.Broadcast(x)` → tries `RLock` → **may deadlock** if a writer (`OnDrop` setter, `Subscribe`) is waiting (Go RWMutex starvation rule)
 - `bc.OnDrop(...)` → tries `Lock` (write) → **guaranteed deadlock** (holding RLock, requesting WLock)
 - `bc.SubscriberCount()` → tries `RLock` → same risk as Broadcast
@@ -76,7 +79,7 @@ Neither the `WithOnDrop` nor `OnDrop` doc comment warns about this. The `onSubsc
 
 1. **Run the flake, not raw go commands.** AGENTS.md mandates `nix run .#test-race`, `nix run .#lint`, `nix fmt`. I used raw `GOWORK=off GOEXPERIMENT=jsonv2 go test/vet/lint`. Functionally equivalent but violates project conventions and skips treefmt formatting.
 2. **Review more aggressively for asymmetry.** The predicate-recover pattern was visible in the same file. I should have immediately asked "does onDrop get the same protection?" during the review, not after.
-3. **Cross-reference existing doc comments when adding new features.** Added docs on the new functions but didn't update the functions that *trigger* the new behavior (`Broadcast`, `BroadcastMany`).
+3. **Cross-reference existing doc comments when adding new features.** Added docs on the new functions but didn't update the functions that _trigger_ the new behavior (`Broadcast`, `BroadcastMany`).
 4. **Run `nix fmt` before declaring done.** Gofumpt/golines may reformat in ways golangci-lint doesn't catch.
 
 ### Code improvements (the commit under review)
@@ -84,7 +87,7 @@ Neither the `WithOnDrop` nor `OnDrop` doc comment warns about this. The `onSubsc
 5. **Add `safeDropCall` wrapper** mirroring `safePredCall` — recover from panicking onDrop, log/silent, continue iteration.
 6. **Document re-entrancy constraint** on `WithOnDrop` and `OnDrop`: "The callback must not call Broadcaster methods (Broadcast, OnDrop, Subscribe, etc.) — doing so will deadlock."
 7. **Consider snapshotting `onDrop` to a local var** in `sendAllLocked` (read `f.onDrop` once into `fn := f.onDrop` at the top) so a concurrent `OnDrop(nil)` setter doesn't cause a nil-pointer if the race lands between the nil check and the call. Actually — the RLock/WLock already prevents this; `sendAllLocked` holds RLock, setter needs WLock. This is fine. (Included to show I thought about it.)
-8. **Consider whether `onDrop` should receive subscriber identity.** Currently `func(T)` (just the message). Adding a subscriber ID would let operators diagnose *which* consumer is slow. This is an API change — needs user input.
+8. **Consider whether `onDrop` should receive subscriber identity.** Currently `func(T)` (just the message). Adding a subscriber ID would let operators diagnose _which_ consumer is slow. This is an API change — needs user input.
 
 ---
 
@@ -147,7 +150,7 @@ Predicates get `safePredCall` (defer/recover → treated as non-match). `onDrop`
 
 ### Q2: Should `onDrop` receive subscriber identity?
 
-Currently `func(T)` — just the dropped message. Operators can count drops but can't tell *which* subscriber is slow. Changing to `func(subscriberID uintptr, msg T)` or similar would enable per-consumer diagnostics. This is an **API signature change** that affects all consumers — needs your call on whether the diagnostic value justifies the break.
+Currently `func(T)` — just the dropped message. Operators can count drops but can't tell _which_ subscriber is slow. Changing to `func(subscriberID uintptr, msg T)` or similar would enable per-consumer diagnostics. This is an **API signature change** that affects all consumers — needs your call on whether the diagnostic value justifies the break.
 
 ### Q3: Should I commit the current fixes now, or batch them with the safety fixes (panic recovery, re-entrancy docs)?
 

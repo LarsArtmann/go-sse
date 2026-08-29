@@ -10,33 +10,33 @@
 
 ### Tier 1: Critical Fixes — ALL GREEN
 
-| Task | What | Status |
-|------|------|--------|
-| F1-1 | `errorPatch` deleted. `SignalsPatch`, `SignalsIfMissingPatch`, `ElementsTemplPatch` now return `(Patch, error)`. | **DONE** — `cqrs-htmx/datastar/patch.go` |
-| F1-2 | All 6 callers fixed: `broadcaster_test.go` (2 sites), `event_bridge_test.go` (1 site), `datastar_contract_test.go` (2 sites), demo handlers unchanged (already ignored error). | **DONE** |
-| F1-3 | Orphaned vendored JS dir `cqrs-htmx/datastar/datastar/datastar.js` deleted via `trash-put`. | **DONE** |
-| F1-4 | Dead `HeartbeatInterval` function + `time` import removed from `broadcaster.go`. | **DONE** |
-| F2-1 | `go-datastar/example/main.go` rewritten with pure DataStar: `data-signals`, `data-text`, `data-init="@get('/events')"`. Zero lines of manual JS. Compiles and tests pass. | **DONE** |
+| Task | What                                                                                                                                                                           | Status                                   |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| F1-1 | `errorPatch` deleted. `SignalsPatch`, `SignalsIfMissingPatch`, `ElementsTemplPatch` now return `(Patch, error)`.                                                               | **DONE** — `cqrs-htmx/datastar/patch.go` |
+| F1-2 | All 6 callers fixed: `broadcaster_test.go` (2 sites), `event_bridge_test.go` (1 site), `datastar_contract_test.go` (2 sites), demo handlers unchanged (already ignored error). | **DONE**                                 |
+| F1-3 | Orphaned vendored JS dir `cqrs-htmx/datastar/datastar/datastar.js` deleted via `trash-put`.                                                                                    | **DONE**                                 |
+| F1-4 | Dead `HeartbeatInterval` function + `time` import removed from `broadcaster.go`.                                                                                               | **DONE**                                 |
+| F2-1 | `go-datastar/example/main.go` rewritten with pure DataStar: `data-signals`, `data-text`, `data-init="@get('/events')"`. Zero lines of manual JS. Compiles and tests pass.      | **DONE**                                 |
 
 ### Tier 2: Core Features — ALL GREEN
 
-| Task | What | Status |
-|------|------|--------|
-| F3-1 | `MemoryStore` created in `go-datastar/store.go` — ring buffer implementing `sse.EventStore`, with `Append`, `EventsAfter`, `Len`, `NewMemoryStore(capacity)`, default capacity 128. | **DONE** |
-| F3-2 | `store_test.go` — 8 tests covering append/len, EventsAfter, empty-ID replay, non-numeric ID semantics, ring eviction, default capacity, concurrent access, unknown ID. | **DONE** |
-| F3-3 | `cqrs-htmx/datastar/broadcaster.go` rewritten — `store *godatastar.MemoryStore` field, `NewBroadcasterWithReplay(capacity)`, `Broadcast`/`BroadcastEvent` append to store, `ServeHTTP` replays via `sse.Replay` when `Last-Event-ID` present. | **DONE** |
-| F3-4 | `TestBroadcasterReplayOnReconnect` — verifies events 2 and 3 are replayed but not event 1 when client reconnects with `Last-Event-ID: 1`. | **DONE** |
+| Task     | What                                                                                                                                                                                                                                                                   | Status   |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| F3-1     | `MemoryStore` created in `go-datastar/store.go` — ring buffer implementing `sse.EventStore`, with `Append`, `EventsAfter`, `Len`, `NewMemoryStore(capacity)`, default capacity 128.                                                                                    | **DONE** |
+| F3-2     | `store_test.go` — 8 tests covering append/len, EventsAfter, empty-ID replay, non-numeric ID semantics, ring eviction, default capacity, concurrent access, unknown ID.                                                                                                 | **DONE** |
+| F3-3     | `cqrs-htmx/datastar/broadcaster.go` rewritten — `store *godatastar.MemoryStore` field, `NewBroadcasterWithReplay(capacity)`, `Broadcast`/`BroadcastEvent` append to store, `ServeHTTP` replays via `sse.Replay` when `Last-Event-ID` present.                          | **DONE** |
+| F3-4     | `TestBroadcasterReplayOnReconnect` — verifies events 2 and 3 are replayed but not event 1 when client reconnects with `Last-Event-ID: 1`.                                                                                                                              | **DONE** |
 | F4-1/2/3 | 11 Response method tests added to `go-datastar/response_test.go`: PatchElementsTempl, MarshalAndPatchSignals, RemoveElementByID, Redirect, ConsoleLog, ConsoleError, DispatchCustomEvent, ReplaceURL, Prefetch, Send, NewResponseFromHTTP. Coverage 83.5% → **91.9%**. | **DONE** |
 
 ### Current Test State
 
-| Repo | Status |
-|------|--------|
-| go-sse | **PASS** |
-| go-datastar | **PASS** (91.9% coverage) |
-| cqrs-htmx/datastar | **FAIL** (2 subtests — see below) |
-| cqrs-htmx/integration_test | **PASS** |
-| cqrs-htmx/examples/datastar-demo | **BUILD OK** |
+| Repo                             | Status                            |
+| -------------------------------- | --------------------------------- |
+| go-sse                           | **PASS**                          |
+| go-datastar                      | **PASS** (91.9% coverage)         |
+| cqrs-htmx/datastar               | **FAIL** (2 subtests — see below) |
+| cqrs-htmx/integration_test       | **PASS**                          |
+| cqrs-htmx/examples/datastar-demo | **BUILD OK**                      |
 
 ---
 
@@ -47,6 +47,7 @@
 Created `cqrs-htmx/datastar/patch_test.go` with 11 tests. 9 pass, 2 fail:
 
 **Failing subtests in `TestPatchEventTypes`:**
+
 - `"script"` — expects event type `"datastar-execute-script"` but gets `"datastar-patch-elements"`
 - `"redirect"` — same mismatch
 
@@ -64,16 +65,16 @@ Created `cqrs-htmx/datastar/response_test.go` with 9 tests. These were not indiv
 
 ## c) NOT STARTED
 
-| Task | What | Est |
-|------|------|-----|
+| Task | What                                                                                       | Est |
+| ---- | ------------------------------------------------------------------------------------------ | --- |
 | F5-3 | E2E HTTP round-trip test in go-datastar (HTTP server → SSE client → verify raw wire bytes) | 12m |
-| F6-1 | Fix `flake.nix` `vendorHash = lib.fakeHash` → compute real hash + `nix flake check` | 10m |
-| F6-2 | Update go-sse README to document `JoinLines` | 5m |
-| F6-3 | Run golangci-lint on cqrs-htmx/datastar after migration | 5m |
-| F6-4 | Run full test suite across all repos | 5m |
-| F7-1 | Write ADR for go-datastar/go-sse/SDK relationship | 10m |
-| F7-2 | Update cqrs-htmx AGENTS.md architecture section | 5m |
-| F7-3 | Update go-datastar CHANGELOG / verify README accuracy | 5m |
+| F6-1 | Fix `flake.nix` `vendorHash = lib.fakeHash` → compute real hash + `nix flake check`        | 10m |
+| F6-2 | Update go-sse README to document `JoinLines`                                               | 5m  |
+| F6-3 | Run golangci-lint on cqrs-htmx/datastar after migration                                    | 5m  |
+| F6-4 | Run full test suite across all repos                                                       | 5m  |
+| F7-1 | Write ADR for go-datastar/go-sse/SDK relationship                                          | 10m |
+| F7-2 | Update cqrs-htmx AGENTS.md architecture section                                            | 5m  |
+| F7-3 | Update go-datastar CHANGELOG / verify README accuracy                                      | 5m  |
 
 ---
 
@@ -86,6 +87,7 @@ I assumed `ScriptPatch` and `RedirectPatch` emit `datastar-execute-script` event
 ### 2. `EventTypeExecuteScript` constant is dead code
 
 Defined in `go-datastar/constants.go` but never emitted by any patch implementation. `ScriptPatch.Event()` always produces `datastar-patch-elements`. Either:
+
 - The constant should be removed (it's dead), OR
 - `ScriptPatch.Event()` should actually emit `datastar-execute-script` (if the DataStar JS client expects this event type for script execution)
 
@@ -211,6 +213,7 @@ The constant `"datastar-execute-script"` is defined in `go-datastar/constants.go
 ### Q2: Should the demo handlers propagate `MarshalAndPatchSignals` errors?
 
 Five call sites in the cqrs-htmx datastar-demo ignore the error from `resp.MarshalAndPatchSignals(...)`. Should these:
+
 - **(a)** Log the error and continue (best-effort UI update)?
 - **(b)** Return HTTP 500 (fail fast)?
 - **(c)** Send an error signals patch instead (graceful degradation)?
@@ -225,14 +228,14 @@ The demo currently uses `NewBroadcaster()` (no replay). Switching to `NewBroadca
 
 ## Summary
 
-| Category | Count |
-|----------|-------|
-| Fully done (green) | 7 of 24 tasks (Tier 1 + Tier 2) |
-| Partially done | 2 tasks (patch_test.go has 2 failing subtests, response_test.go unverified) |
-| Not started | 8 tasks (Tier 3 remainder + Tier 4) |
-| Fucked up | 2 things (wrong test expectations, dead constant) |
-| Test repos passing | go-sse ✅, go-datastar ✅, integration_test ✅ |
-| Test repos failing | cqrs-htmx/datastar ❌ (2 subtests) |
-| Overall coverage | go-datastar: 91.9% |
+| Category           | Count                                                                       |
+| ------------------ | --------------------------------------------------------------------------- |
+| Fully done (green) | 7 of 24 tasks (Tier 1 + Tier 2)                                             |
+| Partially done     | 2 tasks (patch_test.go has 2 failing subtests, response_test.go unverified) |
+| Not started        | 8 tasks (Tier 3 remainder + Tier 4)                                         |
+| Fucked up          | 2 things (wrong test expectations, dead constant)                           |
+| Test repos passing | go-sse ✅, go-datastar ✅, integration_test ✅                              |
+| Test repos failing | cqrs-htmx/datastar ❌ (2 subtests)                                          |
+| Overall coverage   | go-datastar: 91.9%                                                          |
 
 The core architecture is sound. The remaining work is test fixes, documentation, and polish. One blocking question about wire-format correctness (the `EventTypeExecuteScript` constant) needs investigation before final sign-off.

@@ -128,7 +128,7 @@ Ranked by impact (Pareto):
 17. **Add `KeyedLines` multi-key variant** — `KeyedLinesMulti(map[string]string)` for events with multiple keyed data sections
 18. **Profile `KeyedLines` with large HTML fragments** (10KB+) — verify Builder pre-allocation is sufficient
 19. **Add `Stream.SendLinesf(eventName, format, args...)`** — formatted variant for dynamic data lines
-20. **Test `KeyedLines` with empty key** — should it be an error or produce ` value`?
+20. **Test `KeyedLines` with empty key** — should it be an error or produce `value`?
 
 #### Lower impact (nice to have)
 

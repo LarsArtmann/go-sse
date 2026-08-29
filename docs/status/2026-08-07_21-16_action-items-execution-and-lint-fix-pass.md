@@ -9,36 +9,36 @@
 
 ### This Session's Work
 
-| # | Task | Repo | Result | Evidence |
-|---|------|------|--------|----------|
-| 20 | Add CHANGELOG entry for JoinLines | go-sse | DONE | `CHANGELOG.md` Unreleased section now has JoinLines entry (commit `67f7bda`) |
-| 28 | Add benchmark for WriteEvent | go-sse | DONE | `BenchmarkWriteEvent` in `event_test.go` with simple + 50-line variants. Simple: 101 ns/op, 72 B/op, 4 allocs. Multi: 13.1 µs/op, 34 KB/op, 22 allocs (commit `67f7bda`, refined in `189e0dd`) |
-| 15 | Add coverage gate to go-sse flake.nix | go-sse | DONE | `nix run .#coverage-gate` app added. 90% threshold. Library at 98.9%. Uses `bc` for float comparison (commit `c7fcf5d`) |
-| 2 | Add go-datastar option constructor tests | go-datastar | DONE | `coverage_test.go` with `TestOptionConstructors` — 7 subtests covering WithScriptRetryDuration, WithSignalsEventID, WithSignalsRetryDuration, WithCustomEventBubbles, WithCustomEventCancelable, WithCustomEventComposed, WithCustomEventEventID. All at 100% coverage (commit `88f1737`, refactored in `123408d`) |
-| 3 | Test wrapStreamError error path | go-datastar | DONE | `TestWrapStreamError_ErrorPath` using `failingWriter` (http.ResponseWriter that returns `errWriteFailed` on Write). `wrapStreamError` coverage: 66.7% → 100% (commit `88f1737`) |
-| 1 | Fix cqrs-htmx root module go.sum | cqrs-htmx | DONE | Root cause: commit `503dff22` added `github.com/larsartmann/httputil/server_timing v0.0.0` to go.mod but no replace directive. The module exists locally at `/home/lars/projects/httputil/server_timing` (separate go.mod, no published tags). Added `replace` directive to `go.work`. `go build ./...` now passes from root (commit `7467dfcb`) |
+| #  | Task                                     | Repo        | Result | Evidence                                                                                                                                                                                                                                                                                                                                         |
+| -- | ---------------------------------------- | ----------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 20 | Add CHANGELOG entry for JoinLines        | go-sse      | DONE   | `CHANGELOG.md` Unreleased section now has JoinLines entry (commit `67f7bda`)                                                                                                                                                                                                                                                                     |
+| 28 | Add benchmark for WriteEvent             | go-sse      | DONE   | `BenchmarkWriteEvent` in `event_test.go` with simple + 50-line variants. Simple: 101 ns/op, 72 B/op, 4 allocs. Multi: 13.1 µs/op, 34 KB/op, 22 allocs (commit `67f7bda`, refined in `189e0dd`)                                                                                                                                                   |
+| 15 | Add coverage gate to go-sse flake.nix    | go-sse      | DONE   | `nix run .#coverage-gate` app added. 90% threshold. Library at 98.9%. Uses `bc` for float comparison (commit `c7fcf5d`)                                                                                                                                                                                                                          |
+| 2  | Add go-datastar option constructor tests | go-datastar | DONE   | `coverage_test.go` with `TestOptionConstructors` — 7 subtests covering WithScriptRetryDuration, WithSignalsEventID, WithSignalsRetryDuration, WithCustomEventBubbles, WithCustomEventCancelable, WithCustomEventComposed, WithCustomEventEventID. All at 100% coverage (commit `88f1737`, refactored in `123408d`)                               |
+| 3  | Test wrapStreamError error path          | go-datastar | DONE   | `TestWrapStreamError_ErrorPath` using `failingWriter` (http.ResponseWriter that returns `errWriteFailed` on Write). `wrapStreamError` coverage: 66.7% → 100% (commit `88f1737`)                                                                                                                                                                  |
+| 1  | Fix cqrs-htmx root module go.sum         | cqrs-htmx   | DONE   | Root cause: commit `503dff22` added `github.com/larsartmann/httputil/server_timing v0.0.0` to go.mod but no replace directive. The module exists locally at `/home/lars/projects/httputil/server_timing` (separate go.mod, no published tags). Added `replace` directive to `go.work`. `go build ./...` now passes from root (commit `7467dfcb`) |
 
 ### Items Verified As Already Done (No Action Needed)
 
-| # | Item | Evidence |
-|---|------|----------|
-| 26 | Fuzz tests for EventID parsing | `FuzzParseEventID` already exists in `fuzz_test.go` with 4 seeds and newline/CR validation |
-| 37 | Test Broadcaster Shutdown with zero subscribers | `TestBroadcaster_Shutdown_Empty` in `lifecycle_test.go:12` — tests Shutdown on a broadcaster with zero subscribers |
-| 48 | Test WriteKeyedLines with multi-line values | `TestWriteKeyedLines_MultiLine` in `event_test.go:587` — tests with `<div>\n</div>` input, asserts correct `data: k <div>\ndata: k </div>\n` wire format |
+| #  | Item                                            | Evidence                                                                                                                                                 |
+| -- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 26 | Fuzz tests for EventID parsing                  | `FuzzParseEventID` already exists in `fuzz_test.go` with 4 seeds and newline/CR validation                                                               |
+| 37 | Test Broadcaster Shutdown with zero subscribers | `TestBroadcaster_Shutdown_Empty` in `lifecycle_test.go:12` — tests Shutdown on a broadcaster with zero subscribers                                       |
+| 48 | Test WriteKeyedLines with multi-line values     | `TestWriteKeyedLines_MultiLine` in `event_test.go:587` — tests with `<div>\n</div>` input, asserts correct `data: k <div>\ndata: k </div>\n` wire format |
 
 ### Final Verification State (All Green)
 
-| Repo | Tests | Coverage | Lint | Vet | Flake Check | treefmt |
-|------|-------|----------|------|-----|-------------|---------|
-| go-sse | PASS | 98.9% (lib) | 0 issues | OK | PASS | PASS |
-| go-datastar | PASS | 96.9% (lib) | 0 issues | OK | PASS | PASS |
-| cqrs-htmx (root) | BUILD OK | — | — | OK | — | — |
+| Repo             | Tests    | Coverage    | Lint     | Vet | Flake Check | treefmt |
+| ---------------- | -------- | ----------- | -------- | --- | ----------- | ------- |
+| go-sse           | PASS     | 98.9% (lib) | 0 issues | OK  | PASS        | PASS    |
+| go-datastar      | PASS     | 96.9% (lib) | 0 issues | OK  | PASS        | PASS    |
+| cqrs-htmx (root) | BUILD OK | —           | —        | OK  | —           | —       |
 
 ### Coverage Improvement Summary
 
-| Repo | Before | After | Delta |
-|------|--------|-------|-------|
-| go-datastar (lib) | 91.9% | 96.9% | +5.0pp |
+| Repo              | Before | After | Delta  |
+| ----------------- | ------ | ----- | ------ |
+| go-datastar (lib) | 91.9%  | 96.9% | +5.0pp |
 
 All 7 previously-uncovered option constructors: 0% → 100%.
 `wrapStreamError`: 66.7% → 100%.
@@ -225,10 +225,12 @@ The test asserts `received >= 500` out of ~4000 events (12.5% threshold) under c
 ### Q3: Should the cqrs-htmx/datastar local replace directives be removed now?
 
 `cqrs-htmx/datastar/go.mod` still has:
+
 ```
 replace github.com/larsartmann/go-datastar => ../../go-datastar
 replace github.com/larsartmann/go-sse => ../../go-sse
 ```
+
 go-datastar is tagged at v0.0.2 and go-sse at v0.4.0. Removing these requires pinning real versions, which means cqrs-htmx can't be developed without the sibling repos locally. This is a project-direction decision about your preferred development workflow — local-first (keep replaces) vs publish-first (remove replaces, pin versions).
 
 ---
@@ -236,6 +238,7 @@ go-datastar is tagged at v0.0.2 and go-sse at v0.4.0. Removing these requires pi
 ## Session Self-Assessment
 
 **What went well:**
+
 - Executed 6 items from the 50-item backlog in one pass, all verified green
 - go-datastar coverage jumped from 91.9% to 96.9% with targeted, meaningful tests
 - Fixed the cqrs-htmx root build failure (missing `httputil/server_timing` replace directive)
@@ -243,6 +246,7 @@ go-datastar is tagged at v0.0.2 and go-sse at v0.4.0. Removing these requires pi
 - Verified 3 items as already done instead of wasting time re-doing them
 
 **What went poorly:**
+
 - Shipped lint failures on first pass (golines, varnamelen, err113, gci, wsl_v5) — should have linted after each file write
 - Didn't run `nix fmt` until the end — auto-git committed unformatted files, creating unnecessary extra commits
 - Almost missed the `TestSubscribeFilter_ConcurrentRace` flake (pre-existing, not caused by my changes)

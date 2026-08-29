@@ -1,6 +1,6 @@
 # Status Report: go-datastar Build + cqrs-htmx Migration
 
-**Date:** 2026-08-07 07:42  
+**Date:** 2026-08-07 07:42\
 **Session scope:** Execute the 136-task Pareto plan for building go-datastar and migrating cqrs-htmx off the starfederation/datastar-go SDK.
 
 ---
@@ -159,36 +159,36 @@ I added a `HeartbeatInterval` helper function that is **never called anywhere**.
 
 ## f) Up to 50 Things We Should Get Done Next
 
-| #   | Task                                                                               | Impact   | Effort |
-| --- | ---------------------------------------------------------------------------------- | -------- | ------ |
-| 1   | Wire `sse.EventStore` + `sse.Replay` into cqrs-htmx/datastar Broadcaster           | Critical | 30m    |
-| 2   | Fix `errorPatch` — propagate errors instead of returning empty events              | Critical | 15m    |
-| 3   | Delete orphaned `/home/lars/projects/cqrs-htmx/datastar/datastar/` directory       | High     | 1m     |
-| 4   | Delete dead `HeartbeatInterval` function from cqrs-htmx/datastar/broadcaster.go    | High     | 1m     |
-| 5   | Fix go-datastar example app — use proper DataStar attributes, remove broken JS     | High     | 20m    |
-| 6   | Add tests for all Response methods with 0% coverage (11 methods)                   | High     | 30m    |
-| 7   | Compute real `vendorHash` for go-datastar flake.nix                                | High     | 5m     |
-| 8   | Run `nix flake check` on go-datastar                                               | High     | 5m     |
-| 9   | Restore patch constructor tests in cqrs-htmx/datastar (deleted 8 tests)            | Medium   | 15m    |
-| 10  | Restore response builder tests in cqrs-htmx/datastar (deleted 16 tests)            | Medium   | 20m    |
-| 11  | Restore script handler tests in cqrs-htmx/datastar (deleted 8 tests)               | Medium   | 10m    |
-| 12  | Add end-to-end HTTP round-trip test (HTTP client → SSE server → raw bytes)         | Medium   | 20m    |
-| 13  | Update go-sse README to document `JoinLines`                                       | Medium   | 5m     |
-| 14  | Write ADR for go-datastar/go-sse/SDK relationship                                  | Medium   | 15m    |
-| 15  | Browser-test go-datastar example app                                               | Medium   | 10m    |
-| 16  | Browser-test cqrs-htmx datastar-demo after migration                               | Medium   | 10m    |
-| 17  | Add replay test to cqrs-htmx/datastar broadcaster_test.go                          | Medium   | 15m    |
-| 18  | Consider returning `(*Response, error)` from Response methods to restore fluency   | Medium   | 15m    |
-| 19  | Add compression support (middleware in go-sse or go-datastar)                      | Low      | TBD    |
-| 20  | Add DataStar JS version alignment guard (test that constant matches embedded file) | Low      | 10m    |
-| 21  | Consider `datastar.NewBroadcaster()` convenience in go-datastar itself             | Low      | 15m    |
-| 22  | Add `ElementsFromTempl` test to go-datastar (currently 0% coverage)                | Low      | 5m     |
-| 23  | Evaluate merging cqrs-htmx/datastar into root module                               | Low      | TBD    |
-| 24  | Add `Redirectf` test (the function exists but has no dedicated test)               | Low      | 3m     |
-| 25  | Run golangci-lint on cqrs-htmx/datastar (never run after migration)                | Low      | 5m     |
-| 26  | Update cqrs-htmx AGENTS.md architecture section to mention go-datastar             | Low      | 5m     |
-| 27  | Add godoc examples to go-datastar (`ExampleElementsPatch`, etc.)                   | Low      | 15m    |
-| 28  | Consider `go:generate` guard for embedded datastar.js version constant             | Low      | 10m    |
+| #  | Task                                                                               | Impact   | Effort |
+| -- | ---------------------------------------------------------------------------------- | -------- | ------ |
+| 1  | Wire `sse.EventStore` + `sse.Replay` into cqrs-htmx/datastar Broadcaster           | Critical | 30m    |
+| 2  | Fix `errorPatch` — propagate errors instead of returning empty events              | Critical | 15m    |
+| 3  | Delete orphaned `/home/lars/projects/cqrs-htmx/datastar/datastar/` directory       | High     | 1m     |
+| 4  | Delete dead `HeartbeatInterval` function from cqrs-htmx/datastar/broadcaster.go    | High     | 1m     |
+| 5  | Fix go-datastar example app — use proper DataStar attributes, remove broken JS     | High     | 20m    |
+| 6  | Add tests for all Response methods with 0% coverage (11 methods)                   | High     | 30m    |
+| 7  | Compute real `vendorHash` for go-datastar flake.nix                                | High     | 5m     |
+| 8  | Run `nix flake check` on go-datastar                                               | High     | 5m     |
+| 9  | Restore patch constructor tests in cqrs-htmx/datastar (deleted 8 tests)            | Medium   | 15m    |
+| 10 | Restore response builder tests in cqrs-htmx/datastar (deleted 16 tests)            | Medium   | 20m    |
+| 11 | Restore script handler tests in cqrs-htmx/datastar (deleted 8 tests)               | Medium   | 10m    |
+| 12 | Add end-to-end HTTP round-trip test (HTTP client → SSE server → raw bytes)         | Medium   | 20m    |
+| 13 | Update go-sse README to document `JoinLines`                                       | Medium   | 5m     |
+| 14 | Write ADR for go-datastar/go-sse/SDK relationship                                  | Medium   | 15m    |
+| 15 | Browser-test go-datastar example app                                               | Medium   | 10m    |
+| 16 | Browser-test cqrs-htmx datastar-demo after migration                               | Medium   | 10m    |
+| 17 | Add replay test to cqrs-htmx/datastar broadcaster_test.go                          | Medium   | 15m    |
+| 18 | Consider returning `(*Response, error)` from Response methods to restore fluency   | Medium   | 15m    |
+| 19 | Add compression support (middleware in go-sse or go-datastar)                      | Low      | TBD    |
+| 20 | Add DataStar JS version alignment guard (test that constant matches embedded file) | Low      | 10m    |
+| 21 | Consider `datastar.NewBroadcaster()` convenience in go-datastar itself             | Low      | 15m    |
+| 22 | Add `ElementsFromTempl` test to go-datastar (currently 0% coverage)                | Low      | 5m     |
+| 23 | Evaluate merging cqrs-htmx/datastar into root module                               | Low      | TBD    |
+| 24 | Add `Redirectf` test (the function exists but has no dedicated test)               | Low      | 3m     |
+| 25 | Run golangci-lint on cqrs-htmx/datastar (never run after migration)                | Low      | 5m     |
+| 26 | Update cqrs-htmx AGENTS.md architecture section to mention go-datastar             | Low      | 5m     |
+| 27 | Add godoc examples to go-datastar (`ExampleElementsPatch`, etc.)                   | Low      | 15m    |
+| 28 | Consider `go:generate` guard for embedded datastar.js version constant             | Low      | 10m    |
 
 ---
 

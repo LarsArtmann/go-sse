@@ -37,14 +37,14 @@
         --radius: 0px;
 
         --font-heading:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-body:
-          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono:
-          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono", Menlo, Consolas,
-          monospace;
+          ui-monospace, "Cascadia Code", "Source Code Pro", "JetBrains Mono",
+          Menlo, Consolas, monospace;
       }
 
       * {
@@ -385,12 +385,20 @@
       .callout-teal,
       .callout-solution {
         border-left-color: var(--solution);
-        background: color-mix(in srgb, var(--solution) 10%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--solution) 10%,
+          var(--surface-raised)
+        );
       }
       .callout-amber,
       .callout-warning {
         border-left-color: var(--warning);
-        background: color-mix(in srgb, var(--warning) 18%, var(--surface-raised));
+        background: color-mix(
+          in srgb,
+          var(--warning) 18%,
+          var(--surface-raised)
+        );
       }
 
       .strengths {
@@ -606,10 +614,10 @@
           <div class="eyebrow">NIX FLAKE MIGRATION &middot; 2026-07-23</div>
           <h1>go-sse &rarr; Nix flake build automation</h1>
           <p class="subtitle">
-            go-sse had no flake.nix, no formatter, and no hermetic checks. This proposal documents
-            the migration to the standard LarsArtmann Go library flake stack: flake-parts +
-            treefmt-nix + systems, with a hermetic buildGoModule check that vendors the public
-            dependencies.
+            go-sse had no flake.nix, no formatter, and no hermetic checks. This
+            proposal documents the migration to the standard LarsArtmann Go
+            library flake stack: flake-parts + treefmt-nix + systems, with a
+            hermetic buildGoModule check that vendors the public dependencies.
           </p>
           <div class="meta">
             <span class="tag amber">Type: library (no main)</span>
@@ -640,37 +648,45 @@
         <section id="summary">
           <h2><span class="num">00</span>Summary</h2>
           <p>
-            The migration is complete and verified. A new <code>flake.nix</code> adopts the same
-            proven pattern already used by the sibling pure-library repos
-            (<code>go-branded-id</code>, <code>go-error-family</code>, <code>go-ndjson</code>):
-            flake-parts + treefmt-nix + systems, with <code>apps</code> for local development and a
-            devShell that pins Go 1.26 with <code>GOEXPERIMENT=jsonv2</code>.
+            The migration is complete and verified. A new
+            <code>flake.nix</code> adopts the same proven pattern already used
+            by the sibling pure-library repos (<code>go-branded-id</code>,
+            <code>go-error-family</code>, <code>go-ndjson</code>): flake-parts +
+            treefmt-nix + systems, with <code>apps</code> for local development
+            and a devShell that pins Go 1.26 with
+            <code>GOEXPERIMENT=jsonv2</code>.
           </p>
           <div class="callout callout-teal">
             <strong>The bottom line</strong>
-            The one material difference from the leaf libraries: go-sse has dependencies, so its
-            hermetic check cannot use a bare <code>runCommand</code> + <code>go build</code> (that
-            needs network). Instead <code>checks.build</code> uses <code>buildGoModule</code> with a
-            <code>vendorHash</code>, making <code>nix flake check</code> fully reproducible and
-            offline.
+            The one material difference from the leaf libraries: go-sse has
+            dependencies, so its hermetic check cannot use a bare
+            <code>runCommand</code> + <code>go build</code> (that needs
+            network). Instead <code>checks.build</code> uses
+            <code>buildGoModule</code> with a <code>vendorHash</code>, making
+            <code>nix flake check</code> fully reproducible and offline.
           </div>
           <p>
-            <code>nix flake check</code> passes (format + build). The devShell enters cleanly with
-            the correct environment. The public dependencies resolve through the Go module proxy, so
-            no <code>mkPreparedSource</code> / <code>GOPRIVATE</code> machinery is required.
+            <code>nix flake check</code> passes (format + build). The devShell
+            enters cleanly with the correct environment. The public dependencies
+            resolve through the Go module proxy, so no
+            <code>mkPreparedSource</code> / <code>GOPRIVATE</code> machinery is
+            required.
           </p>
         </section>
 
         <section id="decision">
-          <h2><span class="num">01</span>Decision: manual flake-parts, not go-standard</h2>
+          <h2>
+            <span class="num">01</span>Decision: manual flake-parts, not
+            go-standard
+          </h2>
           <p>
             The <code>nix-flake-migration</code> skill recommends the shared
-            <code>flakeModules.go-standard</code> module for LarsArtmann Go projects. That module is
-            built around a binary: it sets
+            <code>flakeModules.go-standard</code> module for LarsArtmann Go
+            projects. That module is built around a binary: it sets
             <code>apps.default = lib.getExe config.packages.default</code>,
-            <code>meta.mainProgram</code>, and version-injection ldflags. go-sse is a pure library
-            with no <code>main</code> package, so go-standard would emit an app that points at a
-            non-existent executable.
+            <code>meta.mainProgram</code>, and version-injection ldflags. go-sse
+            is a pure library with no <code>main</code> package, so go-standard
+            would emit an app that points at a non-existent executable.
           </p>
 
           <div class="issue issue-important">
@@ -680,12 +696,13 @@
               flakeModules.go-standard &middot; apps.default / meta.mainProgram
             </div>
             <p>
-              Adopted the manual 4-input flake-parts pattern instead. It is the established
-              convention for every pure-library repo in this ecosystem, and it gives full control
-              over the library-appropriate shape: no <code>packages.default</code>, no overlay, no
-              <code>mainProgram</code>. The tradeoff is ~130 more lines than a 20-line go-standard
-              flake, but those lines are exactly the library-specific structure go-standard cannot
-              express.
+              Adopted the manual 4-input flake-parts pattern instead. It is the
+              established convention for every pure-library repo in this
+              ecosystem, and it gives full control over the library-appropriate
+              shape: no <code>packages.default</code>, no overlay, no
+              <code>mainProgram</code>. The tradeoff is ~130 more lines than a
+              20-line go-standard flake, but those lines are exactly the
+              library-specific structure go-standard cannot express.
             </p>
           </div>
 
@@ -696,18 +713,20 @@
               <div class="text">
                 <strong>Hermetic compile + test check</strong>
                 <span
-                  >buildGoModule vendors go-branded-id and go-error-family via vendorHash; nix flake
-                  check is offline-reproducible.</span
+                  >buildGoModule vendors go-branded-id and go-error-family via
+                  vendorHash; nix flake check is offline-reproducible.</span
                 >
               </div>
             </div>
             <div class="strength">
               <div class="check">+</div>
               <div class="text">
-                <strong>treefmt with gofumpt, goimports, golines, nixfmt</strong>
+                <strong
+                  >treefmt with gofumpt, goimports, golines, nixfmt</strong
+                >
                 <span
-                  >Single formatter (<code>nix fmt</code>) and a format check, matching the sibling
-                  libraries.</span
+                  >Single formatter (<code>nix fmt</code>) and a format check,
+                  matching the sibling libraries.</span
                 >
               </div>
             </div>
@@ -716,8 +735,8 @@
               <div class="text">
                 <strong>Pinned, environment-correct devShell</strong>
                 <span
-                  >Go 1.26, GOEXPERIMENT=jsonv2, GOWORK=off, GOTOOLCHAIN=local baked in as
-                  attributes, not shell exports.</span
+                  >Go 1.26, GOEXPERIMENT=jsonv2, GOWORK=off, GOTOOLCHAIN=local
+                  baked in as attributes, not shell exports.</span
                 >
               </div>
             </div>
@@ -726,8 +745,9 @@
               <div class="text">
                 <strong>Dev apps with GOEXPERIMENT</strong>
                 <span
-                  >test, test-race, build, vet, lint, coverage, clean; each exports
-                  GOEXPERIMENT=jsonv2 (required transitively via go-branded-id).</span
+                  >test, test-race, build, vet, lint, coverage, clean; each
+                  exports GOEXPERIMENT=jsonv2 (required transitively via
+                  go-branded-id).</span
                 >
               </div>
             </div>
@@ -737,7 +757,8 @@
         <section id="commands">
           <h2><span class="num">02</span>Before / after commands</h2>
           <p>
-            Raw <code>go</code> tooling (from CONTRIBUTING.md) maps directly onto flake outputs.
+            Raw <code>go</code> tooling (from CONTRIBUTING.md) maps directly
+            onto flake outputs.
           </p>
           <div class="table-wrap">
             <table class="compare">
@@ -789,19 +810,24 @@
           </div>
           <div class="callout callout-amber">
             <strong>Note on the global module cache</strong>
-            <code>nix run .#vet</code> / <code>.#build</code> run against the live working tree and
-            inherit the host Go environment. They currently surface a pre-existing, repo-wide
-            <code>go-cqrs-lite/command/v4@v4.0.2</code> checksum-mismatch corruption (it affects
-            plain <code>go vet</code> too, with no nix involvement). The hermetic
+            <code>nix run .#vet</code> / <code>.#build</code> run against the
+            live working tree and inherit the host Go environment. They
+            currently surface a pre-existing, repo-wide
+            <code>go-cqrs-lite/command/v4@v4.0.2</code> checksum-mismatch
+            corruption (it affects plain <code>go vet</code> too, with no nix
+            involvement). The hermetic
             <code>nix flake check</code>
-            is unaffected because buildGoModule vendors only go-sse's declared deps. Fixing the host
-            cache is out of scope for this migration.
+            is unaffected because buildGoModule vendors only go-sse's declared
+            deps. Fixing the host cache is out of scope for this migration.
           </div>
         </section>
 
         <section id="flake">
           <h2><span class="num">03</span>The flake.nix</h2>
-          <p>The complete, working flake (176 lines). Key structure annotated inline.</p>
+          <p>
+            The complete, working flake (176 lines). Key structure annotated
+            inline.
+          </p>
           <pre><code><span class="tok-punct">{</span>
   <span class="tok-attr">description</span> <span class="tok-punct">=</span> <span class="tok-string">"Server-Sent Events transport for Go (wire format, fan-out, replay)"</span><span class="tok-punct">;</span>
 
@@ -839,18 +865,20 @@
   <span class="tok-comment"># apps: test, test-race, build, vet, lint, coverage, clean (each exports GOEXPERIMENT=jsonv2)</span>
 <span class="tok-punct">}</span></code></pre>
           <p>
-            Note <code>GOEXPERIMENT=jsonv2</code> appears in three places: the hermetic build
-            (<code>env.GOEXPERIMENT</code>), the devShells (as an attribute), and every Go dev app
-            (exported in the script text). This is required because go-sse compiles
-            <code>go-branded-id</code>, which uses the jsonv2 APIs.
+            Note <code>GOEXPERIMENT=jsonv2</code> appears in three places: the
+            hermetic build (<code>env.GOEXPERIMENT</code>), the devShells (as an
+            attribute), and every Go dev app (exported in the script text). This
+            is required because go-sse compiles <code>go-branded-id</code>,
+            which uses the jsonv2 APIs.
           </p>
         </section>
 
         <section id="private-deps">
           <h2><span class="num">04</span>Private dependencies: not needed</h2>
           <p>
-            The <code>nix-private-go-repos</code> skill was invoked to evaluate whether
-            <code>mkPreparedSource</code> + <code>GOPRIVATE</code> handling is required. It is not.
+            The <code>nix-private-go-repos</code> skill was invoked to evaluate
+            whether <code>mkPreparedSource</code> +
+            <code>GOPRIVATE</code> handling is required. It is not.
           </p>
           <div
             class="dep-tree"
@@ -869,35 +897,38 @@
             <span style="color: var(--accent); font-weight: 700">go-sse</span>
             <span style="color: rgba(17, 17, 17, 0.5)">├──</span>
             github.com/larsartmann/go-branded-id
-            <span style="color: var(--solution); font-weight: 700">PUBLIC</span> (proxy hash in
-            go.sum)
+            <span style="color: var(--solution); font-weight: 700">PUBLIC</span>
+            (proxy hash in go.sum)
             <span style="color: rgba(17, 17, 17, 0.5)">└──</span>
             github.com/larsartmann/go-error-family
-            <span style="color: var(--solution); font-weight: 700">PUBLIC</span> (proxy hash in
-            go.sum)
+            <span style="color: var(--solution); font-weight: 700">PUBLIC</span>
+            (proxy hash in go.sum)
           </div>
           <ul>
             <li>
-              Both deps resolve from the public Go module proxy (<code>go mod download</code> with
-              <code>GOPRIVATE=none</code> succeeds).
+              Both deps resolve from the public Go module proxy (<code
+                >go mod download</code
+              >
+              with <code>GOPRIVATE=none</code> succeeds).
             </li>
             <li>
-              Neither is in the host's global <code>GOPRIVATE</code> list (which covers
-              <code>go-cqrs-lite</code>, <code>go-finding</code>, <code>go-structure-linter</code>,
-              <code>go-commit</code>).
+              Neither is in the host's global <code>GOPRIVATE</code> list (which
+              covers <code>go-cqrs-lite</code>, <code>go-finding</code>,
+              <code>go-structure-linter</code>, <code>go-commit</code>).
             </li>
             <li>
-              Therefore: no <code>deps</code> map, no <code>git+ssh</code> flake inputs, no
-              <code>GOPRIVATE</code> in devShells. <code>vendorHash</code> alone makes the build
-              hermetic.
+              Therefore: no <code>deps</code> map, no <code>git+ssh</code> flake
+              inputs, no <code>GOPRIVATE</code> in devShells.
+              <code>vendorHash</code> alone makes the build hermetic.
             </li>
           </ul>
           <div class="callout callout-teal">
             <strong>If a dep ever goes private</strong>
-            Add it as a <code>git+ssh</code> <code>flake = false</code> input and move the flake to
-            the <code>go-standard</code> module (or manual <code>mkPreparedSource</code>) with a
-            non-empty <code>deps</code> map. The skill's gotcha table covers the mixed-casing
-            GOPRIVATE fix.
+            Add it as a <code>git+ssh</code> <code>flake = false</code> input
+            and move the flake to the <code>go-standard</code> module (or manual
+            <code>mkPreparedSource</code>) with a non-empty
+            <code>deps</code> map. The skill's gotcha table covers the
+            mixed-casing GOPRIVATE fix.
           </div>
         </section>
 
@@ -914,7 +945,9 @@
               <tbody>
                 <tr>
                   <td><code>nix flake check</code></td>
-                  <td class="yes">all checks passed (format + build, hermetic)</td>
+                  <td class="yes">
+                    all checks passed (format + build, hermetic)
+                  </td>
                 </tr>
                 <tr>
                   <td><code>nix build .#checks.x86_64-linux.build</code></td>
@@ -922,11 +955,15 @@
                 </tr>
                 <tr>
                   <td><code>nix develop</code></td>
-                  <td class="yes">go 1.26.4, GOEXPERIMENT=jsonv2, GOWORK=off</td>
+                  <td class="yes">
+                    go 1.26.4, GOEXPERIMENT=jsonv2, GOWORK=off
+                  </td>
                 </tr>
                 <tr>
                   <td><code>nix fmt</code></td>
-                  <td class="yes">only flake.nix reformatted; no .go changes</td>
+                  <td class="yes">
+                    only flake.nix reformatted; no .go changes
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -936,8 +973,8 @@
         <section id="checklist">
           <h2><span class="num">06</span>Post-migration checklist</h2>
           <p>
-            Items from the <code>nix-flake-migration</code> skill checklist. Library-specific items
-            are marked N/A with the reason.
+            Items from the <code>nix-flake-migration</code> skill checklist.
+            Library-specific items are marked N/A with the reason.
           </p>
           <div class="table-wrap">
             <table>
@@ -1016,8 +1053,8 @@
 
         <footer class="footer">
           <p>
-            Generated 2026-07-23 &middot; go-sse nix flake migration &middot; All build claims
-            verified via nix flake check on Nix 2.34.8
+            Generated 2026-07-23 &middot; go-sse nix flake migration &middot;
+            All build claims verified via nix flake check on Nix 2.34.8
           </p>
         </footer>
       </main>

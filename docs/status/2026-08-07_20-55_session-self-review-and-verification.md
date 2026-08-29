@@ -9,34 +9,35 @@
 
 ### This Session's Work
 
-| Task | Result | Evidence |
-|------|--------|----------|
-| Verified go-sse build + tests + lint + vet + flake check | ALL PASS | `go test -race` OK, `golangci-lint` 0 issues, `go vet` OK, `nix flake check` OK |
-| Verified go-datastar build + tests + lint + vet + flake check | ALL PASS | `go test -race` OK, `golangci-lint` 0 issues, `go vet` OK, `nix flake check` OK |
-| Verified cqrs-htmx/datastar build + tests + lint + vet | ALL PASS | `go test -race` OK, `golangci-lint` 0 issues, `go vet` OK |
-| Verified cqrs-htmx/integration_test | PASS | `go test -race` OK |
-| Verified cqrs-htmx/examples/datastar-demo | BUILD OK | `go build` OK |
-| Fixed `nix flake check` failure in go-datastar | FIXED | treefmt had unformatted code committed by auto-git. Ran `nix fmt`, 3 files changed (example/main.go, response.go, response_test.go). Flake check now passes. |
-| Added coverage tests for cqrs-htmx/datastar | 84.6% → **97.4%** | Created `coverage_test.go` with 12 test functions covering 11 previously-uncovered re-export functions. Only `ServeHTTP` error-return paths remain at 87.5%. |
-| Updated cqrs-htmx AGENTS.md coverage gate | 96.7% (stale) → **97.4%** (actual) | Line 16 updated |
-| Answered 3 open questions from prior session | RESOLVED | Q1: wrapStreamError is legitimate. Q2: No v0.5.0 needed (replace removed). Q3: Coverage gap closed. |
+| Task                                                          | Result                             | Evidence                                                                                                                                                     |
+| ------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Verified go-sse build + tests + lint + vet + flake check      | ALL PASS                           | `go test -race` OK, `golangci-lint` 0 issues, `go vet` OK, `nix flake check` OK                                                                              |
+| Verified go-datastar build + tests + lint + vet + flake check | ALL PASS                           | `go test -race` OK, `golangci-lint` 0 issues, `go vet` OK, `nix flake check` OK                                                                              |
+| Verified cqrs-htmx/datastar build + tests + lint + vet        | ALL PASS                           | `go test -race` OK, `golangci-lint` 0 issues, `go vet` OK                                                                                                    |
+| Verified cqrs-htmx/integration_test                           | PASS                               | `go test -race` OK                                                                                                                                           |
+| Verified cqrs-htmx/examples/datastar-demo                     | BUILD OK                           | `go build` OK                                                                                                                                                |
+| Fixed `nix flake check` failure in go-datastar                | FIXED                              | treefmt had unformatted code committed by auto-git. Ran `nix fmt`, 3 files changed (example/main.go, response.go, response_test.go). Flake check now passes. |
+| Added coverage tests for cqrs-htmx/datastar                   | 84.6% → **97.4%**                  | Created `coverage_test.go` with 12 test functions covering 11 previously-uncovered re-export functions. Only `ServeHTTP` error-return paths remain at 87.5%. |
+| Updated cqrs-htmx AGENTS.md coverage gate                     | 96.7% (stale) → **97.4%** (actual) | Line 16 updated                                                                                                                                              |
+| Answered 3 open questions from prior session                  | RESOLVED                           | Q1: wrapStreamError is legitimate. Q2: No v0.5.0 needed (replace removed). Q3: Coverage gap closed.                                                          |
 
 ### Prior Session's Work (Verified Intact)
 
 All 24 tasks from the fix plan are done and committed:
+
 - go-datastar: replace directive removed, go-sse v0.4.0 dependency, flake.nix cleaned up (no more go-sse-src/postPatch), vendorHash real, ADR written, CHANGELOG updated, E2E test added, CI fixed (golangci-lint v2, Go version alignment), tagged v0.0.1 and v0.0.2
 - cqrs-htmx: migrated off starfederation/datastar-go to go-datastar + go-sse, error handling added to demo handlers, tests fixed (6 wrong assertions corrected), AGENTS.md updated
 - go-sse: JoinLines added to README, status reports written
 
 ### Final Test State (All Green)
 
-| Repo | Tests | Coverage | Lint | Vet | Flake Check |
-|------|-------|----------|------|-----|-------------|
-| go-sse | PASS | — | 0 issues | OK | PASS |
-| go-datastar | PASS | 92.1% (lib only) | 0 issues | OK | PASS |
-| cqrs-htmx/datastar | PASS | **97.4%** | 0 issues | OK | — |
-| cqrs-htmx/integration_test | PASS | — | — | — | — |
-| cqrs-htmx/examples/datastar-demo | BUILD OK | — | — | — | — |
+| Repo                             | Tests    | Coverage         | Lint     | Vet | Flake Check |
+| -------------------------------- | -------- | ---------------- | -------- | --- | ----------- |
+| go-sse                           | PASS     | —                | 0 issues | OK  | PASS        |
+| go-datastar                      | PASS     | 92.1% (lib only) | 0 issues | OK  | PASS        |
+| cqrs-htmx/datastar               | PASS     | **97.4%**        | 0 issues | OK  | —           |
+| cqrs-htmx/integration_test       | PASS     | —                | —        | —   | —           |
+| cqrs-htmx/examples/datastar-demo | BUILD OK | —                | —        | —   | —           |
 
 ---
 
@@ -47,6 +48,7 @@ All 24 tasks from the fix plan are done and committed:
 The library code itself is well-covered (~92%), but the `example/` subpackage has 0% coverage (4 functions: `main`, `startProducer`, `indexHandler`, `eventsHandler`). This drags the combined total to 78.6%. The example is a runnable demo, not library code, but `go test ./...` reports the combined number.
 
 **Uncovered library functions (should be addressed):**
+
 - `WithScriptRetryDuration` — 0%
 - `WithSignalsEventID` — 0%
 - `WithSignalsRetryDuration` — 0%
@@ -59,6 +61,7 @@ The library code itself is well-covered (~92%), but the `example/` subpackage ha
 ### cqrs-htmx/datastar ServeHTTP: 87.5%
 
 The `ServeHTTP` method has two error-return paths that are hard to trigger in unit tests without a broken stream or a failed replay. These paths are:
+
 - `sse.Replay` returns an error (would need a broken store)
 - `stream.Send` returns an error (would need a broken ResponseWriter mid-stream)
 
@@ -202,6 +205,7 @@ I created a `fakeTemplComponent` type in `coverage_test.go` that is a near-exact
 ### Q1: Is the cqrs-htmx root module's `httputil/server_timing` go.sum issue pre-existing?
 
 The root module's `go build ./...` fails with `missing go.sum entry for module providing package github.com/larsartmann/httputil/server_timing`. I need to know:
+
 - Was this broken before this session's work started?
 - Is `httputil/server_timing` a real published module or a local path that should be a replace directive?
 - Should I fix it, or is it out of scope for the go-datastar migration work?
@@ -209,12 +213,14 @@ The root module's `go build ./...` fails with `missing go.sum entry for module p
 ### Q2: Should cqrs-htmx/datastar remove its local replace directives now?
 
 The module has:
+
 ```
 replace github.com/larsartmann/go-datastar => ../../go-datastar
 replace github.com/larsartmann/go-sse => ../../go-sse
 ```
 
 go-datastar is now tagged at v0.0.2 and go-sse at v0.4.0. Should I:
+
 - Remove the replace directives and pin real versions?
 - Or keep them because cqrs-htmx is still in active development alongside these repos?
 
@@ -229,12 +235,14 @@ go-sse is at v0.4.0. The prior session asked about publishing v0.5.0. Now that g
 ## Session Self-Assessment
 
 **What went well:**
+
 - Caught and fixed the `nix flake check` failure that the handoff missed
 - Closed the coverage gap from 84.6% to 97.4% with targeted, meaningful tests
 - Verified all 3 repos comprehensively (build, test, lint, vet, flake check)
 - Updated stale documentation (AGENTS.md coverage number)
 
 **What went poorly:**
+
 - Trusted the handoff's state description before verifying with `git status`
 - Initially forgot to run `nix flake check` on go-sse
 - Dismissed the root cqrs-htmx go.sum issue without investigation

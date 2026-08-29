@@ -127,14 +127,14 @@ Nil pred delegates to existing `Replay` — full backward compatibility.
 
 ## Comprehensive Task Plan (30-100 min tasks)
 
-| #   | Task                                                                                                                              | Phase  | Impact   | Effort | Customer Value                    |
-| --- | --------------------------------------------------------------------------------------------------------------------------------- | ------ | -------- | ------ | --------------------------------- |
-| T1  | Refactor fanout.go: subscriber struct + SubscribeFilter + sendAllLocked predicate check                                           | Core   | CRITICAL | M      | Enables all live-path filtering   |
-| T2  | Add FilteredEventStore interface + ReplayFiltered function to replay.go                                                           | Core   | HIGH     | M      | Enables all replay-path filtering |
-| T3  | Write tests for SubscribeFilter (basic delivery, nil pred, excludes non-matching, mixed subs, after-close, buffer overflow, race) | Tests  | HIGH     | L      | Proves correctness                |
-| T4  | Write tests for ReplayFiltered (FilteredEventStore path, fallback path, nil pred, write error, store error)                       | Tests  | HIGH     | M      | Proves correctness                |
-| T5  | Update documentation (doc.go, AGENTS.md, ROADMAP.md, CHANGELOG.md, example_test.go)                                               | Docs   | MEDIUM   | M      | Enables adoption                  |
-| T6  | Full verification (race tests, lint, flake check)                                                                                 | Verify | HIGH     | S      | Confidence                        |
+| #  | Task                                                                                                                              | Phase  | Impact   | Effort | Customer Value                    |
+| -- | --------------------------------------------------------------------------------------------------------------------------------- | ------ | -------- | ------ | --------------------------------- |
+| T1 | Refactor fanout.go: subscriber struct + SubscribeFilter + sendAllLocked predicate check                                           | Core   | CRITICAL | M      | Enables all live-path filtering   |
+| T2 | Add FilteredEventStore interface + ReplayFiltered function to replay.go                                                           | Core   | HIGH     | M      | Enables all replay-path filtering |
+| T3 | Write tests for SubscribeFilter (basic delivery, nil pred, excludes non-matching, mixed subs, after-close, buffer overflow, race) | Tests  | HIGH     | L      | Proves correctness                |
+| T4 | Write tests for ReplayFiltered (FilteredEventStore path, fallback path, nil pred, write error, store error)                       | Tests  | HIGH     | M      | Proves correctness                |
+| T5 | Update documentation (doc.go, AGENTS.md, ROADMAP.md, CHANGELOG.md, example_test.go)                                               | Docs   | MEDIUM   | M      | Enables adoption                  |
+| T6 | Full verification (race tests, lint, flake check)                                                                                 | Verify | HIGH     | S      | Confidence                        |
 
 ## Detailed Breakdown (max 12 min tasks)
 

@@ -16,51 +16,51 @@ All 24 tasks from the fix plan are **DONE and GREEN**. Every test suite passes a
 
 ### Tier 1: Critical Fixes (F1-1 through F2-1)
 
-| Task | What | Status |
-|------|------|--------|
+| Task | What                                                                                                           | Status       |
+| ---- | -------------------------------------------------------------------------------------------------------------- | ------------ |
 | F1-1 | `SignalsPatch`/`SignalsIfMissingPatch`/`ElementsTemplPatch` return `(Patch, error)`, deleted `errorPatch` type | ✅ Committed |
-| F1-2 | Fixed all callers across cqrs-htmx (broadcaster_test, event_bridge_test, integration_test) | ✅ Committed |
-| F1-3 | Deleted orphaned `datastar/datastar/datastar.js` (58KB vendored JS) | ✅ Committed |
-| F1-4 | Removed dead `HeartbeatInterval` function + `time` import from broadcaster.go | ✅ Committed |
-| F2-1 | Rewrote go-datastar `example/main.go` with pure DataStar attributes (zero JS) | ✅ Committed |
+| F1-2 | Fixed all callers across cqrs-htmx (broadcaster_test, event_bridge_test, integration_test)                     | ✅ Committed |
+| F1-3 | Deleted orphaned `datastar/datastar/datastar.js` (58KB vendored JS)                                            | ✅ Committed |
+| F1-4 | Removed dead `HeartbeatInterval` function + `time` import from broadcaster.go                                  | ✅ Committed |
+| F2-1 | Rewrote go-datastar `example/main.go` with pure DataStar attributes (zero JS)                                  | ✅ Committed |
 
 ### Tier 2: Core Features (F3-1 through F4-3)
 
-| Task | What | Status |
-|------|------|--------|
-| F3-1 | `MemoryStore` ring buffer in go-datastar (`store.go`) | ✅ Committed |
-| F3-2 | 8 tests for MemoryStore (`store_test.go`) | ✅ Committed |
-| F3-3 | Replay wiring in cqrs-htmx Broadcaster (`NewBroadcasterWithReplay`) | ✅ Committed |
-| F3-4 | `TestBroadcasterReplayOnReconnect` test | ✅ Committed |
+| Task     | What                                                                  | Status       |
+| -------- | --------------------------------------------------------------------- | ------------ |
+| F3-1     | `MemoryStore` ring buffer in go-datastar (`store.go`)                 | ✅ Committed |
+| F3-2     | 8 tests for MemoryStore (`store_test.go`)                             | ✅ Committed |
+| F3-3     | Replay wiring in cqrs-htmx Broadcaster (`NewBroadcasterWithReplay`)   | ✅ Committed |
+| F3-4     | `TestBroadcasterReplayOnReconnect` test                               | ✅ Committed |
 | F4-1/2/3 | 11 Response method tests (0% → covered) + `mockTemplComponent` helper | ✅ Committed |
 
 ### Tier 3: Coverage (F5-1 through F5-3)
 
-| Task | What | Status |
-|------|------|--------|
+| Task | What                                                                                                                   | Status       |
+| ---- | ---------------------------------------------------------------------------------------------------------------------- | ------------ |
 | F5-1 | `patch_test.go` — 11 tests for patch constructors (script/redirect event types corrected to `datastar-patch-elements`) | ✅ Committed |
-| F5-2 | `response_test.go` — 9 tests for Response methods | ✅ Committed |
-| F5-3 | `e2e_test.go` — E2E HTTP round-trip test (real httptest.NewServer + HTTP client) | ✅ Committed |
+| F5-2 | `response_test.go` — 9 tests for Response methods                                                                      | ✅ Committed |
+| F5-3 | `e2e_test.go` — E2E HTTP round-trip test (real httptest.NewServer + HTTP client)                                       | ✅ Committed |
 
 ### Tier 4: Polish (F6-1 through F7-3)
 
-| Task | What | Status |
-|------|------|--------|
-| F6-1 | Real `vendorHash` computed (`sha256-TzgUuZw7...`), `go-sse-src` flake input added, `postPatch` copies go-sse source for hermetic build | ✅ Committed |
-| F6-2 | go-sse README documents `JoinLines` in quick-start + DataStar table | ✅ Committed |
-| F6-3 | golangci-lint clean on cqrs-htmx/datastar (0 issues) | ✅ Verified |
-| F6-4 | Full test suite passes across all repos | ✅ Verified |
-| F7-1 | ADR 001 written (`docs/adr/001-architecture.md`) | ✅ Committed |
-| F7-2 | cqrs-htmx AGENTS.md updated (datastar module description, dep direction, go-sse version v0.3.0→v0.4.0) | ✅ Committed |
-| F7-3 | go-datastar CHANGELOG updated with all Unreleased changes | ✅ Written (uncommitted) |
+| Task | What                                                                                                                                   | Status                   |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| F6-1 | Real `vendorHash` computed (`sha256-TzgUuZw7...`), `go-sse-src` flake input added, `postPatch` copies go-sse source for hermetic build | ✅ Committed             |
+| F6-2 | go-sse README documents `JoinLines` in quick-start + DataStar table                                                                    | ✅ Committed             |
+| F6-3 | golangci-lint clean on cqrs-htmx/datastar (0 issues)                                                                                   | ✅ Verified              |
+| F6-4 | Full test suite passes across all repos                                                                                                | ✅ Verified              |
+| F7-1 | ADR 001 written (`docs/adr/001-architecture.md`)                                                                                       | ✅ Committed             |
+| F7-2 | cqrs-htmx AGENTS.md updated (datastar module description, dep direction, go-sse version v0.3.0→v0.4.0)                                 | ✅ Committed             |
+| F7-3 | go-datastar CHANGELOG updated with all Unreleased changes                                                                              | ✅ Written (uncommitted) |
 
 ### Extra Work (Beyond Fix Plan)
 
-| What | Status |
-|------|--------|
-| Investigated `EventTypeExecuteScript` "dead constant" — **doesn't exist** in go-datastar or SDK; the handoff was wrong about this | ✅ Resolved |
-| Fixed demo handlers (5 call sites) that silently ignored `MarshalAndPatchSignals` errors — now log errors | ✅ Committed |
-| Fixed `nix fmt` breaking `signals.go` build (removed `strings` import) | ✅ Fixed |
+| What                                                                                                                              | Status       |
+| --------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| Investigated `EventTypeExecuteScript` "dead constant" — **doesn't exist** in go-datastar or SDK; the handoff was wrong about this | ✅ Resolved  |
+| Fixed demo handlers (5 call sites) that silently ignored `MarshalAndPatchSignals` errors — now log errors                         | ✅ Committed |
+| Fixed `nix fmt` breaking `signals.go` build (removed `strings` import)                                                            | ✅ Fixed     |
 
 ---
 
@@ -69,6 +69,7 @@ All 24 tasks from the fix plan are **DONE and GREEN**. Every test suite passes a
 ### go-datastar staged formatting changes (from `nix fmt`)
 
 `nix fmt` renamed single-letter variables to satisfy `varnamelen` linter across 6 files:
+
 - `inbound_test.go`, `script.go`, `script_convenience.go`, `script_handler.go`, `signals.go`, `sugar.go`
 
 **These are staged but not committed.** The auto-git daemon should pick them up. The `signals.go` import fix (adding `"strings"` back) is unstaged.
@@ -97,14 +98,14 @@ Running `nix fmt` (triggered by `nix flake check` failing on treefmt) removed th
 
 The handoff identified 2 failing subtests (`TestPatchEventTypes/script` and `/redirect`). In reality, **6 assertions** had the wrong event type (`"datastar-execute-script"` instead of `"datastar-patch-elements"`):
 
-| File | Test | Wrong expectation |
-|------|------|-------------------|
-| patch_test.go | `TestScriptPatch` | `"datastar-execute-script"` |
-| patch_test.go | `TestRedirectPatch` | `"datastar-execute-script"` |
-| patch_test.go | `TestPatchEventTypes/script` | `"datastar-execute-script"` |
-| patch_test.go | `TestPatchEventTypes/redirect` | `"datastar-execute-script"` |
-| response_test.go | `TestResponseExecuteScript` | `"datastar-execute-script"` |
-| response_test.go | `TestResponseMultiplePatches` | counted `execute-script` events |
+| File             | Test                           | Wrong expectation               |
+| ---------------- | ------------------------------ | ------------------------------- |
+| patch_test.go    | `TestScriptPatch`              | `"datastar-execute-script"`     |
+| patch_test.go    | `TestRedirectPatch`            | `"datastar-execute-script"`     |
+| patch_test.go    | `TestPatchEventTypes/script`   | `"datastar-execute-script"`     |
+| patch_test.go    | `TestPatchEventTypes/redirect` | `"datastar-execute-script"`     |
+| response_test.go | `TestResponseExecuteScript`    | `"datastar-execute-script"`     |
+| response_test.go | `TestResponseMultiplePatches`  | counted `execute-script` events |
 
 The handoff only caught 2 because the test run aborted at `TestPatchEventTypes`. The other 4 would have failed next.
 
@@ -115,6 +116,7 @@ Line 16 still says `datastar 96.7%/90` but actual coverage is **84.6%** after th
 ### 4. go-datastar has 71 lint issues (not fixed)
 
 The lint run on go-datastar shows 71 issues:
+
 - `varnamelen`: 29 (single-letter variable names — the staged `nix fmt` changes address some)
 - `noctx`: 11 (functions missing `context.Context`)
 - `wrapcheck`: 10 (unwrapped errors from external packages — the unexplained `response.go` change addresses some)
@@ -240,12 +242,12 @@ The AGENTS.md coverage gate says 90%, but the new tests brought coverage DOWN fr
 
 ## Final Test State
 
-| Repo | Tests | Status | Coverage |
-|------|-------|--------|----------|
-| go-sse | ✅ PASS | Green | — |
-| go-datastar | ✅ PASS | Green | 92.1% |
-| cqrs-htmx/datastar | ✅ PASS | Green | 84.6% |
-| cqrs-htmx/integration_test | ✅ PASS | Green | — |
-| cqrs-htmx/examples/datastar-demo | ✅ BUILD OK | — | — |
-| cqrs-htmx/datastar lint | ✅ 0 issues | Clean | — |
-| go-datastar `nix flake check` | ✅ PASS | All checks passed | — |
+| Repo                             | Tests       | Status            | Coverage |
+| -------------------------------- | ----------- | ----------------- | -------- |
+| go-sse                           | ✅ PASS     | Green             | —        |
+| go-datastar                      | ✅ PASS     | Green             | 92.1%    |
+| cqrs-htmx/datastar               | ✅ PASS     | Green             | 84.6%    |
+| cqrs-htmx/integration_test       | ✅ PASS     | Green             | —        |
+| cqrs-htmx/examples/datastar-demo | ✅ BUILD OK | —                 | —        |
+| cqrs-htmx/datastar lint          | ✅ 0 issues | Clean             | —        |
+| go-datastar `nix flake check`    | ✅ PASS     | All checks passed | —        |

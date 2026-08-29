@@ -9,6 +9,7 @@
 ## a) FULLY DONE (verified green at time of completion)
 
 ### Parser conformance rewrite — `ssetest/reader.go` (F1–F6) ✅
+
 - New `splitSSELines` bufio.SplitFunc: CR, LF, CRLF all terminate lines (§9.2.5); trailing buffered CR held back so CRLF is always ONE terminator, incl. CRLF split across reads and lone CR at EOF.
 - `bomStripReader`: strips exactly one leading UTF-8 BOM; probes once via `io.ReadFull`, replays short reads unchanged, defers probe EOF until replayed bytes drain.
 - `streamParser` type: per-frame state (Type, DataLines) vs connection-level sticky state (`lastID`, `retry`) — modeled on the spec's dispatch algorithm.
@@ -18,38 +19,47 @@
 - `Event` doc comments updated to the sticky semantics.
 
 ### WPT corpus transcription (F7–F10) ✅
+
 - `ssetest/wpt_format_corpus_test.go`: 17 WPT `eventsource/format-*` vectors, 4 spec §9.2.6 example streams, 8 Chromium `event_source_parser_test.cc` cases — every case carries its upstream citation. All green.
 - Includes derived-but-documented vectors (format-field-retry-empty, TrailingCREndsLineAtEOF) with derivation notes.
 
 ### Test-suite corrections (F11) ✅
+
 - `TestReadEvents_NoTrailingBlankLine` flipped → `TestReadEvents_IncompleteFinalFrameDiscarded` with spec citation.
 - `partialReader` fixture rewritten to serve bytes across reads (the BOM probe consumes the first 3 bytes through its own Read; one-shot fixtures starve the scanner).
 
 ### Fuzz hardening (F12) ✅
+
 - `FuzzReadEvents`: 25 new conformance seeds (BOM, BOM-fragments, NUL id, sticky id, lone CR states, EOF-discard shapes) + byte-by-byte chunk-invariance property (parse(wire) == parse(one byte at a time)). ~1.55M execs, 0 failures.
 
 ### Writer goldens + ParseEventID (F13, F14) ✅
+
 - `event_spec_test.go` (root): stock-ticker vector, space-after-colon note, field order, empty-data dispatch, CR/CRLF splitting table, heartbeat comment form, `ParseEventID` value-space + actionable-error tests.
 - `event.go`: `ParseEventID` now rejects NUL (`ContainsAny(s, "\n\r\x00")`), message and docs updated (D6 fixed).
 
 ### Chunk-boundary independence (F15) ✅
+
 - `chunkedReader` helper + `chunk_boundary_test.go`: entire corpus re-parsed at chunk sizes 1/2/3/5/7/4096 vs baseline; plus targeted CRLF-split-across-reads, lone-CR, and `\r\r` subtests. All green.
 
 ### Round-trip closure (F16–F17) ✅
+
 - `roundtrip_test.go`: table (9 cases) + heartbeat/retry invisibility + `FuzzWriteReadRoundTrip` (identity modulo CR/CRLF→LF and structural trailing LF). ~444k execs, 0 failures.
 - **Real discovery:** trailing LF in `Event.Data` is structurally unrepresentable — `splitLines("x\n")` yields `["x"]` and the spec strips one trailing LF from the data buffer at dispatch. Pinned in table test, fuzz property (`TrimSuffix`), and a committed regression seed (`ssetest/testdata/fuzz/FuzzWriteReadRoundTrip/2ba7b6a0aaf94e65`).
 
 ### Docs (F18, mostly) ✅
+
 - `ssetest/README.md`: new "Spec conformance" section.
 - `CHANGELOG.md`: full Unreleased entry (Added/Fixed/Changed) with per-deviation detail.
 - Root `AGENTS.md`: replaced obsolete `bufio.ScanLines` gotcha with 4 new gotchas (conformance contract, splitSSELines, sticky id/retry, trailing-LF structural rule); updated `ParseEventID` note and module table.
 
 ### datastartest sync (F19) ✅
+
 - go-datastar repo locally present — full port applied: `reader.go` (same parser), `collect.go` `ReadNEvents` loop, flipped EOF test, `wpt_format_corpus_test.go` (17 WPT + 3 spec + 8 Chromium), `chunk_boundary_test.go` + helper.
 - Tested inside its Nix devShell (repo needs Go 1.26.6; shell Go is 1.26.5, `GOTOOLCHAIN=local`): build, vet, full suite, and 5s fuzz smoke — all green.
 - go-datastar `CHANGELOG.md` updated; go-sse AGENTS.md sync-note updated to "applied to both".
 
 ### Docs inventory (F20) ✅/partial
+
 - `FEATURES.md`: ssetest section rewritten (5 new rows: conformant parser, WPT corpus, chunk independence, round-trip, updated dataless-frame evidence).
 
 ---
@@ -57,6 +67,7 @@
 ## b) PARTIALLY DONE
 
 ### F21 — Full Nix verification ⚠️ (mid-flight, interrupted by this report)
+
 - `nix fmt` — ran once (4 files reformatted); **not re-run after subsequent manual edits**.
 - `nix run .#test-race` — GREEN (root, ssetest, datastar example) — but **predates the final reader.go lint edits** (nolint comments, `crlfLen` const, unnamed returns, `range data` loop, `Read(buf)` rename). Behavior-neutral on paper; not re-verified.
 - `nix run .#vet` — green earlier; not re-run after final edits.
@@ -67,9 +78,11 @@
 - `nix run .#coverage` — not run; FEATURES.md still cites the stale 94.6% figure.
 
 ### F18 remainder
+
 - datastartest `README.md` has no conformance section (go-sse's does). Not ported.
 
 ### F19 remainder
+
 - datastartest `FuzzReadEvents` seeds were NOT extended with the WPT vectors (ssetest's were). Chunk corpus + parser are synced; fuzz seed list is not.
 
 ---
@@ -113,6 +126,7 @@
 ## f) NEXT — up to 50 things, roughly priority-ordered
 
 **Finish F21 (verification):**
+
 1. Fix `dupword` ×3 in reader_fuzz_test.go + wpt_format_corpus_test.go (reword comments or `//nolint:dupword` with reason — WPT file names legitimately repeat words).
 2. Fix `varnamelen` ×5: rename `tc` → `case`/`vector` (chunk_boundary, roundtrip, wpt corpus loops) and `p` → `buf` (chunkedReader.Read; reader.go Read already renamed).
 3. Fix the `crlfLen`/doc-comment association wart in reader.go.
@@ -158,7 +172,7 @@
 33. Re-check gopls diagnostics on files I touched after final edits (pre-existing stream.go:131 jsonv2 warning is unrelated — leave).
 34. Consider `nix run .#coverage` gate still passing at ≥90% for root (library unchanged except ParseEventID, but verify).
 
-*(34 concrete items; the remaining headroom to 50 would be speculative — stopping at what's real.)*
+_(34 concrete items; the remaining headroom to 50 would be speculative — stopping at what's real.)_
 
 ---
 

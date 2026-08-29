@@ -129,93 +129,93 @@ The cqrs-htmx → go-sse migration in DiscordSync (`b725ffed`, `5b1a9f6e`) is si
 
 ### Critical (correctness/cleanup)
 
-| #   | Task                                                                              | Impact | Effort |
-| --- | --------------------------------------------------------------------------------- | ------ | ------ |
-| 1   | Verify or revert the DiscordSync cqrs-htmx migration (commits b725ffed, 5b1a9f6e) | HIGH   | S      |
-| 2   | Update broadcaster.go doc comment to document SubscribeFilter                     | HIGH   | S      |
-| 3   | Update FEATURES.md with SubscribeFilter + ReplayFiltered                          | MEDIUM | S      |
-| 4   | Update docs/DOMAIN_LANGUAGE.md with new terms                                     | MEDIUM | S      |
-| 5   | Update README.md with SubscribeFilter usage example                               | MEDIUM | M      |
+| # | Task                                                                              | Impact | Effort |
+| - | --------------------------------------------------------------------------------- | ------ | ------ |
+| 1 | Verify or revert the DiscordSync cqrs-htmx migration (commits b725ffed, 5b1a9f6e) | HIGH   | S      |
+| 2 | Update broadcaster.go doc comment to document SubscribeFilter                     | HIGH   | S      |
+| 3 | Update FEATURES.md with SubscribeFilter + ReplayFiltered                          | MEDIUM | S      |
+| 4 | Update docs/DOMAIN_LANGUAGE.md with new terms                                     | MEDIUM | S      |
+| 5 | Update README.md with SubscribeFilter usage example                               | MEDIUM | M      |
 
 ### Testing hardening
 
-| #   | Task                                                                 | Impact | Effort |
-| --- | -------------------------------------------------------------------- | ------ | ------ |
-| 6   | Add integration test: HTTP round-trip with SubscribeFilter           | HIGH   | M      |
-| 7   | Strengthen race test: verify filtering correctness under concurrency | HIGH   | M      |
-| 8   | Add benchmark: predicate overhead vs unfiltered                      | MEDIUM | S      |
-| 9   | Add test: BroadcastMany + SubscribeFilter interaction                | MEDIUM | S      |
-| 10  | Add test: OnSubscribe/OnUnsubscribe hooks fire with SubscribeFilter  | LOW    | S      |
-| 11  | Add fuzz test: predicate receives arbitrary events without panic     | MEDIUM | S      |
-| 12  | Add stress test: 1000 subscribers with mixed predicates              | LOW    | M      |
+| #  | Task                                                                 | Impact | Effort |
+| -- | -------------------------------------------------------------------- | ------ | ------ |
+| 6  | Add integration test: HTTP round-trip with SubscribeFilter           | HIGH   | M      |
+| 7  | Strengthen race test: verify filtering correctness under concurrency | HIGH   | M      |
+| 8  | Add benchmark: predicate overhead vs unfiltered                      | MEDIUM | S      |
+| 9  | Add test: BroadcastMany + SubscribeFilter interaction                | MEDIUM | S      |
+| 10 | Add test: OnSubscribe/OnUnsubscribe hooks fire with SubscribeFilter  | LOW    | S      |
+| 11 | Add fuzz test: predicate receives arbitrary events without panic     | MEDIUM | S      |
+| 12 | Add stress test: 1000 subscribers with mixed predicates              | LOW    | M      |
 
 ### Consumer integration (the real value)
 
-| #   | Task                                                                                 | Impact | Effort |
-| --- | ------------------------------------------------------------------------------------ | ------ | ------ |
-| 13  | Extend cqrs-htmx JournalSSEStore to implement FilteredEventStore                     | HIGH   | M      |
-| 14  | Migrate DiscordSync sse.go to use SubscribeFilter instead of post-delivery filtering | HIGH   | M      |
-| 15  | Add TODO_LIST.md entry for the cqrs-htmx + DiscordSync follow-up                     | MEDIUM | S      |
-| 16  | Verify cqrs-htmx Broadcaster inherits SubscribeFilter via embedding                  | HIGH   | S      |
+| #  | Task                                                                                 | Impact | Effort |
+| -- | ------------------------------------------------------------------------------------ | ------ | ------ |
+| 13 | Extend cqrs-htmx JournalSSEStore to implement FilteredEventStore                     | HIGH   | M      |
+| 14 | Migrate DiscordSync sse.go to use SubscribeFilter instead of post-delivery filtering | HIGH   | M      |
+| 15 | Add TODO_LIST.md entry for the cqrs-htmx + DiscordSync follow-up                     | MEDIUM | S      |
+| 16 | Verify cqrs-htmx Broadcaster inherits SubscribeFilter via embedding                  | HIGH   | S      |
 
 ### API polish
 
-| #   | Task                                                                 | Impact | Effort |
-| --- | -------------------------------------------------------------------- | ------ | ------ |
-| 17  | Consider a typed `Filter[T]` or `Predicate[T]` type alias            | LOW    | S      |
-| 18  | Consider SubscribeFilterWithBuffer (configurable buffer + predicate) | LOW    | M      |
-| 19  | Document predicate panic-recovery strategy (recover? let it crash?)  | MEDIUM | S      |
-| 20  | Add godoc cross-references between Subscribe and SubscribeFilter     | LOW    | S      |
-| 21  | Add godoc cross-reference between Replay and ReplayFiltered          | LOW    | S      |
-| 22  | Consider whether FilteredEventStore needs a limit parameter          | LOW    | S      |
-| 23  | Consider whether to add a `NoFilter` sentinel for explicit clarity   | LOW    | S      |
+| #  | Task                                                                 | Impact | Effort |
+| -- | -------------------------------------------------------------------- | ------ | ------ |
+| 17 | Consider a typed `Filter[T]` or `Predicate[T]` type alias            | LOW    | S      |
+| 18 | Consider SubscribeFilterWithBuffer (configurable buffer + predicate) | LOW    | M      |
+| 19 | Document predicate panic-recovery strategy (recover? let it crash?)  | MEDIUM | S      |
+| 20 | Add godoc cross-references between Subscribe and SubscribeFilter     | LOW    | S      |
+| 21 | Add godoc cross-reference between Replay and ReplayFiltered          | LOW    | S      |
+| 22 | Consider whether FilteredEventStore needs a limit parameter          | LOW    | S      |
+| 23 | Consider whether to add a `NoFilter` sentinel for explicit clarity   | LOW    | S      |
 
 ### Release
 
-| #   | Task                                                        | Impact | Effort |
-| --- | ----------------------------------------------------------- | ------ | ------ |
-| 24  | Cut v0.4.0 with predicate filtering as the headline feature | HIGH   | S      |
-| 25  | Write release notes for v0.4.0                              | MEDIUM | S      |
-| 26  | Update ROADMAP.md to mark predicate filtering as realized   | LOW    | S      |
-| 27  | Add migration guide for consumers adopting SubscribeFilter  | MEDIUM | M      |
+| #  | Task                                                        | Impact | Effort |
+| -- | ----------------------------------------------------------- | ------ | ------ |
+| 24 | Cut v0.4.0 with predicate filtering as the headline feature | HIGH   | S      |
+| 25 | Write release notes for v0.4.0                              | MEDIUM | S      |
+| 26 | Update ROADMAP.md to mark predicate filtering as realized   | LOW    | S      |
+| 27 | Add migration guide for consumers adopting SubscribeFilter  | MEDIUM | M      |
 
 ### Documentation
 
-| #   | Task                                                                | Impact | Effort |
-| --- | ------------------------------------------------------------------- | ------ | ------ |
-| 28  | Update AGENTS.md architecture table (broadcaster.go row)            | LOW    | S      |
-| 29  | Update AGENTS.md tests convention (mention filter_test.go)          | LOW    | S      |
-| 30  | Update AGENTS.md conventions with predicate contract                | MEDIUM | S      |
-| 31  | Add example/ package usage of SubscribeFilter                       | LOW    | M      |
-| 32  | Add ExampleReplayFiltered to example_test.go                        | LOW    | S      |
-| 33  | Update doc.go to mention FilteredEventStore in the package overview | LOW    | S      |
+| #  | Task                                                                | Impact | Effort |
+| -- | ------------------------------------------------------------------- | ------ | ------ |
+| 28 | Update AGENTS.md architecture table (broadcaster.go row)            | LOW    | S      |
+| 29 | Update AGENTS.md tests convention (mention filter_test.go)          | LOW    | S      |
+| 30 | Update AGENTS.md conventions with predicate contract                | MEDIUM | S      |
+| 31 | Add example/ package usage of SubscribeFilter                       | LOW    | M      |
+| 32 | Add ExampleReplayFiltered to example_test.go                        | LOW    | S      |
+| 33 | Update doc.go to mention FilteredEventStore in the package overview | LOW    | S      |
 
 ### Future features (post-v0.4.0)
 
-| #   | Task                                                           | Impact | Effort |
-| --- | -------------------------------------------------------------- | ------ | ------ |
-| 34  | Configurable subscriber buffer size (currently hardcoded 64)   | MEDIUM | S      |
-| 35  | Backpressure policy options (block vs spill vs drop)           | LOW    | L      |
-| 36  | Graceful shutdown helper (drain subscribers)                   | LOW    | M      |
-| 37  | Metrics/observability hooks (beyond OnSubscribe/OnUnsubscribe) | LOW    | M      |
-| 38  | Client-side Dial helper                                        | LOW    | L      |
-| 39  | Redis EventStore implementation                                | LOW    | L      |
-| 40  | SSE extension fields (CLTY, custom fields)                     | LOW    | M      |
-| 41  | Full HTTP/2 and HTTP/3 streaming verification                  | LOW    | M      |
-| 42  | Consider whether LastEventID should validate via ParseEventID  | LOW    | S      |
+| #  | Task                                                           | Impact | Effort |
+| -- | -------------------------------------------------------------- | ------ | ------ |
+| 34 | Configurable subscriber buffer size (currently hardcoded 64)   | MEDIUM | S      |
+| 35 | Backpressure policy options (block vs spill vs drop)           | LOW    | L      |
+| 36 | Graceful shutdown helper (drain subscribers)                   | LOW    | M      |
+| 37 | Metrics/observability hooks (beyond OnSubscribe/OnUnsubscribe) | LOW    | M      |
+| 38 | Client-side Dial helper                                        | LOW    | L      |
+| 39 | Redis EventStore implementation                                | LOW    | L      |
+| 40 | SSE extension fields (CLTY, custom fields)                     | LOW    | M      |
+| 41 | Full HTTP/2 and HTTP/3 streaming verification                  | LOW    | M      |
+| 42 | Consider whether LastEventID should validate via ParseEventID  | LOW    | S      |
 
 ### DiscordSync follow-up (separate project)
 
-| #   | Task                                                                                       | Impact | Effort |
-| --- | ------------------------------------------------------------------------------------------ | ------ | ------ |
-| 43  | Decide: keep or revert the cqrs-htmx→go-sse alias migration                                | HIGH   | S      |
-| 44  | If kept: run DiscordSync test suite to verify migration didn't break                       | HIGH   | M      |
-| 45  | Migrate DiscordSync's sse_filter.go logic into SubscribeFilter predicates                  | HIGH   | M      |
-| 46  | Push channel_id/guild_id/event_type filters into JournalSSEStore SQL query                 | HIGH   | L      |
-| 47  | Remove the post-delivery filter.matches() check in sse.go handler loop                     | MEDIUM | S      |
-| 48  | Benchmark DiscordSync SSE with 50+ event types under filtered subscription                 | LOW    | M      |
-| 49  | Update DiscordSync AGENTS.md to document the SubscribeFilter adoption                      | LOW    | S      |
-| 50  | Consider per-topic broadcaster instances in DiscordSync (if filtering proves insufficient) | LOW    | L      |
+| #  | Task                                                                                       | Impact | Effort |
+| -- | ------------------------------------------------------------------------------------------ | ------ | ------ |
+| 43 | Decide: keep or revert the cqrs-htmx→go-sse alias migration                                | HIGH   | S      |
+| 44 | If kept: run DiscordSync test suite to verify migration didn't break                       | HIGH   | M      |
+| 45 | Migrate DiscordSync's sse_filter.go logic into SubscribeFilter predicates                  | HIGH   | M      |
+| 46 | Push channel_id/guild_id/event_type filters into JournalSSEStore SQL query                 | HIGH   | L      |
+| 47 | Remove the post-delivery filter.matches() check in sse.go handler loop                     | MEDIUM | S      |
+| 48 | Benchmark DiscordSync SSE with 50+ event types under filtered subscription                 | LOW    | M      |
+| 49 | Update DiscordSync AGENTS.md to document the SubscribeFilter adoption                      | LOW    | S      |
+| 50 | Consider per-topic broadcaster instances in DiscordSync (if filtering proves insufficient) | LOW    | L      |
 
 ---
 

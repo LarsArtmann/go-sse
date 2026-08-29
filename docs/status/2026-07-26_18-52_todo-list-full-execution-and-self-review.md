@@ -16,23 +16,23 @@
 
 ## a) FULLY DONE (verified this session)
 
-| #   | Item                                                                             | Evidence                                                                       |
-| --- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| 1   | Remove `time.Sleep(200ms)` in `TestIntegration_BroadcasterFanOut`                | Waits on `OnUnsubscribe` channel; 10× race, no flake                           |
-| 2   | Remove `time.Sleep(50ms)` in `TestStream_Heartbeat`                              | New concurrency-safe `recordingResponseWriter`; waits on first write; 20× race |
-| 3   | Heartbeat delivery integration test                                              | Real HTTP round-trip; asserts ≥3 comment frames over the wire; 5× race         |
-| 4   | Last-Event-ID reconnection replay integration test                               | Real HTTP round-trip with `Last-Event-ID: 2`; replays only events 3,4; 5× race |
-| 5a  | Cover `eventBrand.Name()` (0%→100%)                                              | `TestEventID_StringIncludesBrandName`                                          |
-| 5b  | Cover `MustParseEventID` success (75%→100%)                                      | `TestMustParseEventID_Valid`                                                   |
-| 5c  | Cover `splitLines` (95.5%→100%)                                                  | Removed unreachable `len(lines)==0` dead branch (verified unreachable)         |
-| 5d  | Cover `Heartbeat` error path (91.7%→100%)                                        | `TestStream_HeartbeatExitsOnWriteError` via `failingResponseWriter`            |
-| 6   | `govulncheck` CI job                                                             | Added to `ci.yml`; YAML validated (yq); govulncheck v1.6.0 installed locally   |
-| 7   | Fuzz CI job (1m/target)                                                          | Added to `ci.yml`; smoke-tested locally (262k execs, 0 failures)               |
-| 8   | Fix `defer stream.Close()` in source doc comments                                | `doc.go`, `stream.go` ×2 → `defer func(){ _ = stream.Close() }()`              |
-| 9   | Fix `defer stream.Close()` in README                                             | 4 occurrences fixed; grep confirms 0 stale                                     |
-| 10  | `context.WithCancel`→`t.Context()` in `stream_test.go`                           | 5 occurrences; vet ✓                                                           |
-| 11  | `go func()`→`wg.Go` where a WaitGroup is in scope                                | 7 goroutines across 3 race tests; race ✓                                       |
-| —   | `CHANGELOG.md` `[Unreleased]` updated; `TODO_LIST.md` cleared per its own legend | done                                                                           |
+| #  | Item                                                                             | Evidence                                                                       |
+| -- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| 1  | Remove `time.Sleep(200ms)` in `TestIntegration_BroadcasterFanOut`                | Waits on `OnUnsubscribe` channel; 10× race, no flake                           |
+| 2  | Remove `time.Sleep(50ms)` in `TestStream_Heartbeat`                              | New concurrency-safe `recordingResponseWriter`; waits on first write; 20× race |
+| 3  | Heartbeat delivery integration test                                              | Real HTTP round-trip; asserts ≥3 comment frames over the wire; 5× race         |
+| 4  | Last-Event-ID reconnection replay integration test                               | Real HTTP round-trip with `Last-Event-ID: 2`; replays only events 3,4; 5× race |
+| 5a | Cover `eventBrand.Name()` (0%→100%)                                              | `TestEventID_StringIncludesBrandName`                                          |
+| 5b | Cover `MustParseEventID` success (75%→100%)                                      | `TestMustParseEventID_Valid`                                                   |
+| 5c | Cover `splitLines` (95.5%→100%)                                                  | Removed unreachable `len(lines)==0` dead branch (verified unreachable)         |
+| 5d | Cover `Heartbeat` error path (91.7%→100%)                                        | `TestStream_HeartbeatExitsOnWriteError` via `failingResponseWriter`            |
+| 6  | `govulncheck` CI job                                                             | Added to `ci.yml`; YAML validated (yq); govulncheck v1.6.0 installed locally   |
+| 7  | Fuzz CI job (1m/target)                                                          | Added to `ci.yml`; smoke-tested locally (262k execs, 0 failures)               |
+| 8  | Fix `defer stream.Close()` in source doc comments                                | `doc.go`, `stream.go` ×2 → `defer func(){ _ = stream.Close() }()`              |
+| 9  | Fix `defer stream.Close()` in README                                             | 4 occurrences fixed; grep confirms 0 stale                                     |
+| 10 | `context.WithCancel`→`t.Context()` in `stream_test.go`                           | 5 occurrences; vet ✓                                                           |
+| 11 | `go func()`→`wg.Go` where a WaitGroup is in scope                                | 7 goroutines across 3 race tests; race ✓                                       |
+| —  | `CHANGELOG.md` `[Unreleased]` updated; `TODO_LIST.md` cleared per its own legend | done                                                                           |
 
 **Final gates (raw go toolchain):** `go test ./... -race -count=2` ✓ · `go vet ./...` ✓ · `golangci-lint run ./...` 0 issues ✓ · `go tool cover -func` total **100.0%** · `gofumpt -l` clean · `golines` clean (on re-check).
 

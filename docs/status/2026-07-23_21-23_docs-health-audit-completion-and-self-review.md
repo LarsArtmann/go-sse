@@ -157,78 +157,78 @@ I wrote "(52 tests, 11 benchmarks, all passing)" in the FEATURES.md header. The 
 
 ### Critical / Immediate
 
-| #   | Task                                                                                        | Impact           | Effort |
-| --- | ------------------------------------------------------------------------------------------- | ---------------- | ------ |
-| 1   | Fix ~11 imprecise file:line refs in FEATURES.md (point to declarations, not comments)       | Accuracy         | 20min  |
-| 2   | Replace hardcoded test count in FEATURES.md with command reference                          | Skill compliance | 5min   |
-| 3   | Investigate `nix flake check` "running 0 flake checks" — does `doCheck` actually run tests? | Correctness      | 30min  |
-| 4   | Verify SSE spec URL in DOMAIN_LANGUAGE.md is live                                           | Link integrity   | 2min   |
+| # | Task                                                                                        | Impact           | Effort |
+| - | ------------------------------------------------------------------------------------------- | ---------------- | ------ |
+| 1 | Fix ~11 imprecise file:line refs in FEATURES.md (point to declarations, not comments)       | Accuracy         | 20min  |
+| 2 | Replace hardcoded test count in FEATURES.md with command reference                          | Skill compliance | 5min   |
+| 3 | Investigate `nix flake check` "running 0 flake checks" — does `doCheck` actually run tests? | Correctness      | 30min  |
+| 4 | Verify SSE spec URL in DOMAIN_LANGUAGE.md is live                                           | Link integrity   | 2min   |
 
 ### Documentation
 
-| #   | Task                                                                            | Impact             | Effort |
-| --- | ------------------------------------------------------------------------------- | ------------------ | ------ |
-| 5   | Update README Event struct to match source or mark as simplified                | Accuracy           | 10min  |
-| 6   | Add `checks.test` to flake.nix for explicit test execution in `nix flake check` | CI clarity         | 15min  |
-| 7   | Create CI workflow (`.github/workflows/ci.yml`): test + lint + vet + race       | Automation         | 1h     |
-| 8   | Add `pkg.go.dev` reference URL once first tag is created                        | Discoverability    | 5min   |
-| 9   | Create first git tag (v0.1.0) — currently zero tags exist                       | Release management | 10min  |
-| 10  | Add `example/` directory with runnable server + client example                  | DX                 | 30min  |
-| 11  | Document the non-blocking drop policy implications for consumers in README      | Transparency       | 15min  |
-| 12  | Add `SendJSON` convenience method documentation if added                        | DX                 | —      |
-| 13  | Review README "Quick Start" code — does it compile as-is?                       | Accuracy           | 15min  |
+| #  | Task                                                                            | Impact             | Effort |
+| -- | ------------------------------------------------------------------------------- | ------------------ | ------ |
+| 5  | Update README Event struct to match source or mark as simplified                | Accuracy           | 10min  |
+| 6  | Add `checks.test` to flake.nix for explicit test execution in `nix flake check` | CI clarity         | 15min  |
+| 7  | Create CI workflow (`.github/workflows/ci.yml`): test + lint + vet + race       | Automation         | 1h     |
+| 8  | Add `pkg.go.dev` reference URL once first tag is created                        | Discoverability    | 5min   |
+| 9  | Create first git tag (v0.1.0) — currently zero tags exist                       | Release management | 10min  |
+| 10 | Add `example/` directory with runnable server + client example                  | DX                 | 30min  |
+| 11 | Document the non-blocking drop policy implications for consumers in README      | Transparency       | 15min  |
+| 12 | Add `SendJSON` convenience method documentation if added                        | DX                 | —      |
+| 13 | Review README "Quick Start" code — does it compile as-is?                       | Accuracy           | 15min  |
 
 ### Code Quality
 
-| #   | Task                                                                                      | Impact              | Effort |
-| --- | ----------------------------------------------------------------------------------------- | ------------------- | ------ |
-| 14  | Replace recursive `contains()`/`startsWith()` with `strings.Contains` in `stream_test.go` | Clarity             | 10min  |
-| 15  | Replace custom `itoa()` with `strconv.Itoa` in `broadcaster_test.go`                      | Clarity             | 5min   |
-| 16  | Add fuzz tests for `WriteEvent` (serializer)                                              | Robustness          | 1h     |
-| 17  | Add fuzz tests for `ParseEventID` (validator)                                             | Robustness          | 1h     |
-| 18  | Verify `errorResponseWriter` nil-pointer path in `replay_test.go`                         | Correctness         | 15min  |
-| 19  | Add test for double-`Close()` safety on `Stream`                                          | Edge case           | 20min  |
-| 20  | Add test for `Broadcast` after `Close` on `Broadcaster`                                   | Edge case           | 20min  |
-| 21  | Add test for very large `Data` payloads in `WriteEvent`                                   | Performance         | 20min  |
-| 22  | Add test for unicode/special chars in `EventID`                                           | Edge case           | 15min  |
-| 23  | Add integration test with real `http.Server` (not just `httptest.NewRecorder`)            | Real-world coverage | 1h     |
-| 24  | Add test for `OnDisconnect` registration during concurrent `Close`                        | Concurrency         | 30min  |
-| 25  | Add coverage reporting to CI (`go test -coverprofile`)                                    | Visibility          | 20min  |
+| #  | Task                                                                                      | Impact              | Effort |
+| -- | ----------------------------------------------------------------------------------------- | ------------------- | ------ |
+| 14 | Replace recursive `contains()`/`startsWith()` with `strings.Contains` in `stream_test.go` | Clarity             | 10min  |
+| 15 | Replace custom `itoa()` with `strconv.Itoa` in `broadcaster_test.go`                      | Clarity             | 5min   |
+| 16 | Add fuzz tests for `WriteEvent` (serializer)                                              | Robustness          | 1h     |
+| 17 | Add fuzz tests for `ParseEventID` (validator)                                             | Robustness          | 1h     |
+| 18 | Verify `errorResponseWriter` nil-pointer path in `replay_test.go`                         | Correctness         | 15min  |
+| 19 | Add test for double-`Close()` safety on `Stream`                                          | Edge case           | 20min  |
+| 20 | Add test for `Broadcast` after `Close` on `Broadcaster`                                   | Edge case           | 20min  |
+| 21 | Add test for very large `Data` payloads in `WriteEvent`                                   | Performance         | 20min  |
+| 22 | Add test for unicode/special chars in `EventID`                                           | Edge case           | 15min  |
+| 23 | Add integration test with real `http.Server` (not just `httptest.NewRecorder`)            | Real-world coverage | 1h     |
+| 24 | Add test for `OnDisconnect` registration during concurrent `Close`                        | Concurrency         | 30min  |
+| 25 | Add coverage reporting to CI (`go test -coverprofile`)                                    | Visibility          | 20min  |
 
 ### Infrastructure
 
-| #   | Task                                        | Impact               | Effort |
-| --- | ------------------------------------------- | -------------------- | ------ |
-| 26  | Add `gofmt -l` check to CI                  | Format enforcement   | 10min  |
-| 27  | Add `go vet` to CI                          | Static analysis      | 10min  |
-| 28  | Add race detector (`-race`) to CI test step | Concurrency safety   | 10min  |
-| 29  | Add benchmark reporting to CI               | Performance tracking | 30min  |
-| 30  | Add godoc generation / publishing check     | Documentation        | 30min  |
-| 31  | Add govulncheck to CI (already in devShell) | Security             | 15min  |
+| #  | Task                                        | Impact               | Effort |
+| -- | ------------------------------------------- | -------------------- | ------ |
+| 26 | Add `gofmt -l` check to CI                  | Format enforcement   | 10min  |
+| 27 | Add `go vet` to CI                          | Static analysis      | 10min  |
+| 28 | Add race detector (`-race`) to CI test step | Concurrency safety   | 10min  |
+| 29 | Add benchmark reporting to CI               | Performance tracking | 30min  |
+| 30 | Add godoc generation / publishing check     | Documentation        | 30min  |
+| 31 | Add govulncheck to CI (already in devShell) | Security             | 15min  |
 
 ### Feature Considerations (for ROADMAP — not actionable yet)
 
-| #   | Task                                                                                       | Rationale            |
-| --- | ------------------------------------------------------------------------------------------ | -------------------- |
-| 32  | Consider configurable subscriber buffer size (currently hardcoded 64)                      | Flexibility          |
-| 33  | Consider `SendJSON` convenience method (parallel to `SendHTML`)                            | Convenience          |
-| 34  | Consider context-aware `Replay` (cancel mid-replay)                                        | Cancellation         |
-| 35  | Consider backpressure policy options (drop vs block vs spill)                              | Flexibility          |
-| 36  | Consider graceful shutdown helper (drain subscribers on SIGTERM)                           | Production readiness |
-| 37  | Consider exporting `fanOut` for non-SSE fan-out use cases                                  | Reusability          |
-| 38  | Consider topic/channel-based multi-broadcaster                                             | Routing              |
-| 39  | Consider metrics/observability beyond OnSubscribe/OnUnsubscribe hooks                      | Operations           |
-| 40  | Consider `Stream.SendMultiple` or batch send                                               | Efficiency           |
-| 41  | Consider SSE extension support (CLTY, custom fields)                                       | Spec extensions      |
-| 42  | Consider client-side `Dial` helper                                                         | Full stack           |
-| 43  | Consider `Event.String()` for debugging                                                    | DX                   |
-| 44  | Review memory characteristics at scale (64 buffer × N subscribers)                         | Production           |
-| 45  | Consider `EventStore` implementations (in-memory, Redis)                                   | Batteries-included   |
-| 46  | Consider versioning strategy documentation (semver, branching)                             | Release management   |
-| 47  | Review whether `LastEventID` should validate via `ParseEventID`                            | Safety               |
-| 48  | Consider documenting the head-of-line blocking prevention design                           | Transparency         |
-| 49  | Consider HTTP/2 and HTTP/3 streaming verification                                          | Spec compliance      |
-| 50  | Consider whether the parent `go.work` should be fixed (remove cqrs-htmx or fix its go.sum) | Workspace health     |
+| #  | Task                                                                                       | Rationale            |
+| -- | ------------------------------------------------------------------------------------------ | -------------------- |
+| 32 | Consider configurable subscriber buffer size (currently hardcoded 64)                      | Flexibility          |
+| 33 | Consider `SendJSON` convenience method (parallel to `SendHTML`)                            | Convenience          |
+| 34 | Consider context-aware `Replay` (cancel mid-replay)                                        | Cancellation         |
+| 35 | Consider backpressure policy options (drop vs block vs spill)                              | Flexibility          |
+| 36 | Consider graceful shutdown helper (drain subscribers on SIGTERM)                           | Production readiness |
+| 37 | Consider exporting `fanOut` for non-SSE fan-out use cases                                  | Reusability          |
+| 38 | Consider topic/channel-based multi-broadcaster                                             | Routing              |
+| 39 | Consider metrics/observability beyond OnSubscribe/OnUnsubscribe hooks                      | Operations           |
+| 40 | Consider `Stream.SendMultiple` or batch send                                               | Efficiency           |
+| 41 | Consider SSE extension support (CLTY, custom fields)                                       | Spec extensions      |
+| 42 | Consider client-side `Dial` helper                                                         | Full stack           |
+| 43 | Consider `Event.String()` for debugging                                                    | DX                   |
+| 44 | Review memory characteristics at scale (64 buffer × N subscribers)                         | Production           |
+| 45 | Consider `EventStore` implementations (in-memory, Redis)                                   | Batteries-included   |
+| 46 | Consider versioning strategy documentation (semver, branching)                             | Release management   |
+| 47 | Review whether `LastEventID` should validate via `ParseEventID`                            | Safety               |
+| 48 | Consider documenting the head-of-line blocking prevention design                           | Transparency         |
+| 49 | Consider HTTP/2 and HTTP/3 streaming verification                                          | Spec compliance      |
+| 50 | Consider whether the parent `go.work` should be fixed (remove cqrs-htmx or fix its go.sum) | Workspace health     |
 
 ---
 

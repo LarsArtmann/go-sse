@@ -47,86 +47,86 @@ These cannot start until the 3 questions from the status report are answered.
 
 Self-review items E1–E5. No dependencies, do first.
 
-| ID  | Task                                                                       | Pri | Impact | Cust | Effort | Dep |
-| --- | -------------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
-| 1   | Fix `KeyedLines` Grow calc — named constant for separator width            | P0  | L      | L    | 3      | —   |
-| 2   | Add CRLF handling mention to `KeyedLines` doc comment                      | P1  | L      | M    | 3      | —   |
-| 3   | Fix README DataStar example — use raw string literal with real `\n`        | P1  | M      | H    | 5      | —   |
-| 4   | Investigate `gopls stdversion` warning at `stream.go:129` (`json.Marshal`) | P2  | L      | L    | 10     | —   |
+| ID | Task                                                                       | Pri | Impact | Cust | Effort | Dep |
+| -- | -------------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
+| 1  | Fix `KeyedLines` Grow calc — named constant for separator width            | P0  | L      | L    | 3      | —   |
+| 2  | Add CRLF handling mention to `KeyedLines` doc comment                      | P1  | L      | M    | 3      | —   |
+| 3  | Fix README DataStar example — use raw string literal with real `\n`        | P1  | M      | H    | 5      | —   |
+| 4  | Investigate `gopls stdversion` warning at `stream.go:129` (`json.Marshal`) | P2  | L      | L    | 10     | —   |
 
 ---
 
 ## Phase 2: Release Blockers (Documentation Completeness)
 
-| ID  | Task                                                                 | Pri | Impact | Cust | Effort | Dep |
-| --- | -------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
-| 5   | Add CHANGELOG.md `[Unreleased]` — `KeyedLines` + `SendLines` entries | P0  | M      | H    | 5      | —   |
-| 6   | Update TODO_LIST.md — add DataStar follow-up items from this plan    | P0  | L      | M    | 5      | —   |
-| 7   | Update ROADMAP.md — add DataStar to "Realized in" callout            | P1  | L      | L    | 5      | —   |
+| ID | Task                                                                 | Pri | Impact | Cust | Effort | Dep |
+| -- | -------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
+| 5  | Add CHANGELOG.md `[Unreleased]` — `KeyedLines` + `SendLines` entries | P0  | M      | H    | 5      | —   |
+| 6  | Update TODO_LIST.md — add DataStar follow-up items from this plan    | P0  | L      | M    | 5      | —   |
+| 7  | Update ROADMAP.md — add DataStar to "Realized in" callout            | P1  | L      | L    | 5      | —   |
 
 ---
 
 ## Phase 3: Testing Completeness
 
-| ID  | Task                                                                     | Pri | Impact | Cust | Effort | Dep |
-| --- | ------------------------------------------------------------------------ | --- | ------ | ---- | ------ | --- |
-| 8   | Add `FuzzKeyedLines` — panic-safety with arbitrary key/value             | P0  | M      | M    | 8      | —   |
-| 9   | Add `BenchmarkKeyedLines` — single-line + multi-line (10/100/1000 lines) | P1  | L      | L    | 8      | —   |
-| 10  | Add DataStar integration test — HTTP round-trip, assert exact wire bytes | P0  | H      | H    | 10     | —   |
-| 11  | Test `KeyedLines` with empty key — define behavior (error vs ` value`)   | P1  | M      | M    | 5      | —   |
-| 12  | Add `FuzzKeyedLines` seed corpus — real HTML fragments (#31)             | P2  | L      | L    | 5      | 8   |
-| 13  | Add `BenchmarkSendLines` — variadic join vs manual concat (#32)          | P2  | L      | L    | 8      | —   |
-| 14  | Add KeyedLines to broadcaster benchmark — fan-out load (#49)             | P3  | L      | L    | 8      | 9   |
+| ID | Task                                                                     | Pri | Impact | Cust | Effort | Dep |
+| -- | ------------------------------------------------------------------------ | --- | ------ | ---- | ------ | --- |
+| 8  | Add `FuzzKeyedLines` — panic-safety with arbitrary key/value             | P0  | M      | M    | 8      | —   |
+| 9  | Add `BenchmarkKeyedLines` — single-line + multi-line (10/100/1000 lines) | P1  | L      | L    | 8      | —   |
+| 10 | Add DataStar integration test — HTTP round-trip, assert exact wire bytes | P0  | H      | H    | 10     | —   |
+| 11 | Test `KeyedLines` with empty key — define behavior (error vs `value`)    | P1  | M      | M    | 5      | —   |
+| 12 | Add `FuzzKeyedLines` seed corpus — real HTML fragments (#31)             | P2  | L      | L    | 5      | 8   |
+| 13 | Add `BenchmarkSendLines` — variadic join vs manual concat (#32)          | P2  | L      | L    | 8      | —   |
+| 14 | Add KeyedLines to broadcaster benchmark — fan-out load (#49)             | P3  | L      | L    | 8      | 9   |
 
 ---
 
 ## Phase 4: API Completeness (Core)
 
-| ID  | Task                                                                     | Pri | Impact | Cust | Effort | Dep |
-| --- | ------------------------------------------------------------------------ | --- | ------ | ---- | ------ | --- |
-| 15  | Add `WriteKeyedLines(w, eventType, key, value)` — wire-only helper impl  | P1  | H      | H    | 8      | —   |
-| 16  | Add `WriteKeyedLines` tests — single/multi/empty/CRLF                    | P1  | H      | H    | 8      | 15  |
-| 17  | Add `Stream.SendKeyed(eventName, key, value)` — shorthand for single-key | P2  | M      | M    | 5      | —   |
-| 18  | Add `SendKeyed` tests                                                    | P2  | M      | M    | 5      | 17  |
-| 19  | Add `KeyedLinesBuilder` — fluent `.Add(key, value).String()`             | P2  | M      | H    | 10     | —   |
-| 20  | Add `KeyedLinesBuilder` tests — empty, single, multi, CRLF               | P2  | M      | H    | 8      | 19  |
-| 21  | Add `KeyedLinesMulti(map[string]string)` (#17 from list)                 | P3  | L      | M    | 8      | —   |
-| 22  | Profile `KeyedLines` with 10KB+ HTML — verify Grow sufficiency (#18)     | P2  | L      | L    | 10     | 1   |
+| ID | Task                                                                     | Pri | Impact | Cust | Effort | Dep |
+| -- | ------------------------------------------------------------------------ | --- | ------ | ---- | ------ | --- |
+| 15 | Add `WriteKeyedLines(w, eventType, key, value)` — wire-only helper impl  | P1  | H      | H    | 8      | —   |
+| 16 | Add `WriteKeyedLines` tests — single/multi/empty/CRLF                    | P1  | H      | H    | 8      | 15  |
+| 17 | Add `Stream.SendKeyed(eventName, key, value)` — shorthand for single-key | P2  | M      | M    | 5      | —   |
+| 18 | Add `SendKeyed` tests                                                    | P2  | M      | M    | 5      | 17  |
+| 19 | Add `KeyedLinesBuilder` — fluent `.Add(key, value).String()`             | P2  | M      | H    | 10     | —   |
+| 20 | Add `KeyedLinesBuilder` tests — empty, single, multi, CRLF               | P2  | M      | H    | 8      | 19  |
+| 21 | Add `KeyedLinesMulti(map[string]string)` (#17 from list)                 | P3  | L      | M    | 8      | —   |
+| 22 | Profile `KeyedLines` with 10KB+ HTML — verify Grow sufficiency (#18)     | P2  | L      | L    | 10     | 1   |
 
 ---
 
 ## Phase 5: API Completeness (General SSE, not DataStar-specific)
 
-| ID  | Task                                                                    | Pri | Impact | Cust | Effort | Dep |
-| --- | ----------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
-| 23  | Add `Event.DataLines() []string` — accessor for split data (#21)        | P3  | L      | L    | 5      | —   |
-| 24  | Add `Event.WithID(id)` / `Event.WithRetry(ms)` builders (#42)           | P3  | L      | M    | 8      | —   |
-| 25  | Add `Event.Validate()` — wire-format safety check (#35)                 | P2  | M      | M    | 8      | —   |
-| 26  | Add `WriteEventBytes(evt) []byte` — return bytes, no write (#36)        | P3  | L      | L    | 5      | —   |
-| 27  | Add `Stream.SendRaw(bytes)` — zero-alloc pre-serialized send (#37)      | P3  | L      | L    | 8      | —   |
-| 28  | Add `Stream.SendLinesf(eventName, format, args...)` (#19)               | P3  | L      | L    | 5      | —   |
-| 29  | Add `Stream.SetRetry(ms)` — standalone retry frame through stream (#41) | P3  | L      | L    | 5      | —   |
+| ID | Task                                                                    | Pri | Impact | Cust | Effort | Dep |
+| -- | ----------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
+| 23 | Add `Event.DataLines() []string` — accessor for split data (#21)        | P3  | L      | L    | 5      | —   |
+| 24 | Add `Event.WithID(id)` / `Event.WithRetry(ms)` builders (#42)           | P3  | L      | M    | 8      | —   |
+| 25 | Add `Event.Validate()` — wire-format safety check (#35)                 | P2  | M      | M    | 8      | —   |
+| 26 | Add `WriteEventBytes(evt) []byte` — return bytes, no write (#36)        | P3  | L      | L    | 5      | —   |
+| 27 | Add `Stream.SendRaw(bytes)` — zero-alloc pre-serialized send (#37)      | P3  | L      | L    | 8      | —   |
+| 28 | Add `Stream.SendLinesf(eventName, format, args...)` (#19)               | P3  | L      | L    | 5      | —   |
+| 29 | Add `Stream.SetRetry(ms)` — standalone retry frame through stream (#41) | P3  | L      | L    | 5      | —   |
 
 ---
 
 ## Phase 6: DataStar Examples
 
-| ID  | Task                                                                  | Pri | Impact | Cust | Effort | Dep |
-| --- | --------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
-| 30  | Create `example/datastar.go` — server structure + SSE handler         | P1  | H      | H    | 10     | —   |
-| 31  | Create `example/datastar.go` — HTML page with DataStar JS client      | P1  | H      | H    | 10     | 30  |
-| 32  | Manually test `example/datastar.go` — point browser, verify DOM patch | P1  | H      | H    | 5      | 31  |
-| 33  | Create `example/datastar-signals/` — reactive state example (#46)     | P3  | M      | M    | 10     | 30  |
-| 34  | Create `example/datastar-reconnect/` — Last-Event-ID replay (#47)     | P3  | M      | M    | 10     | 30  |
+| ID | Task                                                                  | Pri | Impact | Cust | Effort | Dep |
+| -- | --------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
+| 30 | Create `example/datastar.go` — server structure + SSE handler         | P1  | H      | H    | 10     | —   |
+| 31 | Create `example/datastar.go` — HTML page with DataStar JS client      | P1  | H      | H    | 10     | 30  |
+| 32 | Manually test `example/datastar.go` — point browser, verify DOM patch | P1  | H      | H    | 5      | 31  |
+| 33 | Create `example/datastar-signals/` — reactive state example (#46)     | P3  | M      | M    | 10     | 30  |
+| 34 | Create `example/datastar-reconnect/` — Last-Event-ID replay (#47)     | P3  | M      | M    | 10     | 30  |
 
 ---
 
 ## Phase 7: Real-World Verification
 
-| ID  | Task                                                                       | Pri | Impact | Cust | Effort | Dep |
-| --- | -------------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
-| 35  | Point real DataStar JS client at go-sse server — verify events parse (E4)  | P1  | H      | H    | 12     | 30  |
-| 36  | Add CI job: headless browser test — DataStar client + example server (#30) | P3  | M      | M    | 12     | 35  |
+| ID | Task                                                                       | Pri | Impact | Cust | Effort | Dep |
+| -- | -------------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
+| 35 | Point real DataStar JS client at go-sse server — verify events parse (E4)  | P1  | H      | H    | 12     | 30  |
+| 36 | Add CI job: headless browser test — DataStar client + example server (#30) | P3  | M      | M    | 12     | 35  |
 
 ---
 
@@ -134,24 +134,24 @@ Self-review items E1–E5. No dependencies, do first.
 
 These don't require the subpackage decision — they're helpers that could live in core or a subpackage.
 
-| ID  | Task                                                                         | Pri | Impact | Cust | Effort | Dep |
-| --- | ---------------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
-| 37  | Add `JSONSignals(map[string]any)` — marshal + KeyedLines("signals", …) (#23) | P2  | M      | H    | 8      | —   |
-| 38  | Add `Broadcaster.BroadcastKeyed` — broadcast + KeyedLines composition (#33)  | P3  | L      | M    | 8      | —   |
-| 39  | Add per-subscriber DataStar event filtering — route by selector (#34)        | P3  | M      | M    | 12     | —   |
-| 40  | Add connection metadata — track per-stream topics (#38)                      | P3  | M      | M    | 12     | —   |
-| 41  | Add graceful shutdown for DataStar — drain patch events (#39)                | P3  | L      | M    | 10     | —   |
-| 42  | Add observability hooks — per-event-send metrics (#40)                       | P3  | L      | M    | 10     | —   |
+| ID | Task                                                                         | Pri | Impact | Cust | Effort | Dep |
+| -- | ---------------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
+| 37 | Add `JSONSignals(map[string]any)` — marshal + KeyedLines("signals", …) (#23) | P2  | M      | H    | 8      | —   |
+| 38 | Add `Broadcaster.BroadcastKeyed` — broadcast + KeyedLines composition (#33)  | P3  | L      | M    | 8      | —   |
+| 39 | Add per-subscriber DataStar event filtering — route by selector (#34)        | P3  | M      | M    | 12     | —   |
+| 40 | Add connection metadata — track per-stream topics (#38)                      | P3  | M      | M    | 12     | —   |
+| 41 | Add graceful shutdown for DataStar — drain patch events (#39)                | P3  | L      | M    | 10     | —   |
+| 42 | Add observability hooks — per-event-send metrics (#40)                       | P3  | L      | M    | 10     | —   |
 
 ---
 
 ## Phase 9: Documentation & Ecosystem
 
-| ID  | Task                                                                   | Pri | Impact | Cust | Effort | Dep |
-| --- | ---------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
-| 43  | Document DataStar retry/reconnect semantics in doc.go (#22)            | P2  | L      | M    | 8      | —   |
-| 44  | Add migration guide — official DataStar Go SDK → go-sse (#48)          | P2  | M      | H    | 10     | —   |
-| 45  | Add CONTRIBUTING.md section — how to test DataStar compatibility (#50) | P3  | L      | L    | 5      | —   |
+| ID | Task                                                                   | Pri | Impact | Cust | Effort | Dep |
+| -- | ---------------------------------------------------------------------- | --- | ------ | ---- | ------ | --- |
+| 43 | Document DataStar retry/reconnect semantics in doc.go (#22)            | P2  | L      | M    | 8      | —   |
+| 44 | Add migration guide — official DataStar Go SDK → go-sse (#48)          | P2  | M      | H    | 10     | —   |
+| 45 | Add CONTRIBUTING.md section — how to test DataStar compatibility (#50) | P3  | L      | L    | 5      | —   |
 
 ---
 

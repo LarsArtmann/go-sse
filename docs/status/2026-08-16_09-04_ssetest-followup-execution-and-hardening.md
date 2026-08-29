@@ -75,7 +75,7 @@ All of go-datastar's session output is already committed by the auto-git daemon
 ## b) PARTIALLY DONE
 
 1. **CI validation is syntax-only.** actionlint passes; the ssetest lint step's
-   config resolution was proven *locally* — but the actual GitHub Actions run
+   config resolution was proven _locally_ — but the actual GitHub Actions run
    has never executed (I don't push). First real push is the final proof.
 2. **Fuzz CI seeds enriched, corpora not grown.** New seeds added and both
    targets pass bursts locally; the newly-discovered "interesting" inputs from
@@ -110,7 +110,7 @@ All of go-datastar's session output is already committed by the auto-git daemon
    session.** `strings.Contains(wire, "data: hello\n\n")` matched `0data:`,
    `xdata:`, anything. It was unfalsifiable garbage that the fuzzer immediately
    falsified once run. Lesson applied: assertions must be exact or universal,
-   and a fuzz target must actually be *run* before being called done. The final
+   and a fuzz target must actually be _run_ before being called done. The final
    version is strictly stronger, but only because the fuzzer embarrassed me first.
 2. **I fabricated a vendorHash.** First `hermeticCheckSsetest` edit contained a
    made-up `sha256-gniv…` presented as if it were knowledge. It failed (good),
@@ -121,7 +121,7 @@ All of go-datastar's session output is already committed by the auto-git daemon
 3. **Two build cycles wasted on hermeticCheckSsetest** — first `subPackages =
    ["./ssetest"]` failed ("main module does not contain package") because
    buildGoModule runs from the root module. I predicted neither this nor the
-   hash equality up front; `nix flake check` on a *never-evaluated* derivation
+   hash equality up front; `nix flake check` on a _never-evaluated_ derivation
    was exactly the class of error the resume plan warned about.
 4. **Coverage regressed in both test-helper modules** (−2.3pp ssetest, −1.4pp
    datastartest) as a direct cost of my Close-error fix: the new branches are
@@ -156,7 +156,7 @@ drifting from measured values; only re-measurement keeps them honest.
 1. **Run fuzz targets as part of "done", not as a later step.** This session's
    only real bug was found by a 15-second fuzz run of code declared complete.
 2. **Never present a generated-looking constant without provenance.** Fake
-   hashes/sha256s should be *declared* placeholders until a build mints the real
+   hashes/sha256s should be _declared_ placeholders until a build mints the real
    one.
 3. **Cover newly-added error branches in the same change that adds them** —
    erroring-fake pattern (already used for `errorWriter` in the root package)
@@ -205,7 +205,7 @@ drifting from measured values; only re-measurement keeps them honest.
     silently today; go-datastar has an unwired `dprint.json` precedent).
 16. ssetest: `WithRetry` request option? (assert `retry:` from handler) — only
     if a consumer needs it; YAGNI-guarded.
-17. Explore a shared seed corpus format between the two fuzz targets *without*
+17. Explore a shared seed corpus format between the two fuzz targets _without_
     cross-module dependency (e.g. generate-from-spec test) if duplication stands.
 18. Document the vendored-hash coupling of `hermeticCheckSsetest` → root
     (`vendorHash` shared) as a flake.nix comment TODO when ssetest gains its
@@ -223,7 +223,7 @@ drifting from measured values; only re-measurement keeps them honest.
 1. **Release cadence:** cut `go-sse v0.6.0` + `ssetest` first tag +
    `datastartest v0.3.0` now (making README/CHANGELOG `go get` instructions
    real), or hold until CI has proven itself on a push? Note ssetest is
-   currently *unfetchable* by version — any consumer docs are dead links until
+   currently _unfetchable_ by version — any consumer docs are dead links until
    a tag exists.
 2. **Parser policy:** keep the deliberately duplicated SSE parsers
    (module independence, zero extra consumer deps — my standing choice), or
@@ -237,6 +237,6 @@ drifting from measured values; only re-measurement keeps them honest.
 
 ---
 
-*Point-in-time snapshot. Written to `.md` per explicit user request (skill
+_Point-in-time snapshot. Written to `.md` per explicit user request (skill
 default is HTML). Not committed by me; the auto-git daemon owns the working
-tree. WAITING FOR INSTRUCTIONS.*
+tree. WAITING FOR INSTRUCTIONS._

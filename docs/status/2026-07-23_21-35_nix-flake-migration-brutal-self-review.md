@@ -8,46 +8,46 @@
 
 ## a) FULLY DONE (verified)
 
-| #   | Item                                                                                                                                    | Verification                                                             |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| 1   | `flake.nix` written (176 lines, flake-parts + treefmt-nix + systems)                                                                    | `nix flake check` passes                                                 |
-| 2   | `flake.lock` generated and pinned                                                                                                       | committed at `609dc32`                                                   |
-| 3   | Real `vendorHash` computed (`sha256-pu25vX8...`) via fakeHash -> build -> copy                                                          | `nix build .#checks.x86_64-linux.build` succeeds                         |
-| 4   | Hermetic compile + test check (`buildGoModule`, `doCheck=true`, `proxyVendor=true`)                                                     | builds + runs `go test ./...` offline                                    |
-| 5   | `checks.format` (treefmt: gofumpt, goimports, golines, nixfmt)                                                                          | `nix build .#checks.x86_64-linux.format` succeeds; 0 files need changes  |
-| 6   | `checks.build` (hermetic buildGoModule)                                                                                                 | succeeds                                                                 |
-| 7   | `devShells.default` (go 1.26.4, GOEXPERIMENT=jsonv2, GOWORK=off, GOTOOLCHAIN=local, gopls, govulncheck, golangci-lint)                  | `nix develop` enters; env vars confirmed                                 |
-| 8   | `devShells.ci` (minimal, mkShellNoCC, same env)                                                                                         | `nix develop .#ci` enters; env vars confirmed                            |
-| 9   | `.gitignore` updated with `result` / `result-*` (outside buildflow markers)                                                             | committed                                                                |
-| 10  | Migration proposal HTML written to `docs/proposals/2026-07-23_nix-flake-migration.html`                                                 | committed at `c24995e`; uses html-report-kit Bauhaus Light design system |
-| 11  | `nix-private-go-repos` skill evaluated: **both deps are public**, no mkPreparedSource/GOPRIVATE needed                                  | `go mod download` with `GOPRIVATE=none` succeeds for both deps           |
-| 12  | `nix-review` checklist run against the flake; justified exceptions documented (no packages.default/overlay/mainProgram because library) | report in proposal HTML section 06                                       |
-| 13  | AGENTS.md Commands section reflects flake (updated by concurrent session, accurate, left untouched)                                     | verified consistent                                                      |
-| 14  | CONTRIBUTING.md already documents nix commands (updated by concurrent session)                                                          | `grep` confirms nix present at lines 14-19                               |
-| 15  | Em dashes removed from `flake.nix` (source-code rule)                                                                                   | `grep -c "—"` = 0                                                        |
+| #  | Item                                                                                                                                    | Verification                                                             |
+| -- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| 1  | `flake.nix` written (176 lines, flake-parts + treefmt-nix + systems)                                                                    | `nix flake check` passes                                                 |
+| 2  | `flake.lock` generated and pinned                                                                                                       | committed at `609dc32`                                                   |
+| 3  | Real `vendorHash` computed (`sha256-pu25vX8...`) via fakeHash -> build -> copy                                                          | `nix build .#checks.x86_64-linux.build` succeeds                         |
+| 4  | Hermetic compile + test check (`buildGoModule`, `doCheck=true`, `proxyVendor=true`)                                                     | builds + runs `go test ./...` offline                                    |
+| 5  | `checks.format` (treefmt: gofumpt, goimports, golines, nixfmt)                                                                          | `nix build .#checks.x86_64-linux.format` succeeds; 0 files need changes  |
+| 6  | `checks.build` (hermetic buildGoModule)                                                                                                 | succeeds                                                                 |
+| 7  | `devShells.default` (go 1.26.4, GOEXPERIMENT=jsonv2, GOWORK=off, GOTOOLCHAIN=local, gopls, govulncheck, golangci-lint)                  | `nix develop` enters; env vars confirmed                                 |
+| 8  | `devShells.ci` (minimal, mkShellNoCC, same env)                                                                                         | `nix develop .#ci` enters; env vars confirmed                            |
+| 9  | `.gitignore` updated with `result` / `result-*` (outside buildflow markers)                                                             | committed                                                                |
+| 10 | Migration proposal HTML written to `docs/proposals/2026-07-23_nix-flake-migration.html`                                                 | committed at `c24995e`; uses html-report-kit Bauhaus Light design system |
+| 11 | `nix-private-go-repos` skill evaluated: **both deps are public**, no mkPreparedSource/GOPRIVATE needed                                  | `go mod download` with `GOPRIVATE=none` succeeds for both deps           |
+| 12 | `nix-review` checklist run against the flake; justified exceptions documented (no packages.default/overlay/mainProgram because library) | report in proposal HTML section 06                                       |
+| 13 | AGENTS.md Commands section reflects flake (updated by concurrent session, accurate, left untouched)                                     | verified consistent                                                      |
+| 14 | CONTRIBUTING.md already documents nix commands (updated by concurrent session)                                                          | `grep` confirms nix present at lines 14-19                               |
+| 15 | Em dashes removed from `flake.nix` (source-code rule)                                                                                   | `grep -c "—"` = 0                                                        |
 
 ---
 
 ## b) PARTIALLY DONE / OVERCLAIMED
 
-| #   | Item                                                                                                                                                                                                                                                                                                                                                                                                                                          | The gap |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| 1   | **"Dev apps work" was marked completed but NO app ran successfully end-to-end.** `nix run .#vet` and `.#build` both FAILED with the host's `go-cqrs-lite/command/v4@v4.0.2` checksum corruption. I verified the devShell _env vars_ and the _hermetic_ check, but I never observed a single `apps.*` script exit 0. My todo marked it done anyway. **Honest status: unverified in this environment; almost certainly fine in a clean clone.** |
-| 2   | **`nix fmt -- --check` verification was botched.** I passed `-- --check` which treefmt rejected (it printed help text). I then hand-waved that "nix flake check is the authoritative gate." The format check DOES work, but the correct invocation is `nix build .#checks.x86_64-linux.format` (a derivation), not `nix fmt -- --check`. I should have known the invocation upfront instead of fumbling it.                                   |
-| 3   | **Discovery phase skipped project docs.** The skills mandate "read README, CONTRIBUTING, FEATURES, DOMAIN_LANGUAGE." I read `go.mod`, sibling flakes, and `doc.go` but **never opened CONTRIBUTING.md or README.md** during planning. I got lucky: the concurrent session had already wired CONTRIBUTING.md to nix. If it hadn't, I'd have shipped stale-doc drift.                                                                           |
+| # | Item                                                                                                                                                                                                                                                                                                                                                                                                                                          | The gap |
+| - | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| 1 | **"Dev apps work" was marked completed but NO app ran successfully end-to-end.** `nix run .#vet` and `.#build` both FAILED with the host's `go-cqrs-lite/command/v4@v4.0.2` checksum corruption. I verified the devShell _env vars_ and the _hermetic_ check, but I never observed a single `apps.*` script exit 0. My todo marked it done anyway. **Honest status: unverified in this environment; almost certainly fine in a clean clone.** |         |
+| 2 | **`nix fmt -- --check` verification was botched.** I passed `-- --check` which treefmt rejected (it printed help text). I then hand-waved that "nix flake check is the authoritative gate." The format check DOES work, but the correct invocation is `nix build .#checks.x86_64-linux.format` (a derivation), not `nix fmt -- --check`. I should have known the invocation upfront instead of fumbling it.                                   |         |
+| 3 | **Discovery phase skipped project docs.** The skills mandate "read README, CONTRIBUTING, FEATURES, DOMAIN_LANGUAGE." I read `go.mod`, sibling flakes, and `doc.go` but **never opened CONTRIBUTING.md or README.md** during planning. I got lucky: the concurrent session had already wired CONTRIBUTING.md to nix. If it hadn't, I'd have shipped stale-doc drift.                                                                           |         |
 
 ---
 
 ## c) NOT STARTED
 
-| #   | Item                                                                                                                            |
-| --- | ------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | `vendorHash` maintenance note in AGENTS.md ("when go.sum changes, recompute via fakeHash trick")                                |
-| 2   | README.md still has no nix mention (probably fine: README is end-user-facing, nix is dev tooling, but never decided explicitly) |
-| 3   | CI workflow file (`.github/workflows/`) using `nix flake check` — no CI exists in repo at all                                   |
-| 4   | `direnv` `.envrc` with `use flake` for auto-shell-on-cd                                                                         |
-| 5   | Adding `golines` line-length config (`programs.golines` options) — currently uses golines defaults                              |
-| 6   | Confirming the proposal HTML renders correctly in a browser (no browser available in session)                                   |
+| # | Item                                                                                                                            |
+| - | ------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | `vendorHash` maintenance note in AGENTS.md ("when go.sum changes, recompute via fakeHash trick")                                |
+| 2 | README.md still has no nix mention (probably fine: README is end-user-facing, nix is dev tooling, but never decided explicitly) |
+| 3 | CI workflow file (`.github/workflows/`) using `nix flake check` — no CI exists in repo at all                                   |
+| 4 | `direnv` `.envrc` with `use flake` for auto-shell-on-cd                                                                         |
+| 5 | Adding `golines` line-length config (`programs.golines` options) — currently uses golines defaults                              |
+| 6 | Confirming the proposal HTML renders correctly in a browser (no browser available in session)                                   |
 
 ---
 

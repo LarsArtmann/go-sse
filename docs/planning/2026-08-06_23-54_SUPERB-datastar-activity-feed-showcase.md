@@ -175,17 +175,17 @@ graph TD
 
 Sorted by importance/impact (highest first).
 
-| #   | Task                                                              | Impact | Effort | Customer value                   |
-| --- | ----------------------------------------------------------------- | ------ | ------ | -------------------------------- |
-| 1   | Rewrite `main.go`: broadcaster + store + producer                 | 10     | 60min  | Critical — the core architecture |
-| 2   | Implement in-memory `EventStore` (ring buffer)                    | 8      | 30min  | Critical — enables replay demo   |
-| 3   | Implement SSE handler with replay + filter + heartbeat            | 9      | 45min  | Critical — per-connection logic  |
-| 4   | Rewrite `index.templ`: feed UI + subscriber count + replay banner | 8      | 45min  | High — visual proof of features  |
-| 5   | Rewrite `styles.css`: feed layout + item types + responsive       | 6      | 30min  | Medium — polish                  |
-| 6   | Run `templ generate` and verify build                             | 7      | 15min  | Critical — must compile          |
-| 7   | Manual test: multi-tab, replay, filter, heartbeat                 | 8      | 20min  | Critical — verify it works       |
-| 8   | Update README: describe new example features                      | 5      | 20min  | Medium — documentation           |
-| 9   | Update AGENTS.md: example architecture section                    | 4      | 15min  | Low — AI context                 |
+| # | Task                                                              | Impact | Effort | Customer value                   |
+| - | ----------------------------------------------------------------- | ------ | ------ | -------------------------------- |
+| 1 | Rewrite `main.go`: broadcaster + store + producer                 | 10     | 60min  | Critical — the core architecture |
+| 2 | Implement in-memory `EventStore` (ring buffer)                    | 8      | 30min  | Critical — enables replay demo   |
+| 3 | Implement SSE handler with replay + filter + heartbeat            | 9      | 45min  | Critical — per-connection logic  |
+| 4 | Rewrite `index.templ`: feed UI + subscriber count + replay banner | 8      | 45min  | High — visual proof of features  |
+| 5 | Rewrite `styles.css`: feed layout + item types + responsive       | 6      | 30min  | Medium — polish                  |
+| 6 | Run `templ generate` and verify build                             | 7      | 15min  | Critical — must compile          |
+| 7 | Manual test: multi-tab, replay, filter, heartbeat                 | 8      | 20min  | Critical — verify it works       |
+| 8 | Update README: describe new example features                      | 5      | 20min  | Medium — documentation           |
+| 9 | Update AGENTS.md: example architecture section                    | 4      | 15min  | Low — AI context                 |
 
 ## Subtask breakdown (max 12 min each)
 

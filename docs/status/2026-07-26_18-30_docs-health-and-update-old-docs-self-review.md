@@ -10,26 +10,26 @@
 
 ### Living docs rebuilt (docs-health)
 
-| #   | Doc            | What I did                                                                                                                                                                                     | Verified?                                                                                                                             |
-| --- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | `TODO_LIST.md` | Rebuilt from "No open items" (false) to 11 verified-open items across 3 Pareto tiers. Every item carries `file:line` evidence confirmed against code.                                          | Yes — `time.Sleep` at `integration_test.go:111` and `stream_test.go:152` confirmed; coverage gaps confirmed via `go tool cover -func` |
-| 2   | `CHANGELOG.md` | Found drift: `[Unreleased]` claimed "Go 1.26.4 → 1.26.5" but go.mod still says `go 1.26.4` (reverted by commit `aba8622`). Replaced with the actual change: `go-error-family` v0.8.0 → v0.9.0. | Yes — `git diff v0.2.0..HEAD -- go.mod go.sum` confirms only the dep bump                                                             |
-| 3   | `FEATURES.md`  | Added missing public API: `SetHeaders` (stream.go:60) and constants (`ContentType`, `EventConnected`, `EventHeartbeat` in constants.go).                                                       | Yes — `lsp_symbols` + grep confirmed all exist                                                                                        |
-| 4   | `ROADMAP.md`   | Integrated 2026-07-25 consumer-audit module-boundary decision into Theme 4 (previous turn). Verified consistent with new TODO_LIST — no overlaps, no contradictions.                           | Yes — cross-checked every TODO item against ROADMAP themes                                                                            |
+| # | Doc            | What I did                                                                                                                                                                                     | Verified?                                                                                                                             |
+| - | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | `TODO_LIST.md` | Rebuilt from "No open items" (false) to 11 verified-open items across 3 Pareto tiers. Every item carries `file:line` evidence confirmed against code.                                          | Yes — `time.Sleep` at `integration_test.go:111` and `stream_test.go:152` confirmed; coverage gaps confirmed via `go tool cover -func` |
+| 2 | `CHANGELOG.md` | Found drift: `[Unreleased]` claimed "Go 1.26.4 → 1.26.5" but go.mod still says `go 1.26.4` (reverted by commit `aba8622`). Replaced with the actual change: `go-error-family` v0.8.0 → v0.9.0. | Yes — `git diff v0.2.0..HEAD -- go.mod go.sum` confirms only the dep bump                                                             |
+| 3 | `FEATURES.md`  | Added missing public API: `SetHeaders` (stream.go:60) and constants (`ContentType`, `EventConnected`, `EventHeartbeat` in constants.go).                                                       | Yes — `lsp_symbols` + grep confirmed all exist                                                                                        |
+| 4 | `ROADMAP.md`   | Integrated 2026-07-25 consumer-audit module-boundary decision into Theme 4 (previous turn). Verified consistent with new TODO_LIST — no overlaps, no contradictions.                           | Yes — cross-checked every TODO item against ROADMAP themes                                                                            |
 
 ### Historical docs annotated (update-old-docs)
 
-| #   | File                                          | Decision | Annotation                                                                                                                          |
-| --- | --------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| 5   | `2026-07-24_03-12_v0.1.0-release-attempt`     | ANNOTATE | Inline correction after stale TL;DR ("release is not released" → now live) + resolution appendix answering all 3 blocking questions |
-| 6   | `2026-07-24_18-10_release-v0.2.0-self-review` | ANNOTATE | Resolution appendix: push done, re-tag decision (left as-is), author attribution                                                    |
-| 7   | `2026-07-23_22-33_full-todo-execution`        | ANNOTATE | Resolution appendix: 3 questions answered, 4 quality-debt items cross-referenced to TODO_LIST                                       |
-| 8   | `2026-07-23_21-35_nix-flake-migration`        | ANNOTATE | Resolution appendix: 3 questions answered (GOWORK=off, go-standard deferred, CI added)                                              |
-| 9   | `2026-07-23_21-23_docs-health-completion`     | ANNOTATE | Resolution appendix: 3 questions answered                                                                                           |
-| 10  | `pareto-execution-plan.html`                  | ANNOTATE | Resolution card (no inline styles, reuses existing `card-solution` CSS class): all 15 tasks shipped                                 |
-| 11  | `2026-07-23_21-06_docs-health-audit`          | SKIP     | Already has a comprehensive Resolution Appendix (added by 21:23 follow-up session)                                                  |
-| 12  | `brainstorming submodule-split`               | SKIP     | Self-contained analysis; already referenced from ROADMAP                                                                            |
-| 13  | `proposal nix-flake-migration.html`           | SKIP     | Status "implemented" — accurate, no resolution needed                                                                               |
+| #  | File                                          | Decision | Annotation                                                                                                                          |
+| -- | --------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 5  | `2026-07-24_03-12_v0.1.0-release-attempt`     | ANNOTATE | Inline correction after stale TL;DR ("release is not released" → now live) + resolution appendix answering all 3 blocking questions |
+| 6  | `2026-07-24_18-10_release-v0.2.0-self-review` | ANNOTATE | Resolution appendix: push done, re-tag decision (left as-is), author attribution                                                    |
+| 7  | `2026-07-23_22-33_full-todo-execution`        | ANNOTATE | Resolution appendix: 3 questions answered, 4 quality-debt items cross-referenced to TODO_LIST                                       |
+| 8  | `2026-07-23_21-35_nix-flake-migration`        | ANNOTATE | Resolution appendix: 3 questions answered (GOWORK=off, go-standard deferred, CI added)                                              |
+| 9  | `2026-07-23_21-23_docs-health-completion`     | ANNOTATE | Resolution appendix: 3 questions answered                                                                                           |
+| 10 | `pareto-execution-plan.html`                  | ANNOTATE | Resolution card (no inline styles, reuses existing `card-solution` CSS class): all 15 tasks shipped                                 |
+| 11 | `2026-07-23_21-06_docs-health-audit`          | SKIP     | Already has a comprehensive Resolution Appendix (added by 21:23 follow-up session)                                                  |
+| 12 | `brainstorming submodule-split`               | SKIP     | Self-contained analysis; already referenced from ROADMAP                                                                            |
+| 13 | `proposal nix-flake-migration.html`           | SKIP     | Status "implemented" — accurate, no resolution needed                                                                               |
 
 ### Quality gate run
 
@@ -146,83 +146,83 @@ My closing summary for the docs-health work said: _"Quality gate green (94 tests
 
 ### Critical (fix my session's mistakes)
 
-| #   | Task                                                                                       | Impact                    | Effort |
-| --- | ------------------------------------------------------------------------------------------ | ------------------------- | ------ |
-| 1   | Fix 8 stale line references in `docs/DOMAIN_LANGUAGE.md`                                   | Accuracy (critical)       | 10min  |
-| 2   | Replace hardcoded `97.9%` in `FEATURES.md:3` with a command reference                      | Skill compliance          | 2min   |
-| 3   | Investigate gopls `json.Marshal` go1.27 warning on `stream.go:125` — is `SendJSON` broken? | Potential release blocker | 15min  |
-| 4   | Run `nix flake check` — the canonical hermetic gate I skipped                              | Process compliance        | 2min   |
-| 5   | Run `nix fmt` and confirm zero diff                                                        | Formatting                | 1min   |
+| # | Task                                                                                       | Impact                    | Effort |
+| - | ------------------------------------------------------------------------------------------ | ------------------------- | ------ |
+| 1 | Fix 8 stale line references in `docs/DOMAIN_LANGUAGE.md`                                   | Accuracy (critical)       | 10min  |
+| 2 | Replace hardcoded `97.9%` in `FEATURES.md:3` with a command reference                      | Skill compliance          | 2min   |
+| 3 | Investigate gopls `json.Marshal` go1.27 warning on `stream.go:125` — is `SendJSON` broken? | Potential release blocker | 15min  |
+| 4 | Run `nix flake check` — the canonical hermetic gate I skipped                              | Process compliance        | 2min   |
+| 5 | Run `nix fmt` and confirm zero diff                                                        | Formatting                | 1min   |
 
 ### High impact (from TODO_LIST — reliability)
 
-| #   | Task                                                                                 | Impact | Effort |
-| --- | ------------------------------------------------------------------------------------ | ------ | ------ |
-| 6   | Replace `time.Sleep(200ms)` in `TestIntegration_BroadcasterFanOut` with channel sync | High   | 30min  |
-| 7   | Replace `time.Sleep(50ms)` in `TestStream_Heartbeat` with deterministic sync         | High   | 20min  |
-| 8   | Add heartbeat delivery integration test (real HTTP round-trip)                       | High   | 45min  |
-| 9   | Add Last-Event-ID reconnection replay integration test                               | High   | 45min  |
+| # | Task                                                                                 | Impact | Effort |
+| - | ------------------------------------------------------------------------------------ | ------ | ------ |
+| 6 | Replace `time.Sleep(200ms)` in `TestIntegration_BroadcasterFanOut` with channel sync | High   | 30min  |
+| 7 | Replace `time.Sleep(50ms)` in `TestStream_Heartbeat` with deterministic sync         | High   | 20min  |
+| 8 | Add heartbeat delivery integration test (real HTTP round-trip)                       | High   | 45min  |
+| 9 | Add Last-Event-ID reconnection replay integration test                               | High   | 45min  |
 
 ### Medium impact (coverage + CI)
 
-| #   | Task                                                                                            | Impact | Effort |
-| --- | ----------------------------------------------------------------------------------------------- | ------ | ------ |
-| 10  | Close 4 coverage gaps: `Name` 0%, `MustParseEventID` 75%, `splitLines` 95.5%, `Heartbeat` 91.7% | Med    | 1h     |
-| 11  | Add `govulncheck` job to CI                                                                     | Med    | 20min  |
-| 12  | Add fuzz job to CI (`-fuzztime=1m` per target)                                                  | Med    | 30min  |
-| 13  | Audit CHANGELOG `[Unreleased]` completeness — are .editorconfig/CI changes consumer-facing?     | Med    | 10min  |
+| #  | Task                                                                                            | Impact | Effort |
+| -- | ----------------------------------------------------------------------------------------------- | ------ | ------ |
+| 10 | Close 4 coverage gaps: `Name` 0%, `MustParseEventID` 75%, `splitLines` 95.5%, `Heartbeat` 91.7% | Med    | 1h     |
+| 11 | Add `govulncheck` job to CI                                                                     | Med    | 20min  |
+| 12 | Add fuzz job to CI (`-fuzztime=1m` per target)                                                  | Med    | 30min  |
+| 13 | Audit CHANGELOG `[Unreleased]` completeness — are .editorconfig/CI changes consumer-facing?     | Med    | 10min  |
 
 ### Low impact (doc accuracy + test modernization)
 
-| #   | Task                                                                                     | Impact | Effort |
-| --- | ---------------------------------------------------------------------------------------- | ------ | ------ |
-| 14  | Fix stale `defer stream.Close()` in source doc comments (3 occurrences)                  | Low    | 10min  |
-| 15  | Fix stale `defer stream.Close()` in README examples (4 occurrences)                      | Low    | 10min  |
-| 16  | Modernize `context.WithCancel` to `t.Context()` in `stream_test.go` (5 occurrences)      | Low    | 20min  |
-| 17  | Modernize `go func()` to `wg.Go` in tests where a WaitGroup is in scope (12 occurrences) | Low    | 30min  |
-| 18  | Verify HTML annotation in Pareto planning renders correctly in a browser                 | Low    | 5min   |
-| 19  | Verify ROADMAP "Realized in 0.2.0" markers exhaustively against CHANGELOG + code         | Low    | 10min  |
-| 20  | Audit `AGENTS.md` line references for staleness (same risk as DOMAIN_LANGUAGE)           | Low    | 10min  |
+| #  | Task                                                                                     | Impact | Effort |
+| -- | ---------------------------------------------------------------------------------------- | ------ | ------ |
+| 14 | Fix stale `defer stream.Close()` in source doc comments (3 occurrences)                  | Low    | 10min  |
+| 15 | Fix stale `defer stream.Close()` in README examples (4 occurrences)                      | Low    | 10min  |
+| 16 | Modernize `context.WithCancel` to `t.Context()` in `stream_test.go` (5 occurrences)      | Low    | 20min  |
+| 17 | Modernize `go func()` to `wg.Go` in tests where a WaitGroup is in scope (12 occurrences) | Low    | 30min  |
+| 18 | Verify HTML annotation in Pareto planning renders correctly in a browser                 | Low    | 5min   |
+| 19 | Verify ROADMAP "Realized in 0.2.0" markers exhaustively against CHANGELOG + code         | Low    | 10min  |
+| 20 | Audit `AGENTS.md` line references for staleness (same risk as DOMAIN_LANGUAGE)           | Low    | 10min  |
 
 ### Release (if v0.2.1 proceeds)
 
-| #   | Task                                                                                  | Impact | Effort |
-| --- | ------------------------------------------------------------------------------------- | ------ | ------ |
-| 21  | Push `master` to origin (currently 3 commits ahead)                                   | High   | 1min   |
-| 22  | Run `govulncheck ./...` before tagging                                                | High   | 2min   |
-| 23  | Decide v0.2.1 scope: dep-bump-only patch, or batch with reliability fixes (items 6–9) | High   | —      |
-| 24  | Cut v0.2.1 tag after quality gate passes                                              | High   | 5min   |
-| 25  | Create GitHub Release for v0.2.1 with CHANGELOG body                                  | Med    | 5min   |
-| 26  | Ping Go module proxy after push                                                       | Low    | 1min   |
-| 27  | Verify pkg.go.dev renders v0.2.1                                                      | Low    | 5min   |
+| #  | Task                                                                                  | Impact | Effort |
+| -- | ------------------------------------------------------------------------------------- | ------ | ------ |
+| 21 | Push `master` to origin (currently 3 commits ahead)                                   | High   | 1min   |
+| 22 | Run `govulncheck ./...` before tagging                                                | High   | 2min   |
+| 23 | Decide v0.2.1 scope: dep-bump-only patch, or batch with reliability fixes (items 6–9) | High   | —      |
+| 24 | Cut v0.2.1 tag after quality gate passes                                              | High   | 5min   |
+| 25 | Create GitHub Release for v0.2.1 with CHANGELOG body                                  | Med    | 5min   |
+| 26 | Ping Go module proxy after push                                                       | Low    | 1min   |
+| 27 | Verify pkg.go.dev renders v0.2.1                                                      | Low    | 5min   |
 
 ### Ecosystem / out of scope but noticed
 
-| #   | Task                                                                                    | Impact          | Effort |
-| --- | --------------------------------------------------------------------------------------- | --------------- | ------ |
-| 28  | The parent `go.work` checksum corruption still pollutes 8 sibling repos (pre-existing)  | Ecosystem       | —      |
-| 29  | Consider adding `gosec` to CI beyond golangci-lint                                      | Hardening       | 15min  |
-| 30  | Consider coverage threshold gate in CI (fail if < 95%)                                  | Hardening       | 20min  |
-| 31  | Pin `golangci-lint` version in CI (currently via action v7, may float)                  | Reproducibility | 10min  |
-| 32  | Add CODEOWNERS file                                                                     | Governance      | 5min   |
-| 33  | Add `dependabot.yml` for dependency updates                                             | Maintenance     | 10min  |
-| 34  | Consider signed tags (`git tag -s`) for supply-chain trust                              | Security        | 5min   |
-| 35  | Add `docs/release-notes/template.md` for future releases                                | Process         | 15min  |
-| 36  | Add release checklist to CONTRIBUTING.md (lessons from 03:12 report)                    | Process         | 20min  |
-| 37  | Consider `Broadcaster.Close` returning an error (currently `func()`)                    | API             | —      |
-| 38  | Document `io.Closer` contract for `Stream.Close` (idempotent? double-close safe?)       | Docs            | 10min  |
-| 39  | Consider `Stream.SendData` → `SendText` rename for consistency with `SendJSON`          | API             | —      |
-| 40  | Add `context.Context`-aware variant of `Send` for cancellation                          | API             | —      |
-| 41  | Consider version constants in Go code (`const Version = "0.2.0"`)                       | DX              | 5min   |
-| 42  | Review whether `OnDisconnect` firing under `Close()` can deadlock if callback re-enters | Correctness     | 30min  |
-| 43  | Add `EventStore` in-memory reference implementation for godoc                           | DX              | 30min  |
-| 44  | Document the non-blocking drop policy in README (not just AGENTS.md)                    | Transparency    | 15min  |
-| 45  | Add `doc.go` example for `Replay` with a concrete in-memory `EventStore`                | DX              | 20min  |
-| 46  | Consider awesome-go submission (post-v1.0)                                              | Adoption        | —      |
-| 47  | Add Social Preview image for link unfurling                                             | Adoption        | —      |
-| 48  | Write blog post / announcement for next release                                         | Adoption        | —      |
-| 49  | Consider GitHub Pages docs site (website-launch skill)                                  | DX              | —      |
-| 50  | Revisit module split trigger criteria quarterly (ROADMAP theme 4)                       | Architecture    | —      |
+| #  | Task                                                                                    | Impact          | Effort |
+| -- | --------------------------------------------------------------------------------------- | --------------- | ------ |
+| 28 | The parent `go.work` checksum corruption still pollutes 8 sibling repos (pre-existing)  | Ecosystem       | —      |
+| 29 | Consider adding `gosec` to CI beyond golangci-lint                                      | Hardening       | 15min  |
+| 30 | Consider coverage threshold gate in CI (fail if < 95%)                                  | Hardening       | 20min  |
+| 31 | Pin `golangci-lint` version in CI (currently via action v7, may float)                  | Reproducibility | 10min  |
+| 32 | Add CODEOWNERS file                                                                     | Governance      | 5min   |
+| 33 | Add `dependabot.yml` for dependency updates                                             | Maintenance     | 10min  |
+| 34 | Consider signed tags (`git tag -s`) for supply-chain trust                              | Security        | 5min   |
+| 35 | Add `docs/release-notes/template.md` for future releases                                | Process         | 15min  |
+| 36 | Add release checklist to CONTRIBUTING.md (lessons from 03:12 report)                    | Process         | 20min  |
+| 37 | Consider `Broadcaster.Close` returning an error (currently `func()`)                    | API             | —      |
+| 38 | Document `io.Closer` contract for `Stream.Close` (idempotent? double-close safe?)       | Docs            | 10min  |
+| 39 | Consider `Stream.SendData` → `SendText` rename for consistency with `SendJSON`          | API             | —      |
+| 40 | Add `context.Context`-aware variant of `Send` for cancellation                          | API             | —      |
+| 41 | Consider version constants in Go code (`const Version = "0.2.0"`)                       | DX              | 5min   |
+| 42 | Review whether `OnDisconnect` firing under `Close()` can deadlock if callback re-enters | Correctness     | 30min  |
+| 43 | Add `EventStore` in-memory reference implementation for godoc                           | DX              | 30min  |
+| 44 | Document the non-blocking drop policy in README (not just AGENTS.md)                    | Transparency    | 15min  |
+| 45 | Add `doc.go` example for `Replay` with a concrete in-memory `EventStore`                | DX              | 20min  |
+| 46 | Consider awesome-go submission (post-v1.0)                                              | Adoption        | —      |
+| 47 | Add Social Preview image for link unfurling                                             | Adoption        | —      |
+| 48 | Write blog post / announcement for next release                                         | Adoption        | —      |
+| 49 | Consider GitHub Pages docs site (website-launch skill)                                  | DX              | —      |
+| 50 | Revisit module split trigger criteria quarterly (ROADMAP theme 4)                       | Architecture    | —      |
 
 ---
 

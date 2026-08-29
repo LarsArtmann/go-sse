@@ -1,6 +1,6 @@
 # SUPERB Plan: Fix go-datastar + cqrs-htmx Migration Gaps
 
-**Date:** 2026-08-07 07:45  
+**Date:** 2026-08-07 07:45\
 **Scope:** Fix every issue identified in the 07-42 status report.
 
 ---
@@ -70,47 +70,47 @@ graph TD
 
 ### Tier 1: Critical Fixes (1% → 51%)
 
-| #   | ID   | Task                                                                                                                  | Est |
-| --- | ---- | --------------------------------------------------------------------------------------------------------------------- | --- |
-| 1   | F1-1 | Change `SignalsPatch`, `SignalsIfMissingPatch`, `ElementsTemplPatch` to return `(Patch, error)` — delete `errorPatch` | 10m |
-| 2   | F1-2 | Fix all callers in cqrs-htmx (event_bridge_test, handlers, integration_test) for new error-returning constructors     | 10m |
-| 3   | F1-3 | Delete orphaned `/home/lars/projects/cqrs-htmx/datastar/datastar/` directory                                          | 1m  |
-| 4   | F1-4 | Delete dead `HeartbeatInterval` function from cqrs-htmx/datastar/broadcaster.go                                       | 1m  |
-| 5   | F2-1 | Rewrite go-datastar example/main.go — use `data-signals`, `data-init="@get('/events')"`, no manual EventSource JS     | 10m |
-| 6   | F2-2 | Verify example compiles                                                                                               | 2m  |
-| 7   | F2-3 | Verify all tests still pass after Tier 1                                                                              | 5m  |
+| # | ID   | Task                                                                                                                  | Est |
+| - | ---- | --------------------------------------------------------------------------------------------------------------------- | --- |
+| 1 | F1-1 | Change `SignalsPatch`, `SignalsIfMissingPatch`, `ElementsTemplPatch` to return `(Patch, error)` — delete `errorPatch` | 10m |
+| 2 | F1-2 | Fix all callers in cqrs-htmx (event_bridge_test, handlers, integration_test) for new error-returning constructors     | 10m |
+| 3 | F1-3 | Delete orphaned `/home/lars/projects/cqrs-htmx/datastar/datastar/` directory                                          | 1m  |
+| 4 | F1-4 | Delete dead `HeartbeatInterval` function from cqrs-htmx/datastar/broadcaster.go                                       | 1m  |
+| 5 | F2-1 | Rewrite go-datastar example/main.go — use `data-signals`, `data-init="@get('/events')"`, no manual EventSource JS     | 10m |
+| 6 | F2-2 | Verify example compiles                                                                                               | 2m  |
+| 7 | F2-3 | Verify all tests still pass after Tier 1                                                                              | 5m  |
 
 ### Tier 2: Core Features + Tests (4% → 64%)
 
-| #   | ID   | Task                                                                                                                              | Est |
-| --- | ---- | --------------------------------------------------------------------------------------------------------------------------------- | --- |
-| 8   | F3-1 | Add `MemoryStore` type to go-datastar (implements `sse.EventStore`, ring buffer with Append + EventsAfter)                        | 10m |
-| 9   | F3-2 | Test `MemoryStore` — Append, EventsAfter, ring buffer eviction, numeric ID parsing                                                | 10m |
-| 10  | F3-3 | Rewrite cqrs-htmx Broadcaster: add optional EventStore, wire `sse.Replay` in ServeHTTP, add `NewBroadcasterWithReplay`            | 12m |
-| 11  | F3-4 | Add replay test to cqrs-htmx broadcaster_test.go                                                                                  | 10m |
-| 12  | F4-1 | Add go-datastar Response tests: PatchElementsTempl, MarshalAndPatchSignals, RemoveElementByID, Redirect, ConsoleLog, ConsoleError | 12m |
-| 13  | F4-2 | Add go-datastar Response tests: DispatchCustomEvent, ReplaceURL, Prefetch, Send, NewResponseFromHTTP                              | 10m |
-| 14  | F4-3 | Verify go-datastar coverage improved                                                                                              | 2m  |
+| #  | ID   | Task                                                                                                                              | Est |
+| -- | ---- | --------------------------------------------------------------------------------------------------------------------------------- | --- |
+| 8  | F3-1 | Add `MemoryStore` type to go-datastar (implements `sse.EventStore`, ring buffer with Append + EventsAfter)                        | 10m |
+| 9  | F3-2 | Test `MemoryStore` — Append, EventsAfter, ring buffer eviction, numeric ID parsing                                                | 10m |
+| 10 | F3-3 | Rewrite cqrs-htmx Broadcaster: add optional EventStore, wire `sse.Replay` in ServeHTTP, add `NewBroadcasterWithReplay`            | 12m |
+| 11 | F3-4 | Add replay test to cqrs-htmx broadcaster_test.go                                                                                  | 10m |
+| 12 | F4-1 | Add go-datastar Response tests: PatchElementsTempl, MarshalAndPatchSignals, RemoveElementByID, Redirect, ConsoleLog, ConsoleError | 12m |
+| 13 | F4-2 | Add go-datastar Response tests: DispatchCustomEvent, ReplaceURL, Prefetch, Send, NewResponseFromHTTP                              | 10m |
+| 14 | F4-3 | Verify go-datastar coverage improved                                                                                              | 2m  |
 
 ### Tier 3: Full Coverage (20% → 80%)
 
-| #   | ID   | Task                                                                                                                            | Est |
-| --- | ---- | ------------------------------------------------------------------------------------------------------------------------------- | --- |
-| 15  | F5-1 | Add cqrs-htmx patch_test.go: ElementsPatch, SignalsPatch, RemovePatch, ScriptPatch, RedirectPatch constructors + Event() output | 12m |
-| 16  | F5-2 | Add cqrs-htmx response_test.go: NewResponse, PatchElements, PatchSignals, ExecuteScript, RemoveElement                          | 12m |
-| 17  | F5-3 | Add go-datastar E2E HTTP round-trip test: HTTP server → SSE client → verify raw wire bytes                                      | 12m |
-| 18  | F6-1 | Compute real vendorHash for go-datastar flake.nix + run `nix build`                                                             | 10m |
-| 19  | F6-2 | Update go-sse README to document `JoinLines`                                                                                    | 5m  |
-| 20  | F6-3 | Run golangci-lint on cqrs-htmx/datastar after migration                                                                         | 5m  |
-| 21  | F6-4 | Run full test suite across all repos (go-sse, go-datastar, cqrs-htmx/datastar, integration_test)                                | 5m  |
+| #  | ID   | Task                                                                                                                            | Est |
+| -- | ---- | ------------------------------------------------------------------------------------------------------------------------------- | --- |
+| 15 | F5-1 | Add cqrs-htmx patch_test.go: ElementsPatch, SignalsPatch, RemovePatch, ScriptPatch, RedirectPatch constructors + Event() output | 12m |
+| 16 | F5-2 | Add cqrs-htmx response_test.go: NewResponse, PatchElements, PatchSignals, ExecuteScript, RemoveElement                          | 12m |
+| 17 | F5-3 | Add go-datastar E2E HTTP round-trip test: HTTP server → SSE client → verify raw wire bytes                                      | 12m |
+| 18 | F6-1 | Compute real vendorHash for go-datastar flake.nix + run `nix build`                                                             | 10m |
+| 19 | F6-2 | Update go-sse README to document `JoinLines`                                                                                    | 5m  |
+| 20 | F6-3 | Run golangci-lint on cqrs-htmx/datastar after migration                                                                         | 5m  |
+| 21 | F6-4 | Run full test suite across all repos (go-sse, go-datastar, cqrs-htmx/datastar, integration_test)                                | 5m  |
 
 ### Tier 4: Polish
 
-| #   | ID   | Task                                                                                          | Est |
-| --- | ---- | --------------------------------------------------------------------------------------------- | --- |
-| 22  | F7-1 | Write ADR for go-datastar/go-sse/SDK relationship at go-datastar/docs/adr/001-architecture.md | 10m |
-| 23  | F7-2 | Update cqrs-htmx AGENTS.md architecture section                                               | 5m  |
-| 24  | F7-3 | Update go-datastar CHANGELOG / verify README accuracy                                         | 5m  |
+| #  | ID   | Task                                                                                          | Est |
+| -- | ---- | --------------------------------------------------------------------------------------------- | --- |
+| 22 | F7-1 | Write ADR for go-datastar/go-sse/SDK relationship at go-datastar/docs/adr/001-architecture.md | 10m |
+| 23 | F7-2 | Update cqrs-htmx AGENTS.md architecture section                                               | 5m  |
+| 24 | F7-3 | Update go-datastar CHANGELOG / verify README accuracy                                         | 5m  |
 
 ---
 

@@ -1,180 +1,488 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>go-datastar — Pareto Execution Plan</title>
-<style>
-:root {
-	--color-graphite: #0e0e10;
-	--color-graphite-2: #18181d;
-	--color-graphite-3: #16161a;
-	--color-bone: #f4f4f0;
-	--color-bone-2: #c9c9c2;
-	--color-red: #ff6b6b;
-	--color-blue: #6eb5ff;
-	--color-yellow: #f4d35e;
-	--color-amber: #ffb347;
-	--color-green: #51cf66;
-	--surface: var(--color-graphite);
-	--surface-raised: var(--color-graphite-2);
-	--surface-sunken: var(--color-graphite-3);
-	--text: var(--color-bone);
-	--text-muted: var(--color-bone-2);
-	--text-faint: #8a8a85;
-	--border: #2a2a30;
-	--border-strong: #3a3a42;
-	--accent: var(--color-amber);
-	--problem: var(--color-red);
-	--solution: var(--color-blue);
-	--warning: var(--color-yellow);
-	--radius: 0px;
-	--font-heading: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-	--font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-	--font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--surface); color: var(--text); font-family: var(--font-body); line-height: 1.6; font-size: 15px; -webkit-font-smoothing: antialiased; }
-.container { max-width: 1300px; margin: 0 auto; padding: 0 24px; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>go-datastar — Pareto Execution Plan</title>
+    <style>
+      :root {
+        --color-graphite: #0e0e10;
+        --color-graphite-2: #18181d;
+        --color-graphite-3: #16161a;
+        --color-bone: #f4f4f0;
+        --color-bone-2: #c9c9c2;
+        --color-red: #ff6b6b;
+        --color-blue: #6eb5ff;
+        --color-yellow: #f4d35e;
+        --color-amber: #ffb347;
+        --color-green: #51cf66;
+        --surface: var(--color-graphite);
+        --surface-raised: var(--color-graphite-2);
+        --surface-sunken: var(--color-graphite-3);
+        --text: var(--color-bone);
+        --text-muted: var(--color-bone-2);
+        --text-faint: #8a8a85;
+        --border: #2a2a30;
+        --border-strong: #3a3a42;
+        --accent: var(--color-amber);
+        --problem: var(--color-red);
+        --solution: var(--color-blue);
+        --warning: var(--color-yellow);
+        --radius: 0px;
+        --font-heading:
+          "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+        --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+        --font-mono:
+          "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--surface);
+        color: var(--text);
+        font-family: var(--font-body);
+        line-height: 1.6;
+        font-size: 15px;
+        -webkit-font-smoothing: antialiased;
+      }
+      .container {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
 
-/* Hero */
-.hero { padding: 64px 0 40px; border-bottom: 1px solid var(--border); }
-.hero-badge { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); padding: 4px 10px; border: 1px solid var(--accent); margin-bottom: 16px; }
-.hero h1 { font-size: 36px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 12px; }
-.hero-subtitle { color: var(--text-muted); font-size: 17px; max-width: 800px; }
-.hero-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
-.tag { font-size: 12px; font-weight: 600; color: var(--text-muted); padding: 3px 10px; background: var(--surface-sunken); border: 1px solid var(--border); }
-.tag.amber { color: var(--accent); border-color: var(--accent); }
+      /* Hero */
+      .hero {
+        padding: 64px 0 40px;
+        border-bottom: 1px solid var(--border);
+      }
+      .hero-badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--accent);
+        padding: 4px 10px;
+        border: 1px solid var(--accent);
+        margin-bottom: 16px;
+      }
+      .hero h1 {
+        font-size: 36px;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        margin-bottom: 12px;
+      }
+      .hero-subtitle {
+        color: var(--text-muted);
+        font-size: 17px;
+        max-width: 800px;
+      }
+      .hero-meta {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+      }
+      .tag {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        padding: 3px 10px;
+        background: var(--surface-sunken);
+        border: 1px solid var(--border);
+      }
+      .tag.amber {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
 
-/* Section */
-section { padding: 48px 0; border-bottom: 1px solid var(--border); }
-section:last-of-type { border-bottom: none; }
-h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; display: flex; align-items: baseline; gap: 12px; }
-h2 .num { font-size: 14px; color: var(--accent); font-weight: 800; font-family: var(--font-mono); }
-h3 { font-size: 18px; font-weight: 700; margin: 32px 0 12px; color: var(--text); }
-.section-desc { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; max-width: 800px; }
+      /* Section */
+      section {
+        padding: 48px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      section:last-of-type {
+        border-bottom: none;
+      }
+      h2 {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+      }
+      h2 .num {
+        font-size: 14px;
+        color: var(--accent);
+        font-weight: 800;
+        font-family: var(--font-mono);
+      }
+      h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 32px 0 12px;
+        color: var(--text);
+      }
+      .section-desc {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-bottom: 24px;
+        max-width: 800px;
+      }
 
-/* Stat grid */
-.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 40px; }
-.stat-card { background: var(--surface-raised); border: 1px solid var(--border); border-left: 3px solid var(--border-strong); padding: 20px; }
-.stat-card.t1 { border-left-color: var(--problem); }
-.stat-card.t2 { border-left-color: var(--accent); }
-.stat-card.t3 { border-left-color: var(--solution); }
-.stat-card.t4 { border-left-color: var(--warning); }
-.stat-card.tf { border-left-color: var(--text-faint); }
-.stat-value { font-size: 32px; font-weight: 900; letter-spacing: -0.03em; }
-.stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
-.stat-detail { font-size: 13px; color: var(--text-faint); margin-top: 6px; }
+      /* Stat grid */
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 40px;
+      }
+      .stat-card {
+        background: var(--surface-raised);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--border-strong);
+        padding: 20px;
+      }
+      .stat-card.t1 {
+        border-left-color: var(--problem);
+      }
+      .stat-card.t2 {
+        border-left-color: var(--accent);
+      }
+      .stat-card.t3 {
+        border-left-color: var(--solution);
+      }
+      .stat-card.t4 {
+        border-left-color: var(--warning);
+      }
+      .stat-card.tf {
+        border-left-color: var(--text-faint);
+      }
+      .stat-value {
+        font-size: 32px;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+      }
+      .stat-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-top: 4px;
+      }
+      .stat-detail {
+        font-size: 13px;
+        color: var(--text-faint);
+        margin-top: 6px;
+      }
 
-/* Architecture diagram */
-.arch-diagram { background: var(--surface-sunken); border: 1px solid var(--border); padding: 32px; margin-bottom: 32px; font-family: var(--font-mono); font-size: 14px; line-height: 1.8; overflow-x: auto; }
-.arch-layer { display: flex; align-items: center; gap: 16px; padding: 12px 0; }
-.arch-box { border: 2px solid; padding: 10px 20px; min-width: 200px; text-align: center; font-weight: 700; }
-.arch-box.existing { border-color: var(--solution); color: var(--solution); }
-.arch-box.new { border-color: var(--problem); color: var(--problem); }
-.arch-box.migrated { border-color: var(--accent); color: var(--accent); }
-.arch-arrow { color: var(--text-faint); font-size: 18px; }
-.arch-note { color: var(--text-muted); font-size: 13px; font-family: var(--font-body); }
+      /* Architecture diagram */
+      .arch-diagram {
+        background: var(--surface-sunken);
+        border: 1px solid var(--border);
+        padding: 32px;
+        margin-bottom: 32px;
+        font-family: var(--font-mono);
+        font-size: 14px;
+        line-height: 1.8;
+        overflow-x: auto;
+      }
+      .arch-layer {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 0;
+      }
+      .arch-box {
+        border: 2px solid;
+        padding: 10px 20px;
+        min-width: 200px;
+        text-align: center;
+        font-weight: 700;
+      }
+      .arch-box.existing {
+        border-color: var(--solution);
+        color: var(--solution);
+      }
+      .arch-box.new {
+        border-color: var(--problem);
+        color: var(--problem);
+      }
+      .arch-box.migrated {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .arch-arrow {
+        color: var(--text-faint);
+        font-size: 18px;
+      }
+      .arch-note {
+        color: var(--text-muted);
+        font-size: 13px;
+        font-family: var(--font-body);
+      }
 
-/* Tables */
-.table-wrap { overflow-x: auto; margin-bottom: 32px; }
-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-thead { background: var(--surface-sunken); }
-th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border-strong); white-space: nowrap; }
-td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
-tbody tr:hover { background: color-mix(in srgb, var(--surface-raised) 50%, transparent); }
+      /* Tables */
+      .table-wrap {
+        overflow-x: auto;
+        margin-bottom: 32px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      thead {
+        background: var(--surface-sunken);
+      }
+      th {
+        text-align: left;
+        padding: 10px 12px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border-strong);
+        white-space: nowrap;
+      }
+      td {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      tbody tr:hover {
+        background: color-mix(in srgb, var(--surface-raised) 50%, transparent);
+      }
 
-/* Badges */
-.badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border: 1px solid; white-space: nowrap; }
-.badge-critical { color: var(--problem); border-color: var(--problem); }
-.badge-high { color: var(--accent); border-color: var(--accent); }
-.badge-medium { color: var(--solution); border-color: var(--solution); }
-.badge-low { color: var(--warning); border-color: var(--warning); }
-.badge-future { color: var(--text-faint); border-color: var(--text-faint); }
+      /* Badges */
+      .badge {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border: 1px solid;
+        white-space: nowrap;
+      }
+      .badge-critical {
+        color: var(--problem);
+        border-color: var(--problem);
+      }
+      .badge-high {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+      .badge-medium {
+        color: var(--solution);
+        border-color: var(--solution);
+      }
+      .badge-low {
+        color: var(--warning);
+        border-color: var(--warning);
+      }
+      .badge-future {
+        color: var(--text-faint);
+        border-color: var(--text-faint);
+      }
 
-.tier-badge { display: inline-block; font-size: 10px; font-weight: 800; padding: 1px 6px; border: 1px solid; white-space: nowrap; font-family: var(--font-mono); }
-.tier-1 { color: var(--problem); border-color: var(--problem); }
-.tier-2 { color: var(--accent); border-color: var(--accent); }
-.tier-3 { color: var(--solution); border-color: var(--solution); }
-.tier-4 { color: var(--warning); border-color: var(--warning); }
-.tier-f { color: var(--text-faint); border-color: var(--text-faint); }
+      .tier-badge {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 1px 6px;
+        border: 1px solid;
+        white-space: nowrap;
+        font-family: var(--font-mono);
+      }
+      .tier-1 {
+        color: var(--problem);
+        border-color: var(--problem);
+      }
+      .tier-2 {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+      .tier-3 {
+        color: var(--solution);
+        border-color: var(--solution);
+      }
+      .tier-4 {
+        color: var(--warning);
+        border-color: var(--warning);
+      }
+      .tier-f {
+        color: var(--text-faint);
+        border-color: var(--text-faint);
+      }
 
-.effort { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); white-space: nowrap; }
-.task-id { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); white-space: nowrap; }
+      .effort {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+      .task-id {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-faint);
+        white-space: nowrap;
+      }
 
-/* Callout */
-.callout { padding: 16px 20px; border: 1px solid var(--border); border-left: 3px solid; margin-bottom: 24px; font-size: 14px; }
-.callout-solution { border-left-color: var(--solution); background: color-mix(in srgb, var(--solution) 8%, transparent); }
-.callout-warning { border-left-color: var(--warning); background: color-mix(in srgb, var(--warning) 8%, transparent); }
-.callout strong { display: block; margin-bottom: 4px; }
+      /* Callout */
+      .callout {
+        padding: 16px 20px;
+        border: 1px solid var(--border);
+        border-left: 3px solid;
+        margin-bottom: 24px;
+        font-size: 14px;
+      }
+      .callout-solution {
+        border-left-color: var(--solution);
+        background: color-mix(in srgb, var(--solution) 8%, transparent);
+      }
+      .callout-warning {
+        border-left-color: var(--warning);
+        background: color-mix(in srgb, var(--warning) 8%, transparent);
+      }
+      .callout strong {
+        display: block;
+        margin-bottom: 4px;
+      }
 
-/* Code */
-pre { background: var(--surface-sunken); border: 1px solid var(--border); padding: 16px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; color: var(--text-muted); margin-bottom: 24px; }
-code { font-family: var(--font-mono); font-size: 13px; color: var(--color-green); }
+      /* Code */
+      pre {
+        background: var(--surface-sunken);
+        border: 1px solid var(--border);
+        padding: 16px;
+        overflow-x: auto;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--text-muted);
+        margin-bottom: 24px;
+      }
+      code {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--color-green);
+      }
 
-footer { padding: 32px 0 48px; text-align: center; color: var(--text-faint); font-size: 13px; }
+      footer {
+        padding: 32px 0 48px;
+        text-align: center;
+        color: var(--text-faint);
+        font-size: 13px;
+      }
 
-@media (max-width: 768px) {
-	.hero h1 { font-size: 28px; }
-	.stat-grid { grid-template-columns: 1fr 1fr; }
-}
-</style>
-</head>
-<body>
+      @media (max-width: 768px) {
+        .hero h1 {
+          font-size: 28px;
+        }
+        .stat-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="hero">
+        <div class="hero-badge">Pareto Execution Plan</div>
+        <h1>go-datastar — DataStar Protocol Library for Go</h1>
+        <p class="hero-subtitle">
+          Build a standalone DataStar protocol library where patches are
+          first-class values producing <code>sse.Event</code>. Replace
+          <code>starfederation/datastar-go</code> with a clean, testable,
+          composable design built on go-sse. 99 tasks, each 12 minutes or less.
+        </p>
+        <div class="hero-meta">
+          <span class="tag amber">99 total tasks</span>
+          <span class="tag">11 Tier-1 (1% &rarr; 51%)</span>
+          <span class="tag">17 Tier-2 (4% &rarr; 64%)</span>
+          <span class="tag">54 Tier-3 (20% &rarr; 80%)</span>
+          <span class="tag">13 Tier-4 (rest)</span>
+          <span class="tag">4 Future</span>
+          <span class="tag">2026-08-07</span>
+        </div>
+      </div>
 
-<div class="container">
+      <!-- Context -->
+      <section id="context">
+        <h2><span class="num">00</span>Problem &amp; Solution</h2>
+        <div class="callout callout-warning">
+          <strong>The Problem</strong>
+          <code>starfederation/datastar-go</code> couples patch construction to
+          a live SSE connection
+          (<code>Patch.apply(*ServerSentEventGenerator)</code>). Patches are not
+          values &mdash; you cannot queue, filter, replay, or broadcast them.
+          This forced <code>cqrs-htmx/datastar</code> to hand-roll 286 lines of
+          fan-out, replay, heartbeat, and EventID logic that go-sse already
+          provides. The SDK's <code>ServerSentEventGenerator</code> is just a
+          standard SSE writer (15% of its code); the other 85% is protocol
+          vocabulary locked behind method-call semantics.
+        </div>
+        <div class="callout callout-solution">
+          <strong>The Solution</strong>
+          Build <code>go-datastar</code> &mdash; a standalone companion to
+          go-sse where <code>Patch</code> is an interface with
+          <code>Event() sse.Event</code>. Patches become first-class values:
+          storable, filterable, replayable, broadcastable. The protocol
+          vocabulary (ElementsPatch, SignalsPatch, ScriptPatch, etc.) is
+          reimplemented as value-producing constructors. go-sse owns transport;
+          go-datastar owns protocol. <code>cqrs-htmx/datastar</code> drops the
+          SDK dependency and 286 lines of duplicated transport, gaining
+          Shutdown/Health/SubscribeFilter for free.
+        </div>
 
-<div class="hero">
-	<div class="hero-badge">Pareto Execution Plan</div>
-	<h1>go-datastar — DataStar Protocol Library for Go</h1>
-	<p class="hero-subtitle">Build a standalone DataStar protocol library where patches are first-class values producing <code>sse.Event</code>. Replace <code>starfederation/datastar-go</code> with a clean, testable, composable design built on go-sse. 99 tasks, each 12 minutes or less.</p>
-	<div class="hero-meta">
-		<span class="tag amber">99 total tasks</span>
-		<span class="tag">11 Tier-1 (1% &rarr; 51%)</span>
-		<span class="tag">17 Tier-2 (4% &rarr; 64%)</span>
-		<span class="tag">54 Tier-3 (20% &rarr; 80%)</span>
-		<span class="tag">13 Tier-4 (rest)</span>
-		<span class="tag">4 Future</span>
-		<span class="tag">2026-08-07</span>
-	</div>
-</div>
+        <h3>Target Architecture</h3>
+        <div class="arch-diagram">
+          <div class="arch-layer">
+            <div class="arch-box existing">
+              go-sse<br /><small>transport layer</small>
+            </div>
+            <div class="arch-note">
+              Stream, Broadcaster[T], Replay, EventID, Heartbeat,
+              SubscribeFilter, Shutdown, Health
+            </div>
+          </div>
+          <div class="arch-layer">
+            <div class="arch-arrow">&uarr;</div>
+          </div>
+          <div class="arch-layer">
+            <div class="arch-box new">
+              go-datastar<br /><small>protocol layer (NEW)</small>
+            </div>
+            <div class="arch-note">
+              Patch interface, ElementsPatch, SignalsPatch, ScriptPatch,
+              ReadSignals, Response, ScriptHandler
+            </div>
+          </div>
+          <div class="arch-layer">
+            <div class="arch-arrow">&uarr;</div>
+          </div>
+          <div class="arch-layer">
+            <div class="arch-box migrated">
+              cqrs-htmx/datastar<br /><small>domain adapter (MIGRATED)</small>
+            </div>
+            <div class="arch-note">
+              EventBridge (CQRS event &rarr; Patch), thin wrappers. Drops SDK
+              dep + 286 lines duplication.
+            </div>
+          </div>
+        </div>
 
-<!-- Context -->
-<section id="context">
-	<h2><span class="num">00</span>Problem &amp; Solution</h2>
-	<div class="callout callout-warning">
-		<strong>The Problem</strong>
-		<code>starfederation/datastar-go</code> couples patch construction to a live SSE connection (<code>Patch.apply(*ServerSentEventGenerator)</code>). Patches are not values &mdash; you cannot queue, filter, replay, or broadcast them. This forced <code>cqrs-htmx/datastar</code> to hand-roll 286 lines of fan-out, replay, heartbeat, and EventID logic that go-sse already provides. The SDK's <code>ServerSentEventGenerator</code> is just a standard SSE writer (15% of its code); the other 85% is protocol vocabulary locked behind method-call semantics.
-	</div>
-	<div class="callout callout-solution">
-		<strong>The Solution</strong>
-		Build <code>go-datastar</code> &mdash; a standalone companion to go-sse where <code>Patch</code> is an interface with <code>Event() sse.Event</code>. Patches become first-class values: storable, filterable, replayable, broadcastable. The protocol vocabulary (ElementsPatch, SignalsPatch, ScriptPatch, etc.) is reimplemented as value-producing constructors. go-sse owns transport; go-datastar owns protocol. <code>cqrs-htmx/datastar</code> drops the SDK dependency and 286 lines of duplicated transport, gaining Shutdown/Health/SubscribeFilter for free.
-	</div>
-
-	<h3>Target Architecture</h3>
-	<div class="arch-diagram">
-<div class="arch-layer">
-	<div class="arch-box existing">go-sse<br><small>transport layer</small></div>
-	<div class="arch-note">Stream, Broadcaster[T], Replay, EventID, Heartbeat, SubscribeFilter, Shutdown, Health</div>
-</div>
-<div class="arch-layer">
-	<div class="arch-arrow">&uarr;</div>
-</div>
-<div class="arch-layer">
-	<div class="arch-box new">go-datastar<br><small>protocol layer (NEW)</small></div>
-	<div class="arch-note">Patch interface, ElementsPatch, SignalsPatch, ScriptPatch, ReadSignals, Response, ScriptHandler</div>
-</div>
-<div class="arch-layer">
-	<div class="arch-arrow">&uarr;</div>
-</div>
-<div class="arch-layer">
-	<div class="arch-box migrated">cqrs-htmx/datastar<br><small>domain adapter (MIGRATED)</small></div>
-	<div class="arch-note">EventBridge (CQRS event &rarr; Patch), thin wrappers. Drops SDK dep + 286 lines duplication.</div>
-</div>
-	</div>
-
-	<h3>The Keystone Design Decision</h3>
-	<pre>// go-datastar: patches are VALUES, not method calls
+        <h3>The Keystone Design Decision</h3>
+        <pre>
+// go-datastar: patches are VALUES, not method calls
 type Patch interface {
     Event() sse.Event  // produce the final SSE wire-format event
 }
@@ -187,513 +495,2127 @@ broadcaster.Broadcast(patch.Event())  // store, fan-out, replay as sse.Event
 // Or broadcast patches directly (for typed filtering):
 patchCaster := sse.NewBroadcaster[datastar.Patch]()
 patchCaster.Broadcast(patch)
-// consumer: evt := <-ch; stream.Send(patch.Event())</pre>
-</section>
+// consumer: evt := <-ch; stream.Send(patch.Event())</pre
+        >
+      </section>
 
-<!-- Pareto Breakdown -->
-<section id="pareto">
-	<h2><span class="num">01</span>Pareto Breakdown</h2>
-	<p class="section-desc">Where to concentrate effort for maximum return. Tier 1 proves the architecture in ~60 minutes. Tier 2 completes the core protocol. Tier 3 delivers full vocabulary + migration. Tier 4 is polish.</p>
+      <!-- Pareto Breakdown -->
+      <section id="pareto">
+        <h2><span class="num">01</span>Pareto Breakdown</h2>
+        <p class="section-desc">
+          Where to concentrate effort for maximum return. Tier 1 proves the
+          architecture in ~60 minutes. Tier 2 completes the core protocol. Tier
+          3 delivers full vocabulary + migration. Tier 4 is polish.
+        </p>
 
-	<div class="stat-grid">
-		<div class="stat-card t1">
-			<div class="stat-value">11</div>
-			<div class="stat-label">Tier 1 &mdash; 1% &rarr; 51%</div>
-			<div class="stat-detail">Prove patches-as-values works. Repo setup, Patch interface, Elements + Signals patches, wire-format parity tests. ~62min total.</div>
-		</div>
-		<div class="stat-card t2">
-			<div class="stat-value">17</div>
-			<div class="stat-label">Tier 2 &mdash; 4% &rarr; 64%</div>
-			<div class="stat-detail">Core protocol complete. Options, ScriptPatch, RemovePatch, marshal helpers, constants, flake.nix. ~99min total.</div>
-		</div>
-		<div class="stat-card t3">
-			<div class="stat-value">54</div>
-			<div class="stat-label">Tier 3 &mdash; 20% &rarr; 80%</div>
-			<div class="stat-detail">Full vocabulary + cqrs-htmx migration. All convenience patches, adapters, ReadSignals, Response, ScriptHandler, example app. ~7hr total.</div>
-		</div>
-		<div class="stat-card t4">
-			<div class="stat-value">13</div>
-			<div class="stat-label">Tier 4 &mdash; Rest</div>
-			<div class="stat-detail">Polish: CI, doc.go, LICENSE, README updates, CHANGELOG, misc tests. ~80min total.</div>
-		</div>
-		<div class="stat-card tf">
-			<div class="stat-value">4</div>
-			<div class="stat-label">Future</div>
-			<div class="stat-detail">Compression in go-sse, JS version automation, Broadcaster[Patch] convenience, merge cqrs-htmx/datastar.</div>
-		</div>
-	</div>
-</section>
+        <div class="stat-grid">
+          <div class="stat-card t1">
+            <div class="stat-value">11</div>
+            <div class="stat-label">Tier 1 &mdash; 1% &rarr; 51%</div>
+            <div class="stat-detail">
+              Prove patches-as-values works. Repo setup, Patch interface,
+              Elements + Signals patches, wire-format parity tests. ~62min
+              total.
+            </div>
+          </div>
+          <div class="stat-card t2">
+            <div class="stat-value">17</div>
+            <div class="stat-label">Tier 2 &mdash; 4% &rarr; 64%</div>
+            <div class="stat-detail">
+              Core protocol complete. Options, ScriptPatch, RemovePatch, marshal
+              helpers, constants, flake.nix. ~99min total.
+            </div>
+          </div>
+          <div class="stat-card t3">
+            <div class="stat-value">54</div>
+            <div class="stat-label">Tier 3 &mdash; 20% &rarr; 80%</div>
+            <div class="stat-detail">
+              Full vocabulary + cqrs-htmx migration. All convenience patches,
+              adapters, ReadSignals, Response, ScriptHandler, example app. ~7hr
+              total.
+            </div>
+          </div>
+          <div class="stat-card t4">
+            <div class="stat-value">13</div>
+            <div class="stat-label">Tier 4 &mdash; Rest</div>
+            <div class="stat-detail">
+              Polish: CI, doc.go, LICENSE, README updates, CHANGELOG, misc
+              tests. ~80min total.
+            </div>
+          </div>
+          <div class="stat-card tf">
+            <div class="stat-value">4</div>
+            <div class="stat-label">Future</div>
+            <div class="stat-detail">
+              Compression in go-sse, JS version automation, Broadcaster[Patch]
+              convenience, merge cqrs-htmx/datastar.
+            </div>
+          </div>
+        </div>
+      </section>
 
-<!-- Phase Overview -->
-<section id="phases">
-	<h2><span class="num">02</span>Phase Overview</h2>
-	<p class="section-desc">Execution order by phase. Each phase is self-contained &mdash; you can stop after any phase and have something working.</p>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>Phase</th><th>Name</th><th>Tier(s)</th><th>Tasks</th><th>Est. Total</th><th>Deliverable</th></tr></thead>
-		<tbody>
-			<tr><td>P0</td><td>go-sse Gap-Filling</td><td><span class="tier-badge tier-2">T2</span></td><td>1</td><td class="effort">5m</td><td><code>JoinLines</code> exported helper</td></tr>
-			<tr><td>P1</td><td>Project Bootstrap</td><td><span class="tier-badge tier-1">T1</span> <span class="tier-badge tier-4">T4</span></td><td>5</td><td class="effort">20m</td><td>Repo, go.mod, flake.nix, doc.go</td></tr>
-			<tr><td>P2</td><td>Core Types &amp; Constants</td><td><span class="tier-badge tier-1">T1</span> <span class="tier-badge tier-2">T2</span></td><td>6</td><td class="effort">24m</td><td>Patch interface, event types, modes, namespaces</td></tr>
-			<tr><td>P3</td><td>ElementsPatch</td><td><span class="tier-badge tier-1">T1</span> <span class="tier-badge tier-2">T2</span> <span class="tier-badge tier-3">T3</span></td><td>11</td><td class="effort">62m</td><td>Most-used patch as value + wire-format proof</td></tr>
-			<tr><td>P4</td><td>SignalsPatch</td><td><span class="tier-badge tier-1">T1</span> <span class="tier-badge tier-2">T2</span> <span class="tier-badge tier-3">T3</span></td><td>8</td><td class="effort">37m</td><td>Second most-used patch + marshal helpers</td></tr>
-			<tr><td>P5</td><td>ScriptPatch</td><td><span class="tier-badge tier-2">T2</span> <span class="tier-badge tier-3">T3</span></td><td>7</td><td class="effort">39m</td><td>ExecuteScript as value with wrapping logic</td></tr>
-			<tr><td>P6</td><td>Script Convenience Patches</td><td><span class="tier-badge tier-3">T3</span></td><td>11</td><td class="effort">53m</td><td>Redirect, ConsoleLog/Error, DispatchCustomEvent, ReplaceURL, Prefetch</td></tr>
-			<tr><td>P7</td><td>RemovePatch</td><td><span class="tier-badge tier-2">T2</span> <span class="tier-badge tier-3">T3</span></td><td>3</td><td class="effort">10m</td><td>Element removal as value</td></tr>
-			<tr><td>P8</td><td>Sugar Helpers</td><td><span class="tier-badge tier-3">T3</span> <span class="tier-badge tier-4">T4</span></td><td>7</td><td class="effort">25m</td><td>Mode/selector/namespace convenience funcs</td></tr>
-			<tr><td>P9</td><td>Render Adapters</td><td><span class="tier-badge tier-3">T3</span> <span class="tier-badge tier-4">T4</span></td><td>6</td><td class="effort">30m</td><td>templ + gostar integration</td></tr>
-			<tr><td>P10</td><td>HTTP Verb Helpers</td><td><span class="tier-badge tier-3">T3</span> <span class="tier-badge tier-4">T4</span></td><td>2</td><td class="effort">8m</td><td>GetSSE/PostSSE/PutSSE/PatchSSE/DeleteSSE</td></tr>
-			<tr><td>P11</td><td>Inbound (ReadSignals)</td><td><span class="tier-badge tier-3">T3</span></td><td>2</td><td class="effort">18m</td><td>Parse signals from request</td></tr>
-			<tr><td>P12</td><td>Event ID Handling</td><td><span class="tier-badge tier-3">T3</span></td><td>2</td><td class="effort">10m</td><td>Last-Event-ID with query param fallback</td></tr>
-			<tr><td>P13</td><td>Script Handler</td><td><span class="tier-badge tier-3">T3</span> <span class="tier-badge tier-4">T4</span></td><td>5</td><td class="effort">30m</td><td>Serve datastar.js with ETag/Cache-Control</td></tr>
-			<tr><td>P14</td><td>Response (fluent builder)</td><td><span class="tier-badge tier-3">T3</span></td><td>8</td><td class="effort">48m</td><td>Single-request SSE builder + error helpers</td></tr>
-			<tr><td>P15</td><td>Example App</td><td><span class="tier-badge tier-3">T3</span> <span class="tier-badge tier-4">T4</span></td><td>4</td><td class="effort">24m</td><td>Runnable demo with Broadcaster[Patch]</td></tr>
-			<tr><td>P16</td><td>CI &amp; Polish</td><td><span class="tier-badge tier-3">T3</span> <span class="tier-badge tier-4">T4</span></td><td>4</td><td class="effort">35m</td><td>golangci-lint, GitHub Actions, README</td></tr>
-			<tr><td>P17</td><td>cqrs-htmx: Dependency Swap</td><td><span class="tier-badge tier-3">T3</span></td><td>3</td><td class="effort">7m</td><td>+go-datastar, &minus;datastar-go SDK</td></tr>
-			<tr><td>P18</td><td>cqrs-htmx: Delete SDK Files</td><td><span class="tier-badge tier-3">T3</span></td><td>3</td><td class="effort">6m</td><td>Remove patch.go, options.go, signals.go</td></tr>
-			<tr><td>P19</td><td>cqrs-htmx: Rewrite Broadcaster</td><td><span class="tier-badge tier-3">T3</span></td><td>7</td><td class="effort">51m</td><td>Use sse.Broadcaster + EventStore + Shutdown</td></tr>
-			<tr><td>P20</td><td>cqrs-htmx: Delete Response/Errors/Script</td><td><span class="tier-badge tier-3">T3</span></td><td>4</td><td class="effort">18m</td><td>Use go-datastar.Response, ScriptHandler</td></tr>
-			<tr><td>P21</td><td>cqrs-htmx: Update EventBridge</td><td><span class="tier-badge tier-3">T3</span></td><td>2</td><td class="effort">15m</td><td>CQRS adapter with go-datastar.Patch</td></tr>
-			<tr><td>P22</td><td>cqrs-htmx: Rewrite Tests</td><td><span class="tier-badge tier-3">T3</span> <span class="tier-badge tier-4">T4</span></td><td>6</td><td class="effort">43m</td><td>All 63 tests updated for new types</td></tr>
-			<tr><td>P23</td><td>cqrs-htmx: Update Docs</td><td><span class="tier-badge tier-3">T3</span> <span class="tier-badge tier-4">T4</span></td><td>3</td><td class="effort">13m</td><td>doc.go, CHANGELOG, AGENTS.md</td></tr>
-			<tr><td>P24</td><td>Cross-Repo Docs</td><td><span class="tier-badge tier-3">T3</span> <span class="tier-badge tier-4">T4</span></td><td>3</td><td class="effort">16m</td><td>go-sse README, ADR, AGENTS.md</td></tr>
-			<tr><td>P25</td><td>Final Verification</td><td><span class="tier-badge tier-3">T3</span></td><td>7</td><td class="effort">35m</td><td>All tests pass, browser works, lint clean</td></tr>
-			<tr><td>F</td><td>Future Considerations</td><td><span class="tier-badge tier-f">F</span></td><td>4</td><td class="effort">TBD</td><td>Compression, version automation, merge</td></tr>
-		</tbody>
-	</table>
-	</div>
-</section>
+      <!-- Phase Overview -->
+      <section id="phases">
+        <h2><span class="num">02</span>Phase Overview</h2>
+        <p class="section-desc">
+          Execution order by phase. Each phase is self-contained &mdash; you can
+          stop after any phase and have something working.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Phase</th>
+                <th>Name</th>
+                <th>Tier(s)</th>
+                <th>Tasks</th>
+                <th>Est. Total</th>
+                <th>Deliverable</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>P0</td>
+                <td>go-sse Gap-Filling</td>
+                <td><span class="tier-badge tier-2">T2</span></td>
+                <td>1</td>
+                <td class="effort">5m</td>
+                <td><code>JoinLines</code> exported helper</td>
+              </tr>
+              <tr>
+                <td>P1</td>
+                <td>Project Bootstrap</td>
+                <td>
+                  <span class="tier-badge tier-1">T1</span>
+                  <span class="tier-badge tier-4">T4</span>
+                </td>
+                <td>5</td>
+                <td class="effort">20m</td>
+                <td>Repo, go.mod, flake.nix, doc.go</td>
+              </tr>
+              <tr>
+                <td>P2</td>
+                <td>Core Types &amp; Constants</td>
+                <td>
+                  <span class="tier-badge tier-1">T1</span>
+                  <span class="tier-badge tier-2">T2</span>
+                </td>
+                <td>6</td>
+                <td class="effort">24m</td>
+                <td>Patch interface, event types, modes, namespaces</td>
+              </tr>
+              <tr>
+                <td>P3</td>
+                <td>ElementsPatch</td>
+                <td>
+                  <span class="tier-badge tier-1">T1</span>
+                  <span class="tier-badge tier-2">T2</span>
+                  <span class="tier-badge tier-3">T3</span>
+                </td>
+                <td>11</td>
+                <td class="effort">62m</td>
+                <td>Most-used patch as value + wire-format proof</td>
+              </tr>
+              <tr>
+                <td>P4</td>
+                <td>SignalsPatch</td>
+                <td>
+                  <span class="tier-badge tier-1">T1</span>
+                  <span class="tier-badge tier-2">T2</span>
+                  <span class="tier-badge tier-3">T3</span>
+                </td>
+                <td>8</td>
+                <td class="effort">37m</td>
+                <td>Second most-used patch + marshal helpers</td>
+              </tr>
+              <tr>
+                <td>P5</td>
+                <td>ScriptPatch</td>
+                <td>
+                  <span class="tier-badge tier-2">T2</span>
+                  <span class="tier-badge tier-3">T3</span>
+                </td>
+                <td>7</td>
+                <td class="effort">39m</td>
+                <td>ExecuteScript as value with wrapping logic</td>
+              </tr>
+              <tr>
+                <td>P6</td>
+                <td>Script Convenience Patches</td>
+                <td><span class="tier-badge tier-3">T3</span></td>
+                <td>11</td>
+                <td class="effort">53m</td>
+                <td>
+                  Redirect, ConsoleLog/Error, DispatchCustomEvent, ReplaceURL,
+                  Prefetch
+                </td>
+              </tr>
+              <tr>
+                <td>P7</td>
+                <td>RemovePatch</td>
+                <td>
+                  <span class="tier-badge tier-2">T2</span>
+                  <span class="tier-badge tier-3">T3</span>
+                </td>
+                <td>3</td>
+                <td class="effort">10m</td>
+                <td>Element removal as value</td>
+              </tr>
+              <tr>
+                <td>P8</td>
+                <td>Sugar Helpers</td>
+                <td>
+                  <span class="tier-badge tier-3">T3</span>
+                  <span class="tier-badge tier-4">T4</span>
+                </td>
+                <td>7</td>
+                <td class="effort">25m</td>
+                <td>Mode/selector/namespace convenience funcs</td>
+              </tr>
+              <tr>
+                <td>P9</td>
+                <td>Render Adapters</td>
+                <td>
+                  <span class="tier-badge tier-3">T3</span>
+                  <span class="tier-badge tier-4">T4</span>
+                </td>
+                <td>6</td>
+                <td class="effort">30m</td>
+                <td>templ + gostar integration</td>
+              </tr>
+              <tr>
+                <td>P10</td>
+                <td>HTTP Verb Helpers</td>
+                <td>
+                  <span class="tier-badge tier-3">T3</span>
+                  <span class="tier-badge tier-4">T4</span>
+                </td>
+                <td>2</td>
+                <td class="effort">8m</td>
+                <td>GetSSE/PostSSE/PutSSE/PatchSSE/DeleteSSE</td>
+              </tr>
+              <tr>
+                <td>P11</td>
+                <td>Inbound (ReadSignals)</td>
+                <td><span class="tier-badge tier-3">T3</span></td>
+                <td>2</td>
+                <td class="effort">18m</td>
+                <td>Parse signals from request</td>
+              </tr>
+              <tr>
+                <td>P12</td>
+                <td>Event ID Handling</td>
+                <td><span class="tier-badge tier-3">T3</span></td>
+                <td>2</td>
+                <td class="effort">10m</td>
+                <td>Last-Event-ID with query param fallback</td>
+              </tr>
+              <tr>
+                <td>P13</td>
+                <td>Script Handler</td>
+                <td>
+                  <span class="tier-badge tier-3">T3</span>
+                  <span class="tier-badge tier-4">T4</span>
+                </td>
+                <td>5</td>
+                <td class="effort">30m</td>
+                <td>Serve datastar.js with ETag/Cache-Control</td>
+              </tr>
+              <tr>
+                <td>P14</td>
+                <td>Response (fluent builder)</td>
+                <td><span class="tier-badge tier-3">T3</span></td>
+                <td>8</td>
+                <td class="effort">48m</td>
+                <td>Single-request SSE builder + error helpers</td>
+              </tr>
+              <tr>
+                <td>P15</td>
+                <td>Example App</td>
+                <td>
+                  <span class="tier-badge tier-3">T3</span>
+                  <span class="tier-badge tier-4">T4</span>
+                </td>
+                <td>4</td>
+                <td class="effort">24m</td>
+                <td>Runnable demo with Broadcaster[Patch]</td>
+              </tr>
+              <tr>
+                <td>P16</td>
+                <td>CI &amp; Polish</td>
+                <td>
+                  <span class="tier-badge tier-3">T3</span>
+                  <span class="tier-badge tier-4">T4</span>
+                </td>
+                <td>4</td>
+                <td class="effort">35m</td>
+                <td>golangci-lint, GitHub Actions, README</td>
+              </tr>
+              <tr>
+                <td>P17</td>
+                <td>cqrs-htmx: Dependency Swap</td>
+                <td><span class="tier-badge tier-3">T3</span></td>
+                <td>3</td>
+                <td class="effort">7m</td>
+                <td>+go-datastar, &minus;datastar-go SDK</td>
+              </tr>
+              <tr>
+                <td>P18</td>
+                <td>cqrs-htmx: Delete SDK Files</td>
+                <td><span class="tier-badge tier-3">T3</span></td>
+                <td>3</td>
+                <td class="effort">6m</td>
+                <td>Remove patch.go, options.go, signals.go</td>
+              </tr>
+              <tr>
+                <td>P19</td>
+                <td>cqrs-htmx: Rewrite Broadcaster</td>
+                <td><span class="tier-badge tier-3">T3</span></td>
+                <td>7</td>
+                <td class="effort">51m</td>
+                <td>Use sse.Broadcaster + EventStore + Shutdown</td>
+              </tr>
+              <tr>
+                <td>P20</td>
+                <td>cqrs-htmx: Delete Response/Errors/Script</td>
+                <td><span class="tier-badge tier-3">T3</span></td>
+                <td>4</td>
+                <td class="effort">18m</td>
+                <td>Use go-datastar.Response, ScriptHandler</td>
+              </tr>
+              <tr>
+                <td>P21</td>
+                <td>cqrs-htmx: Update EventBridge</td>
+                <td><span class="tier-badge tier-3">T3</span></td>
+                <td>2</td>
+                <td class="effort">15m</td>
+                <td>CQRS adapter with go-datastar.Patch</td>
+              </tr>
+              <tr>
+                <td>P22</td>
+                <td>cqrs-htmx: Rewrite Tests</td>
+                <td>
+                  <span class="tier-badge tier-3">T3</span>
+                  <span class="tier-badge tier-4">T4</span>
+                </td>
+                <td>6</td>
+                <td class="effort">43m</td>
+                <td>All 63 tests updated for new types</td>
+              </tr>
+              <tr>
+                <td>P23</td>
+                <td>cqrs-htmx: Update Docs</td>
+                <td>
+                  <span class="tier-badge tier-3">T3</span>
+                  <span class="tier-badge tier-4">T4</span>
+                </td>
+                <td>3</td>
+                <td class="effort">13m</td>
+                <td>doc.go, CHANGELOG, AGENTS.md</td>
+              </tr>
+              <tr>
+                <td>P24</td>
+                <td>Cross-Repo Docs</td>
+                <td>
+                  <span class="tier-badge tier-3">T3</span>
+                  <span class="tier-badge tier-4">T4</span>
+                </td>
+                <td>3</td>
+                <td class="effort">16m</td>
+                <td>go-sse README, ADR, AGENTS.md</td>
+              </tr>
+              <tr>
+                <td>P25</td>
+                <td>Final Verification</td>
+                <td><span class="tier-badge tier-3">T3</span></td>
+                <td>7</td>
+                <td class="effort">35m</td>
+                <td>All tests pass, browser works, lint clean</td>
+              </tr>
+              <tr>
+                <td>F</td>
+                <td>Future Considerations</td>
+                <td><span class="tier-badge tier-f">F</span></td>
+                <td>4</td>
+                <td class="effort">TBD</td>
+                <td>Compression, version automation, merge</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-<!-- TIER 1 -->
-<section id="tier1">
-	<h2><span class="num">03</span>Tier 1 &mdash; The 1% That Delivers 51%</h2>
-	<p class="section-desc">Prove patches-as-values works. After these 11 tasks (~62min), you have a library that produces byte-exact DataStar wire format without the SDK.</p>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Phase</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>1</td><td class="task-id">P2-1</td><td>Design + implement <code>Patch</code> interface (<code>Event() sse.Event</code>)</td><td>P2</td><td><span class="badge badge-critical">5</span></td><td class="effort">5m</td></tr>
-			<tr><td>2</td><td class="task-id">P1-1</td><td>Create repo dir + <code>git init</code></td><td>P1</td><td><span class="badge badge-critical">5</span></td><td class="effort">2m</td></tr>
-			<tr><td>3</td><td class="task-id">P1-2</td><td>Write <code>go.mod</code> (module <code>github.com/larsartmann/go-datastar</code>, require go-sse)</td><td>P1</td><td><span class="badge badge-critical">5</span></td><td class="effort">3m</td></tr>
-			<tr><td>4</td><td class="task-id">P2-2</td><td>EventType constants (<code>datastar-patch-elements</code>, <code>datastar-patch-signals</code>)</td><td>P2</td><td><span class="badge badge-critical">5</span></td><td class="effort">3m</td></tr>
-			<tr><td>5</td><td class="task-id">P2-3</td><td>ElementPatchMode type + 9 constants (Outer/Inner/Remove/Replace/Prepend/Append/Before/After + Default)</td><td>P2</td><td><span class="badge badge-critical">5</span></td><td class="effort">5m</td></tr>
-			<tr><td>6</td><td class="task-id">P3-1</td><td>ElementsPatch struct (Selector, Mode, Namespace, ViewTransitions, HTML, EventID, Retry)</td><td>P3</td><td><span class="badge badge-critical">5</span></td><td class="effort">5m</td></tr>
-			<tr><td>7</td><td class="task-id">P3-7</td><td>ElementsPatch.Event() &mdash; data-line construction in exact SDK order</td><td>P3</td><td><span class="badge badge-critical">5</span></td><td class="effort">8m</td></tr>
-			<tr><td>8</td><td class="task-id">P4-1</td><td>SignalsPatch struct (Signals []byte, OnlyIfMissing, EventID, Retry)</td><td>P4</td><td><span class="badge badge-critical">5</span></td><td class="effort">4m</td></tr>
-			<tr><td>9</td><td class="task-id">P4-3</td><td>SignalsPatch.Event() &mdash; data-line construction</td><td>P4</td><td><span class="badge badge-critical">5</span></td><td class="effort">5m</td></tr>
-			<tr><td>10</td><td class="task-id">P3-8</td><td>Test ElementsPatch wire format &mdash; byte-exact parity with SDK output</td><td>P3</td><td><span class="badge badge-critical">5</span></td><td class="effort">10m</td></tr>
-			<tr><td>11</td><td class="task-id">P4-4</td><td>Test SignalsPatch wire format &mdash; byte-exact parity</td><td>P4</td><td><span class="badge badge-critical">5</span></td><td class="effort">8m</td></tr>
-		</tbody>
-	</table>
-	</div>
-</section>
+      <!-- TIER 1 -->
+      <section id="tier1">
+        <h2>
+          <span class="num">03</span>Tier 1 &mdash; The 1% That Delivers 51%
+        </h2>
+        <p class="section-desc">
+          Prove patches-as-values works. After these 11 tasks (~62min), you have
+          a library that produces byte-exact DataStar wire format without the
+          SDK.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Phase</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td class="task-id">P2-1</td>
+                <td>
+                  Design + implement <code>Patch</code> interface (<code
+                    >Event() sse.Event</code
+                  >)
+                </td>
+                <td>P2</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td class="task-id">P1-1</td>
+                <td>Create repo dir + <code>git init</code></td>
+                <td>P1</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td class="task-id">P1-2</td>
+                <td>
+                  Write <code>go.mod</code> (module
+                  <code>github.com/larsartmann/go-datastar</code>, require
+                  go-sse)
+                </td>
+                <td>P1</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td class="task-id">P2-2</td>
+                <td>
+                  EventType constants (<code>datastar-patch-elements</code>,
+                  <code>datastar-patch-signals</code>)
+                </td>
+                <td>P2</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td class="task-id">P2-3</td>
+                <td>
+                  ElementPatchMode type + 9 constants
+                  (Outer/Inner/Remove/Replace/Prepend/Append/Before/After +
+                  Default)
+                </td>
+                <td>P2</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td class="task-id">P3-1</td>
+                <td>
+                  ElementsPatch struct (Selector, Mode, Namespace,
+                  ViewTransitions, HTML, EventID, Retry)
+                </td>
+                <td>P3</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td class="task-id">P3-7</td>
+                <td>
+                  ElementsPatch.Event() &mdash; data-line construction in exact
+                  SDK order
+                </td>
+                <td>P3</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">8m</td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td class="task-id">P4-1</td>
+                <td>
+                  SignalsPatch struct (Signals []byte, OnlyIfMissing, EventID,
+                  Retry)
+                </td>
+                <td>P4</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">4m</td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td class="task-id">P4-3</td>
+                <td>SignalsPatch.Event() &mdash; data-line construction</td>
+                <td>P4</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td class="task-id">P3-8</td>
+                <td>
+                  Test ElementsPatch wire format &mdash; byte-exact parity with
+                  SDK output
+                </td>
+                <td>P3</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">10m</td>
+              </tr>
+              <tr>
+                <td>11</td>
+                <td class="task-id">P4-4</td>
+                <td>Test SignalsPatch wire format &mdash; byte-exact parity</td>
+                <td>P4</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">8m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-<!-- TIER 2 -->
-<section id="tier2">
-	<h2><span class="num">04</span>Tier 2 &mdash; The 4% That Delivers 64%</h2>
-	<p class="section-desc">Complete the core protocol. After these 17 tasks (~99min), the library covers the three most-used patches (Elements, Signals, Script) with options, plus RemovePatch and marshal helpers.</p>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Phase</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>12</td><td class="task-id">P5-5</td><td>ScriptPatch.Event() &mdash; &lt;script&gt; wrapping + auto-remove + PatchElements(selector:body, mode:append)</td><td>P5</td><td><span class="badge badge-critical">5</span></td><td class="effort">10m</td></tr>
-			<tr><td>13</td><td class="task-id">P3-2</td><td>WithSelector + WithSelectorf functional options</td><td>P3</td><td><span class="badge badge-high">5</span></td><td class="effort">5m</td></tr>
-			<tr><td>14</td><td class="task-id">P3-3</td><td>WithMode functional option</td><td>P3</td><td><span class="badge badge-high">5</span></td><td class="effort">3m</td></tr>
-			<tr><td>15</td><td class="task-id">P5-1</td><td>ScriptPatch struct (Script, AutoRemove *bool, Attributes, EventID, Retry)</td><td>P5</td><td><span class="badge badge-high">4</span></td><td class="effort">5m</td></tr>
-			<tr><td>16</td><td class="task-id">P5-3</td><td>WithScriptAutoRemove(*bool) option</td><td>P5</td><td><span class="badge badge-high">4</span></td><td class="effort">3m</td></tr>
-			<tr><td>17</td><td class="task-id">P3-9</td><td>Test all modes (inner/remove/replace/prepend/append/before/after)</td><td>P3</td><td><span class="badge badge-high">4</span></td><td class="effort">8m</td></tr>
-			<tr><td>18</td><td class="task-id">P3-4</td><td>WithNamespace option</td><td>P3</td><td><span class="badge badge-high">4</span></td><td class="effort">2m</td></tr>
-			<tr><td>19</td><td class="task-id">P4-2</td><td>WithSignalsEventID + WithSignalsRetryDuration + WithOnlyIfMissing options</td><td>P4</td><td><span class="badge badge-high">4</span></td><td class="effort">4m</td></tr>
-			<tr><td>20</td><td class="task-id">P4-5</td><td>MarshalSignals(v any) ([]byte, error) &mdash; returns error, not panic</td><td>P4</td><td><span class="badge badge-high">4</span></td><td class="effort">5m</td></tr>
-			<tr><td>21</td><td class="task-id">P4-6</td><td>NewSignalsPatch(v any, opts...) &mdash; marshal + SignalsPatch</td><td>P4</td><td><span class="badge badge-high">4</span></td><td class="effort">3m</td></tr>
-			<tr><td>22</td><td class="task-id">P4-7</td><td>NewSignalsIfMissingPatch(v any, opts...)</td><td>P4</td><td><span class="badge badge-high">4</span></td><td class="effort">3m</td></tr>
-			<tr><td>23</td><td class="task-id">P5-6</td><td>Test ScriptPatch wire format &mdash; byte-exact parity</td><td>P5</td><td><span class="badge badge-high">4</span></td><td class="effort">8m</td></tr>
-			<tr><td>24</td><td class="task-id">P7-1</td><td>RemovePatch (ElementsPatch with Mode=Remove, HTML="")</td><td>P7</td><td><span class="badge badge-high">4</span></td><td class="effort">5m</td></tr>
-			<tr><td>25</td><td class="task-id">P2-4</td><td>Namespace type + 3 constants (HTML/SVG/MathML)</td><td>P2</td><td><span class="badge badge-high">4</span></td><td class="effort">3m</td></tr>
-			<tr><td>26</td><td class="task-id">P2-5</td><td>Dataline key constants (selector, mode, namespace, elements, signals, etc.)</td><td>P2</td><td><span class="badge badge-high">4</span></td><td class="effort">3m</td></tr>
-			<tr><td>27</td><td class="task-id">P2-6</td><td>Test constants &mdash; verify exact SDK string values</td><td>P2</td><td><span class="badge badge-high">4</span></td><td class="effort">5m</td></tr>
-			<tr><td>28</td><td class="task-id">P0-1</td><td>Add <code>JoinLines(lines ...string) string</code> to go-sse (extract from SendLines)</td><td>P0</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-		</tbody>
-	</table>
-	</div>
-</section>
+      <!-- TIER 2 -->
+      <section id="tier2">
+        <h2>
+          <span class="num">04</span>Tier 2 &mdash; The 4% That Delivers 64%
+        </h2>
+        <p class="section-desc">
+          Complete the core protocol. After these 17 tasks (~99min), the library
+          covers the three most-used patches (Elements, Signals, Script) with
+          options, plus RemovePatch and marshal helpers.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Phase</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>12</td>
+                <td class="task-id">P5-5</td>
+                <td>
+                  ScriptPatch.Event() &mdash; &lt;script&gt; wrapping +
+                  auto-remove + PatchElements(selector:body, mode:append)
+                </td>
+                <td>P5</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">10m</td>
+              </tr>
+              <tr>
+                <td>13</td>
+                <td class="task-id">P3-2</td>
+                <td>WithSelector + WithSelectorf functional options</td>
+                <td>P3</td>
+                <td><span class="badge badge-high">5</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>14</td>
+                <td class="task-id">P3-3</td>
+                <td>WithMode functional option</td>
+                <td>P3</td>
+                <td><span class="badge badge-high">5</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>15</td>
+                <td class="task-id">P5-1</td>
+                <td>
+                  ScriptPatch struct (Script, AutoRemove *bool, Attributes,
+                  EventID, Retry)
+                </td>
+                <td>P5</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>16</td>
+                <td class="task-id">P5-3</td>
+                <td>WithScriptAutoRemove(*bool) option</td>
+                <td>P5</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>17</td>
+                <td class="task-id">P3-9</td>
+                <td>
+                  Test all modes
+                  (inner/remove/replace/prepend/append/before/after)
+                </td>
+                <td>P3</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">8m</td>
+              </tr>
+              <tr>
+                <td>18</td>
+                <td class="task-id">P3-4</td>
+                <td>WithNamespace option</td>
+                <td>P3</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>19</td>
+                <td class="task-id">P4-2</td>
+                <td>
+                  WithSignalsEventID + WithSignalsRetryDuration +
+                  WithOnlyIfMissing options
+                </td>
+                <td>P4</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">4m</td>
+              </tr>
+              <tr>
+                <td>20</td>
+                <td class="task-id">P4-5</td>
+                <td>
+                  MarshalSignals(v any) ([]byte, error) &mdash; returns error,
+                  not panic
+                </td>
+                <td>P4</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>21</td>
+                <td class="task-id">P4-6</td>
+                <td>
+                  NewSignalsPatch(v any, opts...) &mdash; marshal + SignalsPatch
+                </td>
+                <td>P4</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>22</td>
+                <td class="task-id">P4-7</td>
+                <td>NewSignalsIfMissingPatch(v any, opts...)</td>
+                <td>P4</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>23</td>
+                <td class="task-id">P5-6</td>
+                <td>Test ScriptPatch wire format &mdash; byte-exact parity</td>
+                <td>P5</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">8m</td>
+              </tr>
+              <tr>
+                <td>24</td>
+                <td class="task-id">P7-1</td>
+                <td>RemovePatch (ElementsPatch with Mode=Remove, HTML="")</td>
+                <td>P7</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>25</td>
+                <td class="task-id">P2-4</td>
+                <td>Namespace type + 3 constants (HTML/SVG/MathML)</td>
+                <td>P2</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>26</td>
+                <td class="task-id">P2-5</td>
+                <td>
+                  Dataline key constants (selector, mode, namespace, elements,
+                  signals, etc.)
+                </td>
+                <td>P2</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>27</td>
+                <td class="task-id">P2-6</td>
+                <td>Test constants &mdash; verify exact SDK string values</td>
+                <td>P2</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>28</td>
+                <td class="task-id">P0-1</td>
+                <td>
+                  Add <code>JoinLines(lines ...string) string</code> to go-sse
+                  (extract from SendLines)
+                </td>
+                <td>P0</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-<!-- TIER 3 -->
-<section id="tier3">
-	<h2><span class="num">05</span>Tier 3 &mdash; The 20% That Delivers 80%</h2>
-	<p class="section-desc">Full protocol vocabulary + cqrs-htmx migration. After these 54 tasks (~7hr), go-datastar is a complete replacement for datastar-go and cqrs-htmx is migrated.</p>
+      <!-- TIER 3 -->
+      <section id="tier3">
+        <h2>
+          <span class="num">05</span>Tier 3 &mdash; The 20% That Delivers 80%
+        </h2>
+        <p class="section-desc">
+          Full protocol vocabulary + cqrs-htmx migration. After these 54 tasks
+          (~7hr), go-datastar is a complete replacement for datastar-go and
+          cqrs-htmx is migrated.
+        </p>
 
-	<h3>P3: ElementsPatch (remaining)</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>29</td><td class="task-id">P3-5</td><td>WithViewTransitions + WithViewTransitionSelector options</td><td><span class="badge badge-medium">3</span></td><td class="effort">3m</td></tr>
-			<tr><td>30</td><td class="task-id">P3-6</td><td>WithElementsEventID + WithElementsRetryDuration options</td><td><span class="badge badge-medium">3</span></td><td class="effort">3m</td></tr>
-			<tr><td>31</td><td class="task-id">P3-10</td><td>Test namespace options (SVG, MathML)</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>32</td><td class="task-id">P3-11</td><td>Test view transitions</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P3: ElementsPatch (remaining)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>29</td>
+                <td class="task-id">P3-5</td>
+                <td>
+                  WithViewTransitions + WithViewTransitionSelector options
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>30</td>
+                <td class="task-id">P3-6</td>
+                <td>WithElementsEventID + WithElementsRetryDuration options</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>31</td>
+                <td class="task-id">P3-10</td>
+                <td>Test namespace options (SVG, MathML)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>32</td>
+                <td class="task-id">P3-11</td>
+                <td>Test view transitions</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P4: SignalsPatch (remaining)</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>33</td><td class="task-id">P4-8</td><td>Test marshal helpers (MarshalSignals, NewSignalsPatch, NewSignalsIfMissingPatch)</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P4: SignalsPatch (remaining)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>33</td>
+                <td class="task-id">P4-8</td>
+                <td>
+                  Test marshal helpers (MarshalSignals, NewSignalsPatch,
+                  NewSignalsIfMissingPatch)
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P5: ScriptPatch (remaining)</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>34</td><td class="task-id">P5-2</td><td>WithScriptEventID + WithScriptRetryDuration options</td><td><span class="badge badge-medium">3</span></td><td class="effort">3m</td></tr>
-			<tr><td>35</td><td class="task-id">P5-4</td><td>WithScriptAttributes(...string) + WithScriptAttributeKVs(...string)</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>36</td><td class="task-id">P5-7</td><td>Test auto-remove default(true)/true/false</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P5: ScriptPatch (remaining)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>34</td>
+                <td class="task-id">P5-2</td>
+                <td>WithScriptEventID + WithScriptRetryDuration options</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>35</td>
+                <td class="task-id">P5-4</td>
+                <td>
+                  WithScriptAttributes(...string) +
+                  WithScriptAttributeKVs(...string)
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>36</td>
+                <td class="task-id">P5-7</td>
+                <td>Test auto-remove default(true)/true/false</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P6: Script Convenience Patches</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>37</td><td class="task-id">P6-1</td><td>RedirectPatch (setTimeout JS wrapping)</td><td><span class="badge badge-medium">4</span></td><td class="effort">5m</td></tr>
-			<tr><td>38</td><td class="task-id">P6-7</td><td>DispatchCustomEventPatch (full JS generation: CustomEvent + dispatch)</td><td><span class="badge badge-medium">3</span></td><td class="effort">10m</td></tr>
-			<tr><td>39</td><td class="task-id">P6-9</td><td>ReplaceURLPatch (history.replaceState JS)</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>40</td><td class="task-id">P6-10</td><td>PrefetchPatch (speculation rules JSON)</td><td><span class="badge badge-medium">3</span></td><td class="effort">8m</td></tr>
-			<tr><td>41</td><td class="task-id">P6-2</td><td>RedirectfPatch (format variant)</td><td><span class="badge badge-medium">3</span></td><td class="effort">2m</td></tr>
-			<tr><td>42</td><td class="task-id">P6-3</td><td>ConsoleLog patch (console.log JS)</td><td><span class="badge badge-medium">3</span></td><td class="effort">3m</td></tr>
-			<tr><td>43</td><td class="task-id">P6-4</td><td>ConsoleLogf (format variant)</td><td><span class="badge badge-medium">3</span></td><td class="effort">2m</td></tr>
-			<tr><td>44</td><td class="task-id">P6-5</td><td>ConsoleError (console.error JS)</td><td><span class="badge badge-medium">3</span></td><td class="effort">3m</td></tr>
-			<tr><td>45</td><td class="task-id">P6-6</td><td>Test redirect + console patches wire format</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>46</td><td class="task-id">P6-8</td><td>Test DispatchCustomEvent wire format</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>47</td><td class="task-id">P6-11</td><td>Test ReplaceURL + Prefetch wire format</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P6: Script Convenience Patches</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>37</td>
+                <td class="task-id">P6-1</td>
+                <td>RedirectPatch (setTimeout JS wrapping)</td>
+                <td><span class="badge badge-medium">4</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>38</td>
+                <td class="task-id">P6-7</td>
+                <td>
+                  DispatchCustomEventPatch (full JS generation: CustomEvent +
+                  dispatch)
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">10m</td>
+              </tr>
+              <tr>
+                <td>39</td>
+                <td class="task-id">P6-9</td>
+                <td>ReplaceURLPatch (history.replaceState JS)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>40</td>
+                <td class="task-id">P6-10</td>
+                <td>PrefetchPatch (speculation rules JSON)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">8m</td>
+              </tr>
+              <tr>
+                <td>41</td>
+                <td class="task-id">P6-2</td>
+                <td>RedirectfPatch (format variant)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>42</td>
+                <td class="task-id">P6-3</td>
+                <td>ConsoleLog patch (console.log JS)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>43</td>
+                <td class="task-id">P6-4</td>
+                <td>ConsoleLogf (format variant)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>44</td>
+                <td class="task-id">P6-5</td>
+                <td>ConsoleError (console.error JS)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>45</td>
+                <td class="task-id">P6-6</td>
+                <td>Test redirect + console patches wire format</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>46</td>
+                <td class="task-id">P6-8</td>
+                <td>Test DispatchCustomEvent wire format</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>47</td>
+                <td class="task-id">P6-11</td>
+                <td>Test ReplaceURL + Prefetch wire format</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P7: RemovePatch (remaining)</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>48</td><td class="task-id">P7-2</td><td>RemoveByID convenience (selector #"#"+id)</td><td><span class="badge badge-medium">3</span></td><td class="effort">2m</td></tr>
-			<tr><td>49</td><td class="task-id">P7-3</td><td>Test RemovePatch wire format</td><td><span class="badge badge-medium">3</span></td><td class="effort">3m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P7: RemovePatch (remaining)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>48</td>
+                <td class="task-id">P7-2</td>
+                <td>RemoveByID convenience (selector #"#"+id)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>49</td>
+                <td class="task-id">P7-3</td>
+                <td>Test RemovePatch wire format</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">3m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P8: Sugar Helpers</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>50</td><td class="task-id">P8-1</td><td>WithModeOuter/Inner/Remove/Prepend/Append/Before/After/Replace helpers</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>51</td><td class="task-id">P8-2</td><td>WithSelectorID convenience</td><td><span class="badge badge-medium">3</span></td><td class="effort">2m</td></tr>
-			<tr><td>52</td><td class="task-id">P8-3</td><td>WithNamespaceHTML/SVG/MathML helpers</td><td><span class="badge badge-medium">3</span></td><td class="effort">3m</td></tr>
-			<tr><td>53</td><td class="task-id">P8-7</td><td>Test all sugar helpers</td><td><span class="badge badge-low">2</span></td><td class="effort">5m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P8: Sugar Helpers</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>50</td>
+                <td class="task-id">P8-1</td>
+                <td>
+                  WithModeOuter/Inner/Remove/Prepend/Append/Before/After/Replace
+                  helpers
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>51</td>
+                <td class="task-id">P8-2</td>
+                <td>WithSelectorID convenience</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>52</td>
+                <td class="task-id">P8-3</td>
+                <td>WithNamespaceHTML/SVG/MathML helpers</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>53</td>
+                <td class="task-id">P8-7</td>
+                <td>Test all sugar helpers</td>
+                <td><span class="badge badge-low">2</span></td>
+                <td class="effort">5m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P9: Render Adapters</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>54</td><td class="task-id">P9-1</td><td>TemplComponent interface (Render(ctx, w) error)</td><td><span class="badge badge-medium">4</span></td><td class="effort">2m</td></tr>
-			<tr><td>55</td><td class="task-id">P9-2</td><td>ElementsFromTempl &mdash; render templ &rarr; HTML &rarr; ElementsPatch</td><td><span class="badge badge-medium">4</span></td><td class="effort">8m</td></tr>
-			<tr><td>56</td><td class="task-id">P9-3</td><td>GoStarElementRenderer interface</td><td><span class="badge badge-medium">3</span></td><td class="effort">2m</td></tr>
-			<tr><td>57</td><td class="task-id">P9-4</td><td>ElementsFromGostar &mdash; render gostar &rarr; HTML &rarr; ElementsPatch</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>58</td><td class="task-id">P9-5</td><td>Test templ adapter</td><td><span class="badge badge-medium">3</span></td><td class="effort">8m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P9: Render Adapters</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>54</td>
+                <td class="task-id">P9-1</td>
+                <td>TemplComponent interface (Render(ctx, w) error)</td>
+                <td><span class="badge badge-medium">4</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>55</td>
+                <td class="task-id">P9-2</td>
+                <td>
+                  ElementsFromTempl &mdash; render templ &rarr; HTML &rarr;
+                  ElementsPatch
+                </td>
+                <td><span class="badge badge-medium">4</span></td>
+                <td class="effort">8m</td>
+              </tr>
+              <tr>
+                <td>56</td>
+                <td class="task-id">P9-3</td>
+                <td>GoStarElementRenderer interface</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>57</td>
+                <td class="task-id">P9-4</td>
+                <td>
+                  ElementsFromGostar &mdash; render gostar &rarr; HTML &rarr;
+                  ElementsPatch
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>58</td>
+                <td class="task-id">P9-5</td>
+                <td>Test templ adapter</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">8m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P10: HTTP Verb Helpers</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>59</td><td class="task-id">P10-1</td><td>GetSSE/PostSSE/PutSSE/PatchSSE/DeleteSSE &mdash; return DataStar action strings</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P10: HTTP Verb Helpers</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>59</td>
+                <td class="task-id">P10-1</td>
+                <td>
+                  GetSSE/PostSSE/PutSSE/PatchSSE/DeleteSSE &mdash; return
+                  DataStar action strings
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P11: Inbound (ReadSignals)</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>60</td><td class="task-id">P11-1</td><td>ReadSignals(r, signals) &mdash; GET/DELETE from query param, others from JSON body</td><td><span class="badge badge-medium">4</span></td><td class="effort">8m</td></tr>
-			<tr><td>61</td><td class="task-id">P11-2</td><td>Test ReadSignals &mdash; POST body, GET query, empty body, malformed JSON, nested struct</td><td><span class="badge badge-medium">4</span></td><td class="effort">10m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P11: Inbound (ReadSignals)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>60</td>
+                <td class="task-id">P11-1</td>
+                <td>
+                  ReadSignals(r, signals) &mdash; GET/DELETE from query param,
+                  others from JSON body
+                </td>
+                <td><span class="badge badge-medium">4</span></td>
+                <td class="effort">8m</td>
+              </tr>
+              <tr>
+                <td>61</td>
+                <td class="task-id">P11-2</td>
+                <td>
+                  Test ReadSignals &mdash; POST body, GET query, empty body,
+                  malformed JSON, nested struct
+                </td>
+                <td><span class="badge badge-medium">4</span></td>
+                <td class="effort">10m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P12: Event ID Handling</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>62</td><td class="task-id">P12-1</td><td>LastEventID(r) &mdash; header + <code>lastEventId</code> query param fallback</td><td><span class="badge badge-medium">4</span></td><td class="effort">5m</td></tr>
-			<tr><td>63</td><td class="task-id">P12-2</td><td>Test LastEventID &mdash; header only, query only, both, invalid values</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P12: Event ID Handling</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>62</td>
+                <td class="task-id">P12-1</td>
+                <td>
+                  LastEventID(r) &mdash; header + <code>lastEventId</code> query
+                  param fallback
+                </td>
+                <td><span class="badge badge-medium">4</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>63</td>
+                <td class="task-id">P12-2</td>
+                <td>
+                  Test LastEventID &mdash; header only, query only, both,
+                  invalid values
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P13: Script Handler</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>64</td><td class="task-id">P13-1</td><td>Embed datastar.js bundle (copy from cqrs-htmx or download v1.0.2)</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>65</td><td class="task-id">P13-2</td><td>ScriptHandler() &rarr; http.Handler (Content-Type, ETag, Cache-Control, GET only)</td><td><span class="badge badge-medium">3</span></td><td class="effort">8m</td></tr>
-			<tr><td>66</td><td class="task-id">P13-3</td><td>ScriptHandlerWith(js []byte, version string)</td><td><span class="badge badge-medium">3</span></td><td class="effort">3m</td></tr>
-			<tr><td>67</td><td class="task-id">P13-5</td><td>Test ScriptHandler &mdash; Content-Type, ETag, 304, Cache-Control, POST rejection</td><td><span class="badge badge-medium">3</span></td><td class="effort">10m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P13: Script Handler</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>64</td>
+                <td class="task-id">P13-1</td>
+                <td>
+                  Embed datastar.js bundle (copy from cqrs-htmx or download
+                  v1.0.2)
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>65</td>
+                <td class="task-id">P13-2</td>
+                <td>
+                  ScriptHandler() &rarr; http.Handler (Content-Type, ETag,
+                  Cache-Control, GET only)
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">8m</td>
+              </tr>
+              <tr>
+                <td>66</td>
+                <td class="task-id">P13-3</td>
+                <td>ScriptHandlerWith(js []byte, version string)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>67</td>
+                <td class="task-id">P13-5</td>
+                <td>
+                  Test ScriptHandler &mdash; Content-Type, ETag, 304,
+                  Cache-Control, POST rejection
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">10m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P14: Response (fluent builder)</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>68</td><td class="task-id">P14-1</td><td>Response struct wrapping sse.Stream</td><td><span class="badge badge-medium">4</span></td><td class="effort">5m</td></tr>
-			<tr><td>69</td><td class="task-id">P14-2</td><td>Response.PatchElements/PatchSignals/PatchElementsTempl</td><td><span class="badge badge-medium">4</span></td><td class="effort">8m</td></tr>
-			<tr><td>70</td><td class="task-id">P14-3</td><td>Response.RemoveElement/RemoveElementByID/Redirect/ExecuteScript</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>71</td><td class="task-id">P14-4</td><td>Response.ConsoleLog/ConsoleError/DispatchCustomEvent/ReplaceURL/Prefetch</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>72</td><td class="task-id">P14-5</td><td>Response.ApplyPatches(patches ...Patch)</td><td><span class="badge badge-medium">3</span></td><td class="effort">3m</td></tr>
-			<tr><td>73</td><td class="task-id">P14-6</td><td>ErrorResponse (signals patch with error info)</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>74</td><td class="task-id">P14-7</td><td>NotificationResponse (signals patch with notification)</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>75</td><td class="task-id">P14-8</td><td>Test Response &mdash; all methods produce correct wire format</td><td><span class="badge badge-medium">3</span></td><td class="effort">12m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P14: Response (fluent builder)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>68</td>
+                <td class="task-id">P14-1</td>
+                <td>Response struct wrapping sse.Stream</td>
+                <td><span class="badge badge-medium">4</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>69</td>
+                <td class="task-id">P14-2</td>
+                <td>Response.PatchElements/PatchSignals/PatchElementsTempl</td>
+                <td><span class="badge badge-medium">4</span></td>
+                <td class="effort">8m</td>
+              </tr>
+              <tr>
+                <td>70</td>
+                <td class="task-id">P14-3</td>
+                <td>
+                  Response.RemoveElement/RemoveElementByID/Redirect/ExecuteScript
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>71</td>
+                <td class="task-id">P14-4</td>
+                <td>
+                  Response.ConsoleLog/ConsoleError/DispatchCustomEvent/ReplaceURL/Prefetch
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>72</td>
+                <td class="task-id">P14-5</td>
+                <td>Response.ApplyPatches(patches ...Patch)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>73</td>
+                <td class="task-id">P14-6</td>
+                <td>ErrorResponse (signals patch with error info)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>74</td>
+                <td class="task-id">P14-7</td>
+                <td>NotificationResponse (signals patch with notification)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>75</td>
+                <td class="task-id">P14-8</td>
+                <td>
+                  Test Response &mdash; all methods produce correct wire format
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">12m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P15: Example App</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>76</td><td class="task-id">P15-1</td><td>example/main.go &mdash; live feed using Broadcaster[sse.Event] + Patch.Event()</td><td><span class="badge badge-medium">4</span></td><td class="effort">12m</td></tr>
-			<tr><td>77</td><td class="task-id">P15-2</td><td>example/index.templ &mdash; HTML page</td><td><span class="badge badge-medium">3</span></td><td class="effort">8m</td></tr>
-			<tr><td>78</td><td class="task-id">P15-4</td><td>Verify example compiles + runs</td><td><span class="badge badge-medium">3</span></td><td class="effort">3m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P15: Example App</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>76</td>
+                <td class="task-id">P15-1</td>
+                <td>
+                  example/main.go &mdash; live feed using Broadcaster[sse.Event]
+                  + Patch.Event()
+                </td>
+                <td><span class="badge badge-medium">4</span></td>
+                <td class="effort">12m</td>
+              </tr>
+              <tr>
+                <td>77</td>
+                <td class="task-id">P15-2</td>
+                <td>example/index.templ &mdash; HTML page</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">8m</td>
+              </tr>
+              <tr>
+                <td>78</td>
+                <td class="task-id">P15-4</td>
+                <td>Verify example compiles + runs</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">3m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P16: CI &amp; Polish</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>79</td><td class="task-id">P16-3</td><td>README.md &mdash; what/why/install/quick-start/API reference</td><td><span class="badge badge-medium">4</span></td><td class="effort">12m</td></tr>
-			<tr><td>80</td><td class="task-id">P16-4</td><td>Full lint + vet + test pass</td><td><span class="badge badge-medium">4</span></td><td class="effort">10m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P16: CI &amp; Polish</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>79</td>
+                <td class="task-id">P16-3</td>
+                <td>
+                  README.md &mdash; what/why/install/quick-start/API reference
+                </td>
+                <td><span class="badge badge-medium">4</span></td>
+                <td class="effort">12m</td>
+              </tr>
+              <tr>
+                <td>80</td>
+                <td class="task-id">P16-4</td>
+                <td>Full lint + vet + test pass</td>
+                <td><span class="badge badge-medium">4</span></td>
+                <td class="effort">10m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P17&ndash;P18: cqrs-htmx Migration &mdash; Dependency Swap + Delete</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>81</td><td class="task-id">P17-1</td><td>Add go-datastar dependency to cqrs-htmx/datastar/go.mod</td><td><span class="badge badge-critical">5</span></td><td class="effort">3m</td></tr>
-			<tr><td>82</td><td class="task-id">P18-1</td><td>Delete <code>patch.go</code> (use go-datastar constructors)</td><td><span class="badge badge-critical">5</span></td><td class="effort">3m</td></tr>
-			<tr><td>83</td><td class="task-id">P18-2</td><td>Delete <code>options.go</code> (SDK re-exports)</td><td><span class="badge badge-critical">5</span></td><td class="effort">2m</td></tr>
-			<tr><td>84</td><td class="task-id">P17-2</td><td>Remove datastar-go SDK dependency from go.mod</td><td><span class="badge badge-high">4</span></td><td class="effort">2m</td></tr>
-			<tr><td>85</td><td class="task-id">P18-3</td><td>Delete <code>signals.go</code> (ReadSignals re-export)</td><td><span class="badge badge-high">4</span></td><td class="effort">1m</td></tr>
-			<tr><td>86</td><td class="task-id">P17-3</td><td><code>go mod tidy</code></td><td><span class="badge badge-medium">3</span></td><td class="effort">2m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>
+          P17&ndash;P18: cqrs-htmx Migration &mdash; Dependency Swap + Delete
+        </h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>81</td>
+                <td class="task-id">P17-1</td>
+                <td>Add go-datastar dependency to cqrs-htmx/datastar/go.mod</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>82</td>
+                <td class="task-id">P18-1</td>
+                <td>
+                  Delete <code>patch.go</code> (use go-datastar constructors)
+                </td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>83</td>
+                <td class="task-id">P18-2</td>
+                <td>Delete <code>options.go</code> (SDK re-exports)</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>84</td>
+                <td class="task-id">P17-2</td>
+                <td>Remove datastar-go SDK dependency from go.mod</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>85</td>
+                <td class="task-id">P18-3</td>
+                <td>Delete <code>signals.go</code> (ReadSignals re-export)</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">1m</td>
+              </tr>
+              <tr>
+                <td>86</td>
+                <td class="task-id">P17-3</td>
+                <td><code>go mod tidy</code></td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">2m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P19: cqrs-htmx &mdash; Rewrite Broadcaster</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>87</td><td class="task-id">P19-1</td><td>Rewrite Broadcaster to use <code>sse.Broadcaster[sse.Event]</code> internally</td><td><span class="badge badge-critical">5</span></td><td class="effort">10m</td></tr>
-			<tr><td>88</td><td class="task-id">P19-2</td><td>Replace hand-rolled replay ring buffer with sse.EventStore implementation</td><td><span class="badge badge-critical">5</span></td><td class="effort">10m</td></tr>
-			<tr><td>89</td><td class="task-id">P19-5</td><td>Rewrite ServeHTTP to use sse.Stream + sse.Broadcaster</td><td><span class="badge badge-critical">5</span></td><td class="effort">8m</td></tr>
-			<tr><td>90</td><td class="task-id">P19-3</td><td>Replace hand-rolled heartbeat with sse pattern (manual ping timer or stream.Send)</td><td><span class="badge badge-high">4</span></td><td class="effort">5m</td></tr>
-			<tr><td>91</td><td class="task-id">P19-4</td><td>Replace Last-Event-ID parsing with go-datastar.LastEventID</td><td><span class="badge badge-high">4</span></td><td class="effort">3m</td></tr>
-			<tr><td>92</td><td class="task-id">P19-6</td><td>Add Shutdown(ctx) + Health() via sse.Broadcaster</td><td><span class="badge badge-high">4</span></td><td class="effort">3m</td></tr>
-			<tr><td>93</td><td class="task-id">P19-7</td><td>Rewrite broadcaster_test.go (13 tests)</td><td><span class="badge badge-high">4</span></td><td class="effort">12m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P19: cqrs-htmx &mdash; Rewrite Broadcaster</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>87</td>
+                <td class="task-id">P19-1</td>
+                <td>
+                  Rewrite Broadcaster to use
+                  <code>sse.Broadcaster[sse.Event]</code> internally
+                </td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">10m</td>
+              </tr>
+              <tr>
+                <td>88</td>
+                <td class="task-id">P19-2</td>
+                <td>
+                  Replace hand-rolled replay ring buffer with sse.EventStore
+                  implementation
+                </td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">10m</td>
+              </tr>
+              <tr>
+                <td>89</td>
+                <td class="task-id">P19-5</td>
+                <td>Rewrite ServeHTTP to use sse.Stream + sse.Broadcaster</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">8m</td>
+              </tr>
+              <tr>
+                <td>90</td>
+                <td class="task-id">P19-3</td>
+                <td>
+                  Replace hand-rolled heartbeat with sse pattern (manual ping
+                  timer or stream.Send)
+                </td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>91</td>
+                <td class="task-id">P19-4</td>
+                <td>
+                  Replace Last-Event-ID parsing with go-datastar.LastEventID
+                </td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>92</td>
+                <td class="task-id">P19-6</td>
+                <td>Add Shutdown(ctx) + Health() via sse.Broadcaster</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>93</td>
+                <td class="task-id">P19-7</td>
+                <td>Rewrite broadcaster_test.go (13 tests)</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">12m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P20&ndash;P21: cqrs-htmx &mdash; Response/Errors/EventBridge</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>94</td><td class="task-id">P21-1</td><td>Update EventBridge to use go-datastar.Patch</td><td><span class="badge badge-critical">5</span></td><td class="effort">5m</td></tr>
-			<tr><td>95</td><td class="task-id">P20-1</td><td>Delete <code>response.go</code> &mdash; use go-datastar.Response</td><td><span class="badge badge-high">4</span></td><td class="effort">2m</td></tr>
-			<tr><td>96</td><td class="task-id">P21-2</td><td>Rewrite event_bridge_test.go (10 tests)</td><td><span class="badge badge-high">4</span></td><td class="effort">10m</td></tr>
-			<tr><td>97</td><td class="task-id">P20-2</td><td>Delete <code>errors.go</code> &mdash; use go-datastar.ErrorResponse</td><td><span class="badge badge-medium">3</span></td><td class="effort">2m</td></tr>
-			<tr><td>98</td><td class="task-id">P20-3</td><td>Delete <code>script_handler.go</code> + <code>script_embed.go</code></td><td><span class="badge badge-medium">3</span></td><td class="effort">2m</td></tr>
-			<tr><td>99</td><td class="task-id">P20-4</td><td>Rewrite response_test.go for go-datastar types</td><td><span class="badge badge-medium">3</span></td><td class="effort">12m</td></tr>
-		</tbody>
-	</table>
-	</div>
+        <h3>P20&ndash;P21: cqrs-htmx &mdash; Response/Errors/EventBridge</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>94</td>
+                <td class="task-id">P21-1</td>
+                <td>Update EventBridge to use go-datastar.Patch</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>95</td>
+                <td class="task-id">P20-1</td>
+                <td>
+                  Delete <code>response.go</code> &mdash; use
+                  go-datastar.Response
+                </td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>96</td>
+                <td class="task-id">P21-2</td>
+                <td>Rewrite event_bridge_test.go (10 tests)</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">10m</td>
+              </tr>
+              <tr>
+                <td>97</td>
+                <td class="task-id">P20-2</td>
+                <td>
+                  Delete <code>errors.go</code> &mdash; use
+                  go-datastar.ErrorResponse
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>98</td>
+                <td class="task-id">P20-3</td>
+                <td>
+                  Delete <code>script_handler.go</code> +
+                  <code>script_embed.go</code>
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>99</td>
+                <td class="task-id">P20-4</td>
+                <td>Rewrite response_test.go for go-datastar types</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">12m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-	<h3>P22&ndash;P25: Remaining Migration + Verification</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>100</td><td class="task-id">P22-1</td><td>Rewrite patch_test.go (8 tests)</td><td><span class="badge badge-high">4</span></td><td class="effort">10m</td></tr>
-			<tr><td>101</td><td class="task-id">P22-6</td><td>Update examples/datastar-demo (main.go + handlers + domain_cqrs)</td><td><span class="badge badge-high">4</span></td><td class="effort">12m</td></tr>
-			<tr><td>102</td><td class="task-id">P25-1</td><td>go-datastar: <code>nix flake check</code> passes</td><td><span class="badge badge-critical">5</span></td><td class="effort">5m</td></tr>
-			<tr><td>103</td><td class="task-id">P25-4</td><td>cqrs-htmx: all datastar module tests pass</td><td><span class="badge badge-critical">5</span></td><td class="effort">5m</td></tr>
-			<tr><td>104</td><td class="task-id">P25-2</td><td>go-datastar: all tests pass with race detector</td><td><span class="badge badge-critical">5</span></td><td class="effort">5m</td></tr>
-			<tr><td>105</td><td class="task-id">P22-2</td><td>Rewrite signals_test.go (6 tests)</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>106</td><td class="task-id">P22-3</td><td>Rewrite script_handler_test.go (8 tests)</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>107</td><td class="task-id">P22-5</td><td>Update integration_test/datastar_contract_test.go</td><td><span class="badge badge-medium">3</span></td><td class="effort">8m</td></tr>
-			<tr><td>108</td><td class="task-id">P23-1</td><td>Update cqrs-htmx/datastar/doc.go &mdash; describe CQRS adapter role</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>109</td><td class="task-id">P23-3</td><td>Update cqrs-htmx AGENTS.md architecture section</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>110</td><td class="task-id">P24-2</td><td>Write ADR: go-datastar/go-sse/SDK relationship</td><td><span class="badge badge-medium">3</span></td><td class="effort">10m</td></tr>
-			<tr><td>111</td><td class="task-id">P25-3</td><td>go-datastar: golangci-lint clean</td><td><span class="badge badge-high">4</span></td><td class="effort">5m</td></tr>
-			<tr><td>112</td><td class="task-id">P25-5</td><td>cqrs-htmx: integration tests pass</td><td><span class="badge badge-high">4</span></td><td class="effort">5m</td></tr>
-			<tr><td>113</td><td class="task-id">P25-6</td><td>Browser: go-datastar example produces correct DataStar events</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>114</td><td class="task-id">P25-7</td><td>Browser: cqrs-htmx datastar-demo works after migration</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-		</tbody>
-	</table>
-	</div>
-</section>
+        <h3>P22&ndash;P25: Remaining Migration + Verification</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>100</td>
+                <td class="task-id">P22-1</td>
+                <td>Rewrite patch_test.go (8 tests)</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">10m</td>
+              </tr>
+              <tr>
+                <td>101</td>
+                <td class="task-id">P22-6</td>
+                <td>
+                  Update examples/datastar-demo (main.go + handlers +
+                  domain_cqrs)
+                </td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">12m</td>
+              </tr>
+              <tr>
+                <td>102</td>
+                <td class="task-id">P25-1</td>
+                <td>go-datastar: <code>nix flake check</code> passes</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>103</td>
+                <td class="task-id">P25-4</td>
+                <td>cqrs-htmx: all datastar module tests pass</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>104</td>
+                <td class="task-id">P25-2</td>
+                <td>go-datastar: all tests pass with race detector</td>
+                <td><span class="badge badge-critical">5</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>105</td>
+                <td class="task-id">P22-2</td>
+                <td>Rewrite signals_test.go (6 tests)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>106</td>
+                <td class="task-id">P22-3</td>
+                <td>Rewrite script_handler_test.go (8 tests)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>107</td>
+                <td class="task-id">P22-5</td>
+                <td>Update integration_test/datastar_contract_test.go</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">8m</td>
+              </tr>
+              <tr>
+                <td>108</td>
+                <td class="task-id">P23-1</td>
+                <td>
+                  Update cqrs-htmx/datastar/doc.go &mdash; describe CQRS adapter
+                  role
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>109</td>
+                <td class="task-id">P23-3</td>
+                <td>Update cqrs-htmx AGENTS.md architecture section</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>110</td>
+                <td class="task-id">P24-2</td>
+                <td>Write ADR: go-datastar/go-sse/SDK relationship</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">10m</td>
+              </tr>
+              <tr>
+                <td>111</td>
+                <td class="task-id">P25-3</td>
+                <td>go-datastar: golangci-lint clean</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>112</td>
+                <td class="task-id">P25-5</td>
+                <td>cqrs-htmx: integration tests pass</td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>113</td>
+                <td class="task-id">P25-6</td>
+                <td>
+                  Browser: go-datastar example produces correct DataStar events
+                </td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>114</td>
+                <td class="task-id">P25-7</td>
+                <td>Browser: cqrs-htmx datastar-demo works after migration</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-<!-- TIER 4 -->
-<section id="tier4">
-	<h2><span class="num">06</span>Tier 4 &mdash; Polish &amp; Documentation</h2>
-	<p class="section-desc">CI pipeline, doc files, README updates, CHANGELOG. Not blocking but needed for a publishable library.</p>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>115</td><td class="task-id">P1-3</td><td>Write <code>flake.nix</code> (copy go-sse pattern: devShell, build/test/lint)</td><td><span class="badge badge-high">4</span></td><td class="effort">8m</td></tr>
-			<tr><td>116</td><td class="task-id">P1-5</td><td>Write <code>doc.go</code> &mdash; package documentation</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>117</td><td class="task-id">P16-1</td><td>golangci-lint config (<code>.golangci.yml</code>)</td><td><span class="badge badge-medium">3</span></td><td class="effort">5m</td></tr>
-			<tr><td>118</td><td class="task-id">P16-2</td><td>GitHub Actions CI workflow (build, test, vet, lint)</td><td><span class="badge badge-medium">3</span></td><td class="effort">8m</td></tr>
-			<tr><td>119</td><td class="task-id">P8-5</td><td>ValidElementPatchModes + ElementPatchModeFromString validation</td><td><span class="badge badge-low">2</span></td><td class="effort">5m</td></tr>
-			<tr><td>120</td><td class="task-id">P8-6</td><td>ValidNamespaces + NamespaceFromString validation</td><td><span class="badge badge-low">2</span></td><td class="effort">3m</td></tr>
-			<tr><td>121</td><td class="task-id">P13-4</td><td>ScriptTag(path) + Version() helpers</td><td><span class="badge badge-low">2</span></td><td class="effort">4m</td></tr>
-			<tr><td>122</td><td class="task-id">P9-6</td><td>Test gostar adapter</td><td><span class="badge badge-low">2</span></td><td class="effort">5m</td></tr>
-			<tr><td>123</td><td class="task-id">P10-2</td><td>Test HTTP verb helpers</td><td><span class="badge badge-low">2</span></td><td class="effort">3m</td></tr>
-			<tr><td>124</td><td class="task-id">P0-2</td><td>Test JoinLines in go-sse (table-driven)</td><td><span class="badge badge-low">2</span></td><td class="effort">3m</td></tr>
-			<tr><td>125</td><td class="task-id">P22-4</td><td>Rewrite example_test.go (2 examples)</td><td><span class="badge badge-low">2</span></td><td class="effort">3m</td></tr>
-			<tr><td>126</td><td class="task-id">P15-3</td><td>Run <code>templ generate</code> for example</td><td><span class="badge badge-low">2</span></td><td class="effort">1m</td></tr>
-			<tr><td>127</td><td class="task-id">P23-2</td><td>Update cqrs-htmx CHANGELOG.md</td><td><span class="badge badge-low">2</span></td><td class="effort">3m</td></tr>
-		</tbody>
-	</table>
-	</div>
-</section>
+      <!-- TIER 4 -->
+      <section id="tier4">
+        <h2>
+          <span class="num">06</span>Tier 4 &mdash; Polish &amp; Documentation
+        </h2>
+        <p class="section-desc">
+          CI pipeline, doc files, README updates, CHANGELOG. Not blocking but
+          needed for a publishable library.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>115</td>
+                <td class="task-id">P1-3</td>
+                <td>
+                  Write <code>flake.nix</code> (copy go-sse pattern: devShell,
+                  build/test/lint)
+                </td>
+                <td><span class="badge badge-high">4</span></td>
+                <td class="effort">8m</td>
+              </tr>
+              <tr>
+                <td>116</td>
+                <td class="task-id">P1-5</td>
+                <td>Write <code>doc.go</code> &mdash; package documentation</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>117</td>
+                <td class="task-id">P16-1</td>
+                <td>golangci-lint config (<code>.golangci.yml</code>)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>118</td>
+                <td class="task-id">P16-2</td>
+                <td>GitHub Actions CI workflow (build, test, vet, lint)</td>
+                <td><span class="badge badge-medium">3</span></td>
+                <td class="effort">8m</td>
+              </tr>
+              <tr>
+                <td>119</td>
+                <td class="task-id">P8-5</td>
+                <td>
+                  ValidElementPatchModes + ElementPatchModeFromString validation
+                </td>
+                <td><span class="badge badge-low">2</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>120</td>
+                <td class="task-id">P8-6</td>
+                <td>ValidNamespaces + NamespaceFromString validation</td>
+                <td><span class="badge badge-low">2</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>121</td>
+                <td class="task-id">P13-4</td>
+                <td>ScriptTag(path) + Version() helpers</td>
+                <td><span class="badge badge-low">2</span></td>
+                <td class="effort">4m</td>
+              </tr>
+              <tr>
+                <td>122</td>
+                <td class="task-id">P9-6</td>
+                <td>Test gostar adapter</td>
+                <td><span class="badge badge-low">2</span></td>
+                <td class="effort">5m</td>
+              </tr>
+              <tr>
+                <td>123</td>
+                <td class="task-id">P10-2</td>
+                <td>Test HTTP verb helpers</td>
+                <td><span class="badge badge-low">2</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>124</td>
+                <td class="task-id">P0-2</td>
+                <td>Test JoinLines in go-sse (table-driven)</td>
+                <td><span class="badge badge-low">2</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>125</td>
+                <td class="task-id">P22-4</td>
+                <td>Rewrite example_test.go (2 examples)</td>
+                <td><span class="badge badge-low">2</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>126</td>
+                <td class="task-id">P15-3</td>
+                <td>Run <code>templ generate</code> for example</td>
+                <td><span class="badge badge-low">2</span></td>
+                <td class="effort">1m</td>
+              </tr>
+              <tr>
+                <td>127</td>
+                <td class="task-id">P23-2</td>
+                <td>Update cqrs-htmx CHANGELOG.md</td>
+                <td><span class="badge badge-low">2</span></td>
+                <td class="effort">3m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-<!-- TIER 4 continued: docs -->
-<section id="tier4-docs">
-	<h3>Tier 4 &mdash; Cross-Repo Docs</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>128</td><td class="task-id">P24-1</td><td>Update go-sse README &mdash; add go-datastar as companion library</td><td><span class="badge badge-low">2</span></td><td class="effort">3m</td></tr>
-			<tr><td>129</td><td class="task-id">P24-3</td><td>Update go-sse AGENTS.md &mdash; mention go-datastar</td><td><span class="badge badge-low">2</span></td><td class="effort">3m</td></tr>
-			<tr><td>130</td><td class="task-id">P0-3</td><td>Document JoinLines in go-sse README</td><td><span class="badge badge-low">1</span></td><td class="effort">2m</td></tr>
-			<tr><td>131</td><td class="task-id">P1-4</td><td>Write <code>.gitignore</code> + <code>LICENSE</code> (MIT)</td><td><span class="badge badge-low">1</span></td><td class="effort">2m</td></tr>
-			<tr><td>132</td><td class="task-id">P8-4</td><td>WithViewTransitions()/WithoutViewTransitions() helpers</td><td><span class="badge badge-low">2</span></td><td class="effort">2m</td></tr>
-		</tbody>
-	</table>
-	</div>
-</section>
+      <!-- TIER 4 continued: docs -->
+      <section id="tier4-docs">
+        <h3>Tier 4 &mdash; Cross-Repo Docs</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>128</td>
+                <td class="task-id">P24-1</td>
+                <td>
+                  Update go-sse README &mdash; add go-datastar as companion
+                  library
+                </td>
+                <td><span class="badge badge-low">2</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>129</td>
+                <td class="task-id">P24-3</td>
+                <td>Update go-sse AGENTS.md &mdash; mention go-datastar</td>
+                <td><span class="badge badge-low">2</span></td>
+                <td class="effort">3m</td>
+              </tr>
+              <tr>
+                <td>130</td>
+                <td class="task-id">P0-3</td>
+                <td>Document JoinLines in go-sse README</td>
+                <td><span class="badge badge-low">1</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>131</td>
+                <td class="task-id">P1-4</td>
+                <td>
+                  Write <code>.gitignore</code> + <code>LICENSE</code> (MIT)
+                </td>
+                <td><span class="badge badge-low">1</span></td>
+                <td class="effort">2m</td>
+              </tr>
+              <tr>
+                <td>132</td>
+                <td class="task-id">P8-4</td>
+                <td>WithViewTransitions()/WithoutViewTransitions() helpers</td>
+                <td><span class="badge badge-low">2</span></td>
+                <td class="effort">2m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-<!-- FUTURE -->
-<section id="future">
-	<h2><span class="num">07</span>Future Considerations</h2>
-	<p class="section-desc">Not in initial scope. Worth doing eventually but not blocking the initial release.</p>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>#</th><th>ID</th><th>Task</th><th>Impact</th><th>Effort</th></tr></thead>
-		<tbody>
-			<tr><td>133</td><td class="task-id">F-1</td><td>Compression support in go-sse (middleware or Stream option) &mdash; replaces SDK's brotli/zstd/gzip/deflate layer</td><td><span class="badge badge-future">2</span></td><td class="effort">TBD</td></tr>
-			<tr><td>134</td><td class="task-id">F-2</td><td>DataStar JS version alignment automation (guard against Go constant / embedded JS drift)</td><td><span class="badge badge-future">2</span></td><td class="effort">TBD</td></tr>
-			<tr><td>135</td><td class="task-id">F-3</td><td>Add <code>Broadcaster[Patch]</code> convenience type to go-datastar (wraps <code>sse.Broadcaster[Patch]</code> with DataStar defaults)</td><td><span class="badge badge-future">2</span></td><td class="effort">TBD</td></tr>
-			<tr><td>136</td><td class="task-id">F-4</td><td>Evaluate: merge cqrs-htmx/datastar into root module (delete sub-module, EventBridge lives in root)</td><td><span class="badge badge-future">1</span></td><td class="effort">TBD</td></tr>
-		</tbody>
-	</table>
-	</div>
-</section>
+      <!-- FUTURE -->
+      <section id="future">
+        <h2><span class="num">07</span>Future Considerations</h2>
+        <p class="section-desc">
+          Not in initial scope. Worth doing eventually but not blocking the
+          initial release.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Task</th>
+                <th>Impact</th>
+                <th>Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>133</td>
+                <td class="task-id">F-1</td>
+                <td>
+                  Compression support in go-sse (middleware or Stream option)
+                  &mdash; replaces SDK's brotli/zstd/gzip/deflate layer
+                </td>
+                <td><span class="badge badge-future">2</span></td>
+                <td class="effort">TBD</td>
+              </tr>
+              <tr>
+                <td>134</td>
+                <td class="task-id">F-2</td>
+                <td>
+                  DataStar JS version alignment automation (guard against Go
+                  constant / embedded JS drift)
+                </td>
+                <td><span class="badge badge-future">2</span></td>
+                <td class="effort">TBD</td>
+              </tr>
+              <tr>
+                <td>135</td>
+                <td class="task-id">F-3</td>
+                <td>
+                  Add <code>Broadcaster[Patch]</code> convenience type to
+                  go-datastar (wraps <code>sse.Broadcaster[Patch]</code> with
+                  DataStar defaults)
+                </td>
+                <td><span class="badge badge-future">2</span></td>
+                <td class="effort">TBD</td>
+              </tr>
+              <tr>
+                <td>136</td>
+                <td class="task-id">F-4</td>
+                <td>
+                  Evaluate: merge cqrs-htmx/datastar into root module (delete
+                  sub-module, EventBridge lives in root)
+                </td>
+                <td><span class="badge badge-future">1</span></td>
+                <td class="effort">TBD</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-<!-- Key Design Notes -->
-<section id="design-notes">
-	<h2><span class="num">08</span>Key Design Notes</h2>
+      <!-- Key Design Notes -->
+      <section id="design-notes">
+        <h2><span class="num">08</span>Key Design Notes</h2>
 
-	<h3>Wire-Format Parity Requirements</h3>
-	<div class="callout callout-warning">
-		<strong>These behaviors must be reproduced exactly from the SDK:</strong>
-		<ul style="margin-top:8px; padding-left:20px;">
-			<li><b>Mode <code>outer</code> is never emitted</b> on the wire (it's the default)</li>
-			<li><b>Namespace <code>html</code> is never emitted</b> (default)</li>
-			<li><b>Retry duration gate differs per patch type:</b> Elements checks <code>&gt; 0</code>; Signals checks <code>!= DefaultSseRetryDuration</code></li>
-			<li><b>AutoRemove is <code>*bool</code>:</b> <code>nil</code> and <code>true</code> both add <code>data-effect="el.remove()"</code></li>
-			<li><b>ExecuteScript always uses</b> <code>selector: body</code> + <code>mode: append</code></li>
-			<li><b>Elements split on <code>\n</code></b> (not CRLF); each line gets its own <code>data: elements ...</code></li>
-			<li><b>Signals split on <code>\n</code></b> via bytes.SplitSeq; every line emitted unconditionally</li>
-			<li><b>ReadSignals accepts GET or DELETE</b> from <code>?datastar=</code> query; others from JSON body</li>
-			<li><b>Dataline keys have trailing space baked in:</b> <code>"selector "</code>, <code>"elements "</code>, etc.</li>
-			<li><b>ConsoleLog/Error use <code>%q</code></b> for JS string quoting</li>
-			<li><b>DispatchCustomEvent defaults</b> bubbles/cancelable/composed=true, selector=document</li>
-		</ul>
-	</div>
+        <h3>Wire-Format Parity Requirements</h3>
+        <div class="callout callout-warning">
+          <strong
+            >These behaviors must be reproduced exactly from the SDK:</strong
+          >
+          <ul style="margin-top: 8px; padding-left: 20px">
+            <li>
+              <b>Mode <code>outer</code> is never emitted</b> on the wire (it's
+              the default)
+            </li>
+            <li>
+              <b>Namespace <code>html</code> is never emitted</b> (default)
+            </li>
+            <li>
+              <b>Retry duration gate differs per patch type:</b> Elements checks
+              <code>&gt; 0</code>; Signals checks
+              <code>!= DefaultSseRetryDuration</code>
+            </li>
+            <li>
+              <b>AutoRemove is <code>*bool</code>:</b> <code>nil</code> and
+              <code>true</code> both add <code>data-effect="el.remove()"</code>
+            </li>
+            <li>
+              <b>ExecuteScript always uses</b> <code>selector: body</code> +
+              <code>mode: append</code>
+            </li>
+            <li>
+              <b>Elements split on <code>\n</code></b> (not CRLF); each line
+              gets its own <code>data: elements ...</code>
+            </li>
+            <li>
+              <b>Signals split on <code>\n</code></b> via bytes.SplitSeq; every
+              line emitted unconditionally
+            </li>
+            <li>
+              <b>ReadSignals accepts GET or DELETE</b> from
+              <code>?datastar=</code> query; others from JSON body
+            </li>
+            <li>
+              <b>Dataline keys have trailing space baked in:</b>
+              <code>"selector "</code>, <code>"elements "</code>, etc.
+            </li>
+            <li>
+              <b>ConsoleLog/Error use <code>%q</code></b> for JS string quoting
+            </li>
+            <li>
+              <b>DispatchCustomEvent defaults</b>
+              bubbles/cancelable/composed=true, selector=document
+            </li>
+          </ul>
+        </div>
 
-	<h3>API Improvement Over SDK</h3>
-	<div class="callout callout-solution">
-		<strong>Where go-datastar is BETTER than the SDK:</strong>
-		<ul style="margin-top:8px; padding-left:20px;">
-			<li><b>Patches are values</b> &mdash; storable, filterable, replayable, broadcastable. SDK patches are method calls on a live connection.</li>
-			<li><b>MarshalSignals returns error</b> instead of panicking. SDK's <code>MarshalAndPatchSignals</code> panics on marshal failure.</li>
-			<li><b>No <code>MarshalAndPatchSignalsIfMissing</code> aliasing bug</b> &mdash; SDK mutates the caller's opts slice via <code>append</code>.</li>
-			<li><b>No <code>WithExecuteScriptAttributeKVs</code> panic</b> &mdash; go-datastar returns an error on odd arg count instead.</li>
-			<li><b>Patches are testable without a connection</b> &mdash; construct, call <code>.Event()</code>, assert on the result.</li>
-			<li><b>Composable with go-sse</b> &mdash; Broadcaster, SubscribeFilter, Replay, Shutdown, Health all work out of the box.</li>
-		</ul>
-	</div>
+        <h3>API Improvement Over SDK</h3>
+        <div class="callout callout-solution">
+          <strong>Where go-datastar is BETTER than the SDK:</strong>
+          <ul style="margin-top: 8px; padding-left: 20px">
+            <li>
+              <b>Patches are values</b> &mdash; storable, filterable,
+              replayable, broadcastable. SDK patches are method calls on a live
+              connection.
+            </li>
+            <li>
+              <b>MarshalSignals returns error</b> instead of panicking. SDK's
+              <code>MarshalAndPatchSignals</code> panics on marshal failure.
+            </li>
+            <li>
+              <b
+                >No <code>MarshalAndPatchSignalsIfMissing</code> aliasing bug</b
+              >
+              &mdash; SDK mutates the caller's opts slice via
+              <code>append</code>.
+            </li>
+            <li>
+              <b>No <code>WithExecuteScriptAttributeKVs</code> panic</b> &mdash;
+              go-datastar returns an error on odd arg count instead.
+            </li>
+            <li>
+              <b>Patches are testable without a connection</b> &mdash;
+              construct, call <code>.Event()</code>, assert on the result.
+            </li>
+            <li>
+              <b>Composable with go-sse</b> &mdash; Broadcaster,
+              SubscribeFilter, Replay, Shutdown, Health all work out of the box.
+            </li>
+          </ul>
+        </div>
 
-	<h3>cqrs-htmx Migration Impact</h3>
-	<div class="table-wrap">
-	<table>
-		<thead><tr><th>File</th><th>Lines</th><th>Action</th><th>Replacement</th></tr></thead>
-		<tbody>
-			<tr><td><code>broadcaster.go</code></td><td class="effort">286</td><td>Rewrite to thin wrapper</td><td><code>sse.Broadcaster[sse.Event]</code> + EventStore</td></tr>
-			<tr><td><code>patch.go</code></td><td class="effort">~60</td><td>Delete</td><td>go-datastar constructors</td></tr>
-			<tr><td><code>options.go</code></td><td class="effort">~50</td><td>Delete</td><td>go-datastar types</td></tr>
-			<tr><td><code>response.go</code></td><td class="effort">~120</td><td>Delete</td><td>go-datastar.Response</td></tr>
-			<tr><td><code>errors.go</code></td><td class="effort">~40</td><td>Delete</td><td>go-datastar.ErrorResponse</td></tr>
-			<tr><td><code>signals.go</code></td><td class="effort">~10</td><td>Delete</td><td>go-datastar.ReadSignals</td></tr>
-			<tr><td><code>script_handler.go</code></td><td class="effort">~60</td><td>Delete</td><td>go-datastar.ScriptHandler</td></tr>
-			<tr><td><code>script_embed.go</code></td><td class="effort">~5</td><td>Delete</td><td>go-datastar embed</td></tr>
-			<tr><td><code>event_bridge.go</code></td><td class="effort">~80</td><td>Update (keep)</td><td>Change Patch import to go-datastar</td></tr>
-			<tr><td><code>doc.go</code></td><td class="effort">~54</td><td>Update</td><td>Describe CQRS adapter role</td></tr>
-			<tr><td><b>Total deleted</b></td><td class="effort"><b>~631</b></td><td></td><td></td></tr>
-			<tr><td><b>Net new code</b></td><td class="effort"><b>~30</b></td><td>EventBridge import change</td><td></td></tr>
-		</tbody>
-	</table>
-	</div>
-</section>
+        <h3>cqrs-htmx Migration Impact</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>File</th>
+                <th>Lines</th>
+                <th>Action</th>
+                <th>Replacement</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>broadcaster.go</code></td>
+                <td class="effort">286</td>
+                <td>Rewrite to thin wrapper</td>
+                <td><code>sse.Broadcaster[sse.Event]</code> + EventStore</td>
+              </tr>
+              <tr>
+                <td><code>patch.go</code></td>
+                <td class="effort">~60</td>
+                <td>Delete</td>
+                <td>go-datastar constructors</td>
+              </tr>
+              <tr>
+                <td><code>options.go</code></td>
+                <td class="effort">~50</td>
+                <td>Delete</td>
+                <td>go-datastar types</td>
+              </tr>
+              <tr>
+                <td><code>response.go</code></td>
+                <td class="effort">~120</td>
+                <td>Delete</td>
+                <td>go-datastar.Response</td>
+              </tr>
+              <tr>
+                <td><code>errors.go</code></td>
+                <td class="effort">~40</td>
+                <td>Delete</td>
+                <td>go-datastar.ErrorResponse</td>
+              </tr>
+              <tr>
+                <td><code>signals.go</code></td>
+                <td class="effort">~10</td>
+                <td>Delete</td>
+                <td>go-datastar.ReadSignals</td>
+              </tr>
+              <tr>
+                <td><code>script_handler.go</code></td>
+                <td class="effort">~60</td>
+                <td>Delete</td>
+                <td>go-datastar.ScriptHandler</td>
+              </tr>
+              <tr>
+                <td><code>script_embed.go</code></td>
+                <td class="effort">~5</td>
+                <td>Delete</td>
+                <td>go-datastar embed</td>
+              </tr>
+              <tr>
+                <td><code>event_bridge.go</code></td>
+                <td class="effort">~80</td>
+                <td>Update (keep)</td>
+                <td>Change Patch import to go-datastar</td>
+              </tr>
+              <tr>
+                <td><code>doc.go</code></td>
+                <td class="effort">~54</td>
+                <td>Update</td>
+                <td>Describe CQRS adapter role</td>
+              </tr>
+              <tr>
+                <td><b>Total deleted</b></td>
+                <td class="effort"><b>~631</b></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td><b>Net new code</b></td>
+                <td class="effort"><b>~30</b></td>
+                <td>EventBridge import change</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-<footer>
-	go-datastar Pareto Execution Plan &middot; 2026-08-07 &middot; 136 tasks &middot; ~11h total estimated effort<br>
-	Generated from analysis of <code>starfederation/datastar-go v1.2.2</code> + <code>cqrs-htmx/datastar</code> + <code>go-sse</code>
-</footer>
-
-</div>
-</body>
+      <footer>
+        go-datastar Pareto Execution Plan &middot; 2026-08-07 &middot; 136 tasks
+        &middot; ~11h total estimated effort<br />
+        Generated from analysis of
+        <code>starfederation/datastar-go v1.2.2</code> +
+        <code>cqrs-htmx/datastar</code> + <code>go-sse</code>
+      </footer>
+    </div>
+  </body>
 </html>

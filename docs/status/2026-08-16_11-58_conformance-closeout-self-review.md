@@ -42,14 +42,15 @@
 ## e) WHAT WE SHOULD IMPROVE
 
 1. **The auto-git daemon ships unverified states.** `d6bea20` was pushed not-fmt-clean and with 8 lint findings — the exact failure class this session existed to mop up. Any consumer who ran `nix fmt`/`.#lint` at that commit got failures. Mitigation: a pre-push/pre-commit hook (fmt-check + lint on changed files), or daemon-side verification before commit. This is systemic, not one-off.
-2. **`nix flake check` was never run before pushing the big feature commit** — the vendorHash breakage shipped to origin in `d6bea20` and lived there for ~1.5h. The plan's F21 explicitly ordered flake-check before F22 push; the daemon's commit reordered that. Lesson: when the daemon commits mid-plan, the verification debt must be re-paid before *any* push, not just before "my" push.
+2. **`nix flake check` was never run before pushing the big feature commit** — the vendorHash breakage shipped to origin in `d6bea20` and lived there for ~1.5h. The plan's F21 explicitly ordered flake-check before F22 push; the daemon's commit reordered that. Lesson: when the daemon commits mid-plan, the verification debt must be re-paid before _any_ push, not just before "my" push.
 3. **Handoff summaries rot fast.** The session summary was wrong about the fundamental tree state (claimed everything uncommitted). Correct move was made (re-derive from git), but the summary cost real minutes of planning against fiction. Rule: status reports assert `git status` output verbatim.
 4. **Know your linters' directive grammar.** nolint placement, exhaustruct/dupword interactions with formatters — these are cheap to memorize, expensive to rediscover.
-5. **The shared-vendorHash "superset" assumption in flake.nix was load-bearing and undocumented as fragile** — the old comment even asserted it as a fact ("which is why the vendorHash matches"). Assumptions in comments that encode *why two things must stay equal* should scream when the equality is version-sensitive.
+5. **The shared-vendorHash "superset" assumption in flake.nix was load-bearing and undocumented as fragile** — the old comment even asserted it as a fact ("which is why the vendorHash matches"). Assumptions in comments that encode _why two things must stay equal_ should scream when the equality is version-sensitive.
 
 ## f) NEXT (up to 50; ranked by Pareto impact)
 
 **Correctness & parity**
+
 1. Port ssetest fuzz seeds (incl. `FuzzWriteReadRoundTrip/2ba7b6a0aaf94e65`) to datastartest — filed in TODO_LIST.md.
 2. Re-verify go-datastar `master` builds/tests green once its foreign session lands (its tree state is unknown post-`496a18b`).
 3. Add a chunk-boundary invariance test to datastartest's fuzz targets (ssetest has it as a fuzz property; datastartest only as corpus tests).
@@ -91,4 +92,4 @@
 
 ---
 
-*Report written at session close; awaiting instructions.*
+_Report written at session close; awaiting instructions._

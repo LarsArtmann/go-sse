@@ -1,8 +1,8 @@
 # Status Report: DataStar Showcase Improvement Plan Execution
 
-**Date:** 2026-08-07 03:37  
-**Session:** Executing the 40-task Pareto plan from `docs/planning/2026-08-07_00-50_SUPERB-datastar-showcase-improvement-plan.html`  
-**Branch:** master  
+**Date:** 2026-08-07 03:37\
+**Session:** Executing the 40-task Pareto plan from `docs/planning/2026-08-07_00-50_SUPERB-datastar-showcase-improvement-plan.html`\
+**Branch:** master\
 **Working tree:** Clean (auto-commit daemon committed everything)
 
 ---
@@ -11,68 +11,68 @@
 
 ### Tier 0 — Blockers & Correctness (7/7 tasks)
 
-| #   | Task                                                                                | State                                                     |
-| --- | ----------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| 1   | `nix flake check` — full hermetic build+test                                        | ✅ Passed                                                 |
-| 2   | `nix fmt` — treefmt (gofumpt, goimports, golines)                                   | ✅ Passed (0 changes at start; 5 files reformatted later) |
-| 3   | Refactored `feedItemEvent` — added `category {cat}` structured data line            | ✅ Removes fragile HTML-string dependency                 |
-| 4   | Updated filter predicate — `strings.Contains(evt.Data, "category "+categoryAlert)`  | ✅ No longer greps rendered CSS classes                   |
-| 5   | Build + vet after filter refactor                                                   | ✅                                                        |
-| 6   | Concurrent multi-tab test harness — 2 goroutines collecting SSE via `bufio.Scanner` | ✅                                                        |
-| 7   | Fan-out assertions — verifies shared event IDs between client A and B               | ✅ PASSING with `-race`                                   |
+| # | Task                                                                                | State                                                     |
+| - | ----------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 1 | `nix flake check` — full hermetic build+test                                        | ✅ Passed                                                 |
+| 2 | `nix fmt` — treefmt (gofumpt, goimports, golines)                                   | ✅ Passed (0 changes at start; 5 files reformatted later) |
+| 3 | Refactored `feedItemEvent` — added `category {cat}` structured data line            | ✅ Removes fragile HTML-string dependency                 |
+| 4 | Updated filter predicate — `strings.Contains(evt.Data, "category "+categoryAlert)`  | ✅ No longer greps rendered CSS classes                   |
+| 5 | Build + vet after filter refactor                                                   | ✅                                                        |
+| 6 | Concurrent multi-tab test harness — 2 goroutines collecting SSE via `bufio.Scanner` | ✅                                                        |
+| 7 | Fan-out assertions — verifies shared event IDs between client A and B               | ✅ PASSING with `-race`                                   |
 
 ### Tier 1 — High-Impact (8/8 tasks)
 
-| #   | Task                                                                                          | State |
-| --- | --------------------------------------------------------------------------------------------- | ----- |
-| 8   | Reset `$replayed` signal to 0 before count — `BroadcastMany(replayEvent(0), countEvent(...))` | ✅    |
-| 9   | memStore test: empty store EventsAfter                                                        | ✅    |
-| 10  | memStore test: non-integer / unknown ID (4 subtests)                                          | ✅    |
-| 11  | memStore test: valid sequential replay                                                        | ✅    |
-| 12  | memStore test: ring buffer cap & eviction                                                     | ✅    |
-| 13  | Graceful shutdown test — broadcaster.Shutdown + Health().Closed check                         | ✅    |
-| 14  | Browser verification checklist — `example/datastar/VERIFY.md`                                 | ✅    |
-| 15  | Document subscriber count TOCTOU race in OnSubscribe comment                                  | ✅    |
+| #  | Task                                                                                          | State |
+| -- | --------------------------------------------------------------------------------------------- | ----- |
+| 8  | Reset `$replayed` signal to 0 before count — `BroadcastMany(replayEvent(0), countEvent(...))` | ✅    |
+| 9  | memStore test: empty store EventsAfter                                                        | ✅    |
+| 10 | memStore test: non-integer / unknown ID (4 subtests)                                          | ✅    |
+| 11 | memStore test: valid sequential replay                                                        | ✅    |
+| 12 | memStore test: ring buffer cap & eviction                                                     | ✅    |
+| 13 | Graceful shutdown test — broadcaster.Shutdown + Health().Closed check                         | ✅    |
+| 14 | Browser verification checklist — `example/datastar/VERIFY.md`                                 | ✅    |
+| 15 | Document subscriber count TOCTOU race in OnSubscribe comment                                  | ✅    |
 
 ### Tier 2 — Code Quality (8/8 tasks)
 
-| #   | Task                                                                                | State                                                      |
-| --- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| 16  | Document memStore O(n) scan as demo-only                                            | ✅ Inline comment in `EventsAfter`                         |
-| 17  | Extract `store.go` — memStore struct + methods                                      | ✅                                                         |
-| 18  | Extract `producer.go` — activityItem, msgTemplates, generators, event builders      | ✅                                                         |
-| 19  | Extract `handlers.go` — activityServer, handlers                                    | ✅ main.go is now ~80 lines (constants + main + embed)     |
-| 20  | Verify build + lint after file split                                                | ✅                                                         |
-| 21  | Add `IdleTimeout` (5min) to http.Server                                             | ✅ With comment explaining SSE vs ReadTimeout/WriteTimeout |
-| 22  | Extract magic numbers — `nodeCount`, `serviceCount`, `endpointCount`, etc.          | ✅ All template generators use named constants             |
-| 23  | Replay banner fade-out animation — CSS `bannerFade` keyframes (4s ease-in forwards) | ✅                                                         |
+| #  | Task                                                                                | State                                                      |
+| -- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| 16 | Document memStore O(n) scan as demo-only                                            | ✅ Inline comment in `EventsAfter`                         |
+| 17 | Extract `store.go` — memStore struct + methods                                      | ✅                                                         |
+| 18 | Extract `producer.go` — activityItem, msgTemplates, generators, event builders      | ✅                                                         |
+| 19 | Extract `handlers.go` — activityServer, handlers                                    | ✅ main.go is now ~80 lines (constants + main + embed)     |
+| 20 | Verify build + lint after file split                                                | ✅                                                         |
+| 21 | Add `IdleTimeout` (5min) to http.Server                                             | ✅ With comment explaining SSE vs ReadTimeout/WriteTimeout |
+| 22 | Extract magic numbers — `nodeCount`, `serviceCount`, `endpointCount`, etc.          | ✅ All template generators use named constants             |
+| 23 | Replay banner fade-out animation — CSS `bannerFade` keyframes (4s ease-in forwards) | ✅                                                         |
 
 ### Tier 3 — UI Polish (11/12 tasks)
 
-| #   | Task                                                                                          | State                             |
-| --- | --------------------------------------------------------------------------------------------- | --------------------------------- |
-| 24  | Empty-state message ("Waiting for events…") — `data-show="$totalEvents === 0 && !$paused"`    | ✅                                |
-| 25  | Total event count stat — `$totalEvents` signal + `totalEventSignal()` + "events sent" display | ✅                                |
-| 26  | Connection status indicator — pulsing green `.live-dot` with CSS `pulse` animation            | ✅                                |
-| 27  | Favicon — inline SVG lightning bolt via `data:image/svg+xml`                                  | ✅ No 404                         |
-| 28  | Open Graph meta tags — `og:title`, `og:description`, `og:type`                                | ✅                                |
-| 29  | Replay banner fade-out CSS (deduped with #23)                                                 | ✅                                |
-| 30  | **Scroll-to-top on new event**                                                                | ❌ NOT STARTED                    |
-| 31  | Pause button — `$paused` signal + Pause/Resume toggle + "Paused" banner                       | ✅                                |
-| 32  | Timestamp filter (`?since=5m`)                                                                | ⚠️ PARTIALLY DONE (see section b) |
-| 33  | CORS headers — `Access-Control-Allow-Origin: *` on /events                                    | ✅                                |
-| 34  | Dark/light theme toggle — `data-theme` attribute + localStorage persistence                   | ✅                                |
-| 35  | Keyboard shortcuts — `a` for alerts, `e` for all events                                       | ✅                                |
+| #  | Task                                                                                          | State                            |
+| -- | --------------------------------------------------------------------------------------------- | -------------------------------- |
+| 24 | Empty-state message ("Waiting for events…") — `data-show="$totalEvents === 0 && !$paused"`    | ✅                               |
+| 25 | Total event count stat — `$totalEvents` signal + `totalEventSignal()` + "events sent" display | ✅                               |
+| 26 | Connection status indicator — pulsing green `.live-dot` with CSS `pulse` animation            | ✅                               |
+| 27 | Favicon — inline SVG lightning bolt via `data:image/svg+xml`                                  | ✅ No 404                        |
+| 28 | Open Graph meta tags — `og:title`, `og:description`, `og:type`                                | ✅                               |
+| 29 | Replay banner fade-out CSS (deduped with #23)                                                 | ✅                               |
+| 30 | **Scroll-to-top on new event**                                                                | ❌ NOT STARTED                   |
+| 31 | Pause button — `$paused` signal + Pause/Resume toggle + "Paused" banner                       | ✅                               |
+| 32 | Timestamp filter (`?since=5m`)                                                                | ⚠️ PARTIALLY DONE (see section b) |
+| 33 | CORS headers — `Access-Control-Allow-Origin: *` on /events                                    | ✅                               |
+| 34 | Dark/light theme toggle — `data-theme` attribute + localStorage persistence                   | ✅                               |
+| 35 | Keyboard shortcuts — `a` for alerts, `e` for all events                                       | ✅                               |
 
 ### Tier 4 — Documentation (5/5 tasks)
 
-| #   | Task                                               | State                                                              |
-| --- | -------------------------------------------------- | ------------------------------------------------------------------ |
-| 36  | "Try It" 60-second checklist in README             | ✅ 5 numbered steps                                                |
-| 37  | "How It Works" data flow (ASCII diagram) in README | ✅ producer → store → broadcaster → subscriber → stream → browser  |
-| 38  | Feature mapping table in README                    | ✅ 8 rows mapping behavior → go-sse API                            |
-| 39  | Shutdown behavior documentation in README          | ✅ 4-step sequence                                                 |
-| 40  | Inline architecture comments in handlers.go        | ✅ Comments on NewStream, Replay, SubscribeFilter, Heartbeat, Send |
+| #  | Task                                               | State                                                              |
+| -- | -------------------------------------------------- | ------------------------------------------------------------------ |
+| 36 | "Try It" 60-second checklist in README             | ✅ 5 numbered steps                                                |
+| 37 | "How It Works" data flow (ASCII diagram) in README | ✅ producer → store → broadcaster → subscriber → stream → browser  |
+| 38 | Feature mapping table in README                    | ✅ 8 rows mapping behavior → go-sse API                            |
+| 39 | Shutdown behavior documentation in README          | ✅ 4-step sequence                                                 |
+| 40 | Inline architecture comments in handlers.go        | ✅ Comments on NewStream, Replay, SubscribeFilter, Heartbeat, Send |
 
 ### Bonus (not in original plan)
 
