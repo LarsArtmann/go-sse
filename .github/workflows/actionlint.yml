@@ -1,0 +1,29 @@
+name: actionlint
+
+# Workflow YAML is validated on EVERY push and PR regardless of which files
+# changed: a bad workflow edit must never redden master silently, and
+# docs-only pushes still get this signal. With shellcheck present on PATH,
+# actionlint additionally shellcheck-lints every `run:` block in every
+# workflow — the explicit `command -v shellcheck` step below proves that
+# integration is active instead of silently skipped.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v7
+        with:
+          go-version-file: go.mod
+      - name: Install actionlint
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+      - name: Prove shellcheck presence (its integration is silently optional without it)
+        run: command -v shellcheck
+      - name: Lint workflows (run blocks are shellcheck-checked)
+        run: actionlint

@@ -156,6 +156,8 @@
               pkgs.govulncheck
               pkgs.trash-cli
               pkgs.templ
+              pkgs.actionlint
+              pkgs.shellcheck
             ];
 
             GOWORK = "off";

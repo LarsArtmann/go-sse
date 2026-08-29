@@ -43,6 +43,21 @@ jobs:
         run: nix flake check
       # Runs even when the gate failed (always()) so the failing diff is
       # reviewable in a PR, not only in the red run's logs.
+      - name: Close superseded update PRs
+        if: steps.drift.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Weekly runs pile up open PRs if old ones linger; the PR opened
+          # below supersedes every previous automated update PR.
+          gh pr list --state open --json number,headRefName \
+            --jq '.[] | select(.headRefName | startswith("chore/flake-update-")) | .number' \
+            | while read -r number; do
+                gh pr close "$number" \
+                  --comment "Superseded by today's automated flake-update run." \
+                  --delete-branch
+              done
       - name: Open update PR
         if: always() && steps.drift.outputs.changed == 'true'
         env:
