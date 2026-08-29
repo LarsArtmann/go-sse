@@ -4,11 +4,34 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## Changelog policy
+
+What earns a line here, versus living in git history only:
+
+- **Changelog-worthy:** every consumer- or contributor-visible change — API
+  additions/changes/fixes, behavior changes, test-infrastructure gains that
+  alter what CI proves (new gates, jobs, thresholds, schedules), docs that
+  ship to consumers (guides, conventions), and toolchain/version bumps that
+  affect how consumers build.
+- **Git-history-only:** deep chore — flake/Nix plumbing, vendor-hash
+  recomputes, lint-config churn, formatting sweeps. If a contributor cannot
+  observe it from the outside, it does not get a line.
+
+This ruling was formalized 2026-08-29 (decision gate D1 of the SUPERB plan)
+after the cron-workflow line followed the Added precedent while the earlier
+policy text said CI wiring was chore-tier; the precedent wins. It covers the
+`vendorHash` split and lint-stability commits that shipped inside v0.5.1
+without changelog lines (`a5ff824`, `7776bc7`).
+
 ## [Unreleased]
 
 ### Added
 
-- Nothing yet.
+- `actionlint` workflow (every push/PR) with shellcheck presence proven before linting, so every `run:` block in every workflow is shellcheck-checked instead of actionlint's shellcheck integration being silently skipped; both tools added to the devShell to keep local and CI runs identical.
+- The weekly flake-update workflow now closes superseded `chore/flake-update-*` PRs (branch included) before opening the new one — weekly runs can no longer pile up open PRs. Dry-run-verified on 2026-08-29 (no-drift path).
+- Status-report conventions v1.1: optional `## TL;DR` section, cover-line scope rules for cross-repo sessions, and an explicit note that `docs/status/AGENTS.md` specializes the global report format for this repo.
+- `docs/status/_template.md` — copy-pasteable report skeleton (title, preamble, coverage-delta line, a–g sections), linked from the conventions and the root AGENTS.md pointer.
+- Changelog policy formalized as a living top-level section (SUPERB decision gate D1): consumer/contributor-visible changes earn lines — including CI gates, jobs, thresholds, and schedules — while deep chore (flake plumbing, vendor-hash recomputes, lint-config churn) stays git-history-only.
 
 ### Fixed
 
@@ -59,10 +82,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Library coverage 99.3%; `eventBrand.Name()` 0% → 100%.
 - Flake `systems` narrowed to `x86_64-linux`, `aarch64-linux`, `aarch64-darwin`: Nixpkgs 26.11 dropped x86_64-darwin, so its derivations no longer evaluate; `nix flake check --all-systems` is green on the declared systems. Pure Go — excluded hosts still build from source.
 - Inferable generic type arguments removed from test call sites (`NewBroadcaster(WithBufferSize[int](1))`, `WithOnDrop(func…)`); required ones kept (`NewBroadcaster[int]()`, `WithBufferSize[int](…)`).
-
-### Policy
-
-- Chore-tier changes (flake/Nix plumbing, lint config, CI wiring) are documented in git history, not in this changelog. Exception: toolchain/version bumps that affect how consumers build, which are listed under Changed. This policy covers the `vendorHash` split and lint-stability commits that shipped inside v0.5.1 without changelog lines (`a5ff824`, `7776bc7`).
 
 ## [ssetest 0.2.0] - 2026-08-22
 

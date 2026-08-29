@@ -5,6 +5,12 @@ historical snapshot**: write it once, then only annotate it non-destructively
 (`~~item~~ done at \`hash\``) — never rewrite, reorder, or delete content after
 the fact. Reports with every numbered item resolved move to `archived/`.
 
+This file **specializes the global status-report format for this repo**: where
+the global skill and this file disagree, this file wins (it adds the coverage
+delta line, the a–g section letters, and the archive rules on top of the
+general skeleton). A copy-pasteable skeleton lives in
+[`_template.md`](_template.md).
+
 ## File naming
 
 `YYYY-MM-DD_HH-MM_slug.md` — session start time, kebab-case slug naming the
@@ -15,7 +21,10 @@ session's work, e.g. `2026-08-29_16-36_todo-list-full-execution-and-self-review.
 1. **Title:** `# Status Report — YYYY-MM-DD HH:MM — <Session Title>`
 2. **Preamble:** 3–6 lines — session scope, final gate state (`scripts/verify.sh`
    result, `nix flake check` result), and the **mandatory coverage-delta line** (below).
-3. **Sections a–g** — omit empty sections, but keep the letters of the ones you keep:
+3. **Optional `## TL;DR`:** 3–5 bullets, plain sentences, before section a).
+   Recommended for sessions that ship releases or land many items; skip for
+   small single-topic sessions where the preamble already says it all.
+4. **Sections a–g** — omit empty sections, but keep the letters of the ones you keep:
 
 | Section                        | Content                                                                                                                                           |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -40,6 +49,10 @@ Every report's preamble MUST carry exactly one bullet of this form:
   previous report (reports are snapshots; the number may have moved since).
 - Both modules, root `sse` library and `ssetest`, each with a delta vs the
   previous report's line. `=` when unchanged.
+- **Cross-repo sessions:** when the session materially changed another repo
+  (e.g. go-datastar), add that repo's measured coverage as extra bullets in the
+  same format (e.g. `- cover (go-datastar): datastartest 9x.x% (…)`), measured
+  in that repo, not quoted. The go-sse line stays mandatory in every report.
 - **Rationale:** the 2026-07-27 session shipped a 100% → 99.5% coverage
   regression unnoticed because coverage was never a report field. This line
   makes coverage regressions impossible to ship silently.
