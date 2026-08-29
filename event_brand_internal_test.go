@@ -9,11 +9,16 @@ import (
 	brandid "github.com/larsartmann/go-branded-id"
 )
 
+// wantBrandName states the expectation independently of the production
+// constant, so a wrong edit to eventBrandName cannot turn the assertions
+// below tautological.
+const wantBrandName = "SSEEvent"
+
 func TestEventBrandName(t *testing.T) {
 	t.Parallel()
 
-	if got := (eventBrand{}).Name(); got != "SSEEvent" {
-		t.Errorf("eventBrand.Name() = %q, want %q", got, "SSEEvent")
+	if got := (eventBrand{}).Name(); got != wantBrandName {
+		t.Errorf("eventBrand.Name() = %q, want %q", got, wantBrandName)
 	}
 }
 
@@ -28,7 +33,7 @@ func TestEventBrandNameWiredIntoBrandid(t *testing.T) {
 
 	// Name() exists so brandid's String/GoString/ValidateID diagnostics render
 	// "SSEEvent" instead of the raw type name. Pin that wiring.
-	if got := brandid.BrandName[eventBrand](); got != "SSEEvent" {
-		t.Errorf("brandid.BrandName[eventBrand]() = %q, want %q", got, "SSEEvent")
+	if got := brandid.BrandName[eventBrand](); got != wantBrandName {
+		t.Errorf("brandid.BrandName[eventBrand]() = %q, want %q", got, wantBrandName)
 	}
 }

@@ -39,20 +39,23 @@ jobs:
           go-version-file: go.mod
       - uses: golangci/golangci-lint-action@9fae48acfc02a90574d7c304a1758ef9895495fa # v7
         with:
-          # Pin to v2.12.2 — matches `pkgs.golangci-lint` in flake.nix
-          # (nixpkgs unstable) and is built with a recent Go, which is required
-          # because go.mod's `go` directive is 1.26.6. `version: latest`
-          # resolved to v1.64.8 (built with Go 1.24) inside the action's
-          # vendored fallback, which then refuses to load the config with:
+          # Pin to v2.13.1 — must match `pkgs.golangci-lint` in flake.nix
+          # (nixpkgs unstable, currently 2.13.1) so local and CI lint agree;
+          # a skew let a goconst counting difference between 2.12 and 2.13
+          # pass locally and fail CI. Also built with a recent Go, which is
+          # required because go.mod's `go` directive is 1.26.6. `version:
+          # latest` resolved to v1.64.8 (built with Go 1.24) inside the
+          # action's vendored fallback, which then refuses to load the config
+          # with:
           #   "the Go language version (go1.24) used to build golangci-lint
           #    is lower than the targeted Go version (1.26.6)"
           # We also need action v7 because v6 refuses golangci-lint v2
           # versions entirely ("golangci-lint v2 is not supported by
           # golangci-lint-action v6").
-          version: v2.12.2
+          version: v2.13.1
       - uses: golangci/golangci-lint-action@9fae48acfc02a90574d7c304a1758ef9895495fa # v7
         with:
-          version: v2.12.2
+          version: v2.13.1
           working-directory: ssetest
         env:
           GOWORK: "off"

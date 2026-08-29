@@ -76,6 +76,8 @@ func FuzzKeyedLines(f *testing.F) {
 	f.Add("signals", `{"progress":50}`)
 	f.Add("", "")
 	f.Add("k", "multi\r\nline\rhtml")
+	f.Add("\n", "x")
+	f.Add("multi\nline key", "value")
 
 	f.Fuzz(func(t *testing.T, key, value string) {
 		result := sse.KeyedLines(key, value)
@@ -89,10 +91,16 @@ func FuzzKeyedLines(f *testing.F) {
 			return
 		}
 
-		// Every line in the result must start with the key prefix.
-		for line := range strings.SplitSeq(result, "\n") {
-			if !strings.HasPrefix(line, key) {
-				t.Errorf("KeyedLines(%q, ...): line %q does not start with key", key, line)
+		// Every line in the result must start with the key prefix. The
+		// property only holds for line-safe keys: a key containing CR or LF
+		// is out of the keyed-data-line contract (keys are protocol tokens
+		// like "elements") and cannot prefix every output line. Such keys
+		// are still exercised by the round-trip below.
+		if !strings.ContainsAny(key, "\n\r") {
+			for line := range strings.SplitSeq(result, "\n") {
+				if !strings.HasPrefix(line, key) {
+					t.Errorf("KeyedLines(%q, ...): line %q does not start with key", key, line)
+				}
 			}
 		}
 

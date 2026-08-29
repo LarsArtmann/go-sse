@@ -14,7 +14,10 @@ import (
 // cross-assignment with other string-typed IDs.
 type eventBrand struct{}
 
-func (eventBrand) Name() string { return "SSEEvent" }
+// eventBrandName is what go-branded-id diagnostics render for [EventID].
+const eventBrandName = "SSEEvent"
+
+func (eventBrand) Name() string { return eventBrandName }
 
 // EventID is a branded identifier for SSE event identifiers (the id: field
 // and the Last-Event-ID request header). It prevents accidental cross-assignment
@@ -257,6 +260,9 @@ func JoinLines(lines ...string) string {
 // Returns "" when value is empty (no data line emitted).
 // An empty key is a no-op — each line gets just a space prefix. This is a
 // caller bug (keyed data lines require a key), not a valid pattern.
+// Keys containing CR or LF are likewise out of contract: keys are protocol
+// tokens ("elements", "signals"), and a multi-line key cannot prefix every
+// output line.
 //
 // Line endings in value (LF, CRLF, and lone CR) are normalized to LF by the
 // underlying [splitLines] — Windows-style CRLF in HTML fragments is handled
