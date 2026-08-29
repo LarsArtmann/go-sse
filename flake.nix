@@ -50,7 +50,7 @@
           # (ssetest replaces go-sse with a local path), so their vendored
           # module sets — and therefore FOD hashes — differ.
           vendorHash = "sha256-Gf8srGcQqteoGCUQSWcPrqZ+mSZKlmi8dkMobkkz464=";
-          vendorHashSsetest = "sha256-X9xB6/Spsqq3dMUGxMyUzFTBHcHzMP8ZggsjbKlYEZw=";
+          vendorHashSsetest = "sha256-dgqHjh3F0QFtRwgFD+2ntKmdfJqs/uCd8EZhJxg+7EQ=";
 
           # go-sse is a pure library (no `main` package), so we do not publish a
           # binary `packages.default` or an overlay. Instead, buildGoModule is used
@@ -83,7 +83,7 @@
 
           # Same hermetic compile + test check for the separate ssetest/ module.
           # buildGoModule assumes the module at the source root, but ssetest is a
-          # nested module with its own go.mod (`replace go-sse => ..`), so
+          # nested module with its own go.mod and go-sse dependency graph, so
           # preBuild cds into it and the package patterns resolve inside it. Its
           # vendored module set differs from the root module's, hence the
           # dedicated vendorHashSsetest.

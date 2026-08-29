@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Nothing yet.
+
+### Fixed
+
+- Nothing yet.
+
+## [ssetest 0.3.0] - 2026-08-29
+
+### Added
+
 - ssetest `RequireDataJSON(tb, evt, want)` — unmarshal-and-compare assertion for JSON-payload events: structural compare (key order and whitespace don't matter), type inferred from `want`, fatal-with-payload on invalid JSON.
 - `FuzzSplitSSELines` — direct fuzz target for the reader's line splitter, property-pinned against an independent spec § 9.2.5 reference model (CR/LF/CRLF terminators, CRLF-is-one, no trailing empty line), with 19 committed corpus entries.
 - BOM boundary matrix test: leading, double, and mid-stream BOM driven through every chunk size 1–7 (the probe's own `ReadFull` states).
@@ -16,13 +26,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Requires `go-sse v0.6.0` (paired release; the previous pin was v0.5.1).
 - ssetest `Collect*` helpers factor response-body closing into `closeBody`, making the `Close`-error branch unit-testable with an erroring `io.ReadCloser` fake (both branches now covered).
 - ssetest module `go` directive aligned with the root module (1.26.7).
 - ssetest coverage 95.3% → 97.2%.
-
-### Fixed
-
-- Nothing yet.
 
 ## [0.6.0] - 2026-08-29
 
