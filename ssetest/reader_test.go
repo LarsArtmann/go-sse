@@ -300,9 +300,9 @@ func TestStreamReader_SequentialReads(t *testing.T) {
 		"event: sync:ack\ndata: {\"commandId\":\"42\",\"status\":\"confirmed\"}\n\n" +
 		"event: report-updated\ndata: 2026-08-22\n\n"
 
-	sr := ssetest.NewStreamReader(strings.NewReader(wire))
+	reader := ssetest.NewStreamReader(strings.NewReader(wire))
 
-	evt1, err := sr.Next()
+	evt1, err := reader.Next()
 	if err != nil {
 		t.Fatalf("first Next: %v", err)
 	}
@@ -315,7 +315,7 @@ func TestStreamReader_SequentialReads(t *testing.T) {
 		t.Errorf("event[0].Data: got %q, want %q", evt1.Data(), "connected")
 	}
 
-	evt2, err := sr.Next()
+	evt2, err := reader.Next()
 	if err != nil {
 		t.Fatalf("second Next: %v", err)
 	}
@@ -324,7 +324,7 @@ func TestStreamReader_SequentialReads(t *testing.T) {
 		t.Errorf("event[1].Type: got %q, want %q", evt2.Type, "sync:ack")
 	}
 
-	evt3, err := sr.Next()
+	evt3, err := reader.Next()
 	if err != nil {
 		t.Fatalf("third Next: %v", err)
 	}
@@ -333,7 +333,7 @@ func TestStreamReader_SequentialReads(t *testing.T) {
 		t.Errorf("event[2].Type: got %q, want %q", evt3.Type, "report-updated")
 	}
 
-	_, err = sr.Next()
+	_, err = reader.Next()
 	if !errors.Is(err, io.EOF) {
 		t.Errorf("after all events: got %v, want io.EOF", err)
 	}
@@ -344,10 +344,10 @@ func TestStreamReader_PreservesBufferedData(t *testing.T) {
 
 	const wire = "data: 1\n\ndata: 2\n\ndata: 3\n\ndata: 4\n\n"
 
-	sr := ssetest.NewStreamReader(strings.NewReader(wire))
+	reader := ssetest.NewStreamReader(strings.NewReader(wire))
 
 	for i := 1; i <= 4; i++ {
-		evt, err := sr.Next()
+		evt, err := reader.Next()
 		if err != nil {
 			t.Fatalf("Next #%d: %v", i, err)
 		}
@@ -358,7 +358,7 @@ func TestStreamReader_PreservesBufferedData(t *testing.T) {
 		}
 	}
 
-	_, err := sr.Next()
+	_, err := reader.Next()
 	if !errors.Is(err, io.EOF) {
 		t.Errorf("after all events: got %v, want io.EOF", err)
 	}
@@ -371,9 +371,9 @@ func TestStreamReader_DatalessFramesSkipped(t *testing.T) {
 		"id: 7\n\n" +
 		"event: real\ndata: payload\n\n"
 
-	sr := ssetest.NewStreamReader(strings.NewReader(wire))
+	reader := ssetest.NewStreamReader(strings.NewReader(wire))
 
-	evt, err := sr.Next()
+	evt, err := reader.Next()
 	if err != nil {
 		t.Fatalf("Next: %v", err)
 	}
@@ -386,7 +386,7 @@ func TestStreamReader_DatalessFramesSkipped(t *testing.T) {
 		t.Errorf("id (sticky): got %q, want %q", evt.ID, "7")
 	}
 
-	_, err = sr.Next()
+	_, err = reader.Next()
 	if !errors.Is(err, io.EOF) {
 		t.Errorf("after one event: got %v, want io.EOF", err)
 	}
@@ -395,9 +395,9 @@ func TestStreamReader_DatalessFramesSkipped(t *testing.T) {
 func TestStreamReader_FailingReader(t *testing.T) {
 	t.Parallel()
 
-	sr := ssetest.NewStreamReader(failingReader{})
+	reader := ssetest.NewStreamReader(failingReader{})
 
-	_, err := sr.Next()
+	_, err := reader.Next()
 	if err == nil {
 		t.Fatal("expected error from StreamReader with failing reader")
 	}
@@ -410,9 +410,9 @@ func TestStreamReader_FailingReader(t *testing.T) {
 func TestMustReadNextEvent(t *testing.T) {
 	t.Parallel()
 
-	sr := ssetest.NewStreamReader(strings.NewReader("event: ping\ndata: pong\n\n"))
+	reader := ssetest.NewStreamReader(strings.NewReader("event: ping\ndata: pong\n\n"))
 
-	evt := ssetest.MustReadNextEvent(t, sr)
+	evt := ssetest.MustReadNextEvent(t, reader)
 	if evt.Type != "ping" {
 		t.Errorf("type: got %q, want %q", evt.Type, "ping")
 	}

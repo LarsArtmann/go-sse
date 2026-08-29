@@ -44,7 +44,7 @@
           # (ssetest replaces go-sse with a local path), so their vendored
           # module sets — and therefore FOD hashes — differ.
           vendorHash = "sha256-Gf8srGcQqteoGCUQSWcPrqZ+mSZKlmi8dkMobkkz464=";
-          vendorHashSsetest = "sha256-TzgUuZw7DdKK4uSM/6wTU31yvMp8TyWtFp+1JP7l7Gg=";
+          vendorHashSsetest = "sha256-X9xB6/Spsqq3dMUGxMyUzFTBHcHzMP8ZggsjbKlYEZw=";
 
           # go-sse is a pure library (no `main` package), so we do not publish a
           # binary `packages.default` or an overlay. Instead, buildGoModule is used
