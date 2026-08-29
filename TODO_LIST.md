@@ -34,15 +34,23 @@ Nothing open — the `safeDropCall` batch, `OnDrop(nil)` tests, and the
 
 ## CI & tooling
 
-Nothing open — `scripts/verify.sh`, the examples+templ CI job, the
-`nix flake check` CI job, the extended fuzz job (6 targets), the pinned
-`govulncheck@v1.7.0`, and the ssetest coverage threshold (95%) all shipped in
-the 2026-08-29 pass.
+| Status    | Item                                                             | Notes                                                                                                                                                                                                                                                 |
+| --------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔴 `TODO` | Schedule a periodic `nix flake update` + full-gate CI run (cron) | `.github/workflows/ci.yml` has no `schedule:` trigger, so dependency/input drift is only caught when someone bumps manually. A weekly cron running `nix flake update` + `nix flake check` (PR on change) would catch drift early. Source: [2026-07-27 report](docs/status/2026-07-27_10-26_removed-brand-name-test-and-self-review.md) item 50. |
+
+Shipped in the 2026-08-29 pass: `scripts/verify.sh`, the examples+templ CI
+job, the `nix flake check` CI job, the extended fuzz job (6 targets), the
+pinned `govulncheck@v1.7.0`, and the ssetest coverage threshold (95%).
 
 ## Docs
 
-Nothing open — `docs/guides/reconnection-and-retry.md` and the CONTRIBUTING
-release checklist shipped in the 2026-08-29 pass.
+| Status    | Item                                                                                  | Notes                                                                                                                                                                                                                                                                                      |
+| --------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 🔴 `TODO` | Document an auto-git commit-message review rule in AGENTS.md                          | Auto-git messages can be plausible-but-false for deletions: commit `38e79aa` says "expand test coverage" for a deletion that reduced it. Add a Gotcha telling sessions to sanity-check daemon-authored messages after the fact. Source: [2026-07-27 report](docs/status/2026-07-27_10-26_removed-brand-name-test-and-self-review.md) IMP4/item 25. |
+| 🔴 `TODO` | Add `docs/status/AGENTS.md` report conventions with a mandatory coverage-delta field  | No status-report conventions file exists, so the 2026-07-27 coverage regression (100% → 99.5%) shipped unnoticed — coverage was never a report field. One page: report sections plus a mandatory `-cover` delta line. Source: [2026-07-27 report](docs/status/2026-07-27_10-26_removed-brand-name-test-and-self-review.md) item 46.        |
+
+Shipped in the 2026-08-29 pass: `docs/guides/reconnection-and-retry.md` and
+the CONTRIBUTING release checklist.
 
 ## Cross-repo
 
@@ -56,3 +64,4 @@ release checklist shipped in the 2026-08-29 pass.
 | Status       | Item                                                        | Blocker                                                                                                                                                                                                                                                                                                                                                                           |
 | ------------ | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🔵 `BLOCKED` | CI headless browser test (DataStar client + example server) | Requires the browser-E2E scope decision first — see [docs/brainstorming/2026-08-03_nix-vm-e2e-testing-with-chromedp.md](docs/brainstorming/2026-08-03_nix-vm-e2e-testing-with-chromedp.md) (Option B vs C). The real DataStar JS client was manually verified against the example server on 2026-08-05 (`docs/status/archived/2026-08-05_10-15_datastar-example-cdn-url-fix.md`). |
+| 🔵 `BLOCKED` | Correct or accept the misleading auto-git commit `38e79aa`  | User decision on history rewrite: amending a month-old published commit conflicts with the no-rewrite rule, but its message ("expand test coverage for Event type") describes a coverage-REDUCING deletion and actively misleads `git log` readers. Cheap compromise if left as-is: the AGENTS.md auto-git note above. Source: [2026-07-27 report](docs/status/2026-07-27_10-26_removed-brand-name-test-and-self-review.md) §g2/item 4. |
