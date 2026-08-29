@@ -98,11 +98,13 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 
 ## Consumer test helpers (`ssetest/`)
 
-Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never leaks into consumer production builds. 95.5% statement coverage; 0 erraudit violations with `--enforce-go-error-family`.
+Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never leaks into consumer production builds. 95.3% statement coverage; 0 erraudit violations with `--enforce-go-error-family`.
 
 | Feature                                                               | Status           | Evidence                                                                                                                                                                                        |
 | --------------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | SSE wire-format parser, WHATWG § 9.2.6-conformant                     | FULLY_FUNCTIONAL | `ReadEvents`, `ReadNEvents`, `MustRead*` in `ssetest/reader.go` (custom CR/LF/CRLF split, BOM strip-once, sticky id/retry, NUL-id ignore, EOF discard); `reader_test.go`, `BenchmarkReadEvents` |
+| `StreamReader` (one-at-a-time reads on a live stream, single scanner across `Next()` calls) | FULLY_FUNCTIONAL | `StreamReader`, `NewStreamReader`, `Next` in `ssetest/reader.go` (added v0.2.0 — unlike `ReadNEvents`, no buffered data is lost between calls); `TestStreamReader_*` in `reader_test.go` |
+| `MustReadNextEvent` fatal helper (`testing.TB`)                        | FULLY_FUNCTIONAL | `MustReadNextEvent` in `ssetest/reader.go`; `TestMustReadNextEvent`                                             |
 | WPT conformance corpus (official browser suite as Go tests)           | FULLY_FUNCTIONAL | `wpt_format_corpus_test.go` — 17 WPT `eventsource/format-*` vectors, 4 spec § 9.2.6 example streams, 8 Chromium `event_source_parser_test.cc` cases, each with upstream citation                |
 | Chunk-boundary independence (TCP chunking never changes parse)        | FULLY_FUNCTIONAL | `chunk_boundary_test.go` — full corpus re-parsed through 1–4096 byte chunked readers; byte-by-byte property in `FuzzReadEvents`                                                                 |
 | Writer/reader round-trip identity                                     | FULLY_FUNCTIONAL | `roundtrip_test.go` table + `FuzzWriteReadRoundTrip` (root `sse.Event` → `WriteEvent` → `ReadEvents` → identity, CR/CRLF→LF normalization pinned)                                               |
@@ -114,7 +116,9 @@ Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never
 | `testing.TB` compatibility (T, B, GinkgoT)                            | FULLY_FUNCTIONAL | All public helpers take `tb testing.TB`; `TestHelpers_AcceptTestingB`                                                                                                                           |
 | Dogfood E2E over real go-sse types                                    | FULLY_FUNCTIONAL | `e2e_test.go` (Stream round-trip, Broadcaster fan-out, Replay+LastEventID, heartbeat invisibility, timeout read)                                                                                |
 | Hermetic Nix check for the nested module                              | FULLY_FUNCTIONAL | `hermeticCheckSsetest` (`checks.build-ssetest`) in `flake.nix`; `preBuild = "cd ssetest"` bridges buildGoModule's root-module assumption                                                        |
-| Debug rendering for failure messages                                  | FULLY_FUNCTIONAL | `Event.String`, `EventsString` in `ssetest/event.go`; `example_test.go` (godoc examples with output)                                                                                            |
+| Debug rendering for failure messages                                  | FULLY_FUNCTIONAL | `Event.String`, `EventsString` in `ssetest/event.go`; `example_test.go` (godoc examples with output)                           |
+
+Example coverage note: the runnable `example/` packages are measured in the repo-wide `go test ./... -cover` total (root 98.9%, `example/datastar` 46.3%, `example/server.go` and `example/htmx` 0%) but are excluded from the library coverage gate, which measures the `sse` package only.
 
 ## Explicit non-goals
 
@@ -135,4 +139,4 @@ Two same-author utility modules (the only `require` entries in `go.mod`):
 - `github.com/larsartmann/go-branded-id` — phantom-type branded IDs (`EventID`)
 - `github.com/larsartmann/go-error-family` — structured error wrapping
 
-Requires Go 1.26+ with `GOEXPERIMENT=jsonv2` (transitive, via `go-branded-id`).
+Requires Go 1.26.7+ (root `go.mod`; the `ssetest/` module requires 1.26.6+) with `GOEXPERIMENT=jsonv2` (transitive, via `go-branded-id`).

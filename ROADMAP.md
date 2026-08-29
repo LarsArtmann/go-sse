@@ -50,7 +50,8 @@ Stay aligned with the SSE spec and explore extensions:
 
 - SSE extension fields (CLTY, custom fields)
 - Full HTTP/2 and HTTP/3 streaming verification
-- Whether `LastEventID` should validate via `ParseEventID`
+
+(Note: the former "should `LastEventID` validate via `ParseEventID`" question is resolved — `LastEventIDFromRequest` has validated through `ParseEventID` since v0.1.0.)
 
 ## 4. Parked decisions
 

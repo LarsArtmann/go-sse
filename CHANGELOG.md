@@ -6,13 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-### Added
+### Changed
 
-- Nothing yet.
+- Go toolchain bumped to 1.26.7; Nix flake inputs refreshed (`713db38`). No library code changes.
 
-### Fixed
+### Policy
 
-- Nothing yet.
+- Chore-tier changes (flake/Nix plumbing, lint config, CI wiring) are documented in git history, not in this changelog. Exception: toolchain/version bumps that affect how consumers build, which are listed under Changed. This policy covers the `vendorHash` split and lint-stability commits that shipped inside v0.5.1 without changelog lines (`a5ff824`, `7776bc7`).
 
 ## [ssetest 0.2.0] - 2026-08-22
 

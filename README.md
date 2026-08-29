@@ -37,7 +37,7 @@ Every Go project that serves SSE reinvents the same four pieces: event serializa
 go get github.com/larsartmann/go-sse
 ```
 
-Requires Go 1.26+ with `GOEXPERIMENT=jsonv2` (transitive dependency on go-branded-id).
+Requires Go 1.26.7+ (see `go.mod`) with `GOEXPERIMENT=jsonv2` (transitive dependency on go-branded-id).
 
 ## Quick Start
 
@@ -166,7 +166,9 @@ func TestFeedHandler(t *testing.T) {
 }
 ```
 
-`CollectN` handles streaming handlers (reads exactly N events), `CollectWithTimeout` returns whatever arrived before a deadline, and `ReadEvents`/`ReadNEvents` parse any `io.Reader`. Per the SSE spec, dataless frames (heartbeats, id-only) never surface as events. All helpers accept `testing.TB`, so they work with `*testing.T`, `*testing.B`, and Ginkgo's `GinkgoT()`. See [ssetest/README.md](./ssetest/README.md).
+`CollectN` handles streaming handlers (reads exactly N events), `CollectWithTimeout` returns whatever arrived before a deadline, and `ReadEvents`/`ReadNEvents` parse any `io.Reader`. For test patterns that interleave reads with actions (POST, mutate state, read the next event), use a [`StreamReader`](./ssetest/README.md) — it keeps a single scanner across `Next()` calls so buffered data is never lost. Per the SSE spec, dataless frames (heartbeats, id-only) never surface as events. All helpers accept `testing.TB`, so they work with `*testing.T`, `*testing.B`, and Ginkgo's `GinkgoT()`. See [ssetest/README.md](./ssetest/README.md).
+
+The ssetest parser is spec-conformant to WHATWG HTML § 9.2.6 and pinned by the official Web Platform Tests `eventsource/format-*` corpus, re-run through 1–4096-byte chunked readers, and closed against `WriteEvent` with round-trip property tests (`ssetest/wpt_format_corpus_test.go`, `chunk_boundary_test.go`, `roundtrip_test.go`).
 
 ## API Reference
 
@@ -329,7 +331,7 @@ used by many protocols); DataStar is the most prominent consumer.
 
 ### Runnable example: live activity feed
 
-A complete DataStar example lives in [`example/datastar/`](example/datastar/).
+A complete DataStar example lives in [`example/datastar/`](example/datastar/); a minimal HTMX SSE example lives in [`example/htmx/`](example/htmx/). [`example/README.md`](example/README.md) compares the two approaches (mechanism, payload size, granularity, bundle size, trade-offs).
 It is a **live activity feed** that demonstrates every go-sse feature in under
 30 seconds of interaction.
 
