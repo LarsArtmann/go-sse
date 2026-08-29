@@ -60,10 +60,11 @@ do not skip items. Both modules version independently: the root library tags
        scripts/verify.sh
 
    `nix flake check` is the part raw `go test` cannot replace: it pins the
-   vendor hashes and builds both modules with the flake's own toolchain. Any
-   change under `ssetest/` can re-drift `vendorHashSsetest` — if the check
-   fails with a hash mismatch, copy the hash from the error message into
-   `flake.nix` and re-run.
+   vendor hashes and builds both modules with the flake's own toolchain. The
+   vendor hashes drift when a module's dependency graph changes (go.mod
+   require/replace/go.sum edits) — source-only edits do not re-drift them
+   (verified 2026-08-29). If the check fails with a hash mismatch, copy the
+   hash from the error message into `flake.nix` and re-run.
 
 4. **Validate the tag in a worktree before touching the remote.** Tags that
    fail `pkg.go.dev` verification are painful to retract — the module proxy

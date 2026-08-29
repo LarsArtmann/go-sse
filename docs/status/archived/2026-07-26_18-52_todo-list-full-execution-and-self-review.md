@@ -165,7 +165,6 @@
 
 Shipped all 11 items green on raw tooling, but **I violated the project's Nix-first workflow and nearly reported a phantom formatting failure caused by my own broken check**. The work is sound; the process had two avoidable stumbles. The repo's actual highest-priority bug (`vendorHash` drift) was visible from minute one and I didn't surface it until the last five minutes.
 
-
 ---
 
 ## Archival check (2026-08-29, docs-health pass - full EOF read)

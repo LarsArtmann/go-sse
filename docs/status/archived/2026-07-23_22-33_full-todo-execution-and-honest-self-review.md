@@ -352,7 +352,6 @@ The questions (§g) are all answered; the quality debt is now tracked in `TODO_L
 
 The library subsequently shipped `v0.2.0` with `BroadcastMany`, `SendJSON`, `Event.String`, and `EventsAfter` error propagation. Coverage rose to 97.9% with 94 tests.
 
-
 ---
 
 ## Archival check (2026-08-29, docs-health pass - full EOF read)

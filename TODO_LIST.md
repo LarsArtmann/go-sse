@@ -12,11 +12,11 @@ all shipped in that pass.
 
 ## Status legend
 
-| Status           | Meaning                                                                                      |
-| ---------------- | -------------------------------------------------------------------------------------------- |
-| 🔴 `TODO`        | Not started. Needs doing.                                                                    |
-| 🟡 `IN_PROGRESS` | Actively being worked on.                                                                    |
-| 🔵 `BLOCKED`     | Cannot proceed; external dependency or decision needed.                                      |
+| Status           | Meaning                                                                                       |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| 🔴 `TODO`        | Not started. Needs doing.                                                                     |
+| 🟡 `IN_PROGRESS` | Actively being worked on.                                                                     |
+| 🔵 `BLOCKED`     | Cannot proceed; external dependency or decision needed.                                       |
 | ⚪ `WONT`        | Deliberately declined, with the reason inline. Revisit only if the trigger condition changes. |
 
 ## Correctness & safety
@@ -26,11 +26,11 @@ Nothing open — the `safeDropCall` batch, `OnDrop(nil)` tests, and the
 
 ## Parser parity & fuzz depth
 
-| Status    | Item                                                                                     | Notes                                                                                                                                                            |
-| --------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ⚪ `WONT` | `testing/synctest` for the `CollectWithTimeout` tests                                    | The `testing/synctest` guidelines prohibit network I/O inside a bubble, and every `Collect*` helper owns a real-socket `httptest` server. A fake-net rewrite would test a different transport than production. The cost is one ~200 ms test; keep it real. Source: 2026-08-29 execution pass. |
-| ⚪ `WONT` | Remaining gopls "unnecessary type argument" infos                                        | All inferable type arguments in tests were removed (2026-08-29). What remains is explicit by necessity: `NewBroadcaster[T]()` has no args to infer from and `WithBufferSize[T](…)`'s T appears only in its return type. `gopls check` CLI reports 0 diagnostics; the rest are editor-only hints. |
-| ⚪ `WONT` | gopls `stdversion` friction on `encoding/json/v2`                                        | Root-caused: `jsonv2` std API is gated to a `go 1.27` directive in std metadata; the directive cannot exceed the 1.26.7 toolchain. The diagnostic is intrinsic until Go 1.27 and disappears then. Not a config problem; golangci-lint is clean. |
+| Status    | Item                                                  | Notes                                                                                                                                                                                                                                                                                            |
+| --------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ⚪ `WONT` | `testing/synctest` for the `CollectWithTimeout` tests | The `testing/synctest` guidelines prohibit network I/O inside a bubble, and every `Collect*` helper owns a real-socket `httptest` server. A fake-net rewrite would test a different transport than production. The cost is one ~200 ms test; keep it real. Source: 2026-08-29 execution pass.    |
+| ⚪ `WONT` | Remaining gopls "unnecessary type argument" infos     | All inferable type arguments in tests were removed (2026-08-29). What remains is explicit by necessity: `NewBroadcaster[T]()` has no args to infer from and `WithBufferSize[T](…)`'s T appears only in its return type. `gopls check` CLI reports 0 diagnostics; the rest are editor-only hints. |
+| ⚪ `WONT` | gopls `stdversion` friction on `encoding/json/v2`     | Root-caused: `jsonv2` std API is gated to a `go 1.27` directive in std metadata; the directive cannot exceed the 1.26.7 toolchain. The diagnostic is intrinsic until Go 1.27 and disappears then. Not a config problem; golangci-lint is clean.                                                  |
 
 ## CI & tooling
 
@@ -46,13 +46,13 @@ release checklist shipped in the 2026-08-29 pass.
 
 ## Cross-repo
 
-| Status    | Item                                                                              | Notes                                                                                                                                                             |
-| --------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🔴 `TODO` | Writer goldens for DataStar patches in go-datastar core                            | The datastartest-side parity batch shipped 2026-08-29 (fuzz corpus port, conformance seeds, README section); the writer-golden pinning belongs to go-datastar's core package and needs that repo's own conventions — not done in the pass. |
-| 🔴 `TODO` | Commit + release the datastartest parity batch in go-datastar                      | Changes sit uncommitted in `/home/lars/projects/go-datastar` (`datastartest/README.md`, `reader_fuzz_test.go`, `testdata/fuzz/FuzzReadEvents/` ×51). Release a datastartest tag after the next ssetest release so both ship together. |
+| Status    | Item                                                          | Notes                                                                                                                                                                                                                                      |
+| --------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 🔴 `TODO` | Writer goldens for DataStar patches in go-datastar core       | The datastartest-side parity batch shipped 2026-08-29 (fuzz corpus port, conformance seeds, README section); the writer-golden pinning belongs to go-datastar's core package and needs that repo's own conventions — not done in the pass. |
+| 🔴 `TODO` | Commit + release the datastartest parity batch in go-datastar | Changes sit uncommitted in `/home/lars/projects/go-datastar` (`datastartest/README.md`, `reader_fuzz_test.go`, `testdata/fuzz/FuzzReadEvents/` ×51). Release a datastartest tag after the next ssetest release so both ship together.      |
 
 ## Blocked
 
-| Status       | Item                                                        | Blocker                                           |
-| ------------ | ----------------------------------------------------------- | ------------------------------------------------- |
+| Status       | Item                                                        | Blocker                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------ | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🔵 `BLOCKED` | CI headless browser test (DataStar client + example server) | Requires the browser-E2E scope decision first — see [docs/brainstorming/2026-08-03_nix-vm-e2e-testing-with-chromedp.md](docs/brainstorming/2026-08-03_nix-vm-e2e-testing-with-chromedp.md) (Option B vs C). The real DataStar JS client was manually verified against the example server on 2026-08-05 (`docs/status/archived/2026-08-05_10-15_datastar-example-cdn-url-fix.md`). |

@@ -269,7 +269,6 @@ The library has a working implementation (52 tests pass, lint clean, flake.nix v
 | Q2   | Should parent `go.work` be fixed?              | `GOWORK=off` is the permanent workaround; the `go.work` is gitignored and absent in fresh clones. Documented in `AGENTS.md`.                                                                  |
 | Q3   | Should the first git tag be created?           | Done — `v0.1.0` (2026-07-23) and `v0.2.0` (2026-07-24) both tagged and pushed.                                                                                                                |
 
-
 ---
 
 ## Archival check (2026-08-29, docs-health pass - full EOF read)

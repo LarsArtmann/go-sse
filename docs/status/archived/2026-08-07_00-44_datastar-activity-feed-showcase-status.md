@@ -8,21 +8,21 @@
 
 ## a) FULLY DONE
 
-| Item                                                                           | Verification                                                                                   |
-| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| Replaced per-request loop with `Broadcaster[sse.Event]` + background producer  | Server starts, events stream every 2s, single-client verified via Go SSE client                |
-| Implemented in-memory `EventStore` (ring buffer, 50-event cap)                 | `EventsAfter` tested via `Last-Event-ID: 5` — events 6-11 replayed correctly                   |
-| Implemented `SubscribeFilter` for `?filter=alerts`                             | Verified via curl-equivalent Go client — only alert-category events delivered                  |
-| Implemented `Heartbeat` (15s interval goroutine)                               | Code present, compiles, runs; not manually verified (would need 60s+ idle test)                |
-| Implemented subscriber count via `OnSubscribe`/`OnUnsubscribe` callbacks       | Count signal `{"subscriberCount":1}` seen on connect in SSE stream                             |
-| Implemented replay indicator banner (`$replayed` signal)                       | Replay event `{"replayed":N}` sent after `Replay()` returns count > 0; verified in stream      |
-| Rewrote `index.templ` with feed UI, filter toggle, stats bar, replay banner    | `templ generate` succeeded; page renders (verified via HTTP fetch of `/`)                      |
-| Rewrote `styles.css` with feed layout, type-colored items (alert/success/info) | CSS loaded in browser (verified in HTML response)                                              |
-| Updated README with feature-demonstration table                                | Committed in `9470fcd`                                                                         |
-| Updated AGENTS.md example descriptions                                         | Committed in `9470fcd`                                                                         |
-| All quality gates pass: `go vet`, `go build`, `go test -race`, `golangci-lint` | 0 issues, all pass                                                                             |
+| Item                                                                           | Verification                                                                                            |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| Replaced per-request loop with `Broadcaster[sse.Event]` + background producer  | Server starts, events stream every 2s, single-client verified via Go SSE client                         |
+| Implemented in-memory `EventStore` (ring buffer, 50-event cap)                 | `EventsAfter` tested via `Last-Event-ID: 5` — events 6-11 replayed correctly                            |
+| Implemented `SubscribeFilter` for `?filter=alerts`                             | Verified via curl-equivalent Go client — only alert-category events delivered                           |
+| Implemented `Heartbeat` (15s interval goroutine)                               | Code present, compiles, runs; not manually verified (would need 60s+ idle test)                         |
+| Implemented subscriber count via `OnSubscribe`/`OnUnsubscribe` callbacks       | Count signal `{"subscriberCount":1}` seen on connect in SSE stream                                      |
+| Implemented replay indicator banner (`$replayed` signal)                       | Replay event `{"replayed":N}` sent after `Replay()` returns count > 0; verified in stream               |
+| Rewrote `index.templ` with feed UI, filter toggle, stats bar, replay banner    | `templ generate` succeeded; page renders (verified via HTTP fetch of `/`)                               |
+| Rewrote `styles.css` with feed layout, type-colored items (alert/success/info) | CSS loaded in browser (verified in HTML response)                                                       |
+| Updated README with feature-demonstration table                                | Committed in `9470fcd`                                                                                  |
+| Updated AGENTS.md example descriptions                                         | Committed in `9470fcd`                                                                                  |
+| All quality gates pass: `go vet`, `go build`, `go test -race`, `golangci-lint` | 0 issues, all pass                                                                                      |
 | Planning document written with mermaid graph                                   | `docs/planning/archived/2026-08-06_23-54_SUPERB-datastar-activity-feed-showcase.md` committed by daemon |
-| Committed and pushed to origin/master                                          | `git status` clean, `git push` succeeded                                                       |
+| Committed and pushed to origin/master                                          | `git status` clean, `git push` succeeded                                                                |
 
 ---
 

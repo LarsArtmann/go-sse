@@ -17,14 +17,14 @@
 
 ### Deviations/gaps found in OUR docs state
 
-| #  | Item                                                                                  | Evidence                                              |
-| -- | --------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| G1 | `eventBrand.Name()` 0% covered since 2026-07-27                                          | `go tool cover -func`: `event.go:17 Name 0.0%`          |
-| G2 | No release checklist in CONTRIBUTING                                                     | `grep -ci release CONTRIBUTING.md` → 0                  |
-| G3 | `govulncheck @latest` in CI (non-reproducible)                                           | `.github/workflows/ci.yml` Vulncheck job                |
-| G4 | ssetest `go.mod` at `go 1.26.6` vs root `1.26.7`                                         | `ssetest/go.mod:4`                                      |
-| G5 | `nix flake check --all-systems` (darwin/aarch64) never run                               | flake check warning, every run                          |
-| G6 | No AGENTS.md note on the `vendorHash` recompute flow (bit 3 releases + this session)     | AGENTS.md gotchas, absent before this plan              |
+| #  | Item                                                                                 | Evidence                                       |
+| -- | ------------------------------------------------------------------------------------ | ---------------------------------------------- |
+| G1 | `eventBrand.Name()` 0% covered since 2026-07-27                                      | `go tool cover -func`: `event.go:17 Name 0.0%` |
+| G2 | No release checklist in CONTRIBUTING                                                 | `grep -ci release CONTRIBUTING.md` → 0         |
+| G3 | `govulncheck @latest` in CI (non-reproducible)                                       | `.github/workflows/ci.yml` Vulncheck job       |
+| G4 | ssetest `go.mod` at `go 1.26.6` vs root `1.26.7`                                     | `ssetest/go.mod:4`                             |
+| G5 | `nix flake check --all-systems` (darwin/aarch64) never run                           | flake check warning, every run                 |
+| G6 | No AGENTS.md note on the `vendorHash` recompute flow (bit 3 releases + this session) | AGENTS.md gotchas, absent before this plan     |
 
 ---
 
@@ -50,42 +50,42 @@
 
 ## 3. Comprehensive Plan (coarse tasks, 30–100 min)
 
-| # | Task                                                                                            | Impact | Effort | Tier |
-| - | ------------------------------------------------------------------------------------------------- | ------ | ------ | ---- |
-| 1 | Read all ten `2026-07-*` reports to EOF; classify each fully-resolved vs open                     | Critical | 60min  | 1%   |
-| 2 | Verify borderline claims against code (coverage, CONTRIBUTING, tags, CI, flake)                   | Critical | 20min  | 1%   |
-| 3 | Append archival checks to the nine resolved reports; git mv them + July HTML to `archived/`       | Critical | 20min  | 4%   |
-| 4 | Keep `2026-07-27_10-26` live; add `eventBrand.Name()` TODO with measured evidence                 | High   | 5min   | 4%   |
-| 5 | Add TODO rows: govulncheck pin, release checklist, go-directive align, `--all-systems`            | High   | 10min  | 20%  |
-| 6 | Add AGENTS.md `vendorHash` recompute gotcha                                                       | High   | 5min   | 20%  |
-| 7 | Write this plan document with mermaid graph + tables                                              | Med    | 15min  | 20%  |
-| 8 | Commit in logical units (fix / living docs / 2026-08 archive / 2026-07 archive)                   | Critical | 20min  | 100% |
-| 9 | `nix flake check` post-commit; push to origin                                                     | Critical | 10min  | 100% |
+| # | Task                                                                                        | Impact   | Effort | Tier |
+| - | ------------------------------------------------------------------------------------------- | -------- | ------ | ---- |
+| 1 | Read all ten `2026-07-*` reports to EOF; classify each fully-resolved vs open               | Critical | 60min  | 1%   |
+| 2 | Verify borderline claims against code (coverage, CONTRIBUTING, tags, CI, flake)             | Critical | 20min  | 1%   |
+| 3 | Append archival checks to the nine resolved reports; git mv them + July HTML to `archived/` | Critical | 20min  | 4%   |
+| 4 | Keep `2026-07-27_10-26` live; add `eventBrand.Name()` TODO with measured evidence           | High     | 5min   | 4%   |
+| 5 | Add TODO rows: govulncheck pin, release checklist, go-directive align, `--all-systems`      | High     | 10min  | 20%  |
+| 6 | Add AGENTS.md `vendorHash` recompute gotcha                                                 | High     | 5min   | 20%  |
+| 7 | Write this plan document with mermaid graph + tables                                        | Med      | 15min  | 20%  |
+| 8 | Commit in logical units (fix / living docs / 2026-08 archive / 2026-07 archive)             | Critical | 20min  | 100% |
+| 9 | `nix flake check` post-commit; push to origin                                               | Critical | 10min  | 100% |
 
 ## 4. Fine-Grained Breakdown (≤12 min per task)
 
-| ID   | Task                                                                                  | Parent | Est  |
-| ---- | --------------------------------------------------------------------------------------- | ------ | ---- |
-| F1   | Read 21-06 + 21-23 to EOF                                                                | 1      | 12m  |
-| F2   | Read 21-35 + 22-33 to EOF                                                                | 1      | 12m  |
-| F3   | Read 24-03-12 + 24-18-10 to EOF                                                          | 1      | 12m  |
-| F4   | Read 26-18-30 + 26-18-52 to EOF                                                          | 1      | 12m  |
-| F5   | Read 26-19-48 + 27-10-26 to EOF                                                          | 1      | 12m  |
-| F6   | Verify `eventBrand.Name()` coverage via `go tool cover -func`                            | 2      | 5m   |
-| F7   | Verify CONTRIBUTING release-guidance absence + tags + CI fuzz targets                    | 2      | 5m   |
-| F8   | Append archival check + git mv: 21-06, 21-23, 21-35                                      | 3      | 8m   |
-| F9   | Append archival check + git mv: 22-33, 03-12, 18-10                                      | 3      | 8m   |
-| F10  | Append archival check + git mv: 18-30, 18-52, 19-48 + July plan HTML                     | 3      | 8m   |
-| F11  | TODO_LIST: add `eventBrand.Name()` row (Correctness & safety)                            | 4      | 5m   |
-| F12  | TODO_LIST: add govulncheck-pin + go-directive + `--all-systems` rows (CI & tooling)      | 5      | 6m   |
-| F13  | TODO_LIST: add CONTRIBUTING release-checklist row (Docs)                                 | 5      | 4m   |
-| F14  | AGENTS.md: vendorHash recompute gotcha                                                   | 6      | 5m   |
-| F15  | Write plan doc (this file) with mermaid + Pareto tables                                  | 7      | 12m  |
-| F16  | `git status` review; stage + commit (1) ssetest lint fix + vendorHash                    | 8      | 8m   |
-| F17  | Commit (2) living docs refresh                                                           | 8      | 6m   |
-| F18  | Commit (3) 2026-08-* archive sweep                                                       | 8      | 6m   |
-| F19  | Commit (4) 2026-07-* archive sweep + plan + status report                                | 8      | 6m   |
-| F20  | `nix flake check` post-commit; push; verify origin sync                                  | 9      | 10m  |
+| ID  | Task                                                                                | Parent | Est |
+| --- | ----------------------------------------------------------------------------------- | ------ | --- |
+| F1  | Read 21-06 + 21-23 to EOF                                                           | 1      | 12m |
+| F2  | Read 21-35 + 22-33 to EOF                                                           | 1      | 12m |
+| F3  | Read 24-03-12 + 24-18-10 to EOF                                                     | 1      | 12m |
+| F4  | Read 26-18-30 + 26-18-52 to EOF                                                     | 1      | 12m |
+| F5  | Read 26-19-48 + 27-10-26 to EOF                                                     | 1      | 12m |
+| F6  | Verify `eventBrand.Name()` coverage via `go tool cover -func`                       | 2      | 5m  |
+| F7  | Verify CONTRIBUTING release-guidance absence + tags + CI fuzz targets               | 2      | 5m  |
+| F8  | Append archival check + git mv: 21-06, 21-23, 21-35                                 | 3      | 8m  |
+| F9  | Append archival check + git mv: 22-33, 03-12, 18-10                                 | 3      | 8m  |
+| F10 | Append archival check + git mv: 18-30, 18-52, 19-48 + July plan HTML                | 3      | 8m  |
+| F11 | TODO_LIST: add `eventBrand.Name()` row (Correctness & safety)                       | 4      | 5m  |
+| F12 | TODO_LIST: add govulncheck-pin + go-directive + `--all-systems` rows (CI & tooling) | 5      | 6m  |
+| F13 | TODO_LIST: add CONTRIBUTING release-checklist row (Docs)                            | 5      | 4m  |
+| F14 | AGENTS.md: vendorHash recompute gotcha                                              | 6      | 5m  |
+| F15 | Write plan doc (this file) with mermaid + Pareto tables                             | 7      | 12m |
+| F16 | `git status` review; stage + commit (1) ssetest lint fix + vendorHash               | 8      | 8m  |
+| F17 | Commit (2) living docs refresh                                                      | 8      | 6m  |
+| F18 | Commit (3) 2026-08-* archive sweep                                                  | 8      | 6m  |
+| F19 | Commit (4) 2026-07-* archive sweep + plan + status report                           | 8      | 6m  |
+| F20 | `nix flake check` post-commit; push; verify origin sync                             | 9      | 10m |
 
 ## 5. Execution Graph
 

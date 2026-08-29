@@ -246,7 +246,6 @@ All issues identified above have been resolved:
 | **G2 — MIT or PROPRIETARY?**                | Answered by user: **MIT**. LICENSE updated.                                                                                                                                                                                                         |
 | **G3 — Should go-sse have a flake.nix?**    | Yes — `flake.nix` now exists and passes `nix flake check`. Provides hermetic build/test/lint/coverage/format (Go 1.26, golangci-lint, treefmt).                                                                                                     |
 
-
 ---
 
 ## Archival check (2026-08-29, docs-health pass - full EOF read)

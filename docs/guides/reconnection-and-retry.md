@@ -2,19 +2,19 @@
 
 How reconnection actually works in a Server-Sent Events system built on this
 library, layer by layer. There is no `retry` loop anywhere in go-sse — the
-word "retry" in the API (`Event.Retry`, `WriteRetry`) means the *browser's*
+word "retry" in the API (`Event.Retry`, `WriteRetry`) means the _browser's_
 reconnection hint, not a client-side retry of a failed operation. Reliability
 comes from five cooperating layers, each owned by a different component.
 
 ## The five layers
 
-| #   | Layer                     | Owner        | What it recovers from                                             |
-| --- | ------------------------- | ------------ | ----------------------------------------------------------------- |
-| 1   | Browser `EventSource`     | Client       | Any dropped connection — automatically, forever                    |
-| 2   | `retry:` hint             | Server → client | Paces reconnection attempts after a failure                     |
-| 3   | `Last-Event-ID` + `Replay` | Server      | Events missed while the client was disconnected                    |
-| 4   | `Heartbeat`               | Server       | Idle connections killed by proxies/load balancers                  |
-| 5   | `Shutdown` drain          | Your process | Clean handover on deploys — no events lost mid-broadcast           |
+| # | Layer                      | Owner           | What it recovers from                                    |
+| - | -------------------------- | --------------- | -------------------------------------------------------- |
+| 1 | Browser `EventSource`      | Client          | Any dropped connection — automatically, forever          |
+| 2 | `retry:` hint              | Server → client | Paces reconnection attempts after a failure              |
+| 3 | `Last-Event-ID` + `Replay` | Server          | Events missed while the client was disconnected          |
+| 4 | `Heartbeat`                | Server          | Idle connections killed by proxies/load balancers        |
+| 5 | `Shutdown` drain           | Your process    | Clean handover on deploys — no events lost mid-broadcast |
 
 ### 1. The browser reconnects (you get this for free)
 
@@ -24,8 +24,8 @@ reconnects on its own. go-sse's job ends at writing correct frames — a failed
 it, not to retry. Retrying a partial write would re-emit bytes already on the
 wire and corrupt the SSE frame stream. This is why connection-death errors
 (`sse.send_failed`, `sse.write_failed`) are classified `Transient` in
-`go-error-family` terms: "transient" here means *the client will recover by
-reconnecting*, not "try the same socket again".
+`go-error-family` terms: "transient" here means _the client will recover by
+reconnecting_, not "try the same socket again".
 
 ### 2. The `retry:` hint (server sets the pace)
 
@@ -43,7 +43,7 @@ value is sticky connection state: the browser keeps applying it until a later
 
 ### 3. `Last-Event-ID` + `Replay` (no missed events)
 
-This is the layer that makes reconnection *lossless*. Every event can carry an
+This is the layer that makes reconnection _lossless_. Every event can carry an
 `id:`; the browser remembers the last one it saw and sends it back in the
 `Last-Event-ID` header on reconnect. The server reads it and replays the gap
 from a store:

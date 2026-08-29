@@ -251,7 +251,6 @@ I recommended holding v0.2.1 until the 4 high-impact TODO items (flaky tests + i
 
 **Which scope do you want?** I cannot decide this alone — it depends on whether any downstream consumer is blocked on the dep bump, and your release cadence preference.
 
-
 ---
 
 ## Archival check (2026-08-29, docs-health pass - full EOF read)

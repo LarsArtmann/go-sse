@@ -24,17 +24,17 @@
 
 ### update-old-docs: 9 historical files annotated
 
-| #  | File                                                                                       | Action                   | Key resolutions marked                                                              |
-| -- | ------------------------------------------------------------------------------------------ | ------------------------ | ----------------------------------------------------------------------------------- |
+| #  | File                                                                                                | Action                   | Key resolutions marked                                                              |
+| -- | --------------------------------------------------------------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------- |
 | 9  | `docs/status/archived/2026-08-03_00-18_datastar-integration-keyed-lines-and-self-review.md`         | ANNOTATE                 | All section-c items shipped; Q1=no subpackage; Q3=raw HTML                          |
 | 10 | `docs/status/archived/2026-08-03_00-51_datastar-integration-wave1-4-execution-and-self-review.md`   | ANNOTATE + inline update | 9.7MB binary FIXED (`2c029b4`); `data-bind:style` still open; all Q1/Q2/Q3 resolved |
 | 11 | `docs/status/archived/2026-08-03_01-09_roadmap-restructure-and-docs-split-brain-fix.md`             | ANNOTATE                 | All section-b/c items resolved; 3 questions answered                                |
 | 12 | `docs/status/archived/2026-08-03_02-50_docs-health-execution-samber-do-research-and-self-review.md` | ANNOTATE                 | Binary FIXED; HARVEST done; samber/do Option C shipped                              |
 | 13 | `docs/status/archived/2026-08-03_07-03_predicate-filtering-self-review.md`                          | ANNOTATE                 | All section-b/c gaps closed by 09-00 session; 3 questions routed                    |
 | 14 | `docs/status/archived/2026-08-03_09-00_predicate-filtering-gap-closure.md`                          | ANNOTATE                 | DOMAIN_LANGUAGE refs FIXED; `_ = i` FIXED; remaining items in TODO_LIST             |
-| 15 | `docs/planning/2026-08-03_04-51_SUPERB-predicate-filtering.md`                             | ARCHIVE                  | All 32 tasks executed; moved to `docs/planning/archived/`                           |
-| 16 | `docs/planning/2026-08-03_datastar-integration-execution-plan.md`                          | ARCHIVE                  | Waves 1-4 shipped; YAGNI items rejected; moved to `docs/planning/archived/`         |
-| 17 | `docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md`                         | ANNOTATE                 | Option C adopted and shipped (`Shutdown`, `Health`); trigger criteria preserved     |
+| 15 | `docs/planning/2026-08-03_04-51_SUPERB-predicate-filtering.md`                                      | ARCHIVE                  | All 32 tasks executed; moved to `docs/planning/archived/`                           |
+| 16 | `docs/planning/2026-08-03_datastar-integration-execution-plan.md`                                   | ARCHIVE                  | Waves 1-4 shipped; YAGNI items rejected; moved to `docs/planning/archived/`         |
+| 17 | `docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md`                                  | ANNOTATE                 | Option C adopted and shipped (`Shutdown`, `Health`); trigger criteria preserved     |
 
 ### Quality gates (all green)
 

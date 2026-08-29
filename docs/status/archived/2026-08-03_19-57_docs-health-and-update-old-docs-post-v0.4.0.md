@@ -32,12 +32,12 @@ historical docs annotated.
 
 ### update-old-docs: historical files annotated
 
-| # | File                                                                           | Action                  | Key resolutions marked                                                                             |
-| - | ------------------------------------------------------------------------------ | ----------------------- | -------------------------------------------------------------------------------------------------- |
-| 5 | `docs/status/archived/2026-08-03_09-00_predicate-filtering-gap-closure.md`              | Inline correction on Q3 | "let it crash" policy **REVERSED** in v0.4.0 (`b666ed5`); `safePredCall` now recovers              |
-| 6 | `docs/status/archived/2026-08-03_19-30_v0.4.0-release-and-panic-recovery.md`            | Resolution appendix     | b.1-b.3/c.1-c.3 contradictions FIXED; c.4 planning doc archived; c.5 Q3 annotated; Q1/Q2/Q3 routed |
-| 7 | `docs/status/archived/2026-08-03_09-25_docs-health-and-update-old-docs-sweep.md`        | Resolution appendix     | f.1-f.8 done at v0.4.0; Q1-Q3 resolved; remaining items routed to TODO_LIST                        |
-| 8 | `docs/planning/2026-08-03_09-36_SUPERB-v0.4.0-release-and-correctness-gaps.md` | ARCHIVE                 | Status changed PLANNING → EXECUTED; moved to `docs/planning/archived/` via `git mv`                |
+| # | File                                                                             | Action                  | Key resolutions marked                                                                             |
+| - | -------------------------------------------------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------- |
+| 5 | `docs/status/archived/2026-08-03_09-00_predicate-filtering-gap-closure.md`       | Inline correction on Q3 | "let it crash" policy **REVERSED** in v0.4.0 (`b666ed5`); `safePredCall` now recovers              |
+| 6 | `docs/status/archived/2026-08-03_19-30_v0.4.0-release-and-panic-recovery.md`     | Resolution appendix     | b.1-b.3/c.1-c.3 contradictions FIXED; c.4 planning doc archived; c.5 Q3 annotated; Q1/Q2/Q3 routed |
+| 7 | `docs/status/archived/2026-08-03_09-25_docs-health-and-update-old-docs-sweep.md` | Resolution appendix     | f.1-f.8 done at v0.4.0; Q1-Q3 resolved; remaining items routed to TODO_LIST                        |
+| 8 | `docs/planning/2026-08-03_09-36_SUPERB-v0.4.0-release-and-correctness-gaps.md`   | ARCHIVE                 | Status changed PLANNING → EXECUTED; moved to `docs/planning/archived/` via `git mv`                |
 
 ### docs-health: living docs rebuilt/verified
 
