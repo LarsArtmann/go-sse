@@ -48,6 +48,15 @@ func WithBufferSize[T any](size int) Option[T] {
 // so it must be fast and non-blocking (e.g. an atomic increment or a buffered
 // channel send). Passing nil clears the callback.
 //
+// The callback must not re-enter the broadcaster: it runs under the read
+// lock, while every setter ([Broadcaster.OnDrop], [Broadcaster.OnSubscribe],
+// [Broadcaster.OnUnsubscribe]) takes the write lock — a re-entrant call
+// deadlocks. Hand the information off (channel, atomic) and return.
+//
+// A panicking callback is recovered: the broadcast continues to the
+// remaining subscribers, and one broken callback cannot crash
+// [Broadcaster.Broadcast] or [Broadcaster.BroadcastMany].
+//
 // The callback fires once per full subscriber, not once per broadcast: a single
 // Broadcast to N subscribers with full buffers invokes onDrop N times with the
 // same msg. A drop counter therefore counts per-subscriber drops, not unique
@@ -213,6 +222,11 @@ func (f *fanOut[T]) Unsubscribe(ch <-chan T) {
 // closed channel would panic. Because sends use a non-blocking select, no
 // goroutine blocks here, and the lock is held only for the brief fan-out.
 //
+// Drops are observable: register a callback via [WithOnDrop] or
+// [Broadcaster.OnDrop]. The callback runs on the calling goroutine under the
+// fan-out read lock and must not re-enter the broadcaster (deadlock);
+// panics in it are recovered.
+//
 // After [Broadcaster.Close] the subscriber set is nil and broadcasts are
 // silently dropped. During [Broadcaster.Shutdown] the set is still live,
 // so broadcasts reach the existing subscribers until the drain completes.
@@ -228,7 +242,8 @@ func (f *fanOut[T]) Broadcast(msg T) {
 // and the read lock is acquired once instead of once per message — this is
 // meaningfully cheaper than calling Broadcast in a loop for large batches.
 // Like Broadcast, slow subscribers with full buffers have individual messages
-// dropped (non-blocking).
+// dropped (non-blocking); drops are observable via [WithOnDrop] or
+// [Broadcaster.OnDrop] under the same callback contract as [Broadcaster.Broadcast].
 func (f *fanOut[T]) BroadcastMany(msgs ...T) {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
@@ -254,6 +269,19 @@ func safePredCall[T any](pred func(T) bool, msg T) (match bool) {
 	return pred(msg)
 }
 
+// safeDropCall calls fn(msg), recovering from panics. A panicking onDrop
+// callback is swallowed so one broken callback cannot crash Broadcast or
+// BroadcastMany on the broadcasting goroutine — the drop itself already
+// happened, and the callback is a pure observability hook with no recovery
+// action to take. Callers check nil before calling this helper.
+func safeDropCall[T any](fn func(T), msg T) {
+	defer func() {
+		_ = recover()
+	}()
+
+	fn(msg)
+}
+
 // sendAllLocked fans msg out to every subscriber. The caller must hold f.mu
 // (read or write) so that a concurrent Unsubscribe cannot close a channel mid-send.
 func (f *fanOut[T]) sendAllLocked(msg T) {
@@ -266,7 +294,7 @@ func (f *fanOut[T]) sendAllLocked(msg T) {
 		case sub.ch <- msg:
 		default:
 			if f.onDrop != nil {
-				f.onDrop(msg)
+				safeDropCall(f.onDrop, msg)
 			}
 		}
 	}
@@ -442,6 +470,11 @@ func (f *fanOut[T]) OnUnsubscribe(fn func()) {
 // subscriber's buffer is full. The callback receives the dropped message and
 // runs on the broadcasting goroutine inside the fan-out read lock, so it must
 // be fast and non-blocking. Pass nil to clear a previously registered callback.
+//
+// The callback must not re-enter the broadcaster: it runs under the read lock,
+// while this setter takes the write lock — a re-entrant call deadlocks. A
+// panicking callback is recovered and the broadcast continues; see [WithOnDrop]
+// for the full contract.
 //
 // The callback fires once per full subscriber per broadcast: a single Broadcast
 // to N full subscribers invokes onDrop N times with the same msg.

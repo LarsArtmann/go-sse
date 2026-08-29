@@ -55,6 +55,10 @@ func FuzzReadEvents(f *testing.F) {
 		"\xEF\xBB\xBF",
 		"\xEF\xBB",
 		"\xEF",
+		// The crasher that exposed the substring-assertion bug: contains the
+		// substring "data: hello\n\n" but is a different field name ("0data"),
+		// so it must dispatch nothing.
+		"0data: hello\n\n",
 	}
 
 	for _, seed := range seeds {

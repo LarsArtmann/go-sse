@@ -25,12 +25,16 @@ import (
 func Collect(tb testing.TB, handler http.Handler, opts ...RequestOption) []Event {
 	tb.Helper()
 
-	resp := doRequest(tb, handler, http.MethodGet, nil, "", context.Background(), opts)
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			tb.Errorf("close response body: %v", err)
-		}
-	}()
+	resp := doRequest(
+		tb,
+		handler,
+		http.MethodGet,
+		nil,
+		"",
+		context.Background(),
+		opts,
+	)
+	defer closeBody(tb, resp.Body)
 
 	return MustReadEvents(tb, resp.Body)
 }
@@ -51,12 +55,16 @@ func CollectWithRequest(
 ) []Event {
 	tb.Helper()
 
-	resp := doRequest(tb, handler, method, body, contentType, context.Background(), opts)
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			tb.Errorf("close response body: %v", err)
-		}
-	}()
+	resp := doRequest(
+		tb,
+		handler,
+		method,
+		body,
+		contentType,
+		context.Background(),
+		opts,
+	)
+	defer closeBody(tb, resp.Body)
 
 	return MustReadEvents(tb, resp.Body)
 }
@@ -93,12 +101,16 @@ func CollectN(tb testing.TB, handler http.Handler, count int, opts ...RequestOpt
 		return nil
 	}
 
-	resp := doRequest(tb, handler, http.MethodGet, nil, "", context.Background(), opts)
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			tb.Errorf("close response body: %v", err)
-		}
-	}()
+	resp := doRequest(
+		tb,
+		handler,
+		http.MethodGet,
+		nil,
+		"",
+		context.Background(),
+		opts,
+	)
+	defer closeBody(tb, resp.Body)
 
 	events, err := ReadNEvents(resp.Body, count)
 	if err != nil {
@@ -126,11 +138,7 @@ func CollectWithTimeout(
 	defer cancel()
 
 	resp := doRequest(tb, handler, http.MethodGet, nil, "", ctx, opts)
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			tb.Errorf("close response body: %v", err)
-		}
-	}()
+	defer closeBody(tb, resp.Body)
 
 	// A large count so ReadNEvents reads everything; the timeout enforces the deadline.
 	const maxEvents = 1 << 30
@@ -186,4 +194,16 @@ func doRequest(
 	}
 
 	return resp
+}
+
+// closeBody closes an HTTP response body, reporting a non-nil close error to
+// tb. Close errors are rare on healthy responses but silently swallowing them
+// would hide flaky transports (e.g. read races, truncation). Extracted so the
+// error branch is unit-testable with an erroring io.ReadCloser fake.
+func closeBody(tb testing.TB, body io.ReadCloser) {
+	tb.Helper()
+
+	if err := body.Close(); err != nil {
+		tb.Errorf("close response body: %v", err)
+	}
 }

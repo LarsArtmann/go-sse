@@ -1,0 +1,5 @@
+go test fuzz v1
+string("ђړܱټ˳®ްͻʄʤҡҜد\u038dǎҏƸȇЄƤȢϖ̔ݎؗ̎\u0080ؙ̼ρȑΉ")
+string("0")
+string("0")
+uint16(0)

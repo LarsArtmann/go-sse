@@ -1,0 +1,5 @@
+go test fuzz v1
+string("0000")
+string("")
+string("00\xd500\xfb\xd5ҧ0\xa70\xbb\xf7\x90\x950\xb4\xe40\xc50\x88\xa5000礤0\xad\x8a")
+uint16(99)

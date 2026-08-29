@@ -94,6 +94,37 @@ jobs:
       - run: go tool cover -func=ssetest-coverage.out
         working-directory: ssetest
 
+  examples:
+    name: Examples
+    runs-on: ubuntu-latest
+    env:
+      GOEXPERIMENT: jsonv2
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
+      # CI previously compiled only root + ssetest; a broken example or a stale
+      # index_templ.go shipped unnoticed.
+      - run: go build ./example/...
+      # @version form (not module mode): templ's cmd needs extra deps that are
+      # intentionally absent from go.sum; the version stays pinned to the
+      # dependency the examples were generated with.
+      - run: go run github.com/a-h/templ/cmd/templ@v0.3.1020 generate -check
+
+  nix:
+    name: Nix flake check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      # The hermetic gate: builds root + ssetest with the flake's own
+      # toolchain and vendor hashes — this is the check that catches
+      # vendorHash drift raw `go test` cannot see.
+      - run: nix flake check
+
   vulncheck:
     name: Vulncheck
     runs-on: ubuntu-latest
@@ -104,7 +135,9 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version-file: go.mod
-      - run: go install golang.org/x/vuln/cmd/govulncheck@latest
+      # Pinned to v1.7.0: the lint job documents why `latest` is unacceptable
+      # one job above; vulncheck must not repeat that anti-pattern.
+      - run: go install golang.org/x/vuln/cmd/govulncheck@v1.7.0
       - run: govulncheck ./...
       - run: govulncheck ./...
         working-directory: ssetest
@@ -125,7 +158,20 @@ jobs:
       # so one invocation per target with -fuzztime=1m each.
       - run: go test . -fuzz=FuzzWriteEvent -fuzztime=1m
       - run: go test . -fuzz=FuzzParseEventID -fuzztime=1m
+      # FuzzKeyedLines pins the DataStar keyed-data-line building block.
+      - run: go test . -fuzz=FuzzKeyedLines -fuzztime=1m
       - run: go test . -fuzz=FuzzReadEvents -fuzztime=1m
+        working-directory: ssetest
+        env:
+          GOWORK: off
+      # The write→read round-trip is the conformance contract; it must fuzz
+      # in CI like every other property.
+      - run: go test . -fuzz=FuzzWriteReadRoundTrip -fuzztime=1m
+        working-directory: ssetest
+        env:
+          GOWORK: off
+      # The line splitter behind the reader (internal target, same package).
+      - run: go test . -fuzz=FuzzSplitSSELines -fuzztime=1m
         working-directory: ssetest
         env:
           GOWORK: off

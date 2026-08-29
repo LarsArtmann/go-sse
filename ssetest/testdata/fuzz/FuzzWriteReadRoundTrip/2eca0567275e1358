@@ -1,0 +1,5 @@
+go test fuzz v1
+string("")
+string("")
+string("\x87\xc4")
+uint16(0)

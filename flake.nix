@@ -7,7 +7,6 @@
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
-    systems.url = "github:nix-systems/default";
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -18,12 +17,19 @@
     inputs@{
       self,
       flake-parts,
-      systems,
       treefmt-nix,
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = import systems;
+      # x86_64-darwin is excluded: Nixpkgs 26.11 dropped the platform, so
+      # its derivations no longer evaluate (nix flake check --all-systems
+      # fails on it otherwise). The library is pure Go — consumers on
+      # excluded hosts can still build from source with the go toolchain.
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
 
       imports = [
         treefmt-nix.flakeModule
@@ -211,12 +217,19 @@
               (cd ssetest && GOWORK=off go test ./... -coverprofile=../ssetest-coverage.out -covermode=atomic && go tool cover -func=../ssetest-coverage.out)
             '';
 
-            coverage-gate = mkApp "coverage-gate" [ goPkg pkgs.bc ] ''
+            coverage-gate = mkApp "coverage-gate" [ goPkg pkgs.bc pkgs.gnugrep ] ''
               export GOEXPERIMENT=jsonv2
+              export GOWORK=off
               cov=$(go test . -count=1 -coverprofile=/tmp/sse-cov >/dev/null 2>&1 && go tool cover -func=/tmp/sse-cov | tail -1 | grep -oP '\d+\.\d+(?=%)')
               echo "library coverage: ''${cov}% (threshold: 90%)"
               if (( $(echo "$cov < 90" | bc -l) )); then
                 echo "FAIL: library coverage ''${cov}% < 90%"
+                exit 1
+              fi
+              scov=$(cd ssetest && go test ./... -count=1 -coverprofile=/tmp/ssetest-cov >/dev/null 2>&1 && go tool cover -func=/tmp/ssetest-cov | tail -1 | grep -oP '\d+\.\d+(?=%)')
+              echo "ssetest coverage: ''${scov}% (threshold: 95%)"
+              if (( $(echo "$scov < 95" | bc -l) )); then
+                echo "FAIL: ssetest coverage ''${scov}% < 95%"
                 exit 1
               fi
               echo "OK"

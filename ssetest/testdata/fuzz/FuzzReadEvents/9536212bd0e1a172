@@ -1,0 +1,2 @@
+go test fuzz v1
+string("\r\n\r\n\r\nretry:100\r\ndata:\r\n\r\ndata:\r\n\r\n")

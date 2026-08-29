@@ -211,3 +211,47 @@ func TestE2E_CollectWithTimeout_Broadcaster(t *testing.T) {
 
 	ssetest.RequireData(t, events[0], "hello")
 }
+
+// TestE2E_StickyIDSurvivesReconnect pins the full browser-visible ID chain in
+// one flow: the server-assigned id: reaches the client (sticky parse state),
+// the client echoes it back as Last-Event-ID on reconnect, and — the part
+// nothing pinned end-to-end before — events dispatched after a replay still
+// report the last seen ID until a new id: arrives, exactly as the browser's
+// lastEventId tracking behaves.
+func TestE2E_StickyIDSurvivesReconnect(t *testing.T) {
+	t.Parallel()
+
+	store := sliceStore{
+		{Event: "feed", Data: "1", ID: sse.NewEventID("1")},
+		{Event: "feed", Data: "2", ID: sse.NewEventID("2")},
+	}
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		stream := sse.NewStream(w, r)
+		defer func() { _ = stream.Close() }()
+
+		if _, err := sse.Replay(stream, store, sse.LastEventIDFromRequest(r)); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+
+			return
+		}
+
+		// Live event with NO id: the wire frame carries none, but the
+		// browser-visible ID stays sticky at the last value seen.
+		_ = stream.Send(sse.Event{Event: "feed", Data: "live"})
+	})
+
+	// First connection: both stored events, then the live one.
+	first := ssetest.Collect(t, handler)
+	ssetest.RequireEventCount(t, first, 3)
+	ssetest.RequireEventID(t, first[0], "1")
+	ssetest.RequireEventID(t, first[1], "2")
+
+	// Reconnect from ID 1: event 2 replays, then the live event arrives with
+	// no id: on the wire — the parsed event must still report ID "2".
+	reconnect := ssetest.Collect(t, handler, ssetest.WithLastEventID("1"))
+	ssetest.RequireEventCount(t, reconnect, 2)
+	ssetest.RequireEventID(t, reconnect[0], "2")
+	ssetest.RequireEventID(t, reconnect[1], "2")
+	ssetest.RequireData(t, reconnect[1], "live")
+}

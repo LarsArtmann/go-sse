@@ -196,7 +196,7 @@ func TestSubscribeFilter_ConcurrentRace(t *testing.T) {
 	// race detector deschedules its collector goroutine. This turns the
 	// received-count assertion into an exact, deterministic equality instead
 	// of a flaky lower bound under CI contention.
-	b := sse.NewBroadcaster[sse.Event](
+	b := sse.NewBroadcaster(
 		sse.WithBufferSize[sse.Event](matchEvents),
 	)
 	defer b.Close()
@@ -404,7 +404,7 @@ func TestSubscribeFilter_ShutdownDrainsFilteredSubscribers(t *testing.T) {
 func TestSubscribeFilter_DropPolicyRespected(t *testing.T) {
 	t.Parallel()
 
-	b := sse.NewBroadcaster[sse.Event](sse.WithBufferSize[sse.Event](2))
+	b := sse.NewBroadcaster(sse.WithBufferSize[sse.Event](2))
 
 	ch := b.SubscribeFilter(func(evt sse.Event) bool {
 		return evt.Event == "match"

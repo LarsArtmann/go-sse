@@ -1,0 +1,5 @@
+go test fuzz v1
+string("0\xaf00\x92\xca0\xd700\xf800\xac\x97±\x84")
+string("000000000")
+string("0")
+uint16(0)

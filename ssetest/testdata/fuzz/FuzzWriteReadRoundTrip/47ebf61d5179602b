@@ -1,0 +1,5 @@
+go test fuzz v1
+string("\U0005ea55\U00070251")
+string("0")
+string("0")
+uint16(3000)

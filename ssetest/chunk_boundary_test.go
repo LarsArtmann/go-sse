@@ -1,6 +1,7 @@
 package ssetest_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -119,4 +120,52 @@ func TestParserCRLFSplitAcrossReads(t *testing.T) {
 		ssetest.RequireEventCount(t, events, 1)
 		ssetest.RequireData(t, events[0], "x")
 	})
+}
+
+// TestParserBOMSplitAcrossReads is the explicit BOM boundary matrix: the
+// 3-byte UTF-8 BOM (and the bytes immediately after it) land on every chunk
+// boundary from size 1 through 7. The BOM probe consumes the first three bytes
+// through its own ReadFull, so short reads inside the BOM are exactly the
+// states the 1–4096 sweep covers only implicitly.
+func TestParserBOMSplitAcrossReads(t *testing.T) {
+	t.Parallel()
+
+	const payload = "data: bom-stripped\n\n"
+
+	tests := []struct {
+		name      string
+		wire      string
+		wantCount int
+		wantData  string
+	}{
+		// One leading BOM is stripped — exactly once — wherever its bytes split.
+		{"single bom", "\xEF\xBB\xBF" + payload, 1, "bom-stripped"},
+		// A second BOM is NOT stripped: it poisons the field name, the line is
+		// ignored, and nothing dispatches.
+		{"double bom", "\xEF\xBB\xBF\xEF\xBB\xBF" + payload, 0, ""},
+		// A mid-stream BOM poisons the NEXT field name ("\xEF\xBB\xBFdata" is
+		// unknown), so the second frame dispatches nothing.
+		{"mid-stream bom", payload + "\xEF\xBB\xBFdata: y\n\n", 1, "bom-stripped"},
+	}
+
+	for _, tc := range tests {
+		for _, chunkSize := range []int{1, 2, 3, 4, 5, 6, 7} {
+			t.Run(fmt.Sprintf("%s/chunk-%d", tc.name, chunkSize), func(t *testing.T) {
+				t.Parallel()
+
+				events, err := ssetest.ReadEvents(
+					&chunkedReader{data: []byte(tc.wire), size: chunkSize},
+				)
+				if err != nil {
+					t.Fatalf("%s (chunk %d): read events: %v", tc.name, chunkSize, err)
+				}
+
+				ssetest.RequireEventCount(t, events, tc.wantCount)
+
+				if tc.wantCount > 0 {
+					ssetest.RequireData(t, events[0], tc.wantData)
+				}
+			})
+		}
+	}
 }

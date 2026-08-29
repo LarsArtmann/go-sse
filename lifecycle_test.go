@@ -235,7 +235,7 @@ func TestBroadcaster_Health_DuringOperation(t *testing.T) {
 func TestBroadcaster_Health_ReportsBufferSize(t *testing.T) {
 	t.Parallel()
 
-	b := sse.NewBroadcaster[sse.Event](sse.WithBufferSize[sse.Event](256))
+	b := sse.NewBroadcaster(sse.WithBufferSize[sse.Event](256))
 
 	health := b.Health()
 	if health.BufferSize != 256 {
@@ -259,7 +259,7 @@ func TestBroadcaster_WithBufferSize_AppliesToNewSubscribers(t *testing.T) {
 	t.Parallel()
 
 	const size = 8
-	b := sse.NewBroadcaster[sse.Event](sse.WithBufferSize[sse.Event](size))
+	b := sse.NewBroadcaster(sse.WithBufferSize[sse.Event](size))
 
 	ch := b.Subscribe()
 	defer b.Unsubscribe(ch)
@@ -289,14 +289,14 @@ drain:
 func TestBroadcaster_WithBufferSize_NonPositiveIsIgnored(t *testing.T) {
 	t.Parallel()
 
-	b := sse.NewBroadcaster[sse.Event](sse.WithBufferSize[sse.Event](0))
+	b := sse.NewBroadcaster(sse.WithBufferSize[sse.Event](0))
 
 	if h := b.Health(); h.BufferSize != 64 {
 		t.Errorf("BufferSize with 0 option: got %d, want default 64", h.BufferSize)
 	}
 
 	// Negative also ignored.
-	b2 := sse.NewBroadcaster[sse.Event](sse.WithBufferSize[sse.Event](-1))
+	b2 := sse.NewBroadcaster(sse.WithBufferSize[sse.Event](-1))
 	if h := b2.Health(); h.BufferSize != 64 {
 		t.Errorf("BufferSize with -1 option: got %d, want default 64", h.BufferSize)
 	}

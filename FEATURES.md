@@ -1,6 +1,6 @@
 # Features
 
-Honest inventory of what `go-sse` does and its real status. Verified by running `go test ./... -race -count=1` (all passing, 98.9% statement coverage of the core package) and `golangci-lint run ./...` (0 issues). See test inventory with `go test ./... -v`.
+Honest inventory of what `go-sse` does and its real status. Verified by running `go test ./... -race -count=1` (all passing, 99.3% statement coverage of the core package) and `golangci-lint run ./...` (0 issues). See test inventory with `go test ./... -v`.
 
 ## Status vocabulary
 
@@ -98,7 +98,7 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 
 ## Consumer test helpers (`ssetest/`)
 
-Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never leaks into consumer production builds. 95.3% statement coverage; 0 erraudit violations with `--enforce-go-error-family`.
+Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never leaks into consumer production builds. 97.2% statement coverage (2026-08-29); 0 erraudit violations with `--enforce-go-error-family`.
 
 | Feature                                                               | Status           | Evidence                                                                                                                                                                                        |
 | --------------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -112,6 +112,7 @@ Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never
 | End-to-end Collect helpers (real HTTP server via httptest)            | FULLY_FUNCTIONAL | `Collect`, `CollectPost`, `CollectWithRequest`, `CollectN`, `CollectWithTimeout` in `ssetest/collect.go`                                                                                        |
 | Request options (path/query, headers, Last-Event-ID)                  | FULLY_FUNCTIONAL | `WithPath`, `WithHeader`, `WithLastEventID` in `ssetest/options.go`; `options_test.go`                                                                                                          |
 | `Require*` assertions (count, type, data, ID, retry)                  | FULLY_FUNCTIONAL | `ssetest/assert.go`; `assert_test.go` (failure paths via recordingTB)                                                                                                                           |
+| `RequireDataJSON` (unmarshal-and-compare for JSON payloads)           | FULLY_FUNCTIONAL | `RequireDataJSON` in `ssetest/assert.go`; `TestRequireDataJSON_*` in `assert_test.go` (added 2026-08-29)                                                                                          |
 | Event search without index math                                       | FULLY_FUNCTIONAL | `FindByType`, `FilterByType` in `ssetest/search.go`                                                                                                                                             |
 | `testing.TB` compatibility (T, B, GinkgoT)                            | FULLY_FUNCTIONAL | All public helpers take `tb testing.TB`; `TestHelpers_AcceptTestingB`                                                                                                                           |
 | Dogfood E2E over real go-sse types                                    | FULLY_FUNCTIONAL | `e2e_test.go` (Stream round-trip, Broadcaster fan-out, Replay+LastEventID, heartbeat invisibility, timeout read)                                                                                |

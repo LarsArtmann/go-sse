@@ -200,3 +200,65 @@ func TestHelpers_AcceptTestingB(t *testing.T) {
 		t.Error("helper calls on *testing.B should not fail")
 	}
 }
+
+// progressSignal is the typed want for the RequireDataJSON tests.
+type progressSignal struct {
+	Progress float64 `json:"progress"`
+	Name     string  `json:"name"`
+}
+
+func TestRequireDataJSON_TypedWant(t *testing.T) {
+	t.Parallel()
+
+	evt := ssetest.Event{DataLines: []string{`{"progress":50,"name":"upload"}`}}
+	ssetest.RequireDataJSON(t, evt, progressSignal{Progress: 50, Name: "upload"})
+}
+
+func TestRequireDataJSON_MapWant(t *testing.T) {
+	t.Parallel()
+
+	evt := ssetest.Event{DataLines: []string{`{"progress":50}`}}
+	ssetest.RequireDataJSON(t, evt, map[string]any{"progress": 50.0})
+}
+
+func TestRequireDataJSON_KeyOrderAndWhitespaceDoNotMatter(t *testing.T) {
+	t.Parallel()
+
+	evt := ssetest.Event{DataLines: []string{`{ "name" : "upload" ,  "progress":50 }`}}
+	ssetest.RequireDataJSON(t, evt, progressSignal{Progress: 50, Name: "upload"})
+}
+
+func TestRequireDataJSON_MismatchFails(t *testing.T) {
+	t.Parallel()
+
+	tb := &recordingTB{}
+	evt := ssetest.Event{DataLines: []string{`{"progress":40}`}}
+	ssetest.RequireDataJSON(tb, evt, map[string]any{"progress": 50.0})
+
+	if len(tb.errors) != 1 {
+		t.Fatalf("expected 1 error, got %v", tb.errors)
+	}
+}
+
+func TestRequireDataJSON_InvalidJSONFailsFatally(t *testing.T) {
+	t.Parallel()
+
+	tb := &recordingTB{}
+	evt := ssetest.Event{DataLines: []string{`{not json`}}
+	ssetest.RequireDataJSON(tb, evt, map[string]any{})
+
+	if len(tb.fatals) != 1 || !strings.Contains(tb.fatals[0], "{not json") {
+		t.Fatalf("expected fatal naming the payload; got %v", tb.fatals)
+	}
+}
+
+func TestRequireDataJSON_AcceptsTestingB(t *testing.T) {
+	t.Parallel()
+
+	b := &testing.B{}
+	ssetest.RequireDataJSON(b, ssetest.Event{DataLines: []string{`"x"`}}, "x")
+
+	if b.Failed() {
+		t.Error("RequireDataJSON on *testing.B should not fail")
+	}
+}

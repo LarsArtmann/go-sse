@@ -1,0 +1,2 @@
+go test fuzz v1
+string("data:\n:\rdata:\n\ndata:\r:\ndata:\n\n")

@@ -1,6 +1,8 @@
 package ssetest
 
 import (
+	"encoding/json"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -66,5 +68,32 @@ func RequireRetry(tb testing.TB, evt Event, want uint) {
 
 	if evt.Retry != want {
 		tb.Fatalf("retry: got %d, want %d", evt.Retry, want)
+	}
+}
+
+// RequireDataJSON unmarshals the event payload as JSON into a fresh T and
+// compares it to want with reflect.DeepEqual. Use it for JSON-payload handlers
+// (e.g. DataStar signals) instead of hand-rolled unmarshal-and-compare blocks:
+// the comparison is structural, so key order and whitespace in the payload do
+// not matter.
+//
+//	ssetest.RequireDataJSON(tb, evt, map[string]any{"progress": 50.0})
+//	// or with a typed want:
+//	ssetest.RequireDataJSON(tb, evt, mySignal{Progress: 50})
+//
+// The type parameter is inferred from want. A payload that fails to unmarshal
+// fails the test immediately (Fatal), with the raw payload in the message.
+func RequireDataJSON[T any](tb testing.TB, evt Event, want T) {
+	tb.Helper()
+
+	var got T
+
+	payload := evt.Data()
+	if err := json.Unmarshal([]byte(payload), &got); err != nil {
+		tb.Fatalf("unmarshal event data as %T: %v\npayload: %q", want, err, payload)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		tb.Errorf("data json: got %#v, want %#v\npayload: %q", got, want, payload)
 	}
 }

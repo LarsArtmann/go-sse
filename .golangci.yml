@@ -210,6 +210,7 @@ linters:
                 - v
                 - w
                 - s
+                - sc
                 - ch
                 - "n"
                 - id
@@ -254,6 +255,12 @@ linters:
             - path: example/htmx/
               linters:
                 - godoclint
+            # bodyclose cannot trace resp.Body through the closeBody helper;
+            # the helper exists so the Close-error branch is unit-testable
+            # (ssetest/collect_internal_test.go).
+            - path: ssetest/collect\.go
+              linters:
+                - bodyclose
         paths:
             - _templ\.go$
             - \.gen\.go$

@@ -6,9 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `safeDropCall` panic recovery for the fan-out drop callback: a panicking `onDrop` no longer crashes `Broadcast`/`BroadcastMany` on the broadcasting goroutine — symmetric with the existing predicate-recovery contract. Pinned by `TestOnDrop_PanickingCallbackDoesNotCrashBroadcast(Many)`.
+- ssetest `RequireDataJSON(tb, evt, want)` — unmarshal-and-compare assertion for JSON-payload events: structural compare (key order and whitespace don't matter), type inferred from `want`, fatal-with-payload on invalid JSON.
+- `FuzzSplitSSELines` — direct fuzz target for the reader's line splitter, property-pinned against an independent spec § 9.2.5 reference model (CR/LF/CRLF terminators, CRLF-is-one, no trailing empty line), with 19 committed corpus entries.
+- Wire round-trip tests for `KeyedLines`/`SendKeyed` (`keyed_wire_test.go`): every keyed line survives `WriteEvent`/`Stream.Send` verbatim; rejoined data lines reconstruct the exact `KeyedLines` result; `JoinLines` composition order pinned.
+- BOM boundary matrix test: leading, double, and mid-stream BOM driven through every chunk size 1–7 (the probe's own `ReadFull` states).
+- E2E sticky-ID reconnect test (`TestE2E_StickyIDSurvivesReconnect`): wire `id:` → parser sticky state → `Last-Event-ID` echo → replay → post-replay events inherit the last seen ID.
+- ssetest fuzz corpus committed: 156 regression seeds across `FuzzReadEvents` (51), `FuzzWriteReadRoundTrip` (86), `FuzzSplitSSELines` (19), including the `"0data: hello\n\n"` crasher that exposed the substring-assertion bug.
+- `scripts/verify.sh` — one-command pre-push gate (treefmt + vet + lint + race test + `nix flake check`; `--fast` skips the flake check). Direnv-independent: exports `GOWORK=off`/`GOEXPERIMENT=jsonv2` itself.
+- CI: examples build + `templ generate -check` staleness job; `nix flake check` hermetic-gate job; fuzz job extended from 3 to 6 targets (`FuzzKeyedLines`, `FuzzWriteReadRoundTrip`, `FuzzSplitSSELines`); `govulncheck` pinned to v1.7.0 (was `@latest`).
+- `coverage-gate` flake app now enforces an ssetest threshold (95%) alongside the library's 90%, and is hermetic (declared runtime inputs, own `GOWORK`/`GOEXPERIMENT` exports).
+- `docs/guides/reconnection-and-retry.md` — the 5-layer reconnection model (browser `EventSource` → `retry:` hint → `Last-Event-ID`+`Replay` → `Heartbeat` → `Shutdown` drain).
+- CONTRIBUTING release checklist: CHANGELOG cut, FEATURES/ROADMAP refresh, worktree tag validation, proxy verification, `gh release create`, dual-module tagging rules.
+- Tests for `eventBrand.Name()` and its `brandid.BrandNamer` wiring (0% covered since `TestEventID_StringIncludesBrandName` was deleted 2026-07-27), and for `OnDrop(nil)`/`WithOnDrop(nil)` clear-callback behavior.
+
 ### Changed
 
 - Go toolchain bumped to 1.26.7; Nix flake inputs refreshed (`713db38`). No library code changes.
+- `WithOnDrop`/`OnDrop` doc comments now state the re-entrancy constraint (the callback runs under the fan-out read lock; calling back into the broadcaster deadlocks) and the panic-recovery contract; `Broadcast`/`BroadcastMany` cross-reference the drop-observability hook.
+- ssetest module `go` directive aligned with the root module (1.26.7).
+- ssetest `Collect*` helpers factor response-body closing into `closeBody`, making the `Close`-error branch unit-testable with an erroring `io.ReadCloser` fake (both branches now covered).
+- ssetest coverage 95.3% → 97.2%; library coverage 99.3%; `eventBrand.Name()` 0% → 100%.
+- Flake `systems` narrowed to `x86_64-linux`, `aarch64-linux`, `aarch64-darwin`: Nixpkgs 26.11 dropped x86_64-darwin, so its derivations no longer evaluate; `nix flake check --all-systems` is green on the declared systems. Pure Go — excluded hosts still build from source.
+- Inferable generic type arguments removed from test call sites (`NewBroadcaster(WithBufferSize[int](1))`, `WithOnDrop(func…)`); required ones kept (`NewBroadcaster[int]()`, `WithBufferSize[int](…)`).
 
 ### Policy
 
