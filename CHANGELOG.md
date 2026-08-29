@@ -21,6 +21,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `docs/guides/reconnection-and-retry.md` — the 5-layer reconnection model (browser `EventSource` → `retry:` hint → `Last-Event-ID`+`Replay` → `Heartbeat` → `Shutdown` drain).
 - CONTRIBUTING release checklist: CHANGELOG cut, FEATURES/ROADMAP refresh, worktree tag validation, proxy verification, `gh release create`, dual-module tagging rules.
 - Tests for `eventBrand.Name()` and its `brandid.BrandNamer` wiring (0% covered since `TestEventID_StringIncludesBrandName` was deleted 2026-07-27), and for `OnDrop(nil)`/`WithOnDrop(nil)` clear-callback behavior.
+- Weekly `nix flake update` CI schedule (`.github/workflows/flake-update.yml`): Mondays 04:00 UTC it bumps `flake.lock`, runs the full `nix flake check` gate on the bumped inputs in-workflow (GITHUB_TOKEN-opened PRs never trigger CI, so the gate cannot live on the PR), and opens a review PR — input drift is caught within a week instead of at the next manual bump.
+- `docs/status/AGENTS.md` — status-report conventions: file naming, the a–g section skeleton, harvest rules, and a mandatory coverage-delta line (`- cover: library …, ssetest …`, measured per session). A coverage regression like 2026-07-27's 100% → 99.5% can no longer ship unnoticed.
+- AGENTS.md Gotcha: auto-git daemon commit messages are plausible-but-false for deletions (`38e79aa` says "expand test coverage" for a coverage-reducing deletion) — sanity-check them after deletion-heavy sessions.
 
 ### Changed
 

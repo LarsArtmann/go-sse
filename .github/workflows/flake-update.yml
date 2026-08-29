@@ -1,0 +1,79 @@
+name: Flake update
+
+# Weekly dependency-drift catcher: bump flake.lock inputs, run the full
+# hermetic gate on the bumped tree, and open a PR with the diff. Without a
+# schedule, input drift is only noticed when someone bumps manually.
+
+on:
+  schedule:
+    - cron: "0 4 * * 1" # Mondays 04:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  flake-update:
+    name: Update flake.lock and gate it
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update flake inputs
+        run: nix flake update
+      - name: Detect input drift
+        id: drift
+        run: |
+          if git diff --quiet -- flake.lock; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      # The gate must run HERE, not on the PR: PRs opened with GITHUB_TOKEN
+      # never trigger pull_request workflows (GitHub's recursion guard), so
+      # the PR itself would show no checks at all. Same command as the CI
+      # `nix` job.
+      - name: Full gate on updated inputs
+        id: gate
+        if: steps.drift.outputs.changed == 'true'
+        continue-on-error: true
+        run: nix flake check
+      # Runs even when the gate failed (always()) so the failing diff is
+      # reviewable in a PR, not only in the red run's logs.
+      - name: Open update PR
+        if: always() && steps.drift.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          date="$(date -u +%Y-%m-%d)"
+          branch="chore/flake-update-$date"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add flake.lock
+          git commit -m "chore(nix): weekly flake update $date"
+          git push origin "$branch"
+          gate="${{ steps.gate.outcome }}"
+          body="Automated weekly \`nix flake update\` run (Mondays 04:00 UTC).
+          In-workflow gate (\`nix flake check\`) outcome: ${gate}.
+          This PR shows no CI checks because GITHUB_TOKEN-opened PRs do not trigger workflows.
+          If the gate failed:
+          - vendorHash/vendorHashSsetest mismatch: set both to lib.fakeHash in flake.nix, run nix build, copy the reported hashes (they are independent).
+          - broken input (e.g. nixpkgs dropped a system again): pin the previous rev in flake.nix or adjust the systems list."
+          gh pr create \
+            --base master \
+            --head "$branch" \
+            --title "chore(nix): weekly flake update $date" \
+            --body "$body" \
+            || echo "PR creation failed (likely already open) - leaving the existing PR as-is."
+      # A failed gate must redden this scheduled run even though later steps
+      # ran: that red is the "drift caught early" signal.
+      - name: Fail on red gate
+        if: steps.drift.outputs.changed == 'true' && steps.gate.outcome == 'failure'
+        run: |
+          echo "nix flake check FAILED on the updated inputs - see the logs above and the open PR." >&2
+          exit 1
