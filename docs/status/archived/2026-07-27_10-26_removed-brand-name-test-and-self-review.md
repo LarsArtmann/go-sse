@@ -60,7 +60,7 @@
 
 3. ~~**I shipped a green tick without noticing the coverage drop.** I ran `-cover` only in the post-hoc review for this report, not at fix time. If I had, I would have seen 99.5% immediately and reconsidered.~~ done at `c7fcf5d`, `eb2b31d`
 
-4. **The auto-git commit message is misleading and I didn't catch it.** Commit `38e79aa` says "test(event): expand test coverage for Event type" — for a **deletion** that **reduced** coverage. Anyone reading `git log` will be actively misled.
+4. ~~**The auto-git commit message is misleading and I didn't catch it.** Commit `38e79aa` says "test(event): expand test coverage for Event type" — for a **deletion** that **reduced** coverage. Anyone reading `git log` will be actively misled.~~ done (D2 default applied 2026-08-29: commit accepted, no history rewrite; the corrected record is the AGENTS.md auto-git Gotcha (10cd4e7) plus the TODO_LIST Declined row)
 
 ---
 
@@ -71,7 +71,7 @@
 | ~~IMP1~~ | ~~**Add a direct test for `eventBrand.Name()`** — it's our code, currently untested after the deletion. Trivial: `if got := (sse.eventBrand{}).Name(); got != "SSEEvent" { t.Error(got) }` (but it's unexported, so the test needs to live in-package or use an exported wrapper).~~ done at `eb2b31d`                                                                                                                                                                    | ~~High~~    |
 | ~~IMP2~~ | ~~**Re-evaluate the `go-branded-id` version strategy.** Either downgrade to v0.3.3 (last version the test passed against — but did it ever pass? v0.3.x also lacks the feature), upgrade to the unreleased version, or accept v0.4.0 and align the test to reality.~~ done at `5fde938`                                                                                                                                                                                   | ~~High~~    |
 | ~~IMP3~~ | ~~**Run `-cover` on every test fix, not just at report time.** A coverage delta is the single best signal that a "fix" is actually a regression. Make this a checklist gate.~~ done at `c7fcf5d`, `eb2b31d`                                                                                                                                                                                                                                                               | ~~High~~    |
-| IMP4     | **Stop trusting auto-git commit messages.** Review or amend them when they're materially wrong. The daemon generates plausible-but-false messages for deletions.                                                                                                                                                                                                                                                                                                          | Medium      |
+| ~~IMP4~~ | ~~**Stop trusting auto-git commit messages.** Review or amend them when they're materially wrong. The daemon generates plausible-but-false messages for deletions.~~ done (docs-health pass 2026-09-03: the review discipline shipped as the AGENTS.md auto-git Gotcha (`10cd4e7`); amending was declined by D2 — accepted with documentation, per the TODO_LIST Declined row)                                                                                                                                                                                                                                                 | ~~Medium~~  |
 | ~~IMP5~~ | ~~**Gate `nix flake check` green before declaring victory.** `buildflow` runs the hermetic gate; if it's red, the Go-level green is necessary-but-not-sufficient.~~ done at `a5ff824`, `eb2b31d`                                                                                                                                                                                                                                                                          | ~~Medium~~  |
 | ~~IMP6~~ | ~~**Add a TODO_LIST entry tracking the upstream `BrandNamer` release** so brand-name `String()` coverage gets re-enabled when the feature ships.~~ done at `5fde938`, `eb2b31d`                                                                                                                                                                                                                                                                                           | ~~Low~~     |
 | ~~IMP7~~ | ~~**Question whether the test ever passed.** The test was added in `d4760b7` against `go-branded-id v0.3.2` — which also lacks the feature. It may have been broken since inception and only surfaced now. This suggests CI was not catching it, or the test was added in a session that never ran it.~~ done (disproven - the test passed at d4760b7; v0.3.0-v0.3.2 shipped BrandNamer-aware String(), dropped v0.3.3, restored v0.5.0 (verified in go-branded-id tags)) | ~~Process~~ |
@@ -85,7 +85,7 @@
 1. ~~Add a direct unit test for `eventBrand.Name()` to restore coverage to 100%.~~ done at `eb2b31d`
 2. ~~Decide `go-branded-id` version strategy: downgrade / accept v0.4.0 / chase unreleased.~~ done at `5fde938`
 3. ~~Run `nix flake check` and fix the `vendorHash` drift flagged in the predecessor report.~~ done at `a5ff824`, `eb2b31d`
-4. Amend or follow-up the misleading auto-git commit `38e79aa` with a corrected message.
+4. ~~Amend or follow-up the misleading auto-git commit `38e79aa` with a corrected message.~~ done (D2 default applied 2026-08-29 - accepted, no history rewrite; AGENTS.md Gotcha is the corrected record (10cd4e7); TODO_LIST Declined row tracks the reopen condition)
 5. ~~Update `CHANGELOG.md` `[Unreleased]` to note the test removal and coverage delta.~~ done at `eb2b31d`
 6. ~~Update `FEATURES.md` coverage figure (it was already stale at 100%; now it's 99.5%).~~ done at `f99bfa3`
 7. ~~Add a checklist item to AGENTS.md: "Run `-cover` after every test change; reject coverage regressions."~~ done at `c7fcf5d`, `eb2b31d`
@@ -112,7 +112,7 @@
 22. ~~Run the full `buildflow` suite end-to-end (not just `test-race`) to confirm no other gates are red.~~ done (buildflow retired; scripts/verify.sh + the full CI gate replaced it (eb2b31d))
 23. ~~Review whether `flake.nix`'s `vendorHash` needs recomputing after the v0.4.0 bump.~~ done at `a5ff824`
 24. ~~Check `go.sum` consistency: `go mod verify`.~~ done (ran 2026-08-29: all modules verified)
-25. Add a section to `AGENTS.md` documenting that auto-git commit messages should be reviewed for accuracy.
+25. ~~Add a section to `AGENTS.md` documenting that auto-git commit messages should be reviewed for accuracy.~~ done at `10cd4e7`
 26. ~~Investigate why `buildflow`'s `test-race` was the first to catch this — was local CI not running it?~~ **Won't implement — buildflow retired and replaced by the CI iron curtain (eb2b31d); historical archaeology has no remaining value.**
 27. ~~Consider a pre-commit hook that runs `go test -race` on changed packages.~~ **Won't implement — auto-git commits bypass the manual commit flow so a pre-commit hook cannot gate them; scripts/verify.sh + CI are the effective gates.**
 28. ~~Review the `example/` directory for any brand-name display assumptions.~~ done (checked 2026-08-29: no brand-name references in example/)
@@ -133,11 +133,11 @@
 43. ~~Review whether the `cqrs-htmx` sibling (which vendors the unreleased brandid) is the source of the feature confusion.~~ **Won't implement — premise disproven - the feature existed in released v0.3.x; no sibling-vendoring confusion.**
 44. ~~Consider a dependency-version policy doc (`docs/dependency-policy.md`) for the `larsartmann/*` ecosystem.~~ done (routed to ROADMAP Raw ideas (dependency-policy bullet) 2026-08-29)
 45. ~~Audit whether `go-workflow-auditlog` or `go-output` siblings have the same latent broken test.~~ done (checked 2026-08-29: go-output/go-workflow-auditlog do not use brandid; cqrs-htmx has it indirect at v0.5.1 with no brand-String assertions)
-46. Add a status-report template field for "coverage delta" to force it into every report.
+46. ~~Add a status-report template field for "coverage delta" to force it into every report.~~ done (docs/status/AGENTS.md made the coverage-delta line mandatory (10cd4e7) and _template.md ships the skeleton (2bcb0ce))
 47. ~~Review the predecessor report's open items — many may still be unresolved.~~ done at `831c388`, `f99bfa3`
 48. ~~Check if `git-town.toml` or branch strategy needs updating after the auto-git commit.~~ **Won't implement — no git-town config exists in the repo.**
 49. ~~Consider whether `buildflow` should fail on coverage decrease as a config option.~~ **Won't implement — buildflow retired; the coverage-gate flake app (c7fcf5d) serves this exact role.**
-50. Schedule a periodic `nix flake update` + full gate run to catch drift early.
+50. ~~Schedule a periodic `nix flake update` + full gate run to catch drift early.~~ done (weekly flake-update.yml cron (Mondays 04:00 UTC) landed 10cd4e7; first scheduled run fired 2026-08-31)
 
 ---
 
@@ -148,3 +148,17 @@
 2. ~~**Is commit `38e79aa`'s misleading auto-git message acceptable to leave, or should I amend/force-amend it?** Amending rewrites history (against the global rule), but the current message is materially false. I won't touch it without your call.~~ done (routed to TODO_LIST (Blocked) 2026-08-29 - needs the history-rewrite call; no session will touch it without the user)
 
 3. ~~**Did `TestEventID_StringIncludesBrandName` ever actually pass, or has it been broken since `d4760b7` added it against `go-branded-id v0.3.2`?** v0.3.2 also lacks the `BrandNamer`-aware `String()`, so the test may have been dead-on-arrival. If CI was green at `d4760b7`, something is wrong with how the gate ran — but I can't see historical CI results, only the commit graph.~~ done (ANSWERED - it DID pass: v0.3.2 (pinned at d4760b7) shipped BrandNamer-aware String() (v0.3.0-v0.3.2); dropped v0.3.3 (940cf37 bump), restored v0.5.0. Green CI at d4760b7 is consistent)
+
+---
+
+## Archival check (2026-09-03, docs-health pass)
+
+Every numbered item in sections a–g now carries an inline resolution. The final
+six open items closed today: the auto-git-message debt (d.4, e.IMP4, f.4, f.25)
+resolved by D2's accept decision plus the AGENTS.md Gotcha (`10cd4e7`), the
+coverage-delta report field (f.46) shipped via `docs/status/AGENTS.md` +
+`_template.md`, and the periodic flake-update gate (f.50) shipped as the weekly
+cron (`10cd4e7`; first scheduled run 2026-08-31, whose silent PR loss was
+root-caused and fixed on 2026-09-03). Coverage sits at 99.3% library / 97.2%
+ssetest, re-measured this pass. Archived per the full-read rule: all 151 lines
+read to EOF this session.
