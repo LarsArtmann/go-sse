@@ -80,6 +80,8 @@ defer func() { _ = stream.Close() }()
 go stream.Heartbeat(stream.Context(), 15*time.Second)
 ```
 
+Heartbeat stops on context cancellation, write failure, or `stream.Close()` — the fire-and-forget goroutine can never write a response whose handler has already returned.
+
 ### Reconnection replay
 
 When a browser reconnects after a drop, it sends the `Last-Event-ID` header.
