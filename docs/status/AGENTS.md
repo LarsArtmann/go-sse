@@ -3,7 +3,7 @@
 Conventions for status reports in this directory. A report is a **point-in-time
 historical snapshot**: write it once, then only annotate it non-destructively
 (`~~item~~ done at \`hash\``) — never rewrite, reorder, or delete content after
-the fact. Reports with every numbered item resolved move to `archived/`.
+the fact. Reports with every numbered item resolved move to`archived/`.
 
 This file **specializes the global status-report format for this repo**: where
 the global skill and this file disagree, this file wins (it adds the coverage
@@ -26,15 +26,15 @@ session's work, e.g. `2026-08-29_16-36_todo-list-full-execution-and-self-review.
    small single-topic sessions where the preamble already says it all.
 4. **Sections a–g** — omit empty sections, but keep the letters of the ones you keep:
 
-| Section                        | Content                                                                                                                                           |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `## a) FULLY DONE`             | Table `\| # \| Work \| Evidence \|`. Every row cites file paths, test names, or gate output — never "looks done".                                  |
-| `## b) PARTIALLY DONE`         | What shipped AND what exactly remains — both halves, explicitly.                                                                                  |
-| `## c) NOT STARTED`            | Items that were in scope but never began, and why.                                                                                                |
-| `## d) TOTALLY FUCKED UP`      | Honest mistakes made this session, numbered. Blunt beats polished.                                                                                |
-| `## e) WHAT WE SHOULD IMPROVE` | Process (not product) improvements, `IMP<n>` table with a priority column.                                                                        |
+| Section                                         | Content                                                                                                                                              |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `## a) FULLY DONE`                              | Table `\| # \| Work \| Evidence \|`. Every row cites file paths, test names, or gate output — never "looks done".                                    |
+| `## b) PARTIALLY DONE`                          | What shipped AND what exactly remains — both halves, explicitly.                                                                                     |
+| `## c) NOT STARTED`                             | Items that were in scope but never began, and why.                                                                                                   |
+| `## d) TOTALLY FUCKED UP`                       | Honest mistakes made this session, numbered. Blunt beats polished.                                                                                   |
+| `## e) WHAT WE SHOULD IMPROVE`                  | Process (not product) improvements, `IMP<n>` table with a priority column.                                                                           |
 | `## f) Up to 50 things we should get done next` | Numbered, grouped by priority. This is the harvest source for `TODO_LIST.md` — forward-looking intent that lives only in a timestamped file is lost. |
-| `## g) Questions I CANNOT figure out myself` | Questions route to the user or `ROADMAP.md` "Open questions" — never into `TODO_LIST.md` (questions are not tasks).                                |
+| `## g) Questions I CANNOT figure out myself`    | Questions route to the user or `ROADMAP.md` "Open questions" — never into `TODO_LIST.md` (questions are not tasks).                                  |
 
 ## The mandatory coverage-delta line
 

@@ -5,6 +5,7 @@ result, `nix flake check` result), anything the reader needs before the
 tables.>
 
 - cover: library XX.X% (+/-Δ/=), ssetest XX.X% (+/-Δ/=)
+
 <!-- Cross-repo sessions add e.g.: - cover (go-datastar): datastartest XX.X% (Δ) -->
 
 ## TL;DR
@@ -16,8 +17,8 @@ tables.>
 
 ## a) FULLY DONE
 
-| # | Work | Evidence |
-| --- | --- | --- |
+| # | Work           | Evidence                                                   |
+| - | -------------- | ---------------------------------------------------------- |
 | 1 | <what shipped> | <file paths, test names, gate output — never "looks done"> |
 
 ## b) PARTIALLY DONE
@@ -36,9 +37,9 @@ tables.>
 
 ## e) WHAT WE SHOULD IMPROVE
 
-| IMP | Improvement (process, not product) | Priority |
-| --- | --- | --- |
-| IMP1 | … | high/med/low |
+| IMP  | Improvement (process, not product) | Priority     |
+| ---- | ---------------------------------- | ------------ |
+| IMP1 | …                                  | high/med/low |
 
 ## f) Up to 50 things we should get done next
 

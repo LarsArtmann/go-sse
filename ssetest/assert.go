@@ -1,7 +1,7 @@
 package ssetest
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"reflect"
 	"strings"
 	"testing"

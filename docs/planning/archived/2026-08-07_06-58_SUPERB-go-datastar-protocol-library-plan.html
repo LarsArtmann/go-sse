@@ -495,8 +495,7 @@ broadcaster.Broadcast(patch.Event())  // store, fan-out, replay as sse.Event
 // Or broadcast patches directly (for typed filtering):
 patchCaster := sse.NewBroadcaster[datastar.Patch]()
 patchCaster.Broadcast(patch)
-// consumer: evt := <-ch; stream.Send(patch.Event())</pre
-        >
+// consumer: evt := <-ch; stream.Send(patch.Event())</pre>
       </section>
 
       <!-- Pareto Breakdown -->
