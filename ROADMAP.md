@@ -78,6 +78,7 @@ decision. Promoted to a numbered theme when bounded; dropped if ruled out.
 - Example-servers as flake apps (`nix run .#datastar` / `.#htmx` / `.#server`) — repeatedly requested, repeatedly deferred; decide once. Source: 2026-08-29 13-53 report §f37.
 - CSP headers (and an SRI posture) for the examples' vendored static assets — vendoring removed the CDN/SRI concern, but no Content-Security-Policy is served. Source: 2026-08-29 13-53 report §f38.
 - `docs/status/INDEX.md` (date → one-sentence outcome → disposition per report) — only worth it if generated from git history; a hand-maintained index would drift by design. Source: 2026-08-29 13-53 report §f29.
+- Typed error-code constants: `type Code string` plus exported constants for the eight `sse.*` codes (upstream `errorfamily.Wrapf` takes a plain `string` at v0.10.0, so go-sse would own the type). Routed twice by 2026-08 sessions and dropped by three harvests — reconsider deliberately rather than losing it again. Source: [docs/status/archived/2026-08-07_08-09_erraudit-error-handling-sweep.md](docs/status/archived/2026-08-07_08-09_erraudit-error-handling-sweep.md) §c.3.
 - `docs/guides/getting-started.md` distinct from the README quickstart (README is a sales page per the doc-file contract; a step-by-step guide is a different artifact). Source: 2026-08-29 16-36 report §f50.
 
 ## Non-goals
