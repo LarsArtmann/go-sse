@@ -35,7 +35,8 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 ### Fixed
 
-- Nothing yet.
+- `Stream.Heartbeat` no longer writes into a finished `ResponseWriter`: a heartbeat tick racing the handler's deferred `Close` could flush after the server completed the response, panicking inside `net/http` (seen as a red-master CI crash in `TestIntegration_HeartbeatDelivery` on 2026-09-03). `Close` now marks the stream closed and a racing tick observes that and returns; pinned by `TestStream_HeartbeatStopsAfterClose`. The documented `go stream.Heartbeat(stream.Context(), …)` pattern is safe without extra synchronization.
+- The weekly flake-update workflow no longer loses its PR silently: the 2026-08-31 scheduled run pushed the branch but `gh pr create` failed ("GitHub Actions is not permitted to create or approve pull requests" — a repo Actions setting) and the workflow's `|| echo` fallback misreported it as "already open". The repo now permits Actions-created PRs, the workflow's already-open case is an explicit check so real failures redden the step, and the orphan `chore/flake-update-2026-08-31` branch was deleted.
 
 ## [ssetest 0.3.0] - 2026-08-29
 

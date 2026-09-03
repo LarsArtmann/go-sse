@@ -35,7 +35,7 @@ Only 4 statuses are used. Non-goals (below) are listed outside this system becau
 | `SetHeaders` (set SSE headers without writing status, for custom handlers) | FULLY_FUNCTIONAL | `SetHeaders` in `stream.go`; used internally by `NewStream`                                                                 |
 | Send event + flush                                                         | FULLY_FUNCTIONAL | `Stream.Send` in `stream.go`; `TestStream_Send`                                                                             |
 | Concurrent-safe writes (mutex-serialized `Send`/`Heartbeat`/`Close`)       | FULLY_FUNCTIONAL | `Stream.mu` in `stream.go`; `TestStream_SendHeartbeatRaceSafety`, `TestStream_SendHeartbeatCloseRace` (race-tested)         |
-| Heartbeat goroutine (proxy keep-alive)                                     | FULLY_FUNCTIONAL | `Stream.Heartbeat` in `stream.go`; `TestStream_Heartbeat`                                                                   |
+| Heartbeat goroutine (proxy keep-alive; stops on cancel, write error, and `Close` — cannot write a finished `ResponseWriter`) | FULLY_FUNCTIONAL | `Stream.Heartbeat` in `stream.go`; `TestStream_Heartbeat`, `TestStream_HeartbeatStopsOnCancel`, `TestStream_HeartbeatStopsAfterClose` |
 | `Last-Event-ID` header extraction (validated via `ParseEventID`)           | FULLY_FUNCTIONAL | `LastEventIDFromRequest` in `stream.go`; `TestLastEventIDFromRequest_MaliciousInputTreatedAsEmpty`                          |
 | `OnDisconnect` callbacks (ordered)                                         | FULLY_FUNCTIONAL | `Stream.OnDisconnect` in `stream.go`; `TestStream_OnDisconnectMultipleInOrder`                                              |
 | `SendData` convenience                                                     | FULLY_FUNCTIONAL | `Stream.SendData` in `stream.go`; `TestStream_SendData`                                                                     |
@@ -119,7 +119,7 @@ Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never
 | Hermetic Nix check for the nested module                                                    | FULLY_FUNCTIONAL | `hermeticCheckSsetest` (`checks.build-ssetest`) in `flake.nix`; `preBuild = "cd ssetest"` bridges buildGoModule's root-module assumption                                                                    |
 | Debug rendering for failure messages                                                        | FULLY_FUNCTIONAL | `Event.String`, `EventsString` in `ssetest/event.go`; `example_test.go` (godoc examples with output)                                                                                                        |
 
-Example coverage note: the runnable `example/` packages are measured in the repo-wide `go test ./... -cover` total (root 98.9%, `example/datastar` 46.3%, `example/server.go` and `example/htmx` 0%) but are excluded from the library coverage gate, which measures the `sse` package only.
+Example coverage note: the runnable `example/` packages are measured in the repo-wide `go test ./... -cover` total (root 99.3%, `example/datastar` 45.7%, `example/server.go` and `example/htmx` 0%) but are excluded from the library coverage gate, which measures the `sse` package only.
 
 ## Explicit non-goals
 

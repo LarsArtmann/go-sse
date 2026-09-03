@@ -79,12 +79,19 @@ jobs:
           If the gate failed:
           - vendorHash/vendorHashSsetest mismatch: set both to lib.fakeHash in flake.nix, run nix build, copy the reported hashes (they are independent).
           - broken input (e.g. nixpkgs dropped a system again): pin the previous rev in flake.nix or adjust the systems list."
+          if gh pr view "$branch" >/dev/null 2>&1; then
+            echo "PR already open for $branch - leaving it as-is."
+            exit 0
+          fi
           gh pr create \
             --base master \
             --head "$branch" \
             --title "chore(nix): weekly flake update $date" \
-            --body "$body" \
-            || echo "PR creation failed (likely already open) - leaving the existing PR as-is."
+            --body "$body"
+          # No error-swallowing fallback: a failed `gh pr create` must redden
+          # this step. The 2026-08-31 run silently lost its PR because the
+          # repo disallowed Actions-created PRs and the old `|| echo` masked
+          # it as "likely already open" - the branch piled up with no PR.
       # A failed gate must redden this scheduled run even though later steps
       # ran: that red is the "drift caught early" signal.
       - name: Fail on red gate

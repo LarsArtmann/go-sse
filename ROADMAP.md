@@ -67,10 +67,18 @@ decision log.
 
 Unexamined ideas — too early for a theme, not analyzed enough to be a parked
 decision. Promoted to a numbered theme when bounded; dropped if ruled out.
+(Deferred design notes rescued from archived session reports during the
+2026-09-03 docs-health pass are collected at the end of this list.)
 
 - Topic/channel-based multi-broadcaster routing (multiple named fan-out hubs behind one entry point). No consumer has asked for this yet. The predicate-based filtering approach (`SubscribeFilter` + `ReplayFiltered`) solves the real consumer need (DiscordSync's per-channel/per-guild filtering) without the complexity of named hubs or wildcard matching. Revisit if a consumer needs true multi-hub routing rather than predicate filtering on a single hub.
 - Optional `di/` subpackage providing samber/do v2 lifecycle adapters (`Shutdowner`, `Healthchecker`) for `Broadcaster` and `Stream`. See [docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md](docs/brainstorming/2026-08-03_samber-do-lifecycle-integration.md). The brainstorming doc's Option C (core primitives + documented pattern) was adopted: `Shutdown(ctx)` and `Health()` ship in core, the samber/do adapter is left to consumer composition roots. Revisit if a concrete consumer asks for a go-sse-provided adapter (Option B trigger).
-- Ecosystem-wide dependency policy for the `larsartmann/*` modules (one shared doc or per-repo AGENTS.md sections): when to pin vs track, how to treat brand-new majors, and a shared rule against tests coupled to one upstream version's incidental behavior. Motivated by the 2026-07-27 go-branded-id regression: brand-aware `String()` shipped v0.3.0–v0.3.2, was dropped in v0.3.3/v0.4.0 (breaking a go-sse test), and returned in v0.5.0. Source: [docs/status/2026-07-27_10-26_removed-brand-name-test-and-self-review.md](docs/status/2026-07-27_10-26_removed-brand-name-test-and-self-review.md) item 44.
+- Ecosystem-wide dependency policy for the `larsartmann/*` modules (one shared doc or per-repo AGENTS.md sections): when to pin vs track, how to treat brand-new majors, and a shared rule against tests coupled to one upstream version's incidental behavior. Motivated by the 2026-07-27 go-branded-id regression: brand-aware `String()` shipped v0.3.0–v0.3.2, was dropped in v0.3.3/v0.4.0 (breaking a go-sse test), and returned in v0.5.0. Source: [docs/status/archived/2026-07-27_10-26_removed-brand-name-test-and-self-review.md](docs/status/archived/2026-07-27_10-26_removed-brand-name-test-and-self-review.md) item 44.
+- Replay pagination for huge gaps: `EventsAfter` with a limit/offset (or cursor) so a client reconnecting after a long outage cannot force an unbounded replay. API design sketch first, in-scope decision second. Source: 2026-08-29 16-36 report §f24.
+- `WithDrainPollInterval` option and a richer `ShutdownResult` (per-subscriber drain stats) — deferred twice in the v0.4.0-era sessions; revisit only if a consumer reports slow `Shutdown` drain visibility problems. Source: 2026-08-03 20-20 report.
+- Example-servers as flake apps (`nix run .#datastar` / `.#htmx` / `.#server`) — repeatedly requested, repeatedly deferred; decide once. Source: 2026-08-29 13-53 report §f37.
+- CSP headers (and an SRI posture) for the examples' vendored static assets — vendoring removed the CDN/SRI concern, but no Content-Security-Policy is served. Source: 2026-08-29 13-53 report §f38.
+- `docs/status/INDEX.md` (date → one-sentence outcome → disposition per report) — only worth it if generated from git history; a hand-maintained index would drift by design. Source: 2026-08-29 13-53 report §f29.
+- `docs/guides/getting-started.md` distinct from the README quickstart (README is a sales page per the doc-file contract; a step-by-step guide is a different artifact). Source: 2026-08-29 16-36 report §f50.
 
 ## Non-goals
 

@@ -5,14 +5,14 @@
 > Items are ranked by Pareto impact. Status is verified, not assumed.
 > Completed work lives in [`CHANGELOG.md`](CHANGELOG.md), not here.
 
-The 2026-08-29 SUPERB execution pass is complete: both go-sse releases are cut
-and consumer-verified (root v0.6.0, ssetest v0.3.0), the go-datastar session
-batch is landed behind its full gate, the datastartest v0.3.0 pairing is
-verified healthy, actionlint+shellcheck gate the workflows, the flake-update
-automation is dry-run-proven with auto-close hardening, and the report
-conventions reached v1.1 with a template. Decision gates D1 (changelog policy)
-and D2 (accept `38e79aa`) were resolved by their documented plan defaults; D3
-(browser-E2E scope) stays open below.
+State after the 2026-09-03 docs-health pass: the SUPERB releases (root v0.6.0,
+ssetest v0.3.0) are live and consumer-verified, and the pass itself fixed two
+real defects it found in VERIFY mode — a red-master CI panic
+(`Heartbeat` writing a finished `ResponseWriter`, fixed in `stream.go`) and the
+flake-update cron silently losing its PR (repo Actions setting disallowed
+Actions-created PRs; the workflow's error-swallowing fallback hid it). What
+remains is the harvested backlog below, each item cited to its source report
+and verified not yet done on 2026-09-03.
 
 ## Status legend
 
@@ -25,56 +25,55 @@ and D2 (accept `38e79aa`) were resolved by their documented plan defaults; D3
 
 ## Correctness & safety
 
-Nothing open — the `safeDropCall` batch, `OnDrop(nil)` tests, and the
-`eventBrand.Name()` test shipped in the 2026-08-29 pass (root coverage 99.3%).
-The CI-found `FuzzKeyedLines` property bug (multi-line keys) was fixed and its
-crasher pinned the same day (`bdd08c2`).
-
-## Parser parity & fuzz depth
-
-| Status    | Item                                                  | Notes                                                                                                                                                                                                                                                                                            |
-| --------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| ⚪ `WONT` | `testing/synctest` for the `CollectWithTimeout` tests | The `testing/synctest` guidelines prohibit network I/O inside a bubble, and every `Collect*` helper owns a real-socket `httptest` server. A fake-net rewrite would test a different transport than production. The cost is one ~200 ms test; keep it real. Source: 2026-08-29 execution pass.    |
-| ⚪ `WONT` | Remaining gopls "unnecessary type argument" infos     | All inferable type arguments in tests were removed (2026-08-29). What remains is explicit by necessity: `NewBroadcaster[T]()` has no args to infer from and `WithBufferSize[T](…)`'s T appears only in its return type. `gopls check` CLI reports 0 diagnostics; the rest are editor-only hints. |
-| ⚪ `WONT` | gopls `stdversion` friction on `encoding/json/v2`     | Root-caused: `jsonv2` std API is gated to a `go 1.27` directive in std metadata; the directive cannot exceed the 1.26.7 toolchain. The diagnostic is intrinsic until Go 1.27 and disappears then. Not a config problem; golangci-lint is clean.                                                  |
+| Status    | Item                                                                                                              | Notes                                                                                                                                                                                                                          |
+| --------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔴 `TODO` | `Stream.Send` partial-write semantics test (short-write fake)                                                        | `errorWriter` covers error-on-write; a writer that accepts only part of the frame (`n < len(p)`) does not exist. Pin whatever the contract is (retry? error?). Source: [16-36 report §f17](docs/status/archived/2026-08-29_16-36_todo-list-full-execution-and-self-review.md). Evidence: `stream_test.go:529` (`failingResponseWriter`) is the only write-failure fake. |
+| 🔴 `TODO` | Context-cancellation propagation test: handler ctx cancel mid-stream closes the body cleanly                        | No test drives `r.Context()` cancellation with an in-flight `Send` and asserts clean teardown (no panic, no deadlock). Source: 16-36 report §f18. Related: the 2026-09-03 `Heartbeat`-after-`Close` panic fix (`TestStream_HeartbeatStopsAfterClose` in `stream_test.go`) pins the adjacent case.        |
+| 🔴 `TODO` | Evaluate `errors.AsType` migration (Go 1.26) across the codebase                                                     | Run the go-error-modernization pass: decide per-site whether `errors.As` should become the generic `errors.AsType[E]`; never let it regress sentinel matching (`io.EOF`, `context.DeadlineExceeded`). Source: 16-36 report §f41.                                                                       |
+| 🔴 `TODO` | Verify the allocation-free hot-path claim with `benchmem` numbers in FEATURES                                       | FEATURES asserts `WriteEvent` is allocation-minimized; pin the actual `0 allocs/op` (or the real number) from `BenchmarkWriteEvent` in the table. Source: 16-36 report §f22.                                                                                                                       |
 
 ## CI & tooling
 
-Nothing open. The weekly `nix flake update` cron workflow shipped and was
-dry-run-verified (2026-08-29: no drift, all conditional steps correctly
-skipped); it now auto-closes superseded `chore/flake-update-*` PRs before
-opening a new one. `actionlint` runs on every push/PR with shellcheck presence
-proven (run blocks are shellcheck-checked), and both tools live in the
-devShell. CI's golangci-lint is pinned to the flake's version (v2.13.1) so
-local and CI lint cannot drift again.
+| Status    | Item                                                                                  | Notes                                                                                                                                                                                                                                                                                     |
+| --------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔴 `TODO` | Watch the next Monday flake-update run (2026-09-07 04:00 UTC) — first with PR creation permitted | The 2026-08-31 scheduled run (33356602657) pushed branch `f2ec3fc` but `gh pr create` failed with "GitHub Actions is not permitted to create or approve pull requests"; the repo setting was flipped 2026-09-03 and the workflow's error-swallowing `|| echo` replaced by an explicit already-open check (uncommitted at write time). Verify on Monday: PR exists, gate outcome in the PR body, step reddens on real failures. |
+| 🔴 `TODO` | Single-source the golangci-lint version (ci.yml ↔ flake.nix)                            | The pin is duplicated with a comment ("must match `pkgs.golangci-lint`", `ci.yml:42-46`) but nothing enforces it; the 2.12/2.13 skew already shipped a red master once. A verify.sh cross-reference check or a checklist step closes the class. Source: [18-25 report IMP1](docs/status/archived/2026-08-29_18-25_superb-plan-execution-releases-and-ci-hardening.md), priority high. |
+| 🔴 `TODO` | `coverage-gate` should export a sane default `GOCACHE`                                  | The app exits 1 silently when the caller's `GOCACHE` points at a nonexistent path (AGENTS.md Gotcha documents the caller-side workaround; fix the app instead). Source: 18-25 report IMP2, priority med.                                                                                              |
+| 🔴 `TODO` | `scripts/release-verify.sh <tag>` — encode the scratch-consumer probe                   | CONTRIBUTING step 6's consumer check was hand-fumbled per release (wrong signatures, masked exit codes — 18-25 report d2). A script makes every release run the identical probe. Source: 18-25 report IMP3, priority med.                                                                               |
+| 🔴 `TODO` | CI: treefmt/format gate job                                                            | Formatting is only enforced locally via `scripts/verify.sh`; CI cannot catch an unformatted push. Source: 16-36 report §f11.                                                                                                             |
+| 🔴 `TODO` | CI: concurrency group to cancel superseded runs on master pushes                        | Every push runs all 8 jobs to completion; rapid pushes waste runner minutes. Source: 16-36 report §f12.                                                                                                                                  |
+| 🔴 `TODO` | Dependabot/Renovate for the GitHub Actions SHA pins                                     | The pins rot silently — every run currently logs a "Node.js 20 is deprecated, actions being forced to Node.js 24" warning (seen on run 33803244981). Automated bump PRs keep checkout/setup-go/install-nix-action current. Source: 16-36 report §f30.                                                   |
+| 🔴 `TODO` | Example smoke script: boot each example server, curl one event, kill                    | `example/server.go`, `example/datastar`, `example/htmx` are only exercised by humans; a no-browser smoke check would catch breakage in CI. Source: 16-36 report §f38.                                                                    |
+| ⚪ `WONT` | git pre-push hook calling `scripts/verify.sh --fast`                                    | Deliberately declined for now: the auto-git daemon bypasses manual git flow entirely, so hooks gate neither its commits nor the user's real workflow; `scripts/verify.sh` + CI are the effective gates (same reasoning as the 07-27 report's pre-commit WONT, extended to pre-push). Revisit if pushes start shipping red. |
+| ⚪ `WONT` | `testing/synctest` for the `CollectWithTimeout` tests                                    | The `testing/synctest` guidelines prohibit network I/O inside a bubble, and every `Collect*` helper owns a real-socket `httptest` server. A fake-net rewrite would test a different transport than production. Source: 2026-08-29 execution pass.                                                       |
+| ⚪ `WONT` | Remaining gopls "unnecessary type argument" infos                                        | All inferable type arguments in tests were removed (2026-08-29). What remains is explicit by necessity: `NewBroadcaster[T]()` has no args to infer from and `WithBufferSize[T](…)`'s T appears only in its return type. `gopls check` CLI reports 0 diagnostics; the rest are editor-only hints.          |
+| ⚪ `WONT` | gopls `stdversion` friction on `encoding/json/v2`                                        | Root-caused: `jsonv2` std API is gated to a `go 1.27` directive in std metadata; the directive cannot exceed the 1.26.7 toolchain. Intrinsic until Go 1.27, disappears then. Not a config problem; golangci-lint is clean.                                                                               |
 
 ## Docs
 
-Nothing open. Report conventions are at v1.1 (optional TL;DR, cross-repo cover
-scope, specializes-the-global-format note) and `docs/status/_template.md` is
-the copy-pasteable skeleton, linked from the conventions and AGENTS.md.
+| Status    | Item                                                                     | Notes                                                                                                                                                                                     |
+| --------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔴 `TODO` | `SECURITY.md` — private vulnerability reporting contact                     | Missing for a public library. Source: 16-36 report §f29.                                                                               |
+| 🔴 `TODO` | CONTRIBUTING release-checklist additions                                    | Three gaps verified 2026-09-03: no fuzz-budget step before a release (16-36 §f14), no govulncheck `@v1.7.0` pin-refresh note (§f31), no tag-signing policy (`-a` vs `-s`, §f34). Also decide where the go-datastar `ssetest` pin bump belongs (§f7). |
+| 🔴 `TODO` | Godoc examples for `RequireDataJSON` and `WithOnDrop`                        | Both shipped without `example_test.go` renderings on pkg.go.dev. Source: 16-36 report §f27.                                                |
+| 🔴 `TODO` | `docs/guides/eventstore-patterns.md` — retention/GC for replay stores       | The `EventStore` interface is unopinionated; a guide prevents consumer foot-guns (unbounded memory). Source: 16-36 report §f23.             |
+| 🔴 `TODO` | `docs/guides/` second entry: filters and fan-out patterns                   | `SubscribeFilter` recipes under the read-lock constraint (pure/fast/non-blocking predicates, drop policy interaction). Source: 16-36 report §f25.                                                           |
 
 ## Cross-repo
 
-Nothing open. The go-datastar writer goldens landed (`a0c0aea`) behind that
-repo's full gate (workspace race tests, `GOWORK=off` isolation ×3 modules,
-erraudit ×3 with zero violations, `go work sync` idempotency — re-verified
-2026-08-29 after the ssetest v0.3.0 release). `datastartest/v0.3.0` was tagged
-by the concurrent session and scratch-consumer-verified from the proxy
-(root + datastartest + go-sse resolve and compile together). Hygiene note for
-its next release: the tagged `datastartest/go.mod` still carries local
-`replace` directives — inert for consumers (dependency replaces are ignored)
-but they should be dropped before tagging, as go-datastar's own checklist
-prescribes.
+| Status    | Item                                                                              | Notes                                                                                                                                                                                                                                                                                        |
+| --------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔴 `TODO` | CI job asserting go-datastar tests against the latest ssetest tag                      | go-datastar pins `ssetest` in its go.mod and nobody bumps it when ssetest releases (currently v0.3.0). A tiny cross-repo check closes the lag. Source: 16-36 report §f48.                                                                     |
+| ⚪ `WONT` | Drop `replace` directives from the tagged `datastartest/go.mod` now                    | Inert for consumers (dependency replaces are ignored), so there is nothing to fix until the next datastartest tag — then drop them first (go-datastar's own checklist prescribes this). Source: [18-25 report a6](docs/status/archived/2026-08-29_18-25_superb-plan-execution-releases-and-ci-hardening.md). |
 
 ## Blocked
 
-| Status       | Item                                                        | Blocker                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Status       | Item                                                        | Blocker                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | ------------ | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🔵 `BLOCKED` | CI headless browser test (DataStar client + example server) | Requires the browser-E2E scope decision first — see [docs/brainstorming/2026-08-03_nix-vm-e2e-testing-with-chromedp.md](docs/brainstorming/2026-08-03_nix-vm-e2e-testing-with-chromedp.md) (Option B vs C). The SUPERB plan's default (stay blocked) was applied 2026-08-29; the real DataStar JS client remains manually verified against the example server ([2026-08-05 archived report](status/archived/2026-08-05_10-15_datastar-example-cdn-url-fix.md)). |
 
 ## Declined
 
-| Status    | Item                                             | Reason                                                                                                                                                                                                                                                                                                                                        |
-| --------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status    | Item                                             | Reason                                                                                                                                                                                                                                                                        |
+| --------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | ⚪ `WONT` | Rewrite the misleading auto-git commit `38e79aa` | SUPERB plan D2 default applied 2026-08-29: amending a month-old published commit violates the no-history-rewrite rule for a cosmetic gain. The AGENTS.md auto-git Gotcha documents the misleading message ("expand test coverage" describes a coverage-reducing deletion). Revisit only on an explicit user order — amend + force-with-lease. |
