@@ -19,12 +19,12 @@
 
 | #  | Item                                                                                 | Evidence                                       |
 | -- | ------------------------------------------------------------------------------------ | ---------------------------------------------- |
-| G1 | `eventBrand.Name()` 0% covered since 2026-07-27                                      | `go tool cover -func`: `event.go:17 Name 0.0%` |
-| G2 | No release checklist in CONTRIBUTING                                                 | `grep -ci release CONTRIBUTING.md` → 0         |
-| G3 | `govulncheck @latest` in CI (non-reproducible)                                       | `.github/workflows/ci.yml` Vulncheck job       |
-| G4 | ssetest `go.mod` at `go 1.26.6` vs root `1.26.7`                                     | `ssetest/go.mod:4`                             |
-| G5 | `nix flake check --all-systems` (darwin/aarch64) never run                           | flake check warning, every run                 |
-| G6 | No AGENTS.md note on the `vendorHash` recompute flow (bit 3 releases + this session) | AGENTS.md gotchas, absent before this plan     |
+| ~~G1~~ | ~~`eventBrand.Name()` 0% covered since 2026-07-27~~ done — resolved eb2b31d - Name() 100%, root coverage 99.3% (re-measured 2026-09-03) | ~~`go tool cover -func`: `event.go:17 Name 0.0%`~~ |
+| ~~G2~~ | ~~No release checklist in CONTRIBUTING~~ done — resolved eb2b31d - CONTRIBUTING release checklist | ~~`grep -ci release CONTRIBUTING.md` → 0~~ |
+| ~~G3~~ | ~~`govulncheck @latest` in CI (non-reproducible)~~ done — resolved eb2b31d - govulncheck pinned @v1.7.0 | ~~`.github/workflows/ci.yml` Vulncheck job~~ |
+| ~~G4~~ | ~~ssetest `go.mod` at `go 1.26.6` vs root `1.26.7`~~ done — resolved eb2b31d - ssetest go directive aligned to 1.26.7 | ~~`ssetest/go.mod:4`~~ |
+| ~~G5~~ | ~~`nix flake check --all-systems` (darwin/aarch64) never run~~ done — resolved eb2b31d - systems declared; --all-systems green (18-25 a3) | ~~flake check warning, every run~~ |
+| ~~G6~~ | ~~No AGENTS.md note on the `vendorHash` recompute flow (bit 3 releases + this session)~~ done — resolved - AGENTS.md vendorHash gotcha added with this plan's F14 (2026-08-29); present at HEAD 2026-09-03 | ~~AGENTS.md gotchas, absent before this plan~~ |
 
 ---
 
@@ -133,3 +133,14 @@ graph TD
 - F11–F14: TODO_LIST at 24 open items in 6 sections; AGENTS.md gotcha added.
 - F16–F19: four commits (fix / living docs / 2026-08 archive / 2026-07 archive + plan).
 - F20: `nix flake check` post-commit + push — see final commit push output.
+
+---
+
+## Archival check (2026-09-03, docs-health pass)
+
+The Status header (EXECUTED) and §8 results cover tasks 1–9 via their F1–F20
+decomposition; the G1–G6 gap rows now carry inline resolutions (all closed —
+`eb2b31d` batch plus the AGENTS.md gotcha). Verification criterion 1 ("only
+live reports remain") held until the 2026-08-29 16:36+ sessions; this pass
+empties the live set entirely. All 136 pre-annotation lines read to EOF this
+pass.

@@ -1,5 +1,7 @@
 # SUPERB — Release-the-Value Pareto Plan (go-sse, 2026-08-29)
 
+> **Status:** EXECUTED (2026-08-29) — execution report: [2026-08-29_18-25 superb-plan-execution](../status/archived/2026-08-29_18-25_superb-plan-execution-releases-and-ci-hardening.md) (P1–P15 all landed; D1/D2 resolved, D3 default applied); closeout commit `2bcb0ce`; 2026-09-03 archival pass inline-annotated every task row.
+>
 > Point-in-time plan (snapshot). Living state lives in `TODO_LIST.md`; completed work lands in
 > `CHANGELOG.md`. Generated from `TODO_LIST.md` + the 2026-08-29 19:45 self-review follow-ups.
 > ROADMAP.md themes (production readiness, DX, spec extensibility, parked decisions, raw ideas)
@@ -49,21 +51,21 @@ Sorted by importance → impact → effort → customer value. `Dep` = dependenc
 
 | ID  | Task                                                                                                                                                                                                 | Imp | Eff | Customer value                   | Est    | Dep    |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | -------------------------------- | ------ | ------ |
-| P1  | Pre-release full gate: `scripts/verify.sh` (FULL, incl. `nix flake check`), `--all-systems`, coverage-gate, triage                                                                                   | 10  | 4   | Indirect-high (protects release) | 40 min | —      |
-| P2  | Cut **root v0.6.0**: CHANGELOG cut, FEATURES/ROADMAP refresh, worktree tag validation, proxy + pkg.go.dev verify, `gh release create` (follow CONTRIBUTING checklist)                                | 10  | 7   | THE value — every consumer       | 90 min | P1     |
-| P3  | Cut **ssetest v0.3.0**: changelog cut, dual-module tagging rules, scratch-consumer `go get` verify                                                                                                   | 9   | 6   | High (test-helper consumers)     | 60 min | P2     |
-| P4  | Paired **datastartest** release in go-datastar (their full gate first; `go-release` skill)                                                                                                           | 9   | 6   | High (parity batch ships)        | 60 min | P3, P5 |
-| P5  | Land go-datastar session work: commit goldens + CHANGELOG bullet with detailed message; run its FULL gate (workspace ×3 modules, `GOWORK=off` isolation ×3, erraudit ×3, `go work sync` idempotency) | 8   | 6   | Med-high (wire contract pinned)  | 90 min | coord. |
-| P6  | `actionlint` into go-sse CI + devShell (recipe: go-datastar `5887043`)                                                                                                                               | 7   | 3   | Med (workflow bug class killed)  | 35 min | —      |
-| P7  | flake-update live check: `workflow_dispatch` dry-run, review run + created PR, branch cleanup                                                                                                        | 7   | 3   | Med (proves the automation)      | 30 min | push ✓ |
-| P8  | Workflow hardening: auto-close superseded `chore/flake-update-*` PRs before opening a new one                                                                                                        | 6   | 3   | Med (no PR pile-up)              | 30 min | P7     |
-| P9  | Explicit shellcheck CI step for workflow run-blocks (actionlint's shellcheck is silently optional)                                                                                                   | 6   | 2   | Med (shell-bug class)            | 30 min | P6     |
-| P10 | Status-report conventions v1.1: TL;DR allowance, cross-repo cover scope, "specializes global skill format" note                                                                                      | 5   | 2   | Contributor                      | 30 min | —      |
-| P11 | `docs/status/_template.md` (copy-pasteable report skeleton) + link from conventions                                                                                                                  | 4   | 2   | Contributor                      | 30 min | P10    |
-| P12 | DECISION GATE D1: canonical CHANGELOG policy (CI lines in changelog vs git-history-only) + apply ruling                                                                                              | 5   | 1   | Governance                       | 30 min | —      |
-| P13 | DECISION GATE D2: `38e79aa` amend-vs-accept + execute (amend + force-with-lease ONLY with explicit approval)                                                                                         | 4   | 1   | History honesty                  | 30 min | —      |
-| P14 | DECISION GATE D3: browser-E2E Option B vs C → spawns the E2E plan                                                                                                                                    | 4   | 1   | Future E2E confidence            | 30 min | —      |
-| P15 | go-datastar mixed-tree coordination with the concurrent session (agree commit split, no bulk-commit)                                                                                                 | 3   | 1   | Hygiene                          | 30 min | —      |
+| ~~P1~~  | ~~Pre-release full gate: `scripts/verify.sh` (FULL, incl. `nix flake check`), `--all-systems`, coverage-gate, triage~~ done — gate green (18-25 a3) | ~~10~~ | ~~4~~ | ~~Indirect-high (protects release)~~ | ~~40 min~~ | ~~—~~ |
+| ~~P2~~  | ~~Cut **root v0.6.0**: CHANGELOG cut, FEATURES/ROADMAP refresh, worktree tag validation, proxy + pkg.go.dev verify, `gh release create` (follow CONTRIBUTING checklist)~~ done — v0.6.0 cut - 4c217e6 (18-25 a4) | ~~10~~ | ~~7~~ | ~~THE value — every consumer~~ | ~~90 min~~ | ~~P1~~ |
+| ~~P3~~  | ~~Cut **ssetest v0.3.0**: changelog cut, dual-module tagging rules, scratch-consumer `go get` verify~~ done — ssetest v0.3.0 - d556e42 (18-25 a5) | ~~9~~ | ~~6~~ | ~~High (test-helper consumers)~~ | ~~60 min~~ | ~~P2~~ |
+| ~~P4~~  | ~~Paired **datastartest** release in go-datastar (their full gate first; `go-release` skill)~~ done — datastartest v0.3.0 - 60cf5b1 (18-25 a6) | ~~9~~ | ~~6~~ | ~~High (parity batch ships)~~ | ~~60 min~~ | ~~P3, P5~~ |
+| ~~P5~~  | ~~Land go-datastar session work: commit goldens + CHANGELOG bullet with detailed message; run its FULL gate (workspace ×3 modules, `GOWORK=off` isolation ×3, erraudit ×3, `go work sync` idempotency)~~ done — goldens a0c0aea behind the full gate (18-25 a7) | ~~8~~ | ~~6~~ | ~~Med-high (wire contract pinned)~~ | ~~90 min~~ | ~~coord.~~ |
+| ~~P6~~  | ~~`actionlint` into go-sse CI + devShell (recipe: go-datastar `5887043`)~~ done — f8276ff (18-25 a8) | ~~7~~ | ~~3~~ | ~~Med (workflow bug class killed)~~ | ~~35 min~~ | ~~—~~ |
+| ~~P7~~  | ~~flake-update live check: `workflow_dispatch` dry-run, review run + created PR, branch cleanup~~ done — dry-run 33270142954 (18-25 a10); first scheduled run 08-31 exposed the PR bug - fixed 2026-09-03 | ~~7~~ | ~~3~~ | ~~Med (proves the automation)~~ | ~~30 min~~ | ~~push ✓~~ |
+| ~~P8~~  | ~~Workflow hardening: auto-close superseded `chore/flake-update-*` PRs before opening a new one~~ done — f8276ff (18-25 a11) | ~~6~~ | ~~3~~ | ~~Med (no PR pile-up)~~ | ~~30 min~~ | ~~P7~~ |
+| ~~P9~~  | ~~Explicit shellcheck CI step for workflow run-blocks (actionlint's shellcheck is silently optional)~~ done — f8276ff + planted-failure proof (18-25 a9) | ~~6~~ | ~~2~~ | ~~Med (shell-bug class)~~ | ~~30 min~~ | ~~P6~~ |
+| ~~P10~~ | ~~Status-report conventions v1.1: TL;DR allowance, cross-repo cover scope, "specializes global skill format" note~~ done — 10cd4e7 (18-25 a12) | ~~5~~ | ~~2~~ | ~~Contributor~~ | ~~30 min~~ | ~~—~~ |
+| ~~P11~~ | ~~`docs/status/_template.md` (copy-pasteable report skeleton) + link from conventions~~ done — 2bcb0ce (18-25 a13) | ~~4~~ | ~~2~~ | ~~Contributor~~ | ~~30 min~~ | ~~P10~~ |
+| ~~P12~~ | ~~DECISION GATE D1: canonical CHANGELOG policy (CI lines in changelog vs git-history-only) + apply ruling~~ done — D1 resolved - policy section (2bcb0ce) | ~~5~~ | ~~1~~ | ~~Governance~~ | ~~30 min~~ | ~~—~~ |
+| ~~P13~~ | ~~DECISION GATE D2: `38e79aa` amend-vs-accept + execute (amend + force-with-lease ONLY with explicit approval)~~ done — D2 default accept applied (2bcb0ce; TODO_LIST Declined row) | ~~4~~ | ~~1~~ | ~~History honesty~~ | ~~30 min~~ | ~~—~~ |
+| ~~P14~~ | ~~DECISION GATE D3: browser-E2E Option B vs C → spawns the E2E plan~~ done — D3 default stay-blocked applied (TODO_LIST Blocked row) | ~~4~~ | ~~1~~ | ~~Future E2E confidence~~ | ~~30 min~~ | ~~—~~ |
+| ~~P15~~ | ~~go-datastar mixed-tree coordination with the concurrent session (agree commit split, no bulk-commit)~~ done — coordinated - 18-25 P5 landed only the session's two files | ~~3~~ | ~~1~~ | ~~Hygiene~~ | ~~30 min~~ | ~~—~~ |
 
 **Total ≈ 11.5 h.** Critical path: P1 → P2 → P3 → P4 (≈ 4.5 h). Parallelizable: P6/P7/P10/P12-P15 anywhere; P5 before P4.
 
@@ -168,9 +170,9 @@ Critical path (solid top): P1 → P2 → P3 → P4. Everything else parallelizes
 
 | Gate | Question                                                                                                           | Default if unanswered                |
 | ---- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
-| D1   | CHANGELOG policy: CI-gate lines under Added (precedent) vs chore-tier CI wiring in git history only (Policy text)? | Keep precedent; align Policy wording |
-| D2   | `38e79aa`: amend published message (history rewrite) or accept (AGENTS.md Gotcha compromise already in place)?     | Accept                               |
-| D3   | Browser-E2E: Option B vs C from the chromedp brainstorming doc?                                                    | Stay blocked                         |
+| ~~D1~~   | ~~CHANGELOG policy: CI-gate lines under Added (precedent) vs chore-tier CI wiring in git history only (Policy text)?~~ done — RESOLVED 2026-08-29 - precedent wins; CHANGELOG policy section (2bcb0ce) | ~~Keep precedent; align Policy wording~~ |
+| ~~D2~~   | ~~`38e79aa`: amend published message (history rewrite) or accept (AGENTS.md Gotcha compromise already in place)?~~ done — RESOLVED - accept (no history rewrite); AGENTS.md Gotcha + TODO_LIST Declined row | ~~Accept~~ |
+| ~~D3~~   | ~~Browser-E2E: Option B vs C from the chromedp brainstorming doc?~~ done — DEFAULT APPLIED - stay blocked; TODO_LIST Blocked row + chromedp brainstorming doc | ~~Stay blocked~~ |
 
 ## 6. Anti-verschlimmbessern guardrails
 
@@ -179,3 +181,16 @@ Critical path (solid top): P1 → P2 → P3 → P4. Everything else parallelizes
 - Release follows the CONTRIBUTING checklist exactly — no shortcut tagging.
 - TODO_LIST additions from this plan are additive rows only; no restructuring.
 - Nothing in this plan touches library code — zero risk to the release content.
+
+---
+
+## Archival check (2026-09-03, docs-health pass)
+
+Every P1–P15 task row and all three decision gates carry inline resolutions
+(18-25 report evidence + commit hashes). The 47 microtasks in §3 are the
+decomposition of P1–P15 — each parent's inline marker plus the 18-25 a-table
+covers them; no microtask ran outside its parent. Downstream truth: P7's
+"review the created PR" path never actually succeeded until 2026-09-03 (the
+08-31 scheduled run's PR creation was blocked by a repo Actions setting and
+silently swallowed; fixed this pass). All 181 pre-annotation lines read to EOF
+this pass.
