@@ -47,7 +47,13 @@ type Stream struct {
 	// separate goroutine (see Heartbeat docs). http.ResponseWriter is not
 	// safe for concurrent use, so both paths must hold mu.
 	mu sync.Mutex
-}
+
+	// closed records that Close has run. The handler sets it via a deferred
+	// Close on return; Heartbeat checks it under mu so a tick racing handler
+	// teardown skips instead of writing to a ResponseWriter the server has
+	// already finished (which panics inside net/http).
+	closed bool
+	}
 
 type flusher interface{ Flush() }
 
@@ -181,11 +187,19 @@ func (s *Stream) Context() context.Context {
 	return s.ctx
 }
 
-// Close flushes any buffered data and fires any registered OnDisconnect callbacks.
-// Call this (typically via defer) when done with the stream.
-// Returns nil — close is always successful; the error return satisfies [io.Closer].
+// Close flushes any buffered data, marks the stream closed, and fires any
+// registered OnDisconnect callbacks. Call this (typically via defer) when done
+// with the stream. Returns nil — close is always successful; the error return
+// satisfies [io.Closer].
+//
+// Marking the stream closed is what makes the documented fire-and-forget
+// heartbeat pattern safe: once Close has run, a Heartbeat tick can no longer
+// write or flush the ResponseWriter, because the server invalidates it after
+// the handler returns.
 func (s *Stream) Close() error {
 	s.mu.Lock()
+	s.closed = true
+
 	if s.fw != nil {
 		s.fw.Flush()
 	}
@@ -219,6 +233,10 @@ func (s *Stream) LastEventID() EventID {
 //
 // The ping is a standard SSE comment frame (": heartbeat\n\n") which browsers
 // ignore but proxies use to reset their idle timer.
+//
+// Heartbeat also returns once the stream is closed: if the handler's deferred
+// Close wins the race against a pending tick, the tick observes the closed
+// stream and returns instead of writing to the finished ResponseWriter.
 func (s *Stream) Heartbeat(ctx context.Context, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -229,6 +247,11 @@ func (s *Stream) Heartbeat(ctx context.Context, interval time.Duration) {
 			return
 		case <-ticker.C:
 			s.mu.Lock()
+			if s.closed {
+				s.mu.Unlock()
+
+				return
+			}
 
 			err := WriteHeartbeat(s.w)
 			if err == nil && s.fw != nil {
