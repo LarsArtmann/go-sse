@@ -93,6 +93,7 @@ func NewStream(w http.ResponseWriter, r *http.Request) *Stream {
 		ctx:          r.Context(),
 		onDisconnect: nil,
 		mu:           sync.Mutex{},
+		closed:       false,
 	}
 }
 
