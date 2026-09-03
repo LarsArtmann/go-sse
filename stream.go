@@ -53,7 +53,7 @@ type Stream struct {
 	// teardown skips instead of writing to a ResponseWriter the server has
 	// already finished (which panics inside net/http).
 	closed bool
-	}
+}
 
 type flusher interface{ Flush() }
 

@@ -589,6 +589,16 @@
     </style>
   </head>
   <body>
+<div style="background:#0f172a;color:#e2e8f0;padding:12px 20px;font-family:system-ui,sans-serif;border-bottom:3px solid #38bdf8">
+  <strong>RESOLVED (2026-09-03, docs-health pass):</strong> this proposal was
+  <strong>executed</strong> — the Nix flake migration shipped 2026-07-23/24 and
+  <code>flake.nix</code> is the project's hermetic build/test/lint gate
+  (<code>nix run .#test-race / vet / lint / coverage / coverage-gate</code>,
+  <code>nix flake check</code> in CI). Point-in-time proposal; see
+  <code>docs/planning/archived/2026-07-23_21-40_pareto-execution-plan.html</code>
+  and the 2026-07-23/24 archived status reports for the execution record.
+</div>
+
     <div class="top-bar">
       <span>Nix Flake Migration Proposal</span>
       <span>2026-07-23</span>
