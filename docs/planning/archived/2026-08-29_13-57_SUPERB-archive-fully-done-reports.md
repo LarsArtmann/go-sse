@@ -17,14 +17,14 @@
 
 ### Deviations/gaps found in OUR docs state
 
-| #  | Item                                                                                 | Evidence                                       |
-| -- | ------------------------------------------------------------------------------------ | ---------------------------------------------- |
-| ~~G1~~ | ~~`eventBrand.Name()` 0% covered since 2026-07-27~~ done — resolved eb2b31d - Name() 100%, root coverage 99.3% (re-measured 2026-09-03) | ~~`go tool cover -func`: `event.go:17 Name 0.0%`~~ |
-| ~~G2~~ | ~~No release checklist in CONTRIBUTING~~ done — resolved eb2b31d - CONTRIBUTING release checklist | ~~`grep -ci release CONTRIBUTING.md` → 0~~ |
-| ~~G3~~ | ~~`govulncheck @latest` in CI (non-reproducible)~~ done — resolved eb2b31d - govulncheck pinned @v1.7.0 | ~~`.github/workflows/ci.yml` Vulncheck job~~ |
-| ~~G4~~ | ~~ssetest `go.mod` at `go 1.26.6` vs root `1.26.7`~~ done — resolved eb2b31d - ssetest go directive aligned to 1.26.7 | ~~`ssetest/go.mod:4`~~ |
-| ~~G5~~ | ~~`nix flake check --all-systems` (darwin/aarch64) never run~~ done — resolved eb2b31d - systems declared; --all-systems green (18-25 a3) | ~~flake check warning, every run~~ |
-| ~~G6~~ | ~~No AGENTS.md note on the `vendorHash` recompute flow (bit 3 releases + this session)~~ done — resolved - AGENTS.md vendorHash gotcha added with this plan's F14 (2026-08-29); present at HEAD 2026-09-03 | ~~AGENTS.md gotchas, absent before this plan~~ |
+| #      | Item                                                                                                                                                                                                       | Evidence                                           |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| ~~G1~~ | ~~`eventBrand.Name()` 0% covered since 2026-07-27~~ done — resolved eb2b31d - Name() 100%, root coverage 99.3% (re-measured 2026-09-03)                                                                    | ~~`go tool cover -func`: `event.go:17 Name 0.0%`~~ |
+| ~~G2~~ | ~~No release checklist in CONTRIBUTING~~ done — resolved eb2b31d - CONTRIBUTING release checklist                                                                                                          | ~~`grep -ci release CONTRIBUTING.md` → 0~~         |
+| ~~G3~~ | ~~`govulncheck @latest` in CI (non-reproducible)~~ done — resolved eb2b31d - govulncheck pinned @v1.7.0                                                                                                    | ~~`.github/workflows/ci.yml` Vulncheck job~~       |
+| ~~G4~~ | ~~ssetest `go.mod` at `go 1.26.6` vs root `1.26.7`~~ done — resolved eb2b31d - ssetest go directive aligned to 1.26.7                                                                                      | ~~`ssetest/go.mod:4`~~                             |
+| ~~G5~~ | ~~`nix flake check --all-systems` (darwin/aarch64) never run~~ done — resolved eb2b31d - systems declared; --all-systems green (18-25 a3)                                                                  | ~~flake check warning, every run~~                 |
+| ~~G6~~ | ~~No AGENTS.md note on the `vendorHash` recompute flow (bit 3 releases + this session)~~ done — resolved - AGENTS.md vendorHash gotcha added with this plan's F14 (2026-08-29); present at HEAD 2026-09-03 | ~~AGENTS.md gotchas, absent before this plan~~     |
 
 ---
 
