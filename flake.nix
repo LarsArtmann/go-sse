@@ -43,7 +43,7 @@
           ...
         }:
         let
-          goPkg = pkgs.go_1_26;
+          goPkg = pkgs.go_1_27;
           buildGoModule = pkgs.buildGoModule.override { go = goPkg; };
           version = self.rev or self.dirtyRev or "dev";
           # Separate hashes: the two modules resolve different go.mod graphs
