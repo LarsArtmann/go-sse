@@ -219,16 +219,41 @@
               (cd ssetest && GOWORK=off go test ./... -coverprofile=../ssetest-coverage.out -covermode=atomic && go tool cover -func=../ssetest-coverage.out)
             '';
 
-            coverage-gate = mkApp "coverage-gate" [ goPkg pkgs.bc pkgs.gnugrep ] ''
+            coverage-gate = mkApp "coverage-gate" [ goPkg pkgs.bc pkgs.gnugrep pkgs.coreutils ] ''
               export GOEXPERIMENT=jsonv2
               export GOWORK=off
-              cov=$(go test . -count=1 -coverprofile=/tmp/sse-cov >/dev/null 2>&1 && go tool cover -func=/tmp/sse-cov | tail -1 | grep -oP '\d+\.\d+(?=%)')
+
+              # A caller-exported GOCACHE pointing at a nonexistent or
+              # unwritable path used to make this app exit 1 with NO output:
+              # go's failure was swallowed by a 2>/dev/null, cov came back
+              # empty, and bc errored into set -e. Fall back to a temp dir
+              # instead of dying silently.
+              if [[ -n "''${GOCACHE:-}" ]] && ! mkdir -p "''${GOCACHE}" 2>/dev/null; then
+                echo "GOCACHE=''${GOCACHE} is not writable; falling back to a temp dir" >&2
+                export GOCACHE="$(mktemp -d)"
+              fi
+
+              # measure <profile> <go test args...> runs the tests (stderr
+              # kept and shown on failure — never swallowed) and prints the
+              # total coverage percentage.
+              measure() {
+                local profile="$1"
+                shift
+                if ! go test "$@" -count=1 -coverprofile="$profile" 2>"$profile.testlog"; then
+                  cat "$profile.testlog" >&2
+                  echo "FAIL: go test exited nonzero for $* — cannot measure coverage" >&2
+                  exit 1
+                fi
+                go tool cover -func="$profile" | tail -1 | grep -oP '\d+\.\d+(?=%)'
+              }
+
+              cov="$(measure /tmp/sse-cov .)"
               echo "library coverage: ''${cov}% (threshold: 90%)"
               if (( $(echo "$cov < 90" | bc -l) )); then
                 echo "FAIL: library coverage ''${cov}% < 90%"
                 exit 1
               fi
-              scov=$(cd ssetest && go test ./... -count=1 -coverprofile=/tmp/ssetest-cov >/dev/null 2>&1 && go tool cover -func=/tmp/ssetest-cov | tail -1 | grep -oP '\d+\.\d+(?=%)')
+              scov="$(cd ssetest && measure /tmp/ssetest-cov ./...)"
               echo "ssetest coverage: ''${scov}% (threshold: 95%)"
               if (( $(echo "$scov < 95" | bc -l) )); then
                 echo "FAIL: ssetest coverage ''${scov}% < 95%"

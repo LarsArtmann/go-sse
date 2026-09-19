@@ -537,7 +537,11 @@ func flushFrame(events []string, current *strings.Builder) []string {
 
 // finishScan finalizes the last pending frame when the stream ends and maps
 // scanner errors, tolerating the context cancellation that stops collection.
-func finishScan(events []string, current *strings.Builder, scanner *bufio.Scanner) ([]string, error) {
+func finishScan(
+	events []string,
+	current *strings.Builder,
+	scanner *bufio.Scanner,
+) ([]string, error) {
 	events = flushFrame(events, current)
 
 	scanErr := scanner.Err()
