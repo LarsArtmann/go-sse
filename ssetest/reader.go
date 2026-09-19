@@ -48,7 +48,7 @@ var utf8BOM = [...]byte{0xEF, 0xBB, 0xBF} //nolint:gochecknoglobals // byte arra
 // Individual data: lines are preserved in [Event.DataLines] with their values
 // only (no "data: " prefix); use [Event.Data] for the rejoined payload.
 func ReadEvents(r io.Reader) ([]Event, error) {
-	parser := streamParser{} //nolint:exhaustruct // zero value is the initial parser state
+	parser := streamParser{} //nolint:exhaustruct_v5 // zero value is the initial parser state
 	scanner := newSSEScanner(r)
 
 	for scanner.Scan() {
@@ -85,7 +85,7 @@ func ReadNEvents(r io.Reader, count int) ([]Event, error) {
 		return nil, nil
 	}
 
-	parser := streamParser{} //nolint:exhaustruct // zero value is the initial parser state
+	parser := streamParser{} //nolint:exhaustruct_v5 // zero value is the initial parser state
 	scanner := newSSEScanner(r)
 
 	for scanner.Scan() {
@@ -155,7 +155,7 @@ type StreamReader struct {
 // NewStreamReader creates a [StreamReader] that parses the SSE wire format
 // from r. Wire-format semantics are identical to [ReadEvents] (spec § 9.2.6).
 func NewStreamReader(r io.Reader) *StreamReader {
-	return &StreamReader{ //nolint:exhaustruct // scanner/parser zero values are correct
+	return &StreamReader{ //nolint:exhaustruct_v5 // scanner/parser zero values are correct
 		scanner: newSSEScanner(r),
 	}
 }
@@ -330,7 +330,7 @@ func splitSSELines(data []byte, atEOF bool) (int, []byte, error) {
 // pin that a second (mid-stream) BOM is NOT stripped — it poisons the first
 // field name, so the line is ignored as an unknown field.
 func stripLeadingBOM(r io.Reader) io.Reader {
-	return &bomStripReader{r: r} //nolint:exhaustruct // zero values are correct for the rest
+	return &bomStripReader{r: r} //nolint:exhaustruct_v5 // zero values are correct for the rest
 }
 
 // bomStripReader probes the first bytes of the underlying reader once, drops

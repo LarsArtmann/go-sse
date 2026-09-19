@@ -31,7 +31,7 @@
 ### ANNOTATE + ARCHIVE
 
 12. ~~**All 28 live `2026-08-*` status reports annotated** — every forward-looking item I read now carries an inline verdict~~ (`~~…~~ done at \`hash\``,` **Won't implement — reason** `, or`→ tracked in TODO_LIST.md`); 11-58 got full per-item inline treatment (24/24 items); the others got verdict-rich Resolution/Archival-check appendices keyed to their numbered sections.
- done (docs-health pass 2026-09-03: verified - archived/ holds 29 status + 5 planning files, cross-links rewritten)
+    done (docs-health pass 2026-09-03: verified - archived/ holds 29 status + 5 planning files, cross-links rewritten)
 13. ~~**28 status reports + 5 planning docs `git mv`'d to `archived/`** (`docs/status/archived/`, `docs/planning/archived/` — including both `.html` plans). All cross-references rewritten (`docs/status/2026-08-` → `docs/status/archived/2026-08-`, sibling links, plan-status link) — verified by a repo-wide path-replace pass that touched 12 files.~~ done (docs-health pass 2026-09-03)
 14. ~~**3 brainstorming docs correctly classified LEAVE:** nix-vm (open idea, referenced by the BLOCKED TODO), samber-do (Option C adopted, trigger criteria live), go-retry (standing decision referenced by ROADMAP §4).~~ done (docs-health pass 2026-09-03)
 
@@ -111,7 +111,7 @@
 17. ~~`KeyedLines`/`SendKeyed` wire round-trip property test.~~ done at `eb2b31d`
 18. ~~BOM-at-every-chunk-boundary matrix test.~~ done at `eb2b31d`
 19. ~~Sticky-ID reconnect assertion in an E2E test.~~ done at `eb2b31d`
-20. ~~`testing/synctest` for `CollectWithTimeout` tests.~~ **Won't implement — declined 2026-08-29 with root cause (network I/O in bubbles prohibited; Collect* helpers own real sockets) - TODO_LIST WONT row.**
+20. ~~`testing/synctest` for `CollectWithTimeout` tests.~~ __Won't implement — declined 2026-08-29 with root cause (network I/O in bubbles prohibited; Collect_ helpers own real sockets) - TODO_LIST WONT row._*
 21. ~~`docs/guides/reconnection-and-retry.md` (the 5-layer retry model).~~ done at `eb2b31d`
 22. ~~`RequireDataJSON(tb, evt, want any)`.~~ done at `eb2b31d`
 23. ~~Extend `coverage-gate` with an ssetest threshold.~~ done at `eb2b31d`

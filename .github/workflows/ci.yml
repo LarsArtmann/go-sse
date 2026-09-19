@@ -5,6 +5,12 @@ on:
     branches: [master]
   pull_request:
 
+# Rapid pushes waste runner minutes running superseded jobs to completion;
+# each new push/PR update cancels the run it replaces.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -39,23 +45,24 @@ jobs:
           go-version-file: go.mod
       - uses: golangci/golangci-lint-action@9fae48acfc02a90574d7c304a1758ef9895495fa # v7
         with:
-          # Pin to v2.13.1 — must match `pkgs.golangci-lint` in flake.nix
-          # (nixpkgs unstable, currently 2.13.1) so local and CI lint agree;
-          # a skew let a goconst counting difference between 2.12 and 2.13
-          # pass locally and fail CI. Also built with a recent Go, which is
-          # required because go.mod's `go` directive is 1.26.6. `version:
+          # Pin to the SAME version nixpkgs ships (`pkgs.golangci-lint` in
+          # flake.nix — currently 2.13.2) so local and CI lint agree; a skew
+          # let a goconst counting difference between 2.12 and 2.13 pass
+          # locally and fail CI. scripts/verify.sh cross-checks this pin
+          # against the local binary. Also built with a recent Go, which is
+          # required because go.mod's `go` directive is 1.27.1. `version:
           # latest` resolved to v1.64.8 (built with Go 1.24) inside the
           # action's vendored fallback, which then refuses to load the config
           # with:
           #   "the Go language version (go1.24) used to build golangci-lint
-          #    is lower than the targeted Go version (1.26.6)"
+          #    is lower than the targeted Go version"
           # We also need action v7 because v6 refuses golangci-lint v2
           # versions entirely ("golangci-lint v2 is not supported by
           # golangci-lint-action v6").
-          version: v2.13.1
+          version: v2.13.2
       - uses: golangci/golangci-lint-action@9fae48acfc02a90574d7c304a1758ef9895495fa # v7
         with:
-          version: v2.13.1
+          version: v2.13.2
           working-directory: ssetest
         env:
           GOWORK: "off"
@@ -115,6 +122,21 @@ jobs:
       # dependency the examples were generated with.
       - run: go run github.com/a-h/templ/cmd/templ@v0.3.1020 generate -check
 
+  smoke:
+    name: Example smoke
+    runs-on: ubuntu-latest
+    env:
+      GOEXPERIMENT: jsonv2
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
+      # Compile-only coverage of the examples cannot catch a dead handler, a
+      # wrong port, or a startup panic — boot each example and require real
+      # SSE bytes (scripts/smoke-examples.sh).
+      - run: scripts/smoke-examples.sh
+
   nix:
     name: Nix flake check
     runs-on: ubuntu-latest
@@ -140,7 +162,7 @@ jobs:
           go-version-file: go.mod
       # Pinned to v1.7.0: the lint job documents why `latest` is unacceptable
       # one job above; vulncheck must not repeat that anti-pattern.
-      - run: go install golang.org/x/vuln/cmd/govulncheck@v1.7.0
+      - run: go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
       - run: govulncheck ./...
       - run: govulncheck ./...
         working-directory: ssetest

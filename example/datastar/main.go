@@ -19,6 +19,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -39,12 +40,12 @@ const (
 )
 
 const (
-	datastarAddr    = ":8765"
-	emitInterval    = 2 * time.Second
-	heartbeatEvery  = 15 * time.Second
-	maxStoredEvents = 50
-	shutdownTimeout = 5 * time.Second
-	readHeaderLimit = 5 * time.Second
+	defaultDatastarPort = "8765"
+	emitInterval        = 2 * time.Second
+	heartbeatEvery      = 15 * time.Second
+	maxStoredEvents     = 50
+	shutdownTimeout     = 5 * time.Second
+	readHeaderLimit     = 5 * time.Second
 
 	// idleTimeout is a generous idle timeout for long-lived SSE connections.
 	// ReadTimeout/WriteTimeout would kill SSE connections, so we use
@@ -55,6 +56,17 @@ const (
 //go:embed all:static
 var staticFiles embed.FS
 
+// listenAddr returns ":$PORT" when set, else the default port — lets the
+// smoke test (scripts/smoke-examples.sh) pick a free port without editing
+// the example.
+func listenAddr() string {
+	if port := os.Getenv("PORT"); port != "" {
+		return ":" + port
+	}
+
+	return ":" + defaultDatastarPort
+}
+
 func main() {
 	staticFS, err := fs.Sub(staticFiles, "static")
 	if err != nil {
@@ -62,6 +74,7 @@ func main() {
 	}
 
 	server := newActivityServer()
+	datastarAddr := listenAddr()
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

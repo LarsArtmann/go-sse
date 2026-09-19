@@ -8,6 +8,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -15,12 +16,24 @@ import (
 )
 
 const (
-	addr              = ":8080"
+	defaultPort       = "8080"
 	heartbeatInterval = 15 * time.Second
 )
 
+// listenAddr returns ":$PORT" when set, else the default port — lets the
+// smoke test (scripts/smoke-examples.sh) and container users pick a free
+// port without editing the example.
+func listenAddr() string {
+	if port := os.Getenv("PORT"); port != "" {
+		return ":" + port
+	}
+
+	return ":" + defaultPort
+}
+
 func main() {
 	bc := sse.NewBroadcaster[sse.Event]()
+	addr := listenAddr()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /events", eventsHandler(bc))

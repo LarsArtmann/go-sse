@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -51,7 +52,7 @@ func (r *recordingResponseWriter) Write(p []byte) (int, error) {
 		}
 	}
 
-	return n, err //nolint:wrapcheck // bytes.Buffer.Write never errors
+	return n, err
 }
 
 func (r *recordingResponseWriter) WriteHeader(int) {}
@@ -596,6 +597,57 @@ func TestStream_SendReturnsErrorOnWriteFailure(t *testing.T) {
 	}
 }
 
+// shortWriteResponseWriter is an http.ResponseWriter that accepts only part
+// of each Write (n < len(p), nil error) — a writer violating the io.Writer
+// contract's full-delivery expectation without reporting an error. It stands
+// in for wrapped/buggy ResponseWriters (compression, buffering middleware).
+type shortWriteResponseWriter struct {
+	header http.Header
+}
+
+func (s *shortWriteResponseWriter) Header() http.Header {
+	if s.header == nil {
+		s.header = make(http.Header)
+	}
+
+	return s.header
+}
+
+func (s *shortWriteResponseWriter) Write(p []byte) (int, error) {
+	if len(p) == 0 {
+		return 0, nil
+	}
+
+	return len(p) / 2, nil
+}
+
+func (s *shortWriteResponseWriter) WriteHeader(int) {}
+
+var _ http.ResponseWriter = (*shortWriteResponseWriter)(nil)
+
+// TestStream_SendReturnsErrorOnShortWrite pins the partial-write contract: a
+// writer that accepts only part of the frame with a nil error must surface
+// io.ErrShortWrite (wrapped), never a silent truncation and never a retry —
+// re-emitting the frame would put duplicate bytes on the wire.
+func TestStream_SendReturnsErrorOnShortWrite(t *testing.T) {
+	t.Parallel()
+
+	w := &shortWriteResponseWriter{}
+	r := httptest.NewRequest(http.MethodGet, "/events", nil)
+
+	stream := sse.NewStream(w, r)
+	defer func() { _ = stream.Close() }()
+
+	err := stream.Send(sse.Event{Event: "update", Data: "hello"})
+	if err == nil {
+		t.Fatal("expected io.ErrShortWrite from partial-accepting writer, got nil")
+	}
+
+	if !errors.Is(err, io.ErrShortWrite) {
+		t.Errorf("error wraps io.ErrShortWrite: got %v", err)
+	}
+}
+
 // TestStream_SendCloseRace verifies that concurrent Send and Close do not race
 // or panic. Only the Send+Heartbeat race was previously covered.
 func TestStream_SendCloseRace(t *testing.T) {
@@ -655,5 +707,78 @@ func TestStream_SendHeartbeatCloseRace(t *testing.T) {
 		})
 
 		wg.Wait()
+	}
+}
+
+// TestStream_RequestContextCancelMidStream drives r.Context() cancellation
+// against a real socket with Sends in flight: the client cancels mid-stream,
+// and the handler must tear down cleanly — stream.Context() observes the
+// cancellation, the send loop exits without deadlocking, and no panic escapes
+// the handler (net/http would swallow a handler panic in its own recover, so
+// panics are forwarded to the test explicitly).
+func TestStream_RequestContextCancelMidStream(t *testing.T) {
+	t.Parallel()
+
+	handlerDone := make(chan error, 1)
+	handlerPanic := make(chan any, 1)
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if p := recover(); p != nil {
+				handlerPanic <- p
+				close(handlerDone)
+			}
+		}()
+
+		stream := sse.NewStream(w, r)
+		defer func() { _ = stream.Close() }()
+
+		var err error
+	loop:
+		for {
+			select {
+			case <-stream.Context().Done():
+				break loop
+			default:
+			}
+
+			if err = stream.Send(sse.Event{Event: "tick", Data: "x"}); err != nil {
+				break loop
+			}
+		}
+
+		handlerDone <- stream.Context().Err()
+	}))
+	defer srv.Close()
+
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, srv.URL+"/events", nil)
+	if err != nil {
+		t.Fatalf("NewRequestWithContext: %v", err)
+	}
+
+	resp, err := srv.Client().Do(req)
+	if err != nil {
+		t.Fatalf("client Do: %v", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	// Cancel while the handler is mid-send-loop. The timer starts only
+	// after Do returned (connection established, handler streaming), so
+	// the cancellation always lands mid-stream — a deadline measured
+	// from request creation instead raced connection setup against the
+	// 50ms budget and flaked under parallel-suite load.
+	time.AfterFunc(50*time.Millisecond, cancel)
+	select {
+	case p := <-handlerPanic:
+		t.Fatalf("handler panicked on context cancellation: %v", p)
+	case ctxErr := <-handlerDone:
+		if ctxErr == nil {
+			t.Error("stream context was not cancelled when the client went away")
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("handler did not return after context cancellation (deadlock?)")
 	}
 }

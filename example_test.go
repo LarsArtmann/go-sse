@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 
 	"github.com/larsartmann/go-sse"
 )
@@ -108,6 +109,33 @@ func ExampleBroadcaster_SubscribeFilter() {
 	// Output:
 	// {event:message data:hello}
 	// {event:message data:world}
+}
+
+// ExampleWithOnDrop counts per-subscriber drops when a consumer's buffer is
+// full: Broadcast drops instead of blocking (a slow consumer must never slow
+// the producer), and the callback observes each drop — here to collect the
+// payloads, in real code usually a metrics counter or a log line.
+func ExampleWithOnDrop() {
+	var dropped []string
+	bc := sse.NewBroadcaster[sse.Event](
+		sse.WithBufferSize[sse.Event](8),
+		sse.WithOnDrop[sse.Event](func(evt sse.Event) {
+			dropped = append(dropped, evt.Data)
+		}),
+	)
+	defer bc.Close()
+
+	// A subscriber that never reads: its 8-slot buffer fills during the
+	// first eight broadcasts, then the ninth and tenth drop.
+	_ = bc.Subscribe()
+
+	for i := range 10 {
+		bc.Broadcast(sse.Event{Event: "tick", Data: fmt.Sprintf("t%d", i)})
+	}
+
+	fmt.Println("dropped:", strings.Join(dropped, ","))
+	// Output:
+	// dropped: t8,t9
 }
 
 // ExampleReplayFiltered demonstrates predicate-based reconnection replay:
