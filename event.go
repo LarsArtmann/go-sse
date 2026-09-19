@@ -148,6 +148,13 @@ func (e Event) String() string {
 // WriteEvent writes a single SSE event to the writer in the standard
 // Server-Sent Events wire format. Uses direct byte appends instead of
 // fmt.Fprintf to minimize allocations on the SSE hot path.
+//
+// The whole frame is written with a single Write call. A writer that
+// accepts only part of the frame (n < len, nil error) gets the remaining
+// bytes silently dropped on the wire — an undetectably corrupt SSE stream —
+// so it is reported as an error wrapping [io.ErrShortWrite] instead. The
+// frame is never retried or re-emitted: bytes already accepted are on the
+// wire, and re-sending them would corrupt the frame further.
 func WriteEvent(w io.Writer, evt Event) error {
 	var buf []byte
 
@@ -178,7 +185,7 @@ func WriteEvent(w io.Writer, evt Event) error {
 
 	buf = append(buf, '\n')
 
-	_, err := w.Write(buf)
+	n, err := w.Write(buf)
 	if err != nil {
 		return errorfamily.Wrapf(
 			err,
@@ -188,6 +195,18 @@ func WriteEvent(w io.Writer, evt Event) error {
 			evt.Event,
 			len(evt.Data),
 			len(dataLines),
+		)
+	}
+
+	if n != len(buf) {
+		return errorfamily.Wrapf(
+			io.ErrShortWrite,
+			errorfamily.Transient,
+			"sse.write_short",
+			"short write of sse event %q: %d of %d frame bytes accepted",
+			evt.Event,
+			n,
+			len(buf),
 		)
 	}
 

@@ -470,6 +470,13 @@ func collectSSEEvents(url string, duration time.Duration) ([]string, error) {
 	}
 	defer func() { _ = resp.Body.Close() }()
 
+	return scanSSEFrames(resp, duration)
+}
+
+// scanSSEFrames reads SSE wire frames from resp until duration elapses or the
+// stream ends. Blank lines separate frames; each frame is returned with its
+// lines joined by newlines.
+func scanSSEFrames(resp *http.Response, duration time.Duration) ([]string, error) {
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 
@@ -501,35 +508,46 @@ func collectSSEEvents(url string, duration time.Duration) ([]string, error) {
 	for {
 		select {
 		case <-timer.C:
-			if current.Len() > 0 {
-				events = append(events, current.String())
-			}
-
-			return events, nil
+			return flushFrame(events, &current), nil
 		case line := <-lineCh:
 			if !line.ok {
-				if current.Len() > 0 {
-					events = append(events, current.String())
-				}
-				if scanErr := scanner.Err(); scanErr != nil &&
-					!errors.Is(scanErr, context.Canceled) &&
-					!errors.Is(scanErr, context.DeadlineExceeded) {
-					return events, fmt.Errorf("scan SSE stream: %w", scanErr)
-				}
-
-				return events, nil
+				return finishScan(events, &current, scanner)
 			}
 			if line.text == "" {
-				if current.Len() > 0 {
-					events = append(events, current.String())
-					current.Reset()
-				}
+				events = flushFrame(events, &current)
 			} else {
 				current.WriteString(line.text)
 				current.WriteString("\n")
 			}
 		}
 	}
+}
+
+// flushFrame appends the pending frame (if any) and resets the builder.
+func flushFrame(events []string, current *strings.Builder) []string {
+	if current.Len() == 0 {
+		return events
+	}
+
+	events = append(events, current.String())
+	current.Reset()
+
+	return events
+}
+
+// finishScan finalizes the last pending frame when the stream ends and maps
+// scanner errors, tolerating the context cancellation that stops collection.
+func finishScan(events []string, current *strings.Builder, scanner *bufio.Scanner) ([]string, error) {
+	events = flushFrame(events, current)
+
+	scanErr := scanner.Err()
+	if scanErr != nil &&
+		!errors.Is(scanErr, context.Canceled) &&
+		!errors.Is(scanErr, context.DeadlineExceeded) {
+		return events, fmt.Errorf("scan SSE stream: %w", scanErr)
+	}
+
+	return events, nil
 }
 
 // extractEventIDs pulls the id: field values from SSE event blocks.

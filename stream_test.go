@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -593,6 +594,57 @@ func TestStream_SendReturnsErrorOnWriteFailure(t *testing.T) {
 	err := stream.Send(sse.Event{Event: "update", Data: "hello"})
 	if err == nil {
 		t.Fatal("expected write error from disconnected client, got nil")
+	}
+}
+
+// shortWriteResponseWriter is an http.ResponseWriter that accepts only part
+// of each Write (n < len(p), nil error) — a writer violating the io.Writer
+// contract's full-delivery expectation without reporting an error. It stands
+// in for wrapped/buggy ResponseWriters (compression, buffering middleware).
+type shortWriteResponseWriter struct {
+	header http.Header
+}
+
+func (s *shortWriteResponseWriter) Header() http.Header {
+	if s.header == nil {
+		s.header = make(http.Header)
+	}
+
+	return s.header
+}
+
+func (s *shortWriteResponseWriter) Write(p []byte) (int, error) {
+	if len(p) == 0 {
+		return 0, nil
+	}
+
+	return len(p) / 2, nil
+}
+
+func (s *shortWriteResponseWriter) WriteHeader(int) {}
+
+var _ http.ResponseWriter = (*shortWriteResponseWriter)(nil)
+
+// TestStream_SendReturnsErrorOnShortWrite pins the partial-write contract: a
+// writer that accepts only part of the frame with a nil error must surface
+// io.ErrShortWrite (wrapped), never a silent truncation and never a retry —
+// re-emitting the frame would put duplicate bytes on the wire.
+func TestStream_SendReturnsErrorOnShortWrite(t *testing.T) {
+	t.Parallel()
+
+	w := &shortWriteResponseWriter{}
+	r := httptest.NewRequest(http.MethodGet, "/events", nil)
+
+	stream := sse.NewStream(w, r)
+	defer func() { _ = stream.Close() }()
+
+	err := stream.Send(sse.Event{Event: "update", Data: "hello"})
+	if err == nil {
+		t.Fatal("expected io.ErrShortWrite from partial-accepting writer, got nil")
+	}
+
+	if !errors.Is(err, io.ErrShortWrite) {
+		t.Errorf("error wraps io.ErrShortWrite: got %v", err)
 	}
 }
 
