@@ -11,7 +11,7 @@ Thanks for your interest in contributing!
 
 ## Development Setup
 
-With Nix (recommended — provides Go 1.26, golangci-lint, gopls, govulncheck):
+With Nix (recommended — provides Go 1.27, golangci-lint, gopls, govulncheck):
 
     nix develop              # enter dev shell
     scripts/verify.sh        # one-command pre-push gate (fmt + vet + lint + test + flake check)
@@ -66,7 +66,21 @@ do not skip items. Both modules version independently: the root library tags
    (verified 2026-08-29). If the check fails with a hash mismatch, copy the
    hash from the error message into `flake.nix` and re-run.
 
-4. **Validate the tag in a worktree before touching the remote.** Tags that
+4. **Burn a fuzz budget before tagging.** CI fuzzes each target for only
+   1m; a release deserves a longer soak. Run every target (root + ssetest)
+   for 5m each:
+
+       nix develop -c bash -c 'go test . -fuzz=FuzzWriteEvent -fuzztime=5m; \
+         go test . -fuzz=FuzzParseEventID -fuzztime=5m; \
+         go test . -fuzz=FuzzKeyedLines -fuzztime=5m; \
+         cd ssetest && GOWORK=off go test . -fuzz=FuzzReadEvents -fuzztime=5m && \
+         go test . -fuzz=FuzzWriteReadRoundTrip -fuzztime=5m && \
+         go test . -fuzz=FuzzSplitSSELines -fuzztime=5m'
+
+   Any crasher found here blocks the release; minimize it, add it to the
+   committed corpus as a regression test, fix, and re-run.
+
+5. **Validate the tag in a worktree before touching the remote.** Tags that
    fail `pkg.go.dev` verification are painful to retract — the module proxy
    caches forever (use `go mod retract` only as a last resort).
 
@@ -76,8 +90,14 @@ do not skip items. Both modules version independently: the root library tags
        GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race -count=1
        cd - && git worktree remove ../go-sse-release
 
-5. **Tag locally, then push.** Annotated tags for releases:
+6. **Tag locally, then push.** Use a signed tag when a signing key is
+   configured, otherwise a plain annotated tag — but never plan to "sign
+   later": the module proxy caches the tag object forever, and a re-tagged
+   unsigned-then-signed version is indistinguishable from a retraction.
 
+       # signed (preferred when git config user.signingkey is set):
+       git tag -s vX.Y.Z -m "vX.Y.Z: <one-line summary>"
+       # otherwise annotated:
        git tag -a vX.Y.Z -m "vX.Y.Z: <one-line summary>"
        # ssetest changes only:
        git tag -a ssetest/vX.Y.Z -m "ssetest vX.Y.Z: <one-line summary>"
@@ -87,16 +107,28 @@ do not skip items. Both modules version independently: the root library tags
    Never `git push --force` a release tag; if the tag is wrong, delete it
    locally AND on the remote and re-tag **before** anything fetches it.
 
-6. **Verify the module proxy picked it up** (a few minutes after push):
+7. **Verify the module proxy picked it up** (a few minutes after push) with
+   the scripted consumer probe — it checks the version index, downloads the
+   zip, and builds a from-scratch consumer module against the tag, failing
+   loudly at each step (the hand-run version of this was fumbled twice):
 
-       go list -m -versions github.com/larsartmann/go-sse
-       go list -m -versions github.com/larsartmann/go-sse/ssetest
-       GOPROXY=https://proxy.golang.org GOWORK=off GOEXPERIMENT=jsonv2 \
-         go mod download github.com/larsartmann/go-sse@vX.Y.Z
+       scripts/release-verify.sh vX.Y.Z
+       scripts/release-verify.sh ssetest/vX.Y.Z
 
-7. **Publish the GitHub release.** Stage the notes from the CHANGELOG entry:
+8. **Publish the GitHub release.** Stage the notes from the CHANGELOG entry:
 
        gh release create vX.Y.Z --title "vX.Y.Z" --notes-from-tag
 
-8. **Post-release.** Close or update issues referenced in the CHANGELOG;
+9. **Post-release.** Close or update issues referenced in the CHANGELOG;
    re-run the CI workflow on the release tag if it did not trigger.
+   Deliberately refresh two pins that must never float via `@latest`:
+
+   - **govulncheck** — if a new stable release exists, bump the pinned
+     version in `.github/workflows/ci.yml` (`go install …govulncheck@vX.Y.Z`).
+     Same reasoning as the golangci-lint pin: reproducible CI over
+     convenience.
+   - **go-datastar's `ssetest` pin** — after a `ssetest/vX.Y.Z` release,
+     bump the pin in [go-datastar](https://github.com/LarsArtmann/go-datastar)
+     and tag `datastartest` (the pairing rule the v0.6.0/v0.3.0 releases
+     followed). This belongs HERE, in go-sse's post-release steps — go-datastar
+     has no way to notice a new ssetest tag on its own.

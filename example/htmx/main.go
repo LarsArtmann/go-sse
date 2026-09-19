@@ -16,17 +16,29 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/larsartmann/go-sse"
 )
 
 const (
-	htmxAddr      = ":8766"
-	progressStep  = 10
-	maxProgress   = 100
-	progressDelay = 500 * time.Millisecond
+	defaultHtmxPort = "8766"
+	progressStep     = 10
+	maxProgress      = 100
+	progressDelay    = 500 * time.Millisecond
 )
+
+// listenAddr returns ":$PORT" when set, else the default port — lets the
+// smoke test (scripts/smoke-examples.sh) pick a free port without editing
+// the example.
+func listenAddr() string {
+	if port := os.Getenv("PORT"); port != "" {
+		return ":" + port
+	}
+
+	return ":" + defaultHtmxPort
+}
 
 //go:embed all:static
 var staticFiles embed.FS
@@ -42,6 +54,7 @@ func main() {
 	mux.HandleFunc("GET /sse-container", containerHandler)
 	mux.HandleFunc("GET /events", eventsHandler)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(staticFS)))
+	htmxAddr := listenAddr()
 
 	log.Printf("HTMX example on http://localhost%s", htmxAddr)
 	log.Print("Open the URL in your browser to see live SSE-driven HTML fragment swaps.")
