@@ -49,8 +49,8 @@
           # Separate hashes: the two modules resolve different go.mod graphs
           # (ssetest replaces go-sse with a local path), so their vendored
           # module sets — and therefore FOD hashes — differ.
-          vendorHash = "sha256-Gf8srGcQqteoGCUQSWcPrqZ+mSZKlmi8dkMobkkz464=";
-          vendorHashSsetest = "sha256-dgqHjh3F0QFtRwgFD+2ntKmdfJqs/uCd8EZhJxg+7EQ=";
+          vendorHash = "sha256-58z5sQMWNRHF9f9OxEJ04H0Sg5vUlyn9XcZf5y19Ca0=";
+          vendorHashSsetest = "sha256-XuhCJIXQghEOGoFEYFfdtvEZQ6kTGBzK37Trd81gi8w=";
 
           # go-sse is a pure library (no `main` package), so we do not publish a
           # binary `packages.default` or an overlay. Instead, buildGoModule is used
@@ -131,7 +131,24 @@
             projectRootFile = "go.mod";
             programs = {
               gofumpt.enable = true;
-              goimports.enable = true;
+              # nixpkgs gotools' goimports wrapper APPENDS its build go
+              # (1.26.7) to PATH, and goimports shells out to `go list` for
+              # module-mode import resolution. With go.mod at `go 1.27.1`,
+              # that `go` tries to download the toolchain — impossible in
+              # the checks.format sandbox (no network; GOTOOLCHAIN=auto).
+              # Wrap goimports with go_1_27 FIRST on PATH so the resolved
+              # `go` satisfies the directive and no download is attempted.
+              # (The devShell already carries goPkg and works either way.)
+              goimports = {
+                enable = true;
+                package = pkgs.writeShellApplication {
+                  name = "goimports";
+                  runtimeInputs = [ goPkg ];
+                  text = ''
+                    exec ${pkgs.gotools}/bin/goimports "$@"
+                  '';
+                };
+              };
               golines.enable = true;
               nixfmt.enable = true;
             };

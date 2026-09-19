@@ -751,7 +751,7 @@ func TestStream_RequestContextCancelMidStream(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx, cancel := context.WithTimeout(t.Context(), 50*time.Millisecond)
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, srv.URL+"/events", nil)
@@ -765,7 +765,12 @@ func TestStream_RequestContextCancelMidStream(t *testing.T) {
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	// The 50ms request deadline fires while the handler is mid-send-loop.
+	// Cancel while the handler is mid-send-loop. The timer starts only
+	// after Do returned (connection established, handler streaming), so
+	// the cancellation always lands mid-stream — a deadline measured
+	// from request creation instead raced connection setup against the
+	// 50ms budget and flaked under parallel-suite load.
+	time.AfterFunc(50*time.Millisecond, cancel)
 	select {
 	case p := <-handlerPanic:
 		t.Fatalf("handler panicked on context cancellation: %v", p)
