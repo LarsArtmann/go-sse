@@ -29,27 +29,9 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 - Nothing yet.
 
-## [0.6.1] - 2026-09-19
-
-### Fixed
-
-- **Heartbeat-vs-Close race** (the fire-and-forget heartbeat panic): a `Heartbeat` tick racing the handler's deferred `Close` could write/flush the `ResponseWriter` after the server invalidated it — a panic inside `net/http` documented since the 2026-09-15 audit. `Stream` now carries a `closed` flag set under the stream mutex by `Close`; a pending tick observes it and returns instead of writing to the finished response. `Heartbeat` also returns once the stream is closed. Pinned by the expanded `stream_test.go` race coverage.
-- `WriteEvent` now detects short writes: a writer that accepts only part of the frame (n < len, nil error) previously had the remaining bytes silently dropped — an undetectably corrupt SSE stream. It is now reported as an error wrapping `io.ErrShortWrite`.
-
 ### Changed
 
-- `WriteEvent` writes the whole frame with a single `Write` call and pre-sizes its buffer (`frameOverheadBytes`), keeping a typical event to one allocation.
-- `errEventIDInvalid` is declared as the `error` interface (not the concrete `*errorfamily.Error`) so `errors.Is` call sites match the sentinel guard exactly.
-- Go toolchain bumped to 1.27.1; `go-branded-id` v0.6.0, `go-error-family` v0.10.1.
-
-### Added (tooling)
-
-- `scripts/release-verify.sh` — the pre-tag release gate (worktree tag validation, proxy fetch verification) from the CONTRIBUTING checklist, executable in one command.
-- `scripts/smoke-examples.sh` — builds and exercises every example as part of the release battery.
-
-### Changed
-
-- Nothing yet.
+- `example/datastar`'s `memStore` evicts by copying down instead of re-slicing: evicted events become GC-able immediately and the ring's backing array stabilizes after one relocation (the example now matches the retention guide that cites it).
 
 ### Fixed
 
@@ -59,7 +41,6 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 ### Added
 
-- `WriteEvent` short-write contract: a writer that accepts only part of the frame (`n < len`, nil error) now gets an error wrapping `io.ErrShortWrite` (code `sse.write_short`) instead of silently truncating the frame — an undetectably corrupt SSE stream. The frame is never retried: bytes already accepted are on the wire, and re-sending them would corrupt it further. Pinned by `TestStream_SendReturnsErrorOnShortWrite`.
 - `TestStream_RequestContextCancelMidStream` — real-socket integration test driving `r.Context()` cancellation with Sends in flight: stream context observes the cancel, the send loop exits without deadlock, and handler panics are forwarded to the test (net/http would otherwise swallow them in its own recover).
 - Godoc examples for `WithOnDrop` (runnable: 10 broadcasts into a full 8-slot buffer print `dropped: t8,t9`) and ssetest's `RequireDataJSON` (compile-only rendering of the handler-test pattern; examples have no live `*testing.T`).
 - `scripts/release-verify.sh <tag>` — scripted post-push consumer probe for release-checklist step 7: verifies the module proxy's version index, downloads the tag zip, and builds a from-scratch consumer module against it, failing loudly at each step. Verified against the live `v0.6.0` tag.
@@ -80,14 +61,27 @@ without changelog lines (`a5ff824`, `7776bc7`).
 ### Changed
 
 - `WriteEvent` hot path allocates less: the frame buffer is pre-sized once (field lengths + 32 bytes of framing overhead) and the data lines are walked via a new zero-alloc `forEachLine` core (`splitLines` remains as the collecting wrapper). `-benchmem`: simple event 4→**1 allocs/op** (72→48 B), 50-line event 22→**2 allocs/op** (34→11 KB); ~40% faster on the simple case. All conformance corpora (WPT transcription, chunk-boundary, write→read round-trip) stay green. FEATURES.md now pins the measured numbers.
+- `errEventIDInvalid` is declared as the `error` interface (not the concrete `*errorfamily.Error`) so `errors.Is` call sites match the sentinel guard exactly.
+- Go toolchain bumped to 1.27.1; `go-branded-id` v0.6.0, `go-error-family` v0.10.1.
 
 ### Fixed
 
+- `WriteEvent` short-write contract: a writer that accepts only part of the frame (`n < len`, nil error) now gets an error wrapping `io.ErrShortWrite` (code `sse.write_short`) instead of silently truncating the frame — an undetectably corrupt SSE stream. The frame is never retried: bytes already accepted are on the wire, and re-sending them would corrupt it further. Pinned by `TestStream_SendReturnsErrorOnShortWrite`.
 - `ssetest` failed to build under the Go 1.27 toolchain ("json.Unmarshal requires go1.27 or later (file is go1.26)") because the `go 1.26.7 → 1.27.1` bump had landed only in the root `go.mod` — reddening all six CI jobs on 2026-09-18. Both module directives now move together (both say `go 1.27.1`).
 - `nix run .#coverage-gate` no longer exits 1 silently when the caller's `GOCACHE` points at a nonexistent path: the app validates `GOCACHE`, falls back to a temp dir with a loud message, and `go test` stderr is kept and shown on failure instead of being swallowed.
 - `Stream.Heartbeat` no longer writes into a finished `ResponseWriter`: a heartbeat tick racing the handler's deferred `Close` could flush after the server completed the response, panicking inside `net/http` (seen as a red-master CI crash in `TestIntegration_HeartbeatDelivery` on 2026-09-03). `Close` now marks the stream closed and a racing tick observes that and returns; pinned by `TestStream_HeartbeatStopsAfterClose`. The documented `go stream.Heartbeat(stream.Context(), …)` pattern is safe without extra synchronization.
 - `TestStream_RequestContextCancelMidStream` no longer flakes under parallel-suite load: its 50ms cancellation budget was measured from request creation, racing connection setup; the timer now starts after `Do` returns so the cancellation deterministically lands mid-stream.
 - The weekly flake-update workflow no longer loses its PR silently: the 2026-08-31 scheduled run pushed the branch but `gh pr create` failed ("GitHub Actions is not permitted to create or approve pull requests" — a repo Actions setting) and the workflow's `|| echo` fallback misreported it as "already open". The repo now permits Actions-created PRs, the workflow's already-open case is an explicit check so real failures redden the step, and the orphan `chore/flake-update-2026-08-31` branch was deleted.
+
+## [ssetest Unreleased]
+
+### Added
+
+- Godoc example for `RequireDataJSON` (compile-only rendering of the handler-test pattern — examples have no live `*testing.T`).
+
+### Changed
+
+- `go` directive bumped 1.26.7 → 1.27.1 together with the root module: the ssetest half of the bump lagging is what reddened master on 2026-09-18.
 
 ## [ssetest 0.3.0] - 2026-08-29
 

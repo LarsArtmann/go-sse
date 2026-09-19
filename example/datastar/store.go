@@ -30,7 +30,8 @@ func (s *memStore) Append(evt sse.Event) {
 	s.events = append(s.events, evt)
 
 	if len(s.events) > s.cap {
-		s.events = s.events[len(s.events)-s.cap:]
+		copy(s.events, s.events[len(s.events)-s.cap:])
+		s.events = s.events[:s.cap]
 	}
 }
 

@@ -51,7 +51,8 @@ func (m *memStore) Append(evt sse.Event) {
     if len(m.events) > m.max {
         // Copy down instead of re-slicing: the evicted prefix stays
         // referenced (and un-GC-able) by the backing array otherwise.
-        m.events = m.events[len(m.events)-m.max:]
+        copy(m.events, m.events[len(m.events)-m.max:])
+        m.events = m.events[:m.max]
     }
 }
 
@@ -77,7 +78,8 @@ Notes that matter in production:
 - **Trim on append, not with a background sweeper.** A sweeper races with
   `EventsAfter` snapshots and adds a goroutine to own; trim-at-write keeps
   the invariant local to the lock.
-- **`slices.Clone` on every read.** `EventsAfter` returns a slice the caller
+- **Detach the returned slice (`slices.Clone`, or append the matches into a
+  fresh slice) on every read.** `EventsAfter` returns a slice the caller
   will iterate while your next `Append` may trim — handing out the internal
   backing array is a data race.
 - **Size the ring from reconnect reality, not from event volume.** If clients
