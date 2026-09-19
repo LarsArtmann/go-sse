@@ -36,7 +36,9 @@ func NewEventID(s string) EventID { return brandid.NewID[eventBrand](s) }
 const base10 = 10
 
 // errEventIDInvalid is returned by [ParseEventID] for malformed values.
-var errEventIDInvalid = errorfamily.NewRejection(
+// Declared as the error interface (not the concrete *errorfamily.Error) so
+// errors.Is call sites match the sentinel guard exactly.
+var errEventIDInvalid error = errorfamily.NewRejection(
 	"sse.event_id_invalid",
 	"sse event id: contains forbidden character (NUL, newline, or carriage return)",
 )

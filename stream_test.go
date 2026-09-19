@@ -709,3 +709,71 @@ func TestStream_SendHeartbeatCloseRace(t *testing.T) {
 		wg.Wait()
 	}
 }
+
+// TestStream_RequestContextCancelMidStream drives r.Context() cancellation
+// against a real socket with Sends in flight: the client cancels mid-stream,
+// and the handler must tear down cleanly — stream.Context() observes the
+// cancellation, the send loop exits without deadlocking, and no panic escapes
+// the handler (net/http would swallow a handler panic in its own recover, so
+// panics are forwarded to the test explicitly).
+func TestStream_RequestContextCancelMidStream(t *testing.T) {
+	t.Parallel()
+
+	handlerDone := make(chan error, 1)
+	handlerPanic := make(chan any, 1)
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if p := recover(); p != nil {
+				handlerPanic <- p
+				close(handlerDone)
+			}
+		}()
+
+		stream := sse.NewStream(w, r)
+		defer func() { _ = stream.Close() }()
+
+		var err error
+	loop:
+		for {
+			select {
+			case <-stream.Context().Done():
+				break loop
+			default:
+			}
+
+			if err = stream.Send(sse.Event{Event: "tick", Data: "x"}); err != nil {
+				break loop
+			}
+		}
+
+		handlerDone <- stream.Context().Err()
+	}))
+	defer srv.Close()
+
+	ctx, cancel := context.WithTimeout(t.Context(), 50*time.Millisecond)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, srv.URL+"/events", nil)
+	if err != nil {
+		t.Fatalf("NewRequestWithContext: %v", err)
+	}
+
+	resp, err := srv.Client().Do(req)
+	if err != nil {
+		t.Fatalf("client Do: %v", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	// The 50ms request deadline fires while the handler is mid-send-loop.
+	select {
+	case p := <-handlerPanic:
+		t.Fatalf("handler panicked on context cancellation: %v", p)
+	case ctxErr := <-handlerDone:
+		if ctxErr == nil {
+			t.Error("stream context was not cancelled when the client went away")
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("handler did not return after context cancellation (deadlock?)")
+	}
+}
