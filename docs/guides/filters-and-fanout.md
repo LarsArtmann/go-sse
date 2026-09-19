@@ -26,7 +26,7 @@ A `nil` predicate means "all events" — identical to `Subscribe`.
 
 ## Recipe 2: Per-connection topics from the request
 
-Each handler derives the predicate from *its own* request, so one broadcaster
+Each handler derives the predicate from _its own_ request, so one broadcaster
 serves every client's slice of the stream (the `?filter=alerts` pattern from
 `example/datastar`):
 
@@ -87,15 +87,15 @@ your predicates against real payloads.
 Both end with a subscriber not seeing an event; only one of them is
 observable:
 
-|                       | Predicate rejects                 | Buffer full (drop)                       |
-| --------------------- | --------------------------------- | ---------------------------------------- |
-| When                  | during `Broadcast`, before send   | during `Broadcast`, at the channel send  |
-| Observable            | no signal                          | `WithOnDrop` / `OnDrop` callback fires   |
-| Meaning               | "not for you" (by design)         | "for you, but you were too slow"         |
-| Fix                   | none needed                        | drain faster / bigger buffer / replay    |
+|            | Predicate rejects               | Buffer full (drop)                      |
+| ---------- | ------------------------------- | --------------------------------------- |
+| When       | during `Broadcast`, before send | during `Broadcast`, at the channel send |
+| Observable | no signal                       | `WithOnDrop` / `OnDrop` callback fires  |
+| Meaning    | "not for you" (by design)       | "for you, but you were too slow"        |
+| Fix        | none needed                     | drain faster / bigger buffer / replay   |
 
 If silence-on-reject ever matters to your domain, emit a metrics line from
-the *producer* side before broadcasting, not from inside the predicate.
+the _producer_ side before broadcasting, not from inside the predicate.
 
 ## Drop policy interaction: filters do not protect buffers
 

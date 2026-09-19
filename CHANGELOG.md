@@ -29,6 +29,24 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 - Nothing yet.
 
+## [0.6.1] - 2026-09-19
+
+### Fixed
+
+- **Heartbeat-vs-Close race** (the fire-and-forget heartbeat panic): a `Heartbeat` tick racing the handler's deferred `Close` could write/flush the `ResponseWriter` after the server invalidated it — a panic inside `net/http` documented since the 2026-09-15 audit. `Stream` now carries a `closed` flag set under the stream mutex by `Close`; a pending tick observes it and returns instead of writing to the finished response. `Heartbeat` also returns once the stream is closed. Pinned by the expanded `stream_test.go` race coverage.
+- `WriteEvent` now detects short writes: a writer that accepts only part of the frame (n < len, nil error) previously had the remaining bytes silently dropped — an undetectably corrupt SSE stream. It is now reported as an error wrapping `io.ErrShortWrite`.
+
+### Changed
+
+- `WriteEvent` writes the whole frame with a single `Write` call and pre-sizes its buffer (`frameOverheadBytes`), keeping a typical event to one allocation.
+- `errEventIDInvalid` is declared as the `error` interface (not the concrete `*errorfamily.Error`) so `errors.Is` call sites match the sentinel guard exactly.
+- Go toolchain bumped to 1.27.1; `go-branded-id` v0.6.0, `go-error-family` v0.10.1.
+
+### Added (tooling)
+
+- `scripts/release-verify.sh` — the pre-tag release gate (worktree tag validation, proxy fetch verification) from the CONTRIBUTING checklist, executable in one command.
+- `scripts/smoke-examples.sh` — builds and exercises every example as part of the release battery.
+
 ### Changed
 
 - Nothing yet.
