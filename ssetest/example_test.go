@@ -49,7 +49,7 @@ func ExampleEventsString() {
 //
 // This example is compile-only (it renders on pkg.go.dev; there is no live
 // *testing.T inside an example function, and it declares no Output).
-func ExampleRequireDataJSON() {
+func ExampleRequireDataJSON() { //nolint:testableexamples // compile-only: no live *testing.T inside an example
 	var tb testing.TB
 
 	events := ssetest.MustReadEvents(tb, strings.NewReader(
