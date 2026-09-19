@@ -56,7 +56,7 @@ cd "$scratch"
 go mod init example.com/release-probe >/dev/null
 go get "$module@$tag" >/dev/null
 
-cat > main.go <<EOF
+cat >main.go <<EOF
 package main
 
 import (

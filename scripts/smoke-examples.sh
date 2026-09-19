@@ -58,28 +58,49 @@ http_ok() {
 
 echo "==> example (root, :18080)"
 start_example example-root ./example 18080
-sse_bytes "http://127.0.0.1:18080/events" 5 \
-	|| { echo "FAIL: root example /events served no SSE frame" >&2; exit 1; }
-curl -sf -X POST "http://127.0.0.1:18080/broadcast?msg=smoke-probe" >/dev/null \
-	|| { echo "FAIL: root example /broadcast rejected the probe" >&2; exit 1; }
+sse_bytes "http://127.0.0.1:18080/events" 5 ||
+	{
+		echo "FAIL: root example /events served no SSE frame" >&2
+		exit 1
+	}
+curl -sf -X POST "http://127.0.0.1:18080/broadcast?msg=smoke-probe" >/dev/null ||
+	{
+		echo "FAIL: root example /broadcast rejected the probe" >&2
+		exit 1
+	}
 echo "    root example OK"
 
 echo "==> example/datastar (:18765)"
 start_example example-datastar ./example/datastar 18765
-http_ok "http://127.0.0.1:18765/" \
-	|| { echo "FAIL: datastar example index not served" >&2; exit 1; }
-sse_bytes "http://127.0.0.1:18765/events" 8 \
-	|| { echo "FAIL: datastar example /events served no SSE frame" >&2; exit 1; }
+http_ok "http://127.0.0.1:18765/" ||
+	{
+		echo "FAIL: datastar example index not served" >&2
+		exit 1
+	}
+sse_bytes "http://127.0.0.1:18765/events" 8 ||
+	{
+		echo "FAIL: datastar example /events served no SSE frame" >&2
+		exit 1
+	}
 echo "    datastar example OK"
 
 echo "==> example/htmx (:18766)"
 start_example example-htmx ./example/htmx 18766
-http_ok "http://127.0.0.1:18766/" \
-	|| { echo "FAIL: htmx example index not served" >&2; exit 1; }
-http_ok "http://127.0.0.1:18766/sse-container" \
-	|| { echo "FAIL: htmx example /sse-container fragment not served" >&2; exit 1; }
-sse_bytes "http://127.0.0.1:18766/events" 8 \
-	|| { echo "FAIL: htmx example /events served no SSE frame" >&2; exit 1; }
+http_ok "http://127.0.0.1:18766/" ||
+	{
+		echo "FAIL: htmx example index not served" >&2
+		exit 1
+	}
+http_ok "http://127.0.0.1:18766/sse-container" ||
+	{
+		echo "FAIL: htmx example /sse-container fragment not served" >&2
+		exit 1
+	}
+sse_bytes "http://127.0.0.1:18766/events" 8 ||
+	{
+		echo "FAIL: htmx example /events served no SSE frame" >&2
+		exit 1
+	}
 echo "    htmx example OK"
 
 echo ""

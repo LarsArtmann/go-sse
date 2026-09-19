@@ -24,9 +24,9 @@ import (
 
 const (
 	defaultHtmxPort = "8766"
-	progressStep     = 10
-	maxProgress      = 100
-	progressDelay    = 500 * time.Millisecond
+	progressStep    = 10
+	maxProgress     = 100
+	progressDelay   = 500 * time.Millisecond
 )
 
 // listenAddr returns ":$PORT" when set, else the default port — lets the

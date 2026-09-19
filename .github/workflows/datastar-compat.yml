@@ -1,0 +1,44 @@
+name: go-datastar compat
+
+# Cross-repo lag catcher: go-datastar (the primary consumer) pins go-sse and
+# ssetest in its go.mod files, and nothing over there notices when a new
+# go-sse/ssetest tag ships — the pin only bumps when someone remembers the
+# pairing rule. This weekly job clones go-datastar, bumps both pins to the
+# LATEST tags, and runs its tests: a breaking change surfaces here, red and
+# early, instead of weeks later during a hand-run upgrade.
+
+on:
+  schedule:
+    - cron: "0 5 * * 1" # Mondays 05:00 UTC — after the flake-update slot
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  latest-pins:
+    name: go-datastar tests on latest go-sse + ssetest
+    runs-on: ubuntu-latest
+    env:
+      GOEXPERIMENT: jsonv2
+      GOWORK: "off"
+    steps:
+      - name: Clone go-datastar
+        run: git clone --depth 1 https://github.com/LarsArtmann/go-datastar.git
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go-datastar/go.mod
+      - name: Resolve latest tags and bump the pins
+        run: |
+          set -euo pipefail
+          cd go-datastar
+          latest_sse="$(go list -m -versions github.com/larsartmann/go-sse | awk '{print $NF}')"
+          latest_ssetest="$(go list -m -versions github.com/larsartmann/go-sse/ssetest | awk '{print $NF}')"
+          echo "bumping go-sse -> $latest_sse, ssetest -> $latest_ssetest"
+          go get "github.com/larsartmann/go-sse@${latest_sse}"
+          cd datastartest
+          go get "github.com/larsartmann/go-sse@${latest_sse}" "github.com/larsartmann/go-sse/ssetest@${latest_ssetest}"
+      - name: Test root module against the bumped pins
+        run: cd go-datastar && go test ./...
+      - name: Test datastartest module against the bumped pins
+        run: cd go-datastar/datastartest && go test ./...

@@ -5,6 +5,12 @@ on:
     branches: [master]
   pull_request:
 
+# Rapid pushes waste runner minutes running superseded jobs to completion;
+# each new push/PR update cancels the run it replaces.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -115,6 +121,21 @@ jobs:
       # intentionally absent from go.sum; the version stays pinned to the
       # dependency the examples were generated with.
       - run: go run github.com/a-h/templ/cmd/templ@v0.3.1020 generate -check
+
+  smoke:
+    name: Example smoke
+    runs-on: ubuntu-latest
+    env:
+      GOEXPERIMENT: jsonv2
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
+      # Compile-only coverage of the examples cannot catch a dead handler, a
+      # wrong port, or a startup panic — boot each example and require real
+      # SSE bytes (scripts/smoke-examples.sh).
+      - run: scripts/smoke-examples.sh
 
   nix:
     name: Nix flake check
