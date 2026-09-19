@@ -158,6 +158,10 @@
               pkgs.templ
               pkgs.actionlint
               pkgs.shellcheck
+              # The project-configured treefmt (same formatter set as
+              # checks.format / `nix fmt`), so scripts/verify.sh's local
+              # format gate actually runs instead of skipping.
+              config.treefmt.build.wrapper
             ];
 
             GOWORK = "off";

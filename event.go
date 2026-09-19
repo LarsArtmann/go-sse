@@ -35,6 +35,13 @@ func NewEventID(s string) EventID { return brandid.NewID[eventBrand](s) }
 // base10 is the numeric base for decimal integer formatting.
 const base10 = 10
 
+// frameOverheadBytes bounds the fixed wire framing beyond the variable-length
+// fields: "event: " (8), "data: " (7 per line — extra lines grow the buffer,
+// which append handles), "id: " (5), "retry: " + uint digits (up to 27), and
+// newlines. Sizing WriteEvent's buffer with it keeps a typical event to one
+// allocation.
+const frameOverheadBytes = 32
+
 // errEventIDInvalid is returned by [ParseEventID] for malformed values.
 // Declared as the error interface (not the concrete *errorfamily.Error) so
 // errors.Is call sites match the sentinel guard exactly.
@@ -163,7 +170,7 @@ func WriteEvent(w io.Writer, evt Event) error {
 	// bounded by 32 bytes past the variable-length fields, so typical events
 	// allocate exactly once. A slight underestimate is still correct — append
 	// grows — it just costs the old growth reallocations.
-	buf := make([]byte, 0, len(evt.Event)+len(evt.Data)+len(evt.ID.Get())+32)
+	buf := make([]byte, 0, len(evt.Event)+len(evt.Data)+len(evt.ID.Get())+frameOverheadBytes)
 
 	if evt.Event != "" {
 		buf = append(buf, 'e', 'v', 'e', 'n', 't', ':', ' ')
@@ -172,6 +179,7 @@ func WriteEvent(w io.Writer, evt Event) error {
 	}
 
 	dataLines := 0
+
 	forEachLine(evt.Data, func(line string) {
 		buf = append(buf, 'd', 'a', 't', 'a', ':', ' ')
 		buf = append(buf, line...)
@@ -353,6 +361,7 @@ func WriteKeyedLines(w io.Writer, eventType, key, value string) error {
 func forEachLine(s string, yield func(line string)) {
 	if s == "" {
 		yield("")
+
 		return
 	}
 
@@ -398,6 +407,7 @@ func splitLines(s string) []string {
 	}
 
 	var lines []string
+
 	forEachLine(s, func(line string) { lines = append(lines, line) })
 
 	return lines

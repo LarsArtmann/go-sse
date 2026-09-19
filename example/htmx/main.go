@@ -54,6 +54,7 @@ func main() {
 	mux.HandleFunc("GET /sse-container", containerHandler)
 	mux.HandleFunc("GET /events", eventsHandler)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(staticFS)))
+
 	htmxAddr := listenAddr()
 
 	log.Printf("HTMX example on http://localhost%s", htmxAddr)
