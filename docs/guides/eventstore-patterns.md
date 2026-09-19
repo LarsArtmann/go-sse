@@ -23,7 +23,7 @@ writes everything it returns. Three properties follow:
 
 1. **The return slice bounds the worst-case reconnect.** A client that
    reconnects after a week must not replay a week of events — unless your
-   domain says it should. Retention policy *is* your reconnect budget.
+   domain says it should. Retention policy _is_ your reconnect budget.
 2. **An empty `EventID` means "from the beginning."** On first connect the
    browser sends no `Last-Event-ID`; `Replay` then receives the zero ID and
    your store decides what "the beginning" is. For a ring buffer, that is
@@ -82,7 +82,7 @@ Notes that matter in production:
   backing array is a data race.
 - **Size the ring from reconnect reality, not from event volume.** If clients
   reconnect within seconds, a few hundred slots cover them; N should exceed
-  the number of events emitted during your clients' *typical* disconnect
+  the number of events emitted during your clients' _typical_ disconnect
   window (page reload: ~1s; laptop sleep: unbounded — accept the gap).
 
 ## Pattern 2: Time-based retention (TTL)
@@ -145,15 +145,15 @@ A client reconnects with a `Last-Event-ID` older than your retention window.
 `EventsAfter(id)` finds nothing after (or cannot even find) that ID. Your
 store must already have decided:
 
-| Semantics          | `EventsAfter(staleID)` returns      | Good for                                  |
-| ------------------ | ----------------------------------- | ----------------------------------------- |
-| Best-effort replay | everything still retained           | Feeds, dashboards — a gap is acceptable    |
-| Snapshot reset     | nothing; you send a "state" event   | State-sync protocols (re-fetch, then live) |
-| Error              | an error; `Replay` surfaces it      | Contract-critical streams                  |
+| Semantics          | `EventsAfter(staleID)` returns    | Good for                                   |
+| ------------------ | --------------------------------- | ------------------------------------------ |
+| Best-effort replay | everything still retained         | Feeds, dashboards — a gap is acceptable    |
+| Snapshot reset     | nothing; you send a "state" event | State-sync protocols (re-fetch, then live) |
+| Error              | an error; `Replay` surfaces it    | Contract-critical streams                  |
 
 Best-effort (replay what survived) is the right default; document it in the
 store type's doc comment so the choice is discoverable. Whatever you pick,
-**never** return events *before* the requested ID as if they were after it.
+**never** return events _before_ the requested ID as if they were after it.
 
 ## Checklist
 
