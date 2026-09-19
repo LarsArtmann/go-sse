@@ -158,7 +158,12 @@ func (e Event) String() string {
 // frame is never retried or re-emitted: bytes already accepted are on the
 // wire, and re-sending them would corrupt the frame further.
 func WriteEvent(w io.Writer, evt Event) error {
-	var buf []byte
+	// Pre-size once instead of growing through append: the frame prefix
+	// overhead ("event: ", "data: ", "id: ", "retry: <uint>", newlines) is
+	// bounded by 32 bytes past the variable-length fields, so typical events
+	// allocate exactly once. A slight underestimate is still correct — append
+	// grows — it just costs the old growth reallocations.
+	buf := make([]byte, 0, len(evt.Event)+len(evt.Data)+len(evt.ID.Get())+32)
 
 	if evt.Event != "" {
 		buf = append(buf, 'e', 'v', 'e', 'n', 't', ':', ' ')
@@ -166,12 +171,13 @@ func WriteEvent(w io.Writer, evt Event) error {
 		buf = append(buf, '\n')
 	}
 
-	dataLines := splitLines(evt.Data)
-	for i := range dataLines {
+	dataLines := 0
+	forEachLine(evt.Data, func(line string) {
 		buf = append(buf, 'd', 'a', 't', 'a', ':', ' ')
-		buf = append(buf, dataLines[i]...)
+		buf = append(buf, line...)
 		buf = append(buf, '\n')
-	}
+		dataLines++
+	})
 
 	if !evt.ID.IsZero() {
 		buf = append(buf, 'i', 'd', ':', ' ')
@@ -196,7 +202,7 @@ func WriteEvent(w io.Writer, evt Event) error {
 			"write sse event %q (%d data bytes, %d lines)",
 			evt.Event,
 			len(evt.Data),
-			len(dataLines),
+			dataLines,
 		)
 	}
 
@@ -338,11 +344,50 @@ func WriteKeyedLines(w io.Writer, eventType, key, value string) error {
 	return WriteEvent(w, Event{Event: eventType, Data: KeyedLines(key, value)})
 }
 
+// forEachLine walks s line by line, yielding each line without its
+// terminator. CR (\r), LF (\n), and CRLF (\r\n) all terminate a line per the
+// SSE spec (§ 9.2.5 end-of-line). A trailing terminator does not yield a
+// final empty line, and the empty string yields exactly one empty line —
+// the same semantics [splitLines] collects into a slice, without allocating
+// one. The yield callback must not retain line or be called re-entrantly.
+func forEachLine(s string, yield func(line string)) {
+	if s == "" {
+		yield("")
+		return
+	}
+
+	start := 0
+
+	for i := 0; i < len(s); {
+		switch s[i] {
+		case '\r':
+			yield(s[start:i])
+			i++
+
+			if i < len(s) && s[i] == '\n' {
+				i++ // CRLF: consume both characters as one line break
+			}
+
+			start = i
+		case '\n':
+			yield(s[start:i])
+			i++
+			start = i
+		default:
+			i++
+		}
+	}
+
+	if start < len(s) {
+		yield(s[start:])
+	}
+}
+
 // splitLines splits a string into lines for SSE data field formatting.
 // Each line in the SSE spec must be prefixed with "data: ".
 // Per the SSE spec, CR (\r), LF (\n), and CRLF (\r\n) are all valid line endings.
-// Fast path: if the data contains no CR or LF, returns a single-element
-// slice without allocating a backing array.
+// The no-CR/LF fast path allocates a single-element backing array; use
+// [forEachLine] on hot paths that only consume the lines.
 func splitLines(s string) []string {
 	if s == "" {
 		return []string{""}
@@ -353,32 +398,7 @@ func splitLines(s string) []string {
 	}
 
 	var lines []string
-
-	start := 0
-
-	for i := 0; i < len(s); {
-		switch s[i] {
-		case '\r':
-			lines = append(lines, s[start:i])
-			i++
-
-			if i < len(s) && s[i] == '\n' {
-				i++ // CRLF: consume both characters as one line break
-			}
-
-			start = i
-		case '\n':
-			lines = append(lines, s[start:i])
-			i++
-			start = i
-		default:
-			i++
-		}
-	}
-
-	if start < len(s) {
-		lines = append(lines, s[start:])
-	}
+	forEachLine(s, func(line string) { lines = append(lines, line) })
 
 	return lines
 }
