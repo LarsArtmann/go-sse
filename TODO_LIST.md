@@ -16,6 +16,13 @@ Two findings resolved stale items without work: the CI format gate already
 existed (`checks.format` inside `nix flake check` — it bit during this very
 session), and Dependabot had been configured on 2026-09-15 with PRs flowing.
 
+Follow-up pass (2026-09-19, later session): the verify gate was re-run to a
+green `ALL CHECKS PASSED`; PR #1 was closed as superseded (master's
+flake.lock was already newer than the PR's 09-07 bump, so the branch
+resolved to a zero diff); v0.6.1 was confirmed cut and published; and a
+docs-health HARVEST pass pulled the execution-pass report's §f backlog into
+the tables below, every item verified against the code before adding.
+
 ## Status legend
 
 | Status           | Meaning                                                                                       |
@@ -32,6 +39,32 @@ session), and Dependabot had been configured on 2026-09-15 with PRs flowing.
 | 🔴 `TODO` | Merge the two open automated PRs after master is green again                                   | #1 `chore(nix): weekly flake update 2026-09-07` (in-workflow gate was green; superseded runs auto-close only when a NEW drift appears) and #2 `chore(deps): bump the actions group` (its CI failed only because of the since-fixed ssetest go-directive red; Dependabot rebases on master pushes). Both need a human review-merge. |
 | 🔴 `TODO` | Remove the now-inert `GOEXPERIMENT=jsonv2` exports (devShell, flake apps, CI, scripts, .envrc) | Verified unnecessary under Go 1.27 (2026-09-19, both modules build/test without it). Kept during the 1.26→1.27 transition as belt-and-braces; delete once no consumer machine runs a 1.26 toolchain against this repo. Low priority, wide-but-trivial diff.                                                                        |
 | 🔴 `TODO` | Watch the first scheduled `datastar-compat.yml` run (Monday 2026-09-21 05:00 UTC)              | The workflow was dry-run verified locally 2026-09-19 (clone → bump to latest go-sse/ssetest → both go-datastar modules green), but the first real scheduled run proves the runner environment (toolchain via `go-version-file`, proxy access).                                                                                     |
+| 🔴 `TODO` | Post-v0.6.1 companion work: bump go-datastar's go-sse/ssetest pins and tag datastartest | Pairing rule (CONTRIBUTING step 9): go-datastar still pins go-sse v0.6.0 / ssetest v0.3.0 while master is v0.6.1. Its `go` directives were separately bumped to 1.27.1 on 2026-09-19. Source: [09-19 report §f9](docs/status/2026-09-19_22-44_todo-backlog-execution-pass.md).                                              |
+| 🔴 `TODO` | Enable GitHub private vulnerability reporting (repo setting)                       | SECURITY.md advertises the channel, but the setting is unset; the REST API rejects it (`422` — `private_vulnerability_reporting` is not part of `security_and_analysis`). ~30s in Settings → Code security and analysis. Source: report §f13.                                                                                      |
+
+## Harvested backlog (2026-09-19 report §f, P2)
+
+Every item below was verified still-open against the code on 2026-09-19
+before being added (grep evidence noted where it matters).
+
+| #   | Item                                                       | Notes                                                                                          |
+| --- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 14  | CI `coverage-gate` job                                     | The 90%/95% thresholds are local-only (`nix run .#coverage-gate`); ci.yml has no gate step.    |
+| 15  | shellcheck CI job for `scripts/*.sh`                       | The actionlint workflow shellchecks `run:` blocks only; repo scripts are uncovered.            |
+| 16  | shfmt (or a treefmt sh formatter)                          | treefmt formats Go + Nix only; `scripts/*.sh` are not format-gated.                            |
+| 17  | templ CLI pin (`@v0.3.1020`) refresh policy                | Dependabot cannot bump `go run @version` pins; add a CONTRIBUTING note or a drift check.       |
+| 18  | Benchmark regression tracking (benchstat vs a baseline)    | Perf claims in FEATURES.md are hand-pinned measurements.                                       |
+| 19  | Godoc examples for `SendLines`/`SendKeyed`                 | Only `KeyedLines` has one today.                                                               |
+| 20  | README: link the four guides                               | README.md has zero `docs/guides` references.                                                   |
+| 21  | Document `sse.write_short` where error codes are listed    | AGENTS.md conventions list and README do not mention it.                                       |
+| 22  | Direct unit tests for `forEachLine`                        | Covered only transitively via `splitLines` + the conformance corpora.                          |
+| 23  | Unit tests for the three examples' `listenAddr()` override | No tests exist for the PORT env helpers.                                                       |
+| 24  | Pin golangci-lint in flake.nix                             | Nixpkgs floats; the verify.sh pin-check flags skew only after it bit.                          |
+| 25  | ssetest coverage 98.4% → higher                            | Remaining lines are likely `collect.go` error paths.                                           |
+| 27  | `nix run .#smoke` flake app                                | Wrap `scripts/smoke-examples.sh` for symmetry with the other apps.                             |
+| 28  | Re-check example docs for stale absolute port URLs         | After the PORT override landed, hardcoded `:8080`/`:8765`/`:8766` prose may lie.               |
+| 29  | `Stream.Send` doc: mention the short-write error path      | The doc currently says only "write fails".                                                     |
+| 30  | Link `docs/guides/` from AGENTS.md's docs pointer          | Four guides exist; AGENTS.md does not reference them.                                          |
 
 ## CI & tooling
 
