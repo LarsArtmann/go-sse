@@ -27,6 +27,20 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 ### Added
 
+- Nothing yet.
+
+### Changed
+
+- Nothing yet.
+
+### Fixed
+
+- Nothing yet.
+
+## [0.6.1] - 2026-09-19
+
+### Added
+
 - `WriteEvent` short-write contract: a writer that accepts only part of the frame (`n < len`, nil error) now gets an error wrapping `io.ErrShortWrite` (code `sse.write_short`) instead of silently truncating the frame — an undetectably corrupt SSE stream. The frame is never retried: bytes already accepted are on the wire, and re-sending them would corrupt it further. Pinned by `TestStream_SendReturnsErrorOnShortWrite`.
 - `TestStream_RequestContextCancelMidStream` — real-socket integration test driving `r.Context()` cancellation with Sends in flight: stream context observes the cancel, the send loop exits without deadlock, and handler panics are forwarded to the test (net/http would otherwise swallow them in its own recover).
 - Godoc examples for `WithOnDrop` (runnable: 10 broadcasts into a full 8-slot buffer print `dropped: t8,t9`) and ssetest's `RequireDataJSON` (compile-only rendering of the handler-test pattern; examples have no live `*testing.T`).
