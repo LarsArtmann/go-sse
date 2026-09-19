@@ -230,7 +230,8 @@
               # instead of dying silently.
               if [[ -n "''${GOCACHE:-}" ]] && ! mkdir -p "''${GOCACHE}" 2>/dev/null; then
                 echo "GOCACHE=''${GOCACHE} is not writable; falling back to a temp dir" >&2
-                export GOCACHE="$(mktemp -d)"
+                fallback="$(mktemp -d)"
+                export GOCACHE="$fallback"
               fi
 
               # measure <profile> <go test args...> runs the tests (stderr
@@ -239,7 +240,7 @@
               measure() {
                 local profile="$1"
                 shift
-                if ! go test "$@" -count=1 -coverprofile="$profile" 2>"$profile.testlog"; then
+                if ! go test "$@" -count=1 -coverprofile="$profile" >/dev/null 2>"$profile.testlog"; then
                   cat "$profile.testlog" >&2
                   echo "FAIL: go test exited nonzero for $* — cannot measure coverage" >&2
                   exit 1
