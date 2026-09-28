@@ -90,4 +90,5 @@ to corpus vectors, and project-discovery-daemon inherits the conformance
 guarantee through it.
 
 ---
+
 💘 Generated with Crush (GLM), from the go-daemon adoption review, 2026-09-29.
