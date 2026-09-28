@@ -27,15 +27,25 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 ### Added
 
-- Nothing yet.
+- New module `github.com/larsartmann/go-sse/sseparse` — the SSE wire-format parser, assertions, and WPT conformance corpus extracted from ssetest into a zero-dependency module (no go-sse, go-branded-id, or go-error-family in the consumer's module graph; guarded by `TestModuleStaysZeroDependency`). Non-HTTP consumers (unix-socket daemons, other SSE parsers) can adopt it directly; ssetest re-exports its entire API so existing consumers keep compiling unchanged.
+- `sseparse.Corpus()` / `sseparse.MustCorpus(tb)` — the conformance corpus exported as data: 29 vectors (WPT `eventsource/format-*`, spec § 9.2.6 examples, Chromium `event_source_parser_test.cc` cases) with exact wire bytes and expected dispatched events, serialized in `sseparse/testdata/wpt_format_corpus.json` (now the single source of truth — sseparse's own conformance and chunk-boundary tests load it through this API, so parser and data cannot drift). Third-party parsers can assert against the same vectors with no sseparse parsing code in the loop.
+- `sseparse.WithMaxLineBytes(n)` / `sseparse.DefaultMaxLineBytes` (re-exported by ssetest) — configurable per-line cap, accepted by `ReadEvents`, `ReadNEvents`, and `NewStreamReader`; non-positive values keep the 1 MiB default. The 1 MiB cap is now documented on `ReadEvents` and its boundary pinned by tests (the largest parseable line is one byte under the cap — the terminator must fit too; over-cap errors wrap `bufio.ErrTooLong`, `errors.Is`-matchable).
+- `ssetest/compat_test.go` — delegation-contract test exercising every sseparse re-export, keeping ssetest's coverage guarantee honest after the split.
+- CI, `scripts/verify.sh`, `flake.nix` (hermetic check with `vendorHash = null`, lint/vet/test/coverage/coverage-gate apps), and Dependabot now cover the third module; `coverage-gate` enforces sseparse ≥ 95% like ssetest.
+- CI golangci-lint pin bumped v2.13.2 → v2.14.0 to match the nixpkgs binary (the verify.sh skew check caught the drift).
 
 ### Changed
 
 - `example/datastar`'s `memStore` evicts by copying down instead of re-slicing: evicted events become GC-able immediately and the ring's backing array stabilizes after one relocation (the example now matches the retention guide that cites it).
+- ssetest's reader and assertion API now delegates to sseparse; `ReadEvents`, `ReadNEvents`, `MustReadEvents`, `MustReadNEvents`, and `NewStreamReader` gained trailing variadic `...ReadOption` parameters (source-compatible for all existing callers). Scan errors wrap the underlying cause with `%w` instead of go-error-family wrapping, so `errors.Is`/`errors.As` matching is preserved without the dependency.
+
+### Removed
+
+- **Breaking (ssetest):** `ssetest.CodeSSEScanFailed` and ssetest's direct `go-error-family` dependency — the parse path is dependency-free now. Classify scan failures via `errors.Is(err, bufio.ErrTooLong)` or the wrapped cause; datastartest already re-wraps with its own error code, so only direct users of the constant are affected.
 
 ### Fixed
 
-- Nothing yet.
+- `ssetest/go.mod` said `go 1.27` while the root module says `go 1.27.1`; aligned (sseparse starts at `go 1.27.1`).
 
 ## [0.6.1] - 2026-09-19
 
