@@ -48,7 +48,9 @@
           version = self.rev or self.dirtyRev or "dev";
           # Separate hashes: the two modules resolve different go.mod graphs
           # (ssetest replaces go-sse with a local path), so their vendored
-          # module sets — and therefore FOD hashes — differ.
+          # module sets — and therefore FOD hashes — differ. sseparse has ZERO
+          # third-party requires (guarded by TestModuleStaysZeroDependency),
+          # so its check carries no vendorHash at all.
           vendorHash = "sha256-58z5sQMWNRHF9f9OxEJ04H0Sg5vUlyn9XcZf5y19Ca0=";
           vendorHashSsetest = "sha256-XuhCJIXQghEOGoFEYFfdtvEZQ6kTGBzK37Trd81gi8w=";
 
@@ -113,6 +115,36 @@
             };
           };
 
+          # Hermetic compile + test check for the zero-dependency sseparse/
+          # module (the parser core ssetest re-exports). No third-party
+          # requires → no vendored modules → vendorHash stays null; a require
+          # sneaking in would surface here as a vendor-impurity failure long
+          # before it reaches consumers' hermetic builds.
+          hermeticCheckSseparse = buildGoModule {
+            pname = "go-sse-sseparse";
+            inherit version;
+            vendorHash = null;
+            src = lib.fileset.toSource {
+              root = ./.;
+              fileset = lib.fileset.gitTracked ./.;
+            };
+            subPackages = [ "./..." ];
+            doCheck = true;
+            env.GOEXPERIMENT = "jsonv2";
+            preBuild = "cd sseparse";
+
+            meta = {
+              description = "Zero-dependency SSE wire-format parser and conformance corpus";
+              license = lib.licenses.mit;
+              maintainers = [
+                {
+                  name = "Lars Artmann";
+                  github = "LarsArtmann";
+                }
+              ];
+            };
+          };
+
           mkApp =
             name: runtimeInputs: text:
             let
@@ -164,6 +196,7 @@
           checks.format = config.treefmt.build.check self;
           checks.build = hermeticCheck;
           checks.build-ssetest = hermeticCheckSsetest;
+          checks.build-sseparse = hermeticCheckSseparse;
 
           devShells.default = pkgs.mkShellNoCC {
             packages = [
@@ -207,30 +240,35 @@
               export GOEXPERIMENT=jsonv2
               go test ./... -count=1 "$@"
               (cd ssetest && GOWORK=off go test ./... -count=1)
+              (cd sseparse && GOWORK=off go test ./... -count=1)
             '';
 
             test-race = mkApp "test-race" [ goPkg ] ''
               export GOEXPERIMENT=jsonv2
               go test ./... -race -count=1 "$@"
               (cd ssetest && GOWORK=off go test ./... -race -count=1)
+              (cd sseparse && GOWORK=off go test ./... -race -count=1)
             '';
 
             build = mkApp "build" [ goPkg ] ''
               export GOEXPERIMENT=jsonv2
               go build ./...
               (cd ssetest && GOWORK=off go build ./...)
+              (cd sseparse && GOWORK=off go build ./...)
             '';
 
             vet = mkApp "vet" [ goPkg ] ''
               export GOEXPERIMENT=jsonv2
               go vet ./...
               (cd ssetest && GOWORK=off go vet ./...)
+              (cd sseparse && GOWORK=off go vet ./...)
             '';
 
             lint = mkApp "lint" [ pkgs.golangci-lint ] ''
               export GOEXPERIMENT=jsonv2
               golangci-lint run ./...
               (cd ssetest && GOWORK=off golangci-lint run ./...)
+              (cd sseparse && GOWORK=off golangci-lint run ./...)
             '';
 
             coverage = mkApp "coverage" [ goPkg ] ''
@@ -238,6 +276,7 @@
               go test ./... -coverprofile=coverage.out -covermode=atomic "$@"
               go tool cover -func=coverage.out
               (cd ssetest && GOWORK=off go test ./... -coverprofile=../ssetest-coverage.out -covermode=atomic && go tool cover -func=../ssetest-coverage.out)
+              (cd sseparse && GOWORK=off go test ./... -coverprofile=../sseparse-coverage.out -covermode=atomic && go tool cover -func=../sseparse-coverage.out)
             '';
 
             coverage-gate = mkApp "coverage-gate" [ goPkg pkgs.bc pkgs.gnugrep pkgs.coreutils ] ''
@@ -279,6 +318,12 @@
               echo "ssetest coverage: ''${scov}% (threshold: 95%)"
               if (( $(echo "$scov < 95" | bc -l) )); then
                 echo "FAIL: ssetest coverage ''${scov}% < 95%"
+                exit 1
+              fi
+              pcov="$(cd sseparse && measure /tmp/sseparse-cov ./...)"
+              echo "sseparse coverage: ''${pcov}% (threshold: 95%)"
+              if (( $(echo "$pcov < 95" | bc -l) )); then
+                echo "FAIL: sseparse coverage ''${pcov}% < 95%"
                 exit 1
               fi
               echo "OK"

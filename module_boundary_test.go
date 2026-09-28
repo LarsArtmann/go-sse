@@ -20,7 +20,7 @@ func TestRootModuleDoesNotRequireSubmodules(t *testing.T) {
 	}
 
 	const (
-		ssetestPath = "github.com/larsartmann/go-sse/ssetest"
+		ssetestPath  = "github.com/larsartmann/go-sse/ssetest"
 		sseparsePath = "github.com/larsartmann/go-sse/sseparse"
 	)
 

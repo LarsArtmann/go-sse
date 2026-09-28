@@ -32,6 +32,10 @@ jobs:
         working-directory: ssetest
         env:
           GOWORK: off
+      - run: go test ./... -race -count=1
+        working-directory: sseparse
+        env:
+          GOWORK: off
 
   lint:
     name: Lint
@@ -66,6 +70,12 @@ jobs:
           working-directory: ssetest
         env:
           GOWORK: "off"
+      - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: v2.13.2
+          working-directory: sseparse
+        env:
+          GOWORK: "off"
 
   vet:
     name: Vet
@@ -80,6 +90,10 @@ jobs:
       - run: go vet ./...
       - run: go vet ./...
         working-directory: ssetest
+        env:
+          GOWORK: off
+      - run: go vet ./...
+        working-directory: sseparse
         env:
           GOWORK: off
 
@@ -103,6 +117,12 @@ jobs:
           GOWORK: off
       - run: go tool cover -func=ssetest-coverage.out
         working-directory: ssetest
+      - run: go test ./... -coverprofile=sseparse-coverage.out -covermode=atomic
+        working-directory: sseparse
+        env:
+          GOWORK: off
+      - run: go tool cover -func=sseparse-coverage.out
+        working-directory: sseparse
 
   examples:
     name: Examples
@@ -168,6 +188,10 @@ jobs:
         working-directory: ssetest
         env:
           GOWORK: off
+      - run: govulncheck ./...
+        working-directory: sseparse
+        env:
+          GOWORK: off
 
   fuzz:
     name: Fuzz
@@ -185,8 +209,10 @@ jobs:
       - run: go test . -fuzz=FuzzParseEventID -fuzztime=1m
       # FuzzKeyedLines pins the DataStar keyed-data-line building block.
       - run: go test . -fuzz=FuzzKeyedLines -fuzztime=1m
+      # The reader fuzz targets live in the sseparse module since the parser
+      # split; their committed seed corpora moved with them.
       - run: go test . -fuzz=FuzzReadEvents -fuzztime=1m
-        working-directory: ssetest
+        working-directory: sseparse
         env:
           GOWORK: off
       # The write→read round-trip is the conformance contract; it must fuzz
@@ -197,6 +223,6 @@ jobs:
           GOWORK: off
       # The line splitter behind the reader (internal target, same package).
       - run: go test . -fuzz=FuzzSplitSSELines -fuzztime=1m
-        working-directory: ssetest
+        working-directory: sseparse
         env:
           GOWORK: off

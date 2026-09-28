@@ -199,7 +199,9 @@ func TestReadEvents_LineCapDefault(t *testing.T) {
 	t.Run("line one byte under cap parses", func(t *testing.T) {
 		t.Parallel()
 
-		events, err := sseparse.ReadEvents(strings.NewReader(lineOfLen(sseparse.DefaultMaxLineBytes - 1)))
+		events, err := sseparse.ReadEvents(
+			strings.NewReader(lineOfLen(sseparse.DefaultMaxLineBytes - 1)),
+		)
 		if err != nil {
 			t.Fatalf("line under cap should parse: %v", err)
 		}
@@ -210,7 +212,9 @@ func TestReadEvents_LineCapDefault(t *testing.T) {
 	t.Run("line at cap fails", func(t *testing.T) {
 		t.Parallel()
 
-		events, err := sseparse.ReadEvents(strings.NewReader(lineOfLen(sseparse.DefaultMaxLineBytes)))
+		events, err := sseparse.ReadEvents(
+			strings.NewReader(lineOfLen(sseparse.DefaultMaxLineBytes)),
+		)
 		if err == nil {
 			t.Fatal("line at cap should fail the scan (terminator no longer fits)")
 		}
@@ -301,14 +305,14 @@ func TestStreamReader_WithMaxLineBytes(t *testing.T) {
 	}
 }
 
-	func TestReadNEvents_ReturnsBeforeEOF(t *testing.T) {
-		t.Parallel()
+func TestReadNEvents_ReturnsBeforeEOF(t *testing.T) {
+	t.Parallel()
 
-		const wire = "data: 1\n\n" +
-			"data: 2\n\n" +
-			"data: 3\n\n"
+	const wire = "data: 1\n\n" +
+		"data: 2\n\n" +
+		"data: 3\n\n"
 
-		events, err := sseparse.ReadNEvents(strings.NewReader(wire), 2)
+	events, err := sseparse.ReadNEvents(strings.NewReader(wire), 2)
 	if err != nil {
 		t.Fatalf("read 2 events: %v", err)
 	}

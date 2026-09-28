@@ -153,6 +153,7 @@ linters:
         - net/http.Server
         - github\.com/larsartmann/go-sse\.Event$
         - github\.com/larsartmann/go-sse/ssetest\.Event$
+        - github\.com/larsartmann/go-sse/sseparse\.Event$
     funlen:
       lines: 200
       statements: 100

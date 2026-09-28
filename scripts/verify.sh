@@ -26,6 +26,7 @@ fi
 echo "==> go vet"
 go vet ./...
 (cd ssetest && go vet ./...)
+(cd sseparse && go vet ./...)
 
 echo "==> golangci-lint"
 if command -v golangci-lint >/dev/null 2>&1; then
@@ -49,6 +50,7 @@ if command -v golangci-lint >/dev/null 2>&1; then
 
 	golangci-lint run ./...
 	(cd ssetest && golangci-lint run ./...)
+	(cd sseparse && golangci-lint run ./...)
 	echo "    lint clean"
 else
 	echo "    golangci-lint not found; skipping (nix develop provides it)"
@@ -57,6 +59,7 @@ fi
 echo "==> go test (race)"
 go test ./... -race -count=1
 (cd ssetest && go test ./... -race -count=1)
+(cd sseparse && go test ./... -race -count=1)
 
 if [[ "${1:-}" != "--fast" ]]; then
 	echo "==> nix flake check (hermetic gate: builds + tests + vendor hashes)"

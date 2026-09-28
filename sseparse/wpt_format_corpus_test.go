@@ -55,7 +55,11 @@ func TestCorpusIntegrity(t *testing.T) {
 	vectors := sseparse.MustCorpus(t)
 
 	if len(vectors) < minCorpusVectors {
-		t.Fatalf("corpus shrank to %d vectors (floor %d) — did testdata/ lose a family?", len(vectors), minCorpusVectors)
+		t.Fatalf(
+			"corpus shrank to %d vectors (floor %d) — did testdata/ lose a family?",
+			len(vectors),
+			minCorpusVectors,
+		)
 	}
 
 	provenance := map[string]bool{"wpt:": false, "spec:": false, "chromium:": false}
