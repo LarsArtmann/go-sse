@@ -1,6 +1,6 @@
 module github.com/larsartmann/go-sse/ssetest
 
-go 1.27.1
+go 1.27
 
 require (
 	github.com/larsartmann/go-error-family v0.10.1
