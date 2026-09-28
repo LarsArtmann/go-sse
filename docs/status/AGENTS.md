@@ -41,14 +41,15 @@ session's work, e.g. `2026-08-29_16-36_todo-list-full-execution-and-self-review.
 Every report's preamble MUST carry exactly one bullet of this form:
 
 ```
-- cover: library 99.3% (=), ssetest 97.2% (+0.5)
+- cover: library 99.3% (=), ssetest 98.0% (-0.4), sseparse 98.4% (new)
 ```
 
 - **Measured this session** via `nix run .#coverage-gate` (or
   `go tool cover -func=<profile>`) — never quoted from memory or from a
   previous report (reports are snapshots; the number may have moved since).
-- Both modules, root `sse` library and `ssetest`, each with a delta vs the
-  previous report's line. `=` when unchanged.
+- All three modules — root `sse` library, `ssetest`, and `sseparse` (since
+  the 2026-09-29 split) — each with a delta vs the previous report's line.
+  `=` when unchanged; `(new)` for a module's first measurement.
 - **Cross-repo sessions:** when the session materially changed another repo
   (e.g. go-datastar), add that repo's measured coverage as extra bullets in the
   same format (e.g. `- cover (go-datastar): datastartest 9x.x% (…)`), measured

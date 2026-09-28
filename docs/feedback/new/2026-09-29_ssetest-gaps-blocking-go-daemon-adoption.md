@@ -1,5 +1,14 @@
 # ssetest: what's missing for go-daemon adoption
 
+> **Processed 2026-09-29** — all four asks implemented (module named `sseparse`
+> instead of the suggested `ssetestcore`): (1) zero-dependency parser core
+> module `github.com/larsartmann/go-sse/sseparse`, ssetest re-exports it;
+> (2) corpus exported as data via `sseparse.Corpus()`/`MustCorpus` backed by
+> `sseparse/testdata/wpt_format_corpus.json`; (3) reader API promoted to a
+> first-class README section; (4) cap documented on `ReadEvents`, boundary
+> pinned by tests, `WithMaxLineBytes` added. Trivial go.mod alignment done
+> (`go 1.27.1` everywhere). Pending: the two release tags (see TODO_LIST).
+
 2026-09-29. Feedback from the go-daemon side
 (github.com/LarsArtmann/go-daemon, private mechanism library for unix-socket
 daemons, go 1.27.1). go-daemon ships its own framing-only SSE parser
