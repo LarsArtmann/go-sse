@@ -50,7 +50,7 @@ jobs:
       - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           # Pin to the SAME version nixpkgs ships (`pkgs.golangci-lint` in
-          # flake.nix — currently 2.13.2) so local and CI lint agree; a skew
+          # flake.nix — currently 2.14.0) so local and CI lint agree; a skew
           # let a goconst counting difference between 2.12 and 2.13 pass
           # locally and fail CI. scripts/verify.sh cross-checks this pin
           # against the local binary. Also built with a recent Go, which is
@@ -63,16 +63,16 @@ jobs:
           # We also need action v7 because v6 refuses golangci-lint v2
           # versions entirely ("golangci-lint v2 is not supported by
           # golangci-lint-action v6").
-          version: v2.13.2
+          version: v2.14.0
       - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
-          version: v2.13.2
+          version: v2.14.0
           working-directory: ssetest
         env:
           GOWORK: "off"
       - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
-          version: v2.13.2
+          version: v2.14.0
           working-directory: sseparse
         env:
           GOWORK: "off"

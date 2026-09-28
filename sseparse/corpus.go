@@ -13,7 +13,7 @@ import (
 // parser can assert against the same vectors that pin this package.
 //
 //go:embed testdata/wpt_format_corpus.json
-var corpusJSON []byte //nolint:gochecknoglobals // go:embed target, fixed at compile time
+var corpusJSON []byte
 
 // ConformanceVector is one wire-format conformance vector: the exact bytes on
 // the wire, and the events a spec-conformant parser must dispatch for them.

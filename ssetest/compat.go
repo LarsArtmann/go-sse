@@ -24,28 +24,36 @@ type ReadOption = sseparse.ReadOption
 
 // WithMaxLineBytes sets the cap on a single SSE wire line. See
 // [sseparse.WithMaxLineBytes].
-func WithMaxLineBytes(max int) ReadOption {
-	return sseparse.WithMaxLineBytes(max)
+func WithMaxLineBytes(maxBytes int) ReadOption {
+	return sseparse.WithMaxLineBytes(maxBytes)
 }
 
 // ReadEvents parses the SSE wire format from r and returns all decoded
 // events. See [sseparse.ReadEvents] for the full wire-format semantics.
+//
+//nolint:wrapcheck // transparent re-export; callers must see the sseparse error unchanged
 func ReadEvents(r io.Reader, opts ...ReadOption) ([]Event, error) {
 	return sseparse.ReadEvents(r, opts...)
 }
 
 // ReadNEvents reads up to count events from r. See [sseparse.ReadNEvents].
+//
+//nolint:wrapcheck // transparent re-export; callers must see the sseparse error unchanged
 func ReadNEvents(r io.Reader, count int, opts ...ReadOption) ([]Event, error) {
 	return sseparse.ReadNEvents(r, count, opts...)
 }
 
 // MustReadEvents is like [ReadEvents] but calls tb.Fatal on error.
 func MustReadEvents(tb testing.TB, r io.Reader, opts ...ReadOption) []Event {
+	tb.Helper()
+
 	return sseparse.MustReadEvents(tb, r, opts...)
 }
 
 // MustReadNEvents is like [ReadNEvents] but calls tb.Fatal on error.
 func MustReadNEvents(tb testing.TB, r io.Reader, count int, opts ...ReadOption) []Event {
+	tb.Helper()
+
 	return sseparse.MustReadNEvents(tb, r, count, opts...)
 }
 
@@ -61,6 +69,8 @@ func NewStreamReader(r io.Reader, opts ...ReadOption) *StreamReader {
 
 // MustReadNextEvent reads the next event from sr and calls tb.Fatal on error.
 func MustReadNextEvent(tb testing.TB, sr *StreamReader) Event {
+	tb.Helper()
+
 	return sseparse.MustReadNextEvent(tb, sr)
 }
 
@@ -85,41 +95,55 @@ func EventsString(events []Event) string {
 // RequireEventCount fails the test unless events has exactly want events. See
 // [sseparse.RequireEventCount].
 func RequireEventCount(tb testing.TB, events []Event, want int) {
+	tb.Helper()
+
 	sseparse.RequireEventCount(tb, events, want)
 }
 
 // RequireEventType fails the test unless the event type matches want. See
 // [sseparse.RequireEventType].
 func RequireEventType(tb testing.TB, evt Event, want string) {
+	tb.Helper()
+
 	sseparse.RequireEventType(tb, evt, want)
 }
 
 // RequireData fails the test unless the event payload exactly equals want. See
 // [sseparse.RequireData].
 func RequireData(tb testing.TB, evt Event, want string) {
+	tb.Helper()
+
 	sseparse.RequireData(tb, evt, want)
 }
 
 // RequireDataContains fails the test unless the event payload contains
 // wantContains as a substring. See [sseparse.RequireDataContains].
 func RequireDataContains(tb testing.TB, evt Event, wantContains string) {
+	tb.Helper()
+
 	sseparse.RequireDataContains(tb, evt, wantContains)
 }
 
 // RequireEventID fails the test unless the SSE event ID matches want. See
 // [sseparse.RequireEventID].
 func RequireEventID(tb testing.TB, evt Event, want string) {
+	tb.Helper()
+
 	sseparse.RequireEventID(tb, evt, want)
 }
 
 // RequireRetry fails the test unless the event's reconnection interval
 // matches want. See [sseparse.RequireRetry].
 func RequireRetry(tb testing.TB, evt Event, want uint) {
+	tb.Helper()
+
 	sseparse.RequireRetry(tb, evt, want)
 }
 
 // RequireDataJSON unmarshals the event payload as JSON into a fresh T and
 // compares it to want with reflect.DeepEqual. See [sseparse.RequireDataJSON].
 func RequireDataJSON[T any](tb testing.TB, evt Event, want T) {
+	tb.Helper()
+
 	sseparse.RequireDataJSON(tb, evt, want)
 }

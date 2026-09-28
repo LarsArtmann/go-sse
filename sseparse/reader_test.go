@@ -186,6 +186,7 @@ func TestReadEvents_FailingReader_WrapsUnderlying(t *testing.T) {
 // terminated by "\n\n" so it dispatches one event.
 func lineOfLen(totalLen int) string {
 	const prefixLen = len("data:")
+
 	return "data:" + strings.Repeat("x", max(totalLen-prefixLen, 0)) + "\n\n"
 }
 

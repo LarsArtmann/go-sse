@@ -50,10 +50,10 @@ func applyReadOptions(opts []ReadOption) readConfig {
 // ignored and keeps the default. For framing parsers that treat the size axis
 // as first-class (e.g. bounded protocol parsers), mirror your own limit here
 // so the reader rejects the same inputs your parser would.
-func WithMaxLineBytes(max int) ReadOption {
+func WithMaxLineBytes(maxBytes int) ReadOption {
 	return func(cfg *readConfig) {
-		if max > 0 {
-			cfg.maxLineBytes = max
+		if maxBytes > 0 {
+			cfg.maxLineBytes = maxBytes
 		}
 	}
 }
