@@ -6,8 +6,10 @@
 > (2) corpus exported as data via `sseparse.Corpus()`/`MustCorpus` backed by
 > `sseparse/testdata/wpt_format_corpus.json`; (3) reader API promoted to a
 > first-class README section; (4) cap documented on `ReadEvents`, boundary
-> pinned by tests, `WithMaxLineBytes` added. Trivial go.mod alignment done
-> (`go 1.27.1` everywhere). Pending: the two release tags (see TODO_LIST).
+> pinned by tests, `WithMaxLineBytes` added. go.mod alignment handled with a
+> nuance: sseparse starts at `go 1.27.1` (json/v2 user); ssetest stays at
+> `go 1.27` — post-split its own code no longer needs 1.27.1 and `go mod tidy`
+> reverts any forced parity. Pending: the two release tags (see TODO_LIST).
 
 2026-09-29. Feedback from the go-daemon side
 (github.com/LarsArtmann/go-daemon, private mechanism library for unix-socket

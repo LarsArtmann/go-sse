@@ -91,3 +91,12 @@ and at release time the tag must exist before the replace is dropped
 ## g) Questions I CANNOT figure out myself
 
 1. `/mnt/buildcache` cleanup: it is a shared mount (other projects' caches live there) — I did not wipe 149 GB unilaterally. Owner decision on `go clean -cache` / GOMODCACHE pruning / mount resizing.
+
+---
+
+**Annotation 2026-09-29 01:5x (later pass, non-destructive):** row a)8
+overstated the alignment fix — a subsequent `go mod tidy` (correctly) reverted
+`ssetest/go.mod` to `go 1.27`: post-split, ssetest's own code no longer needs
+`1.27.1` (json/v2 lives only in its tests, admitted by the `go 1.27` gate),
+and tidy will always revert a hand-raised directive. sseparse stays at
+`1.27.1` (it compiles json/v2). Full story in the follow-up self-review report.

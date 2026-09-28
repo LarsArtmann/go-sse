@@ -45,7 +45,7 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 ### Fixed
 
-- `ssetest/go.mod` said `go 1.27` while the root module says `go 1.27.1`; aligned (sseparse starts at `go 1.27.1`).
+- `ssetest/go.mod` said `go 1.27` while the root module says `go 1.27.1`; sseparse starts at `go 1.27.1` (it compiles `encoding/json/v2`). ssetest stays at `go 1.27` deliberately: after the split its own code no longer needs more (json/v2 appears only in tests, which the `go 1.27` gate admits), and `go mod tidy` reverts any hand-raised directive — forcing parity would flipflop on every tidy.
 
 ## [0.6.1] - 2026-09-19
 

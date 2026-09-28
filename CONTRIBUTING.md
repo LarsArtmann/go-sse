@@ -44,8 +44,13 @@ Please use GitHub Issues to report bugs or request features.
 ## Release Checklist
 
 The first releases fumbled the same steps; run this list top to bottom and
-do not skip items. Both modules version independently: the root library tags
-`vX.Y.Z`, the `ssetest` module tags `ssetest/vX.Y.Z`.
+do not skip items. The three modules version independently: the root library
+tags `vX.Y.Z`, the `ssetest` module tags `ssetest/vX.Y.Z`, and the `sseparse`
+module tags `sseparse/vX.Y.Z` (added 2026-09-29 with the parser split).
+Release ORDER for sseparse/ssetest: tag `sseparse/vX.Y.Z` FIRST, commit the
+ssetest release with its local `replace` dropped (its `require sseparse vX.Y.Z`
+must then resolve against the proxy), and tag `ssetest/vX.Y.Z` after — a
+ssetest tag whose sseparse require cannot resolve is a dead tag.
 
 1. **Decide the version.** Check `git tag` and the CHANGELOG's `[Unreleased]`
    section. Cut CHANGELOG.md: rename `[Unreleased]` to the new version with
@@ -101,6 +106,8 @@ do not skip items. Both modules version independently: the root library tags
        git tag -a vX.Y.Z -m "vX.Y.Z: <one-line summary>"
        # ssetest changes only:
        git tag -a ssetest/vX.Y.Z -m "ssetest vX.Y.Z: <one-line summary>"
+       # sseparse changes only (tag BEFORE a ssetest release that requires it):
+       git tag -a sseparse/vX.Y.Z -m "sseparse vX.Y.Z: <one-line summary>"
 
        git push origin master --follow-tags
 
@@ -114,6 +121,7 @@ do not skip items. Both modules version independently: the root library tags
 
        scripts/release-verify.sh vX.Y.Z
        scripts/release-verify.sh ssetest/vX.Y.Z
+       scripts/release-verify.sh sseparse/vX.Y.Z
 
 8. **Publish the GitHub release.** Stage the notes from the CHANGELOG entry:
 
