@@ -6,8 +6,13 @@ import (
 	"testing"
 
 	"github.com/larsartmann/go-sse"
+	"github.com/larsartmann/go-sse/sseparse"
 	"github.com/larsartmann/go-sse/ssetest"
 )
+
+// wantEvent is the expected observable output of one dispatched event — the
+// same projection the sseparse conformance corpus asserts against the reader.
+type wantEvent = sseparse.ExpectedEvent
 
 // TestWriteReadRoundTrip closes the conformance loop: everything the root
 // library writes must be exactly what browsers (and therefore ssetest, which

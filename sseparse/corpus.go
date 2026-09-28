@@ -1,7 +1,7 @@
 package sseparse
 
 import (
-	"embed"
+	_ "embed"
 	"encoding/json/v2"
 	"fmt"
 	"testing"

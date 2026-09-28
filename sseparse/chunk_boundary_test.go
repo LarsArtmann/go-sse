@@ -150,14 +150,14 @@ func TestParserBOMSplitAcrossReads(t *testing.T) {
 
 	for _, tc := range tests {
 		for _, chunkSize := range []int{1, 2, 3, 4, 5, 6, 7} {
-			t.Run(fmt.Sprintf("%s/chunk-%d", tc.Name, chunkSize), func(t *testing.T) {
+			t.Run(fmt.Sprintf("%s/chunk-%d", tc.name, chunkSize), func(t *testing.T) {
 				t.Parallel()
 
 				events, err := sseparse.ReadEvents(
-					&chunkedReader{data: []byte(tc.Wire), size: chunkSize},
+					&chunkedReader{data: []byte(tc.wire), size: chunkSize},
 				)
 				if err != nil {
-					t.Fatalf("%s (chunk %d): read events: %v", tc.Name, chunkSize, err)
+					t.Fatalf("%s (chunk %d): read events: %v", tc.name, chunkSize, err)
 				}
 
 				sseparse.RequireEventCount(t, events, tc.wantCount)

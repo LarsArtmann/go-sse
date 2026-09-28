@@ -82,9 +82,10 @@ func WithMaxLineBytes(max int) ReadOption {
 //   - An incomplete final frame (no blank line before EOF) is discarded, per
 //     "Once the end of the file is reached, any pending data must be discarded".
 //
-// A line longer than [DefaultMaxLineBytes] (1 MiB) fails the scan: the
-// returned error wraps bufio.ErrTooLong (and the underlying cause), matchable
-// via errors.Is. Use [WithMaxLineBytes] to change the cap.
+// A line whose bytes plus terminator no longer fit within
+// [DefaultMaxLineBytes] (1 MiB) fails the scan: the returned error wraps
+// bufio.ErrTooLong (and the underlying cause), matchable via errors.Is. Use
+// [WithMaxLineBytes] to change the cap.
 //
 // Individual data: lines are preserved in [Event.DataLines] with their values
 // only (no "data: " prefix); use [Event.Data] for the rejoined payload.
