@@ -150,7 +150,7 @@ sse.ReplayFiltered(stream, store, lastID, func(evt sse.Event) bool {
 
 ## Testing Your Handlers
 
-[`ssetest`](./ssetest/) is a companion module with deep-testing helpers: it spins up a real HTTP server, drives your handler, parses the SSE wire format, and hands back typed, assertable events. No hand-rolled parser required.
+[`ssetest`](./ssetest/) is a companion module with deep-testing helpers: it spins up a real HTTP server, drives your handler, parses the SSE wire format, and hands back typed, assertable events. No hand-rolled parser required. Its parsing core is [`sseparse`](./sseparse/), a standalone zero-dependency module — parsers of non-HTTP streams (unix sockets, pipes) and other SSE implementations can adopt it, or assert against its exported WPT conformance corpus, without go-sse in their module graph.
 
 ```go
 import "github.com/larsartmann/go-sse/ssetest"
@@ -170,7 +170,7 @@ func TestFeedHandler(t *testing.T) {
 
 `CollectN` handles streaming handlers (reads exactly N events), `CollectWithTimeout` returns whatever arrived before a deadline, and `ReadEvents`/`ReadNEvents` parse any `io.Reader`. For test patterns that interleave reads with actions (POST, mutate state, read the next event), use a [`StreamReader`](./ssetest/README.md) — it keeps a single scanner across `Next()` calls so buffered data is never lost. Per the SSE spec, dataless frames (heartbeats, id-only) never surface as events. All helpers accept `testing.TB`, so they work with `*testing.T`, `*testing.B`, and Ginkgo's `GinkgoT()`. See [ssetest/README.md](./ssetest/README.md).
 
-The ssetest parser is spec-conformant to WHATWG HTML § 9.2.6 and pinned by the official Web Platform Tests `eventsource/format-*` corpus, re-run through 1–4096-byte chunked readers, and closed against `WriteEvent` with round-trip property tests (`ssetest/wpt_format_corpus_test.go`, `chunk_boundary_test.go`, `roundtrip_test.go`).
+The parser (in `sseparse`) is spec-conformant to WHATWG HTML § 9.2.6 and pinned by the official Web Platform Tests `eventsource/format-*` corpus — exported as data (`sseparse.Corpus()`), executed as Go tests (`sseparse/wpt_format_corpus_test.go`), re-run through 1–4096-byte chunked readers (`sseparse/chunk_boundary_test.go`), and closed against `WriteEvent` with round-trip property tests (`ssetest/roundtrip_test.go`).
 
 ## API Reference
 

@@ -6,6 +6,12 @@
 //  1. Parsing the SSE wire format (event:/data:/id:/retry: lines) into events.
 //  2. Driving a real HTTP handler end-to-end and asserting on what it sent.
 //
+// The parsing and assertion core lives in the zero-dependency module
+// [github.com/larsartmann/go-sse/sseparse]; this package re-exports its API
+// and layers the HTTP collection helpers on top. Import sseparse directly
+// for non-HTTP streams (unix sockets, pipes) or to use its WPT conformance
+// corpus as a spec oracle for your own parser.
+//
 // The package is a separate Go module (it depends on testing), so it never
 // leaks into production builds of go-sse consumers.
 //
@@ -34,6 +40,20 @@
 //	    ssetest.RequireEventType(t, events[0], "feed")
 //	    ssetest.RequireData(t, events[0], "hello")
 //	}
+//
+// # Parsing without HTTP
+//
+// The reader API parses any [io.Reader] — a captured response body, a unix
+// socket, a pipe. [ReadEvents] reads a complete stream, [ReadNEvents] reads
+// exactly N events from a live stream, and [StreamReader]/[NewStreamReader]
+// keep one scanner across many reads so buffered data is never lost:
+//
+//	reader := ssetest.NewStreamReader(r)
+//	evt := ssetest.MustReadNextEvent(t, reader)
+//
+// A single SSE line must fit within [DefaultMaxLineBytes] (1 MiB, terminator
+// included); over the cap the read fails with an error wrapping
+// bufio.ErrTooLong. [WithMaxLineBytes] mirrors your own parser's bound.
 //
 // # Request options
 //
