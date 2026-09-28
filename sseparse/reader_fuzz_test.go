@@ -1,10 +1,10 @@
-package ssetest_test
+package sseparse_test
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/larsartmann/go-sse/ssetest"
+	"github.com/larsartmann/go-sse/sseparse"
 )
 
 // FuzzReadEvents asserts that the SSE wire parser never panics on arbitrary
@@ -66,7 +66,7 @@ func FuzzReadEvents(f *testing.F) {
 	}
 
 	f.Fuzz(func(t *testing.T, wire string) {
-		events, err := ssetest.ReadEvents(strings.NewReader(wire))
+		events, err := sseparse.ReadEvents(strings.NewReader(wire))
 		if err != nil {
 			t.Fatalf("ReadEvents should never fail on an in-memory reader: %v", err)
 		}
@@ -87,7 +87,7 @@ func FuzzReadEvents(f *testing.F) {
 		// parse result. (The sticky-ID property it exercises alongside the
 		// dataless-frame rule above is pinned deterministically by the WPT
 		// corpus and the Chromium parser cases.)
-		chunked, err := ssetest.ReadEvents(&chunkedReader{data: []byte(wire), size: 1})
+		chunked, err := sseparse.ReadEvents(&chunkedReader{data: []byte(wire), size: 1})
 		if err != nil {
 			t.Fatalf("byte-by-byte read failed on %q: %v", wire, err)
 		}

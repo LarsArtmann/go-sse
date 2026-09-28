@@ -1,11 +1,11 @@
-package ssetest_test
+package sseparse_test
 
 import (
 	"fmt"
 	"strings"
 	"testing"
 
-	"github.com/larsartmann/go-sse/ssetest"
+	"github.com/larsartmann/go-sse/sseparse"
 )
 
 // ExampleReadEvents demonstrates parsing raw SSE wire output into assertable
@@ -16,7 +16,7 @@ func ExampleReadEvents() {
 		"data: first line\n" +
 		"data: second line\n\n"
 
-	events, _ := ssetest.ReadEvents(strings.NewReader(wire))
+	events, _ := sseparse.ReadEvents(strings.NewReader(wire))
 
 	fmt.Println("type:", events[0].Type)
 	fmt.Println("id:", events[0].ID)
@@ -34,9 +34,9 @@ func ExampleReadEvents() {
 // messages.
 func ExampleEventsString() {
 	wire := "event: feed\ndata: hello\n\n"
-	events, _ := ssetest.ReadEvents(strings.NewReader(wire))
+	events, _ := sseparse.ReadEvents(strings.NewReader(wire))
 
-	fmt.Println(ssetest.EventsString(events))
+	fmt.Println(sseparse.EventsString(events))
 	// Output:
 	// Event{type=feed datalines=1}
 }
@@ -52,8 +52,8 @@ func ExampleEventsString() {
 func ExampleRequireDataJSON() { //nolint:testableexamples // compile-only: no live *testing.T inside an example
 	var tb testing.TB
 
-	events := ssetest.MustReadEvents(tb, strings.NewReader(
+	events := sseparse.MustReadEvents(tb, strings.NewReader(
 		"event: status\ndata: {\"done\": true}\n\n"))
 
-	ssetest.RequireDataJSON(tb, events[0], map[string]any{"done": true})
+	sseparse.RequireDataJSON(tb, events[0], map[string]any{"done": true})
 }

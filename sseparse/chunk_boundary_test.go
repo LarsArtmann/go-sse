@@ -1,11 +1,11 @@
-package ssetest_test
+package sseparse_test
 
 import (
 	"fmt"
 	"strings"
 	"testing"
 
-	"github.com/larsartmann/go-sse/ssetest"
+	"github.com/larsartmann/go-sse/sseparse"
 )
 
 // TestParserChunkBoundaryIndependence runs the entire conformance corpus
@@ -22,25 +22,25 @@ func TestParserChunkBoundaryIndependence(t *testing.T) {
 	t.Parallel()
 
 	for _, chunkSize := range []int{1, 2, 3, 5, 7, 4096} {
-		for _, tc := range allConformanceCases() {
-			t.Run(tc.name, func(t *testing.T) {
+		for _, tc := range sseparse.MustCorpus(t) {
+			t.Run(tc.Name, func(t *testing.T) {
 				t.Parallel()
 
-				whole, err := ssetest.ReadEvents(strings.NewReader(tc.wire))
+				whole, err := sseparse.ReadEvents(strings.NewReader(tc.Wire))
 				if err != nil {
-					t.Fatalf("%s: baseline parse: %v", tc.url, err)
+					t.Fatalf("%s: baseline parse: %v", tc.URL, err)
 				}
 
-				chunked, err := ssetest.ReadEvents(
-					&chunkedReader{data: []byte(tc.wire), size: chunkSize},
+				chunked, err := sseparse.ReadEvents(
+					&chunkedReader{data: []byte(tc.Wire), size: chunkSize},
 				)
 				if err != nil {
-					t.Fatalf("%s: chunked parse (size %d): %v", tc.url, chunkSize, err)
+					t.Fatalf("%s: chunked parse (size %d): %v", tc.URL, chunkSize, err)
 				}
 
 				if len(chunked) != len(whole) {
 					t.Fatalf("%s: chunk size %d: event count: got %d, want %d\nwire: %q",
-						tc.url, chunkSize, len(chunked), len(whole), tc.wire)
+						tc.URL, chunkSize, len(chunked), len(whole), tc.Wire)
 				}
 
 				for i := range whole {
@@ -50,12 +50,12 @@ func TestParserChunkBoundaryIndependence(t *testing.T) {
 						a.Data() != b.Data() {
 						t.Fatalf(
 							"%s: chunk size %d: event[%d] differs:\nwhole:  %+v\nchunked:%+v\nwire: %q",
-							tc.url,
+							tc.URL,
 							chunkSize,
 							i,
 							a,
 							b,
-							tc.wire,
+							tc.Wire,
 						)
 					}
 				}
@@ -78,12 +78,12 @@ func TestParserCRLFSplitAcrossReads(t *testing.T) {
 		// inside both CRLF pairs.
 		wire := "data: x\r\ndata: y\r\n\r\n"
 
-		events, err := ssetest.ReadEvents(&chunkedReader{data: []byte(wire), size: 1})
+		events, err := sseparse.ReadEvents(&chunkedReader{data: []byte(wire), size: 1})
 		if err != nil {
 			t.Fatalf("read events: %v", err)
 		}
 
-		ssetest.RequireEventCount(t, events, 1)
+		sseparse.RequireEventCount(t, events, 1)
 
 		if got := events[0].Data(); got != "x\ny" {
 			t.Errorf("data: got %q, want %q (CRLF must not dispatch early)", got, "x\ny")
@@ -97,12 +97,12 @@ func TestParserCRLFSplitAcrossReads(t *testing.T) {
 		// line — the CR must not swallow the following bytes.
 		wire := "data: x\rdata: y\n\n"
 
-		events, err := ssetest.ReadEvents(&chunkedReader{data: []byte(wire), size: 1})
+		events, err := sseparse.ReadEvents(&chunkedReader{data: []byte(wire), size: 1})
 		if err != nil {
 			t.Fatalf("read events: %v", err)
 		}
 
-		ssetest.RequireEventCount(t, events, 1)
+		sseparse.RequireEventCount(t, events, 1)
 
 		if got := events[0].Data(); got != "x\ny" {
 			t.Errorf("data: got %q, want %q", got, "x\ny")
@@ -112,13 +112,13 @@ func TestParserCRLFSplitAcrossReads(t *testing.T) {
 	t.Run("double CR is a line plus a blank dispatch line", func(t *testing.T) {
 		t.Parallel()
 
-		events, err := ssetest.ReadEvents(&chunkedReader{data: []byte("data: x\r\r"), size: 1})
+		events, err := sseparse.ReadEvents(&chunkedReader{data: []byte("data: x\r\r"), size: 1})
 		if err != nil {
 			t.Fatalf("read events: %v", err)
 		}
 
-		ssetest.RequireEventCount(t, events, 1)
-		ssetest.RequireData(t, events[0], "x")
+		sseparse.RequireEventCount(t, events, 1)
+		sseparse.RequireData(t, events[0], "x")
 	})
 }
 
@@ -150,20 +150,20 @@ func TestParserBOMSplitAcrossReads(t *testing.T) {
 
 	for _, tc := range tests {
 		for _, chunkSize := range []int{1, 2, 3, 4, 5, 6, 7} {
-			t.Run(fmt.Sprintf("%s/chunk-%d", tc.name, chunkSize), func(t *testing.T) {
+			t.Run(fmt.Sprintf("%s/chunk-%d", tc.Name, chunkSize), func(t *testing.T) {
 				t.Parallel()
 
-				events, err := ssetest.ReadEvents(
-					&chunkedReader{data: []byte(tc.wire), size: chunkSize},
+				events, err := sseparse.ReadEvents(
+					&chunkedReader{data: []byte(tc.Wire), size: chunkSize},
 				)
 				if err != nil {
-					t.Fatalf("%s (chunk %d): read events: %v", tc.name, chunkSize, err)
+					t.Fatalf("%s (chunk %d): read events: %v", tc.Name, chunkSize, err)
 				}
 
-				ssetest.RequireEventCount(t, events, tc.wantCount)
+				sseparse.RequireEventCount(t, events, tc.wantCount)
 
 				if tc.wantCount > 0 {
-					ssetest.RequireData(t, events[0], tc.wantData)
+					sseparse.RequireData(t, events[0], tc.wantData)
 				}
 			})
 		}

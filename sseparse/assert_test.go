@@ -1,11 +1,11 @@
-package ssetest_test
+package sseparse_test
 
 import (
 	"fmt"
 	"strings"
 	"testing"
 
-	"github.com/larsartmann/go-sse/ssetest"
+	"github.com/larsartmann/go-sse/sseparse"
 )
 
 // recordingTB captures Fatal/Errorf calls instead of failing the test run.
@@ -41,7 +41,7 @@ func TestRequireEventCount_Failure(t *testing.T) {
 	t.Parallel()
 
 	tb := &recordingTB{}
-	ssetest.RequireEventCount(tb, nil, 2)
+	sseparse.RequireEventCount(tb, nil, 2)
 
 	if len(tb.fatals) != 1 || !strings.Contains(tb.fatals[0], "got 0, want 2") {
 		t.Errorf("expected count mismatch fatal; got %v", tb.fatals)
@@ -52,7 +52,7 @@ func TestRequireEventType_Failure(t *testing.T) {
 	t.Parallel()
 
 	tb := &recordingTB{}
-	ssetest.RequireEventType(tb, ssetest.Event{Type: "feed"}, "alert")
+	sseparse.RequireEventType(tb, sseparse.Event{Type: "feed"}, "alert")
 
 	if len(tb.fatals) != 1 || !strings.Contains(tb.fatals[0], `"alert"`) {
 		t.Errorf("expected type mismatch fatal; got %v", tb.fatals)
@@ -63,7 +63,7 @@ func TestRequireData_Failure(t *testing.T) {
 	t.Parallel()
 
 	tb := &recordingTB{}
-	ssetest.RequireData(tb, ssetest.Event{DataLines: []string{"a"}}, "b")
+	sseparse.RequireData(tb, sseparse.Event{DataLines: []string{"a"}}, "b")
 
 	if len(tb.errors) != 1 || !strings.Contains(tb.errors[0], "data") {
 		t.Errorf("expected data mismatch error; got %v", tb.errors)
@@ -74,7 +74,7 @@ func TestRequireDataContains_Failure(t *testing.T) {
 	t.Parallel()
 
 	tb := &recordingTB{}
-	ssetest.RequireDataContains(tb, ssetest.Event{DataLines: []string{"hello"}}, "goodbye")
+	sseparse.RequireDataContains(tb, sseparse.Event{DataLines: []string{"hello"}}, "goodbye")
 
 	if len(tb.errors) != 1 || !strings.Contains(tb.errors[0], "goodbye") {
 		t.Errorf("expected substring error; got %v", tb.errors)
@@ -85,7 +85,7 @@ func TestRequireEventID_Failure(t *testing.T) {
 	t.Parallel()
 
 	tb := &recordingTB{}
-	ssetest.RequireEventID(tb, ssetest.Event{ID: "41"}, "42")
+	sseparse.RequireEventID(tb, sseparse.Event{ID: "41"}, "42")
 
 	if len(tb.fatals) != 1 || !strings.Contains(tb.fatals[0], `"41"`) {
 		t.Errorf("expected ID mismatch fatal; got %v", tb.fatals)
@@ -96,7 +96,7 @@ func TestRequireRetry_Failure(t *testing.T) {
 	t.Parallel()
 
 	tb := &recordingTB{}
-	ssetest.RequireRetry(tb, ssetest.Event{Retry: 1000}, 3000)
+	sseparse.RequireRetry(tb, sseparse.Event{Retry: 1000}, 3000)
 
 	if len(tb.fatals) != 1 || !strings.Contains(tb.fatals[0], "1000") {
 		t.Errorf("expected retry mismatch fatal; got %v", tb.fatals)
@@ -107,7 +107,7 @@ func TestMustReadEvents_FailingReader(t *testing.T) {
 	t.Parallel()
 
 	tb := &recordingTB{}
-	ssetest.MustReadEvents(tb, failingReader{})
+	sseparse.MustReadEvents(tb, failingReader{})
 
 	if len(tb.fatals) != 1 {
 		t.Errorf("expected fatal from failing reader; got %v", tb.fatals)
@@ -119,11 +119,11 @@ func TestMustReadNEvents(t *testing.T) {
 
 	const wire = "data: 1\n\ndata: 2\n\n"
 
-	events := ssetest.MustReadNEvents(t, strings.NewReader(wire), 2)
-	ssetest.RequireEventCount(t, events, 2)
+	events := sseparse.MustReadNEvents(t, strings.NewReader(wire), 2)
+	sseparse.RequireEventCount(t, events, 2)
 
 	tb := &recordingTB{}
-	ssetest.MustReadNEvents(tb, failingReader{}, 2)
+	sseparse.MustReadNEvents(tb, failingReader{}, 2)
 
 	if len(tb.fatals) != 1 {
 		t.Errorf("expected fatal from failing reader; got %v", tb.fatals)
@@ -133,17 +133,17 @@ func TestMustReadNEvents(t *testing.T) {
 func TestFindByType(t *testing.T) {
 	t.Parallel()
 
-	events := []ssetest.Event{
+	events := []sseparse.Event{
 		{Type: "feed", DataLines: []string{"1"}},
 		{Type: "alert", DataLines: []string{"2"}},
 	}
 
-	evt, ok := ssetest.FindByType(events, "alert")
+	evt, ok := sseparse.FindByType(events, "alert")
 	if !ok || evt.Data() != "2" {
 		t.Errorf("FindByType(alert): got (%v, %v)", evt, ok)
 	}
 
-	if _, ok := ssetest.FindByType(events, "missing"); ok {
+	if _, ok := sseparse.FindByType(events, "missing"); ok {
 		t.Error("FindByType(missing) should not be found")
 	}
 }
@@ -151,13 +151,13 @@ func TestFindByType(t *testing.T) {
 func TestFilterByType(t *testing.T) {
 	t.Parallel()
 
-	events := []ssetest.Event{
+	events := []sseparse.Event{
 		{Type: "feed"},
 		{Type: "alert"},
 		{Type: "feed"},
 	}
 
-	feed := ssetest.FilterByType(events, "feed")
+	feed := sseparse.FilterByType(events, "feed")
 	if len(feed) != 2 {
 		t.Errorf("FilterByType(feed): got %d, want 2", len(feed))
 	}
@@ -170,17 +170,17 @@ func TestFilterByType(t *testing.T) {
 func TestEvent_String(t *testing.T) {
 	t.Parallel()
 
-	full := ssetest.Event{Type: "feed", ID: "1", Retry: 2, DataLines: []string{"a", "b"}}
+	full := sseparse.Event{Type: "feed", ID: "1", Retry: 2, DataLines: []string{"a", "b"}}
 	if got := full.String(); got != "Event{type=feed id=1 retry=2 datalines=2}" {
 		t.Errorf("String(): got %q", got)
 	}
 
-	plain := ssetest.Event{Type: "feed"}
+	plain := sseparse.Event{Type: "feed"}
 	if got := plain.String(); got != "Event{type=feed datalines=0}" {
 		t.Errorf("String(): got %q", got)
 	}
 
-	if got := ssetest.EventsString(nil); got != "(no events)" {
+	if got := sseparse.EventsString(nil); got != "(no events)" {
 		t.Errorf("EventsString(nil): got %q", got)
 	}
 }
@@ -191,10 +191,10 @@ func TestHelpers_AcceptTestingB(t *testing.T) {
 	t.Parallel()
 
 	b := &testing.B{}
-	ssetest.RequireEventCount(b, []ssetest.Event{{Type: "x"}}, 1)
-	ssetest.RequireEventType(b, ssetest.Event{Type: "x"}, "x")
-	ssetest.RequireEventID(b, ssetest.Event{ID: "1"}, "1")
-	ssetest.RequireRetry(b, ssetest.Event{}, 0)
+	sseparse.RequireEventCount(b, []sseparse.Event{{Type: "x"}}, 1)
+	sseparse.RequireEventType(b, sseparse.Event{Type: "x"}, "x")
+	sseparse.RequireEventID(b, sseparse.Event{ID: "1"}, "1")
+	sseparse.RequireRetry(b, sseparse.Event{}, 0)
 
 	if b.Failed() {
 		t.Error("helper calls on *testing.B should not fail")
@@ -210,30 +210,30 @@ type progressSignal struct {
 func TestRequireDataJSON_TypedWant(t *testing.T) {
 	t.Parallel()
 
-	evt := ssetest.Event{DataLines: []string{`{"progress":50,"name":"upload"}`}}
-	ssetest.RequireDataJSON(t, evt, progressSignal{Progress: 50, Name: "upload"})
+	evt := sseparse.Event{DataLines: []string{`{"progress":50,"name":"upload"}`}}
+	sseparse.RequireDataJSON(t, evt, progressSignal{Progress: 50, Name: "upload"})
 }
 
 func TestRequireDataJSON_MapWant(t *testing.T) {
 	t.Parallel()
 
-	evt := ssetest.Event{DataLines: []string{`{"progress":50}`}}
-	ssetest.RequireDataJSON(t, evt, map[string]any{"progress": 50.0})
+	evt := sseparse.Event{DataLines: []string{`{"progress":50}`}}
+	sseparse.RequireDataJSON(t, evt, map[string]any{"progress": 50.0})
 }
 
 func TestRequireDataJSON_KeyOrderAndWhitespaceDoNotMatter(t *testing.T) {
 	t.Parallel()
 
-	evt := ssetest.Event{DataLines: []string{`{ "name" : "upload" ,  "progress":50 }`}}
-	ssetest.RequireDataJSON(t, evt, progressSignal{Progress: 50, Name: "upload"})
+	evt := sseparse.Event{DataLines: []string{`{ "name" : "upload" ,  "progress":50 }`}}
+	sseparse.RequireDataJSON(t, evt, progressSignal{Progress: 50, Name: "upload"})
 }
 
 func TestRequireDataJSON_MismatchFails(t *testing.T) {
 	t.Parallel()
 
 	tb := &recordingTB{}
-	evt := ssetest.Event{DataLines: []string{`{"progress":40}`}}
-	ssetest.RequireDataJSON(tb, evt, map[string]any{"progress": 50.0})
+	evt := sseparse.Event{DataLines: []string{`{"progress":40}`}}
+	sseparse.RequireDataJSON(tb, evt, map[string]any{"progress": 50.0})
 
 	if len(tb.errors) != 1 {
 		t.Fatalf("expected 1 error, got %v", tb.errors)
@@ -244,8 +244,8 @@ func TestRequireDataJSON_InvalidJSONFailsFatally(t *testing.T) {
 	t.Parallel()
 
 	tb := &recordingTB{}
-	evt := ssetest.Event{DataLines: []string{`{not json`}}
-	ssetest.RequireDataJSON(tb, evt, map[string]any{})
+	evt := sseparse.Event{DataLines: []string{`{not json`}}
+	sseparse.RequireDataJSON(tb, evt, map[string]any{})
 
 	if len(tb.fatals) != 1 || !strings.Contains(tb.fatals[0], "{not json") {
 		t.Fatalf("expected fatal naming the payload; got %v", tb.fatals)
@@ -256,7 +256,7 @@ func TestRequireDataJSON_AcceptsTestingB(t *testing.T) {
 	t.Parallel()
 
 	b := &testing.B{}
-	ssetest.RequireDataJSON(b, ssetest.Event{DataLines: []string{`"x"`}}, "x")
+	sseparse.RequireDataJSON(b, sseparse.Event{DataLines: []string{`"x"`}}, "x")
 
 	if b.Failed() {
 		t.Error("RequireDataJSON on *testing.B should not fail")

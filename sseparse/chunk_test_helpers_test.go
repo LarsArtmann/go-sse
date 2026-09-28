@@ -1,4 +1,4 @@
-package ssetest_test
+package sseparse_test
 
 import (
 	"io"

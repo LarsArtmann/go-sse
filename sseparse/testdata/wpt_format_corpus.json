@@ -1,0 +1,375 @@
+[
+  {
+    "name": "format-field-data",
+    "url": "wpt:eventsource/format-field-data.any.js",
+    "notes": "A data line with an empty value still dispatches; two bare \"data\" lines dispatch an event whose payload is a single newline.",
+    "wire": "data:\n\ndata\ndata\n\ndata:test\n\n",
+    "events": [
+      {
+        "data": ""
+      },
+      {
+        "data": "\n"
+      },
+      {
+        "data": "test"
+      }
+    ]
+  },
+  {
+    "name": "format-field-event",
+    "url": "wpt:eventsource/format-field-event.any.js",
+    "wire": "event: x\ndata:x\n\n",
+    "events": [
+      {
+        "type": "x",
+        "data": "x"
+      }
+    ]
+  },
+  {
+    "name": "format-field-event-empty",
+    "url": "wpt:eventsource/format-field-event-empty.any.js",
+    "notes": "An empty event type fires onmessage, i.e. type \"\".",
+    "wire": "event: \ndata:data\n\n",
+    "events": [
+      {
+        "data": "data"
+      }
+    ]
+  },
+  {
+    "name": "format-field-id-null",
+    "url": "wpt:eventsource/format-field-id-null.any.js",
+    "notes": "An id field whose value contains U+0000 NULL anywhere is ignored entirely (spec § 9.2.6); the last event ID stays \"\".",
+    "wire": "id:\u0000\u0000\ndata:1\n\nid:x\u0000\ndata:2\n\nid:\u0000x\ndata:3\n\nid:x\u0000x\ndata:4\n\nid: \u0000\ndata:5\n\n",
+    "events": [
+      {
+        "data": "1"
+      },
+      {
+        "data": "2"
+      },
+      {
+        "data": "3"
+      },
+      {
+        "data": "4"
+      },
+      {
+        "data": "5"
+      }
+    ]
+  },
+  {
+    "name": "format-field-parsing",
+    "url": "wpt:eventsource/format-field-parsing.any.js",
+    "notes": "Field names are case-sensitive; unknown fields and no-colon lines with unknown names are ignored; only the first colon separates; a single leading space after the colon is stripped (never a tab).",
+    "wire": "data:\u0000\ndata:  2\rData:1\ndata\u0000:2\ndata:1\r\u0000data:4\nda-ta:3\rdata_5\ndata:3\rdata:\r\n data:32\ndata:4\n\n",
+    "events": [
+      {
+        "data": "\u0000\n 2\n1\n3\n\n4"
+      }
+    ]
+  },
+  {
+    "name": "format-field-retry",
+    "url": "wpt:eventsource/format-field-retry.any.js",
+    "notes": "Leading zeros are allowed: the value is a decimal integer.",
+    "wire": "retry:03000\ndata:x\n\n",
+    "events": [
+      {
+        "data": "x",
+        "retry": 3000
+      }
+    ]
+  },
+  {
+    "name": "format-field-retry-bogus",
+    "url": "wpt:eventsource/format-field-retry-bogus.any.js",
+    "notes": "A bogus retry does not reset a previously valid one, and a retry line takes effect even in a frame that never dispatches.",
+    "wire": "retry:3000\nretry:1000x\n\ndata:x\n\n",
+    "events": [
+      {
+        "data": "x",
+        "retry": 3000
+      }
+    ]
+  },
+  {
+    "name": "format-field-retry-empty",
+    "url": "wpt:eventsource/format-field-retry-empty.any.js",
+    "notes": "Derived from the upstream file, which sends a bare \"retry\" line and asserts the reconnection time is unchanged: an empty value is not all-digits, so it is ignored. Pinned here with a prior valid value.",
+    "wire": "retry:2000\n\nretry\n\ndata:x\n\n",
+    "events": [
+      {
+        "data": "x",
+        "retry": 2000
+      }
+    ]
+  },
+  {
+    "name": "format-field-unknown",
+    "url": "wpt:eventsource/format-field-unknown.any.js",
+    "notes": "Unknown field names (with or without a colon) are ignored.",
+    "wire": "data:1\nfoo\nfoo: bar\ndata:2\n\n",
+    "events": [
+      {
+        "data": "1\n2"
+      }
+    ]
+  },
+  {
+    "name": "format-newlines",
+    "url": "wpt:eventsource/format-newlines.any.js",
+    "notes": "CR, LF, and CRLF are all line terminators; a bare \"data\" line with no colon is an empty data line; \"\\r\\r\" is two terminators, the second of which is the blank line that dispatches the frame.",
+    "wire": "data:test\r\ndata\ndata:test\r\r\n",
+    "events": [
+      {
+        "data": "test\n\ntest"
+      }
+    ]
+  },
+  {
+    "name": "format-leading-space",
+    "url": "wpt:eventsource/format-leading-space.any.js",
+    "notes": "Only one leading space is stripped: a tab survives, \"data: \" is an empty data line.",
+    "wire": "data:\ttest\rdata: \ndata:test\n\n",
+    "events": [
+      {
+        "data": "\ttest\n\ntest"
+      }
+    ]
+  },
+  {
+    "name": "format-comments",
+    "url": "wpt:eventsource/format-comments.any.js",
+    "notes": "Comment lines are ignored; note the \":\u003cCR\u003e\u003cLF\u003e\" comment: the CRLF is one terminator, not a comment line followed by a blank dispatch line.",
+    "wire": "data:1\r:\u0000\n:\r\ndata:2\n:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\rdata:3\n:data:fail\r:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\ndata:4\n\n",
+    "events": [
+      {
+        "data": "1\n2\n3\n4"
+      }
+    ]
+  },
+  {
+    "name": "format-null-character",
+    "url": "wpt:eventsource/format-null-character.any.js",
+    "notes": "NUL is valid data; only in id values is it rejected.",
+    "wire": "data:\u0000\n\n",
+    "events": [
+      {
+        "data": "\u0000"
+      }
+    ]
+  },
+  {
+    "name": "format-bom",
+    "url": "wpt:eventsource/format-bom.any.js",
+    "notes": "Exactly one leading UTF-8 BOM is stripped. A mid-stream BOM is NOT: it poisons the field name, so that line is ignored.",
+    "wire": "﻿data:1\n\n﻿data:2\n\ndata:3\n\n",
+    "events": [
+      {
+        "data": "1"
+      },
+      {
+        "data": "3"
+      }
+    ]
+  },
+  {
+    "name": "format-bom-2",
+    "url": "wpt:eventsource/format-bom-2.any.js",
+    "notes": "Two leading BOMs: only the first is stripped; the second poisons the first field name, so only the later events surface.",
+    "wire": "﻿﻿data:1\n\ndata:2\n\n",
+    "events": [
+      {
+        "data": "2"
+      }
+    ]
+  },
+  {
+    "name": "format-utf-8",
+    "url": "wpt:eventsource/format-utf-8.any.js",
+    "notes": "The stream is always decoded as UTF-8 regardless of any charset parameter; non-ASCII payloads pass through unchanged.",
+    "wire": "data:döm\n\n",
+    "events": [
+      {
+        "data": "döm"
+      }
+    ]
+  },
+  {
+    "name": "format-data-before-final-empty-line",
+    "url": "wpt:eventsource/format-data-before-final-empty-line.any.js",
+    "notes": "newline=none: the final frame never gets its blank line, so it is discarded at EOF — and its id:test must not leak into the last event ID of any dispatched event.",
+    "wire": "retry:1000\ndata:test1\n\nid:test\ndata:test2\n",
+    "events": [
+      {
+        "data": "test1",
+        "retry": 1000
+      }
+    ]
+  },
+  {
+    "name": "spec-example-test-stream",
+    "url": "spec:§9.2.6 example 1",
+    "wire": ": test stream\n\ndata: first event\nid: 1\n\ndata:second event\nid: 2\n\nevent: custom event\ndata: third event\nid: 3\n\n: this is a test stream\n",
+    "events": [
+      {
+        "data": "first event",
+        "id": "1"
+      },
+      {
+        "data": "second event",
+        "id": "2"
+      },
+      {
+        "type": "custom event",
+        "data": "third event",
+        "id": "3"
+      }
+    ]
+  },
+  {
+    "name": "spec-example-two-identical-events",
+    "url": "spec:§9.2.6 examples (data: test ≡ data:test)",
+    "notes": "The spec pairs \"data: test\" with \"data:test\" to show that the single space after the colon is optional: both fire the same event.",
+    "wire": "data:test\n\ndata: test\n\n",
+    "events": [
+      {
+        "data": "test"
+      },
+      {
+        "data": "test"
+      }
+    ]
+  },
+  {
+    "name": "spec-example-stock-ticker",
+    "url": "spec:§9.2.6 examples (stock ticker)",
+    "wire": "data: YHOO\ndata: +2\ndata: 10\n\n",
+    "events": [
+      {
+        "data": "YHOO\n+2\n10"
+      }
+    ]
+  },
+  {
+    "name": "spec-example-connected-users",
+    "url": "spec:§9.2.6 examples (connected users)",
+    "wire": "event: userconnect\ndata: {\"username\": \"bobby\", \"time\": \"02:33:48\"}\n\nevent: userdisconnect\ndata: {\"username\": \"bobby\", \"time\": \"02:34:23\"}\n\n",
+    "events": [
+      {
+        "type": "userconnect",
+        "data": "{\"username\": \"bobby\", \"time\": \"02:33:48\"}"
+      },
+      {
+        "type": "userdisconnect",
+        "data": "{\"username\": \"bobby\", \"time\": \"02:34:23\"}"
+      }
+    ]
+  },
+  {
+    "name": "LastEventIdShouldNotBeReset",
+    "url": "chromium:event_source_parser_test.cc LastEventIdShouldNotBeReset",
+    "notes": "The last event ID persists across frames until the next id field: the third event reports \"2\", and its frame never restated the id.",
+    "wire": "data:1\nid:1\n\nid:2\ndata:2\n\ndata:3\n\n",
+    "events": [
+      {
+        "data": "1",
+        "id": "1"
+      },
+      {
+        "data": "2",
+        "id": "2"
+      },
+      {
+        "data": "3",
+        "id": "2"
+      }
+    ]
+  },
+  {
+    "name": "LastEventIdCanBeUpdatedEvenWhenDataIsEmpty",
+    "url": "chromium:event_source_parser_test.cc LastEventIdCanBeUpdatedEvenWhenDataIsEmpty",
+    "notes": "An id line updates the buffer in a frame that never dispatches, and an empty id value resets the buffer to \"\".",
+    "wire": "id:9\n\ndata:x\n\nid:\n\ndata:y\n\n",
+    "events": [
+      {
+        "data": "x",
+        "id": "9"
+      },
+      {
+        "data": "y"
+      }
+    ]
+  },
+  {
+    "name": "RetryTakesEffectEvenWhenNotDispatching",
+    "url": "chromium:event_source_parser_test.cc RetryTakesEffectEvenWhenNotDispatching",
+    "notes": "A retry line in a dataless frame still updates the reconnection time; the next dispatched event reports it.",
+    "wire": "retry:2500\n\ndata:x\n\n",
+    "events": [
+      {
+        "data": "x",
+        "retry": 2500
+      }
+    ]
+  },
+  {
+    "name": "NonDigitRetryShouldBeIgnored",
+    "url": "chromium:event_source_parser_test.cc NonDigitRetryShouldBeIgnored",
+    "notes": "Values (after the spec's single-space strip) that are not pure ASCII digits are ignored and do not reset a previously set value. \" 1234\" survives the strip as \"1234\" and therefore counts — a single space after the colon is stripped per spec § 9.2.6. The final \"retry: 1234\" line: single space stripped, valid, retry 1234.",
+    "wire": "retry:2000\nretry:a0\nretry:1234x\nretry:0x10\nretry:1.5\nretry:+1\nretry:1_000\nretry: 1234\n\ndata:x\n\n",
+    "events": [
+      {
+        "data": "x",
+        "retry": 1234
+      }
+    ]
+  },
+  {
+    "name": "UnrecognizedFieldShouldBeIgnored",
+    "url": "chromium:event_source_parser_test.cc UnrecognizedFieldShouldBeIgnored",
+    "wire": "data:1\nunknown: x\ndata:2\n\n",
+    "events": [
+      {
+        "data": "1\n2"
+      }
+    ]
+  },
+  {
+    "name": "EventTypeShouldBeReset",
+    "url": "chromium:event_source_parser_test.cc EventTypeShouldBeReset",
+    "wire": "event: x\ndata:1\n\ndata:2\n\n",
+    "events": [
+      {
+        "type": "x",
+        "data": "1"
+      },
+      {
+        "data": "2"
+      }
+    ]
+  },
+  {
+    "name": "DataShouldBeReset",
+    "url": "chromium:event_source_parser_test.cc DataShouldBeReset",
+    "wire": "data:1\n\ndata:2\n\n",
+    "events": [
+      {
+        "data": "1"
+      },
+      {
+        "data": "2"
+      }
+    ]
+  },
+  {
+    "name": "TrailingCREndsLineAtEOF",
+    "url": "derived:§9.2.5 end-of-line = cr lf / cr / lf",
+    "notes": "A lone CR terminates the line even when EOF follows immediately, so this frame's data line is complete — but the blank line required to dispatch it never arrives, and the frame is discarded at EOF.",
+    "wire": "data: x\r"
+  }
+]

@@ -1,4 +1,4 @@
-package ssetest_test
+package sseparse_test
 
 import (
 	"errors"
@@ -7,8 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	errorfamily "github.com/larsartmann/go-error-family"
-	"github.com/larsartmann/go-sse/ssetest"
+	"github.com/larsartmann/go-sse/sseparse"
 )
 
 var errTestReadFailure = errors.New("test: simulated read failure")
@@ -32,7 +31,7 @@ func TestReadEvents_FullWireFormat(t *testing.T) {
 		"data: unnamed event\n" +
 		"\n"
 
-	events, err := ssetest.ReadEvents(strings.NewReader(wire))
+	events, err := sseparse.ReadEvents(strings.NewReader(wire))
 	if err != nil {
 		t.Fatalf("read events: %v", err)
 	}
@@ -80,15 +79,15 @@ func TestReadEvents_CRLFLineEndings(t *testing.T) {
 		"data: hello\r\n" +
 		"\r\n"
 
-	events, err := ssetest.ReadEvents(strings.NewReader(wire))
+	events, err := sseparse.ReadEvents(strings.NewReader(wire))
 	if err != nil {
 		t.Fatalf("read events: %v", err)
 	}
 
-	ssetest.RequireEventCount(t, events, 1)
-	ssetest.RequireEventType(t, events[0], "feed")
-	ssetest.RequireEventID(t, events[0], "7")
-	ssetest.RequireData(t, events[0], "hello")
+	sseparse.RequireEventCount(t, events, 1)
+	sseparse.RequireEventType(t, events[0], "feed")
+	sseparse.RequireEventID(t, events[0], "7")
+	sseparse.RequireData(t, events[0], "hello")
 }
 
 // TestReadEvents_IncompleteFinalFrameDiscarded pins spec § 9.2.6: "Once the
@@ -99,7 +98,7 @@ func TestReadEvents_CRLFLineEndings(t *testing.T) {
 func TestReadEvents_IncompleteFinalFrameDiscarded(t *testing.T) {
 	t.Parallel()
 
-	events, err := ssetest.ReadEvents(strings.NewReader("data: tail\n"))
+	events, err := sseparse.ReadEvents(strings.NewReader("data: tail\n"))
 	if err != nil {
 		t.Fatalf("read events: %v", err)
 	}
@@ -109,13 +108,13 @@ func TestReadEvents_IncompleteFinalFrameDiscarded(t *testing.T) {
 	}
 
 	// The blank line is what dispatches: with it, the same frame surfaces.
-	events, err = ssetest.ReadEvents(strings.NewReader("data: tail\n\n"))
+	events, err = sseparse.ReadEvents(strings.NewReader("data: tail\n\n"))
 	if err != nil {
 		t.Fatalf("read events: %v", err)
 	}
 
-	ssetest.RequireEventCount(t, events, 1)
-	ssetest.RequireData(t, events[0], "tail")
+	sseparse.RequireEventCount(t, events, 1)
+	sseparse.RequireData(t, events[0], "tail")
 }
 
 // TestReadEvents_DatalessFramesNeverDispatch guards the SSE-spec rule that
@@ -131,19 +130,19 @@ func TestReadEvents_DatalessFramesNeverDispatch(t *testing.T) {
 		"data: real\n\n" +
 		": heartbeat\n\n"
 
-	events, err := ssetest.ReadEvents(strings.NewReader(wire))
+	events, err := sseparse.ReadEvents(strings.NewReader(wire))
 	if err != nil {
 		t.Fatalf("read events: %v", err)
 	}
 
-	ssetest.RequireEventCount(t, events, 1)
-	ssetest.RequireData(t, events[0], "real")
+	sseparse.RequireEventCount(t, events, 1)
+	sseparse.RequireData(t, events[0], "real")
 }
 
 func TestReadEvents_Empty(t *testing.T) {
 	t.Parallel()
 
-	events, err := ssetest.ReadEvents(strings.NewReader(""))
+	events, err := sseparse.ReadEvents(strings.NewReader(""))
 	if err != nil {
 		t.Fatalf("read events: %v", err)
 	}
@@ -156,19 +155,19 @@ func TestReadEvents_Empty(t *testing.T) {
 func TestReadEvents_InvalidRetryIgnored(t *testing.T) {
 	t.Parallel()
 
-	events, err := ssetest.ReadEvents(strings.NewReader("retry: not-a-number\ndata: x\n\n"))
+	events, err := sseparse.ReadEvents(strings.NewReader("retry: not-a-number\ndata: x\n\n"))
 	if err != nil {
 		t.Fatalf("read events: %v", err)
 	}
 
-	ssetest.RequireEventCount(t, events, 1)
-	ssetest.RequireRetry(t, events[0], 0)
+	sseparse.RequireEventCount(t, events, 1)
+	sseparse.RequireRetry(t, events[0], 0)
 }
 
-func TestReadEvents_FailingReader_ClassifiedTransient(t *testing.T) {
+func TestReadEvents_FailingReader_WrapsUnderlying(t *testing.T) {
 	t.Parallel()
 
-	events, err := ssetest.ReadEvents(failingReader{})
+	events, err := sseparse.ReadEvents(failingReader{})
 	if err == nil {
 		t.Fatal("expected error from ReadEvents with failing reader")
 	}
@@ -177,12 +176,8 @@ func TestReadEvents_FailingReader_ClassifiedTransient(t *testing.T) {
 		t.Errorf("failing reader should return 0 events; got %d", len(events))
 	}
 
-	if errorfamily.Code(err) != ssetest.CodeSSEScanFailed {
-		t.Errorf("error code: got %q, want %q", errorfamily.Code(err), ssetest.CodeSSEScanFailed)
-	}
-
-	if !errorfamily.IsRetryable(err) {
-		t.Error("scan failure should classify as Transient")
+	if !errors.Is(err, errTestReadFailure) {
+		t.Errorf("scan failure should wrap the underlying reader error: got %v", err)
 	}
 }
 
@@ -193,12 +188,12 @@ func TestReadNEvents_ReturnsBeforeEOF(t *testing.T) {
 		"data: 2\n\n" +
 		"data: 3\n\n"
 
-	events, err := ssetest.ReadNEvents(strings.NewReader(wire), 2)
+	events, err := sseparse.ReadNEvents(strings.NewReader(wire), 2)
 	if err != nil {
 		t.Fatalf("read 2 events: %v", err)
 	}
 
-	ssetest.RequireEventCount(t, events, 2)
+	sseparse.RequireEventCount(t, events, 2)
 
 	if got := events[0].Data(); got != "1" {
 		t.Errorf("event[0]: got %q, want %q", got, "1")
@@ -209,7 +204,7 @@ func TestReadNEvents_ZeroOrNegative(t *testing.T) {
 	t.Parallel()
 
 	for _, count := range []int{0, -1} {
-		events, err := ssetest.ReadNEvents(strings.NewReader("data: 1\n\n"), count)
+		events, err := sseparse.ReadNEvents(strings.NewReader("data: 1\n\n"), count)
 		if err != nil {
 			t.Fatalf("ReadNEvents(%d): %v", count, err)
 		}
@@ -223,12 +218,12 @@ func TestReadNEvents_ZeroOrNegative(t *testing.T) {
 func TestReadNEvents_FewerThanRequested(t *testing.T) {
 	t.Parallel()
 
-	events, err := ssetest.ReadNEvents(strings.NewReader("data: 1\n\ndata: 2\n\n"), 10)
+	events, err := sseparse.ReadNEvents(strings.NewReader("data: 1\n\ndata: 2\n\n"), 10)
 	if err != nil {
 		t.Fatalf("read events: %v", err)
 	}
 
-	ssetest.RequireEventCount(t, events, 2)
+	sseparse.RequireEventCount(t, events, 2)
 }
 
 func TestReadNEvents_ErrorAfterEventsIsCleanClose(t *testing.T) {
@@ -236,18 +231,18 @@ func TestReadNEvents_ErrorAfterEventsIsCleanClose(t *testing.T) {
 
 	wire := &partialReader{valid: "data: 1\n\n"}
 
-	events, err := ssetest.ReadNEvents(wire, 10)
+	events, err := sseparse.ReadNEvents(wire, 10)
 	if err != nil {
 		t.Fatalf("error after collected events should be a clean close: %v", err)
 	}
 
-	ssetest.RequireEventCount(t, events, 1)
+	sseparse.RequireEventCount(t, events, 1)
 }
 
 func TestReadNEvents_FailingReader(t *testing.T) {
 	t.Parallel()
 
-	events, err := ssetest.ReadNEvents(failingReader{}, 10)
+	events, err := sseparse.ReadNEvents(failingReader{}, 10)
 	if err == nil {
 		t.Fatal("expected error from ReadNEvents with failing reader")
 	}
@@ -287,7 +282,7 @@ func BenchmarkReadEvents(b *testing.B) {
 	for b.Loop() {
 		reader.Reset(wire)
 
-		if _, err := ssetest.ReadEvents(reader); err != nil {
+		if _, err := sseparse.ReadEvents(reader); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -300,7 +295,7 @@ func TestStreamReader_SequentialReads(t *testing.T) {
 		"event: sync:ack\ndata: {\"commandId\":\"42\",\"status\":\"confirmed\"}\n\n" +
 		"event: report-updated\ndata: 2026-08-22\n\n"
 
-	reader := ssetest.NewStreamReader(strings.NewReader(wire))
+	reader := sseparse.NewStreamReader(strings.NewReader(wire))
 
 	evt1, err := reader.Next()
 	if err != nil {
@@ -344,7 +339,7 @@ func TestStreamReader_PreservesBufferedData(t *testing.T) {
 
 	const wire = "data: 1\n\ndata: 2\n\ndata: 3\n\ndata: 4\n\n"
 
-	reader := ssetest.NewStreamReader(strings.NewReader(wire))
+	reader := sseparse.NewStreamReader(strings.NewReader(wire))
 
 	for i := 1; i <= 4; i++ {
 		evt, err := reader.Next()
@@ -371,7 +366,7 @@ func TestStreamReader_DatalessFramesSkipped(t *testing.T) {
 		"id: 7\n\n" +
 		"event: real\ndata: payload\n\n"
 
-	reader := ssetest.NewStreamReader(strings.NewReader(wire))
+	reader := sseparse.NewStreamReader(strings.NewReader(wire))
 
 	evt, err := reader.Next()
 	if err != nil {
@@ -395,24 +390,24 @@ func TestStreamReader_DatalessFramesSkipped(t *testing.T) {
 func TestStreamReader_FailingReader(t *testing.T) {
 	t.Parallel()
 
-	reader := ssetest.NewStreamReader(failingReader{})
+	reader := sseparse.NewStreamReader(failingReader{})
 
 	_, err := reader.Next()
 	if err == nil {
 		t.Fatal("expected error from StreamReader with failing reader")
 	}
 
-	if errorfamily.Code(err) != ssetest.CodeSSEScanFailed {
-		t.Errorf("error code: got %q, want %q", errorfamily.Code(err), ssetest.CodeSSEScanFailed)
+	if !errors.Is(err, errTestReadFailure) {
+		t.Errorf("scan failure should wrap the underlying reader error: got %v", err)
 	}
 }
 
 func TestMustReadNextEvent(t *testing.T) {
 	t.Parallel()
 
-	reader := ssetest.NewStreamReader(strings.NewReader("event: ping\ndata: pong\n\n"))
+	reader := sseparse.NewStreamReader(strings.NewReader("event: ping\ndata: pong\n\n"))
 
-	evt := ssetest.MustReadNextEvent(t, reader)
+	evt := sseparse.MustReadNextEvent(t, reader)
 	if evt.Type != "ping" {
 		t.Errorf("type: got %q, want %q", evt.Type, "ping")
 	}

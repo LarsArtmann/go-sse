@@ -1,4 +1,4 @@
-package ssetest
+package sseparse
 
 import (
 	"bufio"
