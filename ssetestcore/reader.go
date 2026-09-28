@@ -1,25 +1,62 @@
-package ssetest
+package ssetestcore
 
 import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"strconv"
 	"strings"
 	"testing"
-
-	errorfamily "github.com/larsartmann/go-error-family"
 )
 
 const (
-	maxLineBytes   = 1024 * 1024 // 1 MiB max single line
-	initialLineCap = 64 * 1024   // 64 KiB initial buffer
+	// DefaultMaxLineBytes is the default cap on a single SSE wire line. Lines
+	// longer than the cap fail the scan with an error wrapping
+	// bufio.ErrTooLong (matchable via errors.Is). Override it per call with
+	// [WithMaxLineBytes].
+	DefaultMaxLineBytes = 1024 * 1024 // 1 MiB max single line
+	initialLineCap      = 64 * 1024   // 64 KiB initial buffer
 )
 
 // utf8BOM is the UTF-8 byte-order mark (U+FEFF). The SSE spec decodes the
 // stream with UTF-8 decode, which strips exactly one leading BOM.
 var utf8BOM = [...]byte{0xEF, 0xBB, 0xBF} //nolint:gochecknoglobals // byte arrays cannot be const
+
+// ReadOption customizes how a reader scans the SSE wire format. Options are
+// accepted as trailing variadic arguments by [ReadEvents], [ReadNEvents], and
+// [NewStreamReader]; they compose left to right.
+type ReadOption func(*readConfig)
+
+// readConfig accumulates the applied [ReadOption]s for one read.
+type readConfig struct {
+	maxLineBytes int
+}
+
+// applyReadOptions folds opts into a config, starting from the defaults.
+func applyReadOptions(opts []ReadOption) readConfig {
+	cfg := readConfig{maxLineBytes: DefaultMaxLineBytes}
+
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+
+	return cfg
+}
+
+// WithMaxLineBytes sets the cap on a single SSE wire line (including its
+// terminator), overriding [DefaultMaxLineBytes]. A non-positive value is
+// ignored and keeps the default. For framing parsers that treat the size axis
+// as first-class (e.g. bounded protocol parsers), mirror your own limit here
+// so the reader rejects the same inputs your parser would.
+func WithMaxLineBytes(max int) ReadOption {
+	return func(cfg *readConfig) {
+		if max > 0 {
+			cfg.maxLineBytes = max
+		}
+	}
+}
 
 // ReadEvents parses the SSE wire format from r and returns all decoded events.
 // It reads until EOF, so the source must close or end the stream (e.g., an HTTP
@@ -27,7 +64,7 @@ var utf8BOM = [...]byte{0xEF, 0xBB, 0xBF} //nolint:gochecknoglobals // byte arra
 //
 // The parser implements the WHATWG HTML Living Standard § 9.2.6 event-stream
 // interpretation (conformance is pinned by the Web Platform Tests vectors in
-// wpt_format_corpus_test.go):
+// the corpus consumed by wpt_format_corpus_test.go):
 //
 //   - Lines end with CR, LF, or CRLF (§ 9.2.5 end-of-line).
 //   - Exactly one leading UTF-8 BOM is stripped; a mid-stream BOM is data.
@@ -45,18 +82,22 @@ var utf8BOM = [...]byte{0xEF, 0xBB, 0xBF} //nolint:gochecknoglobals // byte arra
 //   - An incomplete final frame (no blank line before EOF) is discarded, per
 //     "Once the end of the file is reached, any pending data must be discarded".
 //
+// A line longer than [DefaultMaxLineBytes] (1 MiB) fails the scan: the
+// returned error wraps bufio.ErrTooLong (and the underlying cause), matchable
+// via errors.Is. Use [WithMaxLineBytes] to change the cap.
+//
 // Individual data: lines are preserved in [Event.DataLines] with their values
 // only (no "data: " prefix); use [Event.Data] for the rejoined payload.
-func ReadEvents(r io.Reader) ([]Event, error) {
+func ReadEvents(r io.Reader, opts ...ReadOption) ([]Event, error) {
 	parser := streamParser{} //nolint:exhaustruct_v5 // zero value is the initial parser state
-	scanner := newSSEScanner(r)
+	scanner := newSSEScanner(r, applyReadOptions(opts).maxLineBytes)
 
 	for scanner.Scan() {
 		parser.acceptLine(scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, errorfamily.WrapTransient(err, CodeSSEScanFailed, "scan SSE stream")
+		return nil, fmt.Errorf("scan SSE stream: %w", err)
 	}
 
 	return parser.events, nil
@@ -80,13 +121,13 @@ func ReadEvents(r io.Reader) ([]Event, error) {
 // when the scanner is discarded. For repeated reads on the same live stream
 // (e.g., read event, trigger action, read next event), use [StreamReader] to
 // keep a single scanner across calls.
-func ReadNEvents(r io.Reader, count int) ([]Event, error) {
+func ReadNEvents(r io.Reader, count int, opts ...ReadOption) ([]Event, error) {
 	if count <= 0 {
 		return nil, nil
 	}
 
 	parser := streamParser{} //nolint:exhaustruct_v5 // zero value is the initial parser state
-	scanner := newSSEScanner(r)
+	scanner := newSSEScanner(r, applyReadOptions(opts).maxLineBytes)
 
 	for scanner.Scan() {
 		parser.acceptLine(scanner.Text())
@@ -101,7 +142,7 @@ func ReadNEvents(r io.Reader, count int) ([]Event, error) {
 			return parser.events, nil
 		}
 
-		return nil, errorfamily.WrapTransient(err, CodeSSEScanFailed, "scan SSE stream")
+		return nil, fmt.Errorf("scan SSE stream: %w", err)
 	}
 
 	return parser.events, nil
@@ -109,10 +150,10 @@ func ReadNEvents(r io.Reader, count int) ([]Event, error) {
 
 // MustReadEvents is like [ReadEvents] but calls t.Fatal on error. Accepts
 // [testing.TB], so it works with *testing.T, *testing.B, and GinkgoT().
-func MustReadEvents(tb testing.TB, r io.Reader) []Event {
+func MustReadEvents(tb testing.TB, r io.Reader, opts ...ReadOption) []Event {
 	tb.Helper()
 
-	events, err := ReadEvents(r)
+	events, err := ReadEvents(r, opts...)
 	if err != nil {
 		tb.Fatalf("read SSE events: %v", err)
 	}
@@ -126,10 +167,10 @@ func MustReadEvents(tb testing.TB, r io.Reader) []Event {
 //
 // For repeated reads on the same live stream, prefer [StreamReader] +
 // [MustReadNextEvent] to avoid losing buffered data between calls.
-func MustReadNEvents(tb testing.TB, r io.Reader, count int) []Event {
+func MustReadNEvents(tb testing.TB, r io.Reader, count int, opts ...ReadOption) []Event {
 	tb.Helper()
 
-	events, err := ReadNEvents(r, count)
+	events, err := ReadNEvents(r, count, opts...)
 	if err != nil {
 		tb.Fatalf("read %d SSE events: %v", count, err)
 	}
@@ -154,9 +195,9 @@ type StreamReader struct {
 
 // NewStreamReader creates a [StreamReader] that parses the SSE wire format
 // from r. Wire-format semantics are identical to [ReadEvents] (spec § 9.2.6).
-func NewStreamReader(r io.Reader) *StreamReader {
+func NewStreamReader(r io.Reader, opts ...ReadOption) *StreamReader {
 	return &StreamReader{ //nolint:exhaustruct_v5 // scanner/parser zero values are correct
-		scanner: newSSEScanner(r),
+		scanner: newSSEScanner(r, applyReadOptions(opts).maxLineBytes),
 	}
 }
 
@@ -167,7 +208,7 @@ func (sr *StreamReader) Next() (Event, error) {
 	for sr.sent >= len(sr.parser.events) {
 		if !sr.scanner.Scan() {
 			if err := sr.scanner.Err(); err != nil {
-				return Event{}, errorfamily.WrapTransient(err, CodeSSEScanFailed, "scan SSE stream")
+				return Event{}, fmt.Errorf("scan SSE stream: %w", err)
 			}
 
 			return Event{}, io.EOF
@@ -270,10 +311,12 @@ func (p *streamParser) applyField(line string) {
 }
 
 // newSSEScanner creates a bufio.Scanner for SSE wire-format parsing: lines are
-// split on CR, LF, or CRLF, and a single leading UTF-8 BOM is stripped.
-func newSSEScanner(r io.Reader) *bufio.Scanner {
+// split on CR, LF, or CRLF, and a single leading UTF-8 BOM is stripped. The
+// initial buffer capacity never exceeds the line cap, so bufio enforces
+// exactly maxLineBytes.
+func newSSEScanner(r io.Reader, maxLineBytes int) *bufio.Scanner {
 	scanner := bufio.NewScanner(stripLeadingBOM(r))
-	scanner.Buffer(make([]byte, 0, initialLineCap), maxLineBytes)
+	scanner.Buffer(make([]byte, 0, min(initialLineCap, maxLineBytes)), maxLineBytes)
 	scanner.Split(splitSSELines)
 
 	return scanner
