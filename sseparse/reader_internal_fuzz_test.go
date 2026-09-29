@@ -1,7 +1,6 @@
 package sseparse
 
 import (
-	"bufio"
 	"strings"
 	"testing"
 )
@@ -38,17 +37,15 @@ func referenceSplitLines(s string) []string {
 	return lines
 }
 
-// scanAllLines drives a bufio.Scanner configured with splitSSELines over wire
-// and returns every line. Mirrors newSSEScanner's buffering (minus the BOM
-// wrapper, which is a separate component).
+// scanAllLines drives the production scanner pipeline (newSSEScanner: BOM
+// strip, buffer setup, splitSSELines) over wire and returns every line.
+// Consolidated onto newSSEScanner so the fuzz exercises the real buffer
+// setup — including the min(initialLineCap, cap) sizing — instead of a
+// hand-rolled copy that silently rots when newSSEScanner changes.
 func scanAllLines(tb testing.TB, wire string) []string {
 	tb.Helper()
 
-	sc := bufio.NewScanner(
-		strings.NewReader(wire),
-	)
-	sc.Buffer(make([]byte, 0, 4096), 1<<20)
-	sc.Split(splitSSELines)
+	sc := newSSEScanner(strings.NewReader(wire), DefaultMaxLineBytes)
 
 	var lines []string
 
@@ -63,10 +60,12 @@ func scanAllLines(tb testing.TB, wire string) []string {
 	return lines
 }
 
-// FuzzSplitSSELines pins the SplitFunc contract on arbitrary byte soup: the
-// scanner's line boundaries must exactly match the spec's terminator rules
-// (reference model), the splitter must never error, and the result must be
-// independent of how the input is chunked into reads.
+// FuzzSplitSSELines pins the production line-splitting pipeline on arbitrary
+// byte soup: strip-one-leading-BOM followed by the splitter must exactly
+// match the spec's terminator rules (independent reference model), the
+// scanner must never error, and the result must be independent of how the
+// input is chunked into reads. (The BOM strip is part of newSSEScanner, so
+// the reference model sees the same input the splitter does.)
 func FuzzSplitSSELines(f *testing.F) {
 	seeds := []string{
 		"",
@@ -94,7 +93,7 @@ func FuzzSplitSSELines(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, wire string) {
 		got := scanAllLines(t, wire)
-		want := referenceSplitLines(wire)
+		want := referenceSplitLines(strings.TrimPrefix(wire, string(utf8BOM[:])))
 
 		if len(got) != len(want) {
 			t.Fatalf("splitSSELines(%q): got %d lines %q, want %d %q",

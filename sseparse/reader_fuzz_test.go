@@ -1,6 +1,8 @@
 package sseparse_test
 
 import (
+	"bufio"
+	"errors"
 	"strings"
 	"testing"
 
@@ -8,8 +10,9 @@ import (
 )
 
 // FuzzReadEvents asserts that the SSE wire parser never panics on arbitrary
-// input, that its invariants hold for every parseable input, and that the
-// result is independent of how the stream is chunked.
+// input, that its invariants hold for every parseable input at every line
+// cap, and that both the parse result and the cap boundary are independent
+// of how the stream is chunked.
 func FuzzReadEvents(f *testing.F) {
 	seeds := []string{
 		"",
@@ -59,16 +62,57 @@ func FuzzReadEvents(f *testing.F) {
 		// substring "data: hello\n\n" but is a different field name ("0data"),
 		// so it must dispatch nothing.
 		"0data: hello\n\n",
+		// Cap-dimension seeds: long lines against small caps drive the
+		// bufio.ErrTooLong boundary (the WithMaxLineBytes parameter).
+		"data: " + strings.Repeat("x", 300) + "\n\n",
+		"event: e\ndata: " + strings.Repeat("y", 100) + "\r\n\r\n",
 	}
 
 	for _, seed := range seeds {
-		f.Add(seed)
+		f.Add(seed, sseparse.DefaultMaxLineBytes)
 	}
 
-	f.Fuzz(func(t *testing.T, wire string) {
-		events, err := sseparse.ReadEvents(strings.NewReader(wire))
+	// A handful of small/non-positive caps so the seed corpus itself crosses
+	// the cap boundary and the default-fallback branch.
+	for _, capSeed := range []struct {
+		wire string
+		cap  int
+	}{
+		{"data: hello\n\n", 16},
+		{"data: hello\n\n", 0},
+		{"data: hello\n\n", -5},
+		{"event: e\ndata: x\n\n", 12},
+		{"data: " + strings.Repeat("x", 300) + "\n\n", 64},
+	} {
+		f.Add(capSeed.wire, capSeed.cap)
+	}
+
+	f.Fuzz(func(t *testing.T, wire string, maxLineBytes int) {
+		// WithMaxLineBytes ignores non-positive values and keeps the default;
+		// the fuzz explores the same effective caps production can reach.
+		lineCap := maxLineBytes
+
+		if lineCap <= 0 {
+			lineCap = sseparse.DefaultMaxLineBytes
+		}
+
+		events, err := sseparse.ReadEvents(strings.NewReader(wire), sseparse.WithMaxLineBytes(lineCap))
+
 		if err != nil {
-			t.Fatalf("ReadEvents should never fail on an in-memory reader: %v", err)
+			// The ONLY failure mode ReadEvents may ever report is the line
+			// cap (wrapping bufio.ErrTooLong). Everything else must parse.
+			if !errors.Is(err, bufio.ErrTooLong) {
+				t.Fatalf("ReadEvents failed with a non-cap error on %q (cap %d): %v", wire, lineCap, err)
+			}
+
+			// The cap boundary must be chunking-independent: byte-by-byte
+			// delivery hits the same too-long condition, never a different
+			// outcome.
+			if _, chunkedErr := sseparse.ReadEvents(&chunkedReader{data: []byte(wire), size: 1}, sseparse.WithMaxLineBytes(lineCap)); !errors.Is(chunkedErr, bufio.ErrTooLong) {
+				t.Fatalf("cap failure not chunk-invariant on %q (cap %d): chunked err = %v", wire, lineCap, chunkedErr)
+			}
+
+			return
 		}
 
 		// Dataless-frame invariant: every dispatched event carries at least one
@@ -87,9 +131,9 @@ func FuzzReadEvents(f *testing.F) {
 		// parse result. (The sticky-ID property it exercises alongside the
 		// dataless-frame rule above is pinned deterministically by the WPT
 		// corpus and the Chromium parser cases.)
-		chunked, err := sseparse.ReadEvents(&chunkedReader{data: []byte(wire), size: 1})
+		chunked, err := sseparse.ReadEvents(&chunkedReader{data: []byte(wire), size: 1}, sseparse.WithMaxLineBytes(lineCap))
 		if err != nil {
-			t.Fatalf("byte-by-byte read failed on %q: %v", wire, err)
+			t.Fatalf("byte-by-byte read failed on %q (cap %d): %v", wire, lineCap, err)
 		}
 
 		if len(chunked) != len(events) {

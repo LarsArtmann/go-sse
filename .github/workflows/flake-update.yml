@@ -41,6 +41,25 @@ jobs:
         if: steps.drift.outputs.changed == 'true'
         continue-on-error: true
         run: nix flake check
+      # nix flake check does NOT compare the golangci-lint version the updated
+      # nixpkgs ships against the pin in ci.yml - the 2.13.2 -> 2.14.0 nixpkgs
+      # bump shipped silently through this workflow, and every later push
+      # failed the verify.sh skew check. Catch the drift here, where the fix
+      # belongs (the same PR), instead of on the next human push.
+      - name: golangci-lint pin cross-check
+        id: pin
+        if: steps.drift.outputs.changed == 'true'
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          pin="$(scripts/golangci-pin.sh)"
+          nix_version="v$(nix develop .#ci -c golangci-lint version --short)"
+          if [[ "$nix_version" != "$pin" ]]; then
+            echo "FAIL: nixpkgs golangci-lint ($nix_version) drifted from the ci.yml pin ($pin)." >&2
+            echo "      Bump every 'version:' line in .github/workflows/ci.yml to $nix_version in this PR." >&2
+            exit 1
+          fi
+          echo "golangci-lint pin matches the updated nixpkgs ($pin)"
       # Runs even when the gate failed (always()) so the failing diff is
       # reviewable in a PR, not only in the red run's logs.
       - name: Close superseded update PRs
@@ -73,12 +92,16 @@ jobs:
           git commit -m "chore(nix): weekly flake update $date"
           git push origin "$branch"
           gate="${{ steps.gate.outcome }}"
+          pin="${{ steps.pin.outcome }}"
           body="Automated weekly \`nix flake update\` run (Mondays 04:00 UTC).
           In-workflow gate (\`nix flake check\`) outcome: ${gate}.
+          golangci-lint pin cross-check outcome: ${pin}.
           This PR shows no CI checks because GITHUB_TOKEN-opened PRs do not trigger workflows.
           If the gate failed:
           - vendorHash/vendorHashSsetest mismatch: set both to lib.fakeHash in flake.nix, run nix build, copy the reported hashes (they are independent).
-          - broken input (e.g. nixpkgs dropped a system again): pin the previous rev in flake.nix or adjust the systems list."
+          - broken input (e.g. nixpkgs dropped a system again): pin the previous rev in flake.nix or adjust the systems list.
+          If the pin cross-check failed:
+          - nixpkgs shipped a new golangci-lint: bump every 'version:' line in .github/workflows/ci.yml to match, in this PR."
           if gh pr view "$branch" >/dev/null 2>&1; then
             echo "PR already open for $branch - leaving it as-is."
             exit 0
@@ -95,7 +118,7 @@ jobs:
       # A failed gate must redden this scheduled run even though later steps
       # ran: that red is the "drift caught early" signal.
       - name: Fail on red gate
-        if: steps.drift.outputs.changed == 'true' && steps.gate.outcome == 'failure'
+        if: steps.drift.outputs.changed == 'true' && (steps.gate.outcome == 'failure' || steps.pin.outcome == 'failure')
         run: |
           echo "nix flake check FAILED on the updated inputs - see the logs above and the open PR." >&2
           exit 1
