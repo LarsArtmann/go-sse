@@ -96,61 +96,17 @@ func FuzzReadEvents(f *testing.F) {
 			lineCap = sseparse.DefaultMaxLineBytes
 		}
 
-		events, err := sseparse.ReadEvents(strings.NewReader(wire), sseparse.WithMaxLineBytes(lineCap))
-
+		events, err := sseparse.ReadEvents(
+			strings.NewReader(wire),
+			sseparse.WithMaxLineBytes(lineCap),
+		)
 		if err != nil {
-			// The ONLY failure mode ReadEvents may ever report is the line
-			// cap (wrapping bufio.ErrTooLong). Everything else must parse.
-			if !errors.Is(err, bufio.ErrTooLong) {
-				t.Fatalf("ReadEvents failed with a non-cap error on %q (cap %d): %v", wire, lineCap, err)
-			}
-
-			// The cap boundary must be chunking-independent: byte-by-byte
-			// delivery hits the same too-long condition, never a different
-			// outcome.
-			if _, chunkedErr := sseparse.ReadEvents(&chunkedReader{data: []byte(wire), size: 1}, sseparse.WithMaxLineBytes(lineCap)); !errors.Is(chunkedErr, bufio.ErrTooLong) {
-				t.Fatalf("cap failure not chunk-invariant on %q (cap %d): chunked err = %v", wire, lineCap, chunkedErr)
-			}
-
+			requireTooLongChunkInvariant(t, wire, lineCap, err)
 			return
 		}
 
-		// Dataless-frame invariant: every dispatched event carries at least one
-		// data line. Comment/id/retry-only frames must never surface as events.
-		for _, evt := range events {
-			if len(evt.DataLines) == 0 {
-				t.Errorf("event dispatched without data lines: %s", evt)
-			}
-
-			_ = evt.String()
-			_ = evt.Data()
-		}
-
-		// Chunk-boundary invariant: parsing the same bytes one read at a time
-		// must produce identical events — TCP chunking can never change the
-		// parse result. (The sticky-ID property it exercises alongside the
-		// dataless-frame rule above is pinned deterministically by the WPT
-		// corpus and the Chromium parser cases.)
-		chunked, err := sseparse.ReadEvents(&chunkedReader{data: []byte(wire), size: 1}, sseparse.WithMaxLineBytes(lineCap))
-		if err != nil {
-			t.Fatalf("byte-by-byte read failed on %q (cap %d): %v", wire, lineCap, err)
-		}
-
-		if len(chunked) != len(events) {
-			t.Fatalf(
-				"byte-by-byte parse of %q: got %d events, want %d",
-				wire,
-				len(chunked),
-				len(events),
-			)
-		}
-
-		for i := range events {
-			a, b := events[i], chunked[i]
-			if a.Type != b.Type || a.ID != b.ID || a.Retry != b.Retry || a.Data() != b.Data() {
-				t.Fatalf("byte-by-byte parse of %q: event[%d] %+v != %+v", wire, i, b, a)
-			}
-		}
+		requireWellFormedDispatch(t, events)
+		requireChunkInvariant(t, wire, lineCap, events)
 
 		// Exact well-formed input must parse to exactly one event. (Substring
 		// matching would be wrong: "0data: hello\n\n" contains the substring
@@ -159,4 +115,80 @@ func FuzzReadEvents(f *testing.F) {
 			t.Errorf("exact well-formed input parsed to %d events, want 1", len(events))
 		}
 	})
+}
+
+// requireTooLongChunkInvariant pins the cap-failure branch: the ONLY failure
+// mode ReadEvents may ever report is the line cap (wrapping bufio.ErrTooLong),
+// and byte-by-byte delivery must hit the same boundary — never a different
+// outcome.
+func requireTooLongChunkInvariant(t *testing.T, wire string, lineCap int, err error) {
+	t.Helper()
+
+	if !errors.Is(err, bufio.ErrTooLong) {
+		t.Fatalf("ReadEvents failed with a non-cap error on %q (cap %d): %v", wire, lineCap, err)
+	}
+
+	if _, chunkedErr := sseparse.ReadEvents(
+		&chunkedReader{data: []byte(wire), size: 1},
+		sseparse.WithMaxLineBytes(lineCap),
+	); !errors.Is(
+		chunkedErr,
+		bufio.ErrTooLong,
+	) {
+		t.Fatalf(
+			"cap failure not chunk-invariant on %q (cap %d): chunked err = %v",
+			wire,
+			lineCap,
+			chunkedErr,
+		)
+	}
+}
+
+// requireWellFormedDispatch pins the dataless-frame invariant: every
+// dispatched event carries at least one data line; comment/id/retry-only
+// frames must never surface as events.
+func requireWellFormedDispatch(t *testing.T, events []sseparse.Event) {
+	t.Helper()
+
+	for _, evt := range events {
+		if len(evt.DataLines) == 0 {
+			t.Errorf("event dispatched without data lines: %s", evt)
+		}
+
+		_ = evt.String()
+		_ = evt.Data()
+	}
+}
+
+// requireChunkInvariant pins the chunk-boundary invariant: parsing the same
+// bytes one read at a time must produce identical events — TCP chunking can
+// never change the parse result. (The sticky-ID property it exercises
+// alongside the dataless-frame rule is pinned deterministically by the WPT
+// corpus and the Chromium parser cases.)
+func requireChunkInvariant(t *testing.T, wire string, lineCap int, events []sseparse.Event) {
+	t.Helper()
+
+	chunked, err := sseparse.ReadEvents(
+		&chunkedReader{data: []byte(wire), size: 1},
+		sseparse.WithMaxLineBytes(lineCap),
+	)
+	if err != nil {
+		t.Fatalf("byte-by-byte read failed on %q (cap %d): %v", wire, lineCap, err)
+	}
+
+	if len(chunked) != len(events) {
+		t.Fatalf(
+			"byte-by-byte parse of %q: got %d events, want %d",
+			wire,
+			len(chunked),
+			len(events),
+		)
+	}
+
+	for i := range events {
+		a, b := events[i], chunked[i]
+		if a.Type != b.Type || a.ID != b.ID || a.Retry != b.Retry || a.Data() != b.Data() {
+			t.Fatalf("byte-by-byte parse of %q: event[%d] %+v != %+v", wire, i, b, a)
+		}
+	}
 }

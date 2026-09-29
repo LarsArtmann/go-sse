@@ -54,9 +54,9 @@ export GOPROXY="https://proxy.golang.org,direct"
 # would masquerade as a proxy lag below.
 export GOTOOLCHAIN=auto
 
-echo "==> 1/3 proxy lists $module@$tag in its version index"
-if ! go list -m -versions "$module" | tr ' ' '\n' | grep -qx "$tag"; then
-	echo "FAIL: $tag not in go list -m -versions $module output yet" >&2
+echo "==> 1/3 proxy serves $module@$tag (version-specific fetch; the @v/list index lags for brand-new modules)"
+if ! GOPROXY="https://proxy.golang.org" go list -m -json "$module@$tag" >/dev/null 2>&1; then
+	echo "FAIL: the proxy does not serve $module@$tag yet" >&2
 	echo "      (the proxy can lag a few minutes behind the push; retry)" >&2
 	exit 1
 fi

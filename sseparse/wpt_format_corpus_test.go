@@ -15,6 +15,9 @@ package sseparse_test
 // Spec: https://html.spec.whatwg.org/multipage/server-sent-events.html
 
 import (
+	"bytes"
+	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 
@@ -77,6 +80,13 @@ func TestCorpusIntegrity(t *testing.T) {
 
 		seen[vector.Name] = true
 
+		if vector.URL == "" {
+			t.Errorf(
+				"corpus vector %q has no url citation (which upstream test does it transcribe?)",
+				vector.Name,
+			)
+		}
+
 		if vector.Wire == "" {
 			t.Errorf("corpus vector %q has empty wire input", vector.Name)
 		}
@@ -92,6 +102,34 @@ func TestCorpusIntegrity(t *testing.T) {
 		if !found {
 			t.Errorf("corpus lost its %s* family (no vector cites such a URL)", prefix)
 		}
+	}
+}
+
+// TestCorpusJSONIsCanonical pins the corpus file's byte form: it must be
+// exactly what json.MarshalIndent renders for the decoded vectors (two-space
+// indent, trailing newline) — the recipe the one-time generator used. The
+// check forces future WPT additions through that path (or a script) instead
+// of allowing hand-formatted JSON drift into a file 29 conformance vectors
+// and third-party parsers treat as the source of truth.
+func TestCorpusJSONIsCanonical(t *testing.T) {
+	t.Parallel()
+
+	raw, err := os.ReadFile("testdata/wpt_format_corpus.json")
+	if err != nil {
+		t.Fatalf("read corpus file: %v", err)
+	}
+
+	canon, err := json.MarshalIndent(sseparse.MustCorpus(t), "", "  ")
+	if err != nil {
+		t.Fatalf("marshal corpus: %v", err)
+	}
+
+	canon = append(canon, '\n')
+
+	if !bytes.Equal(raw, canon) {
+		t.Fatalf(
+			"testdata/wpt_format_corpus.json is not canonical (json.MarshalIndent two-space + trailing newline); regenerate it from sseparse.Corpus() instead of hand-editing",
+		)
 	}
 }
 
