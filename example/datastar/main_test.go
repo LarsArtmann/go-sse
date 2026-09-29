@@ -622,3 +622,21 @@ func connectSSEClient(t *testing.T, url string) context.CancelFunc {
 		wg.Wait()
 	}
 }
+
+// --- listenAddr unit tests (serial: t.Setenv cannot coexist with t.Parallel) ---
+
+func TestListenAddr_Default(t *testing.T) {
+	t.Setenv("PORT", "")
+
+	if got, want := listenAddr(), ":"+defaultDatastarPort; got != want {
+		t.Errorf("listenAddr() = %q, want %q", got, want)
+	}
+}
+
+func TestListenAddr_PortOverride(t *testing.T) {
+	t.Setenv("PORT", "18765")
+
+	if got, want := listenAddr(), ":18765"; got != want {
+		t.Errorf("listenAddr() = %q, want %q", got, want)
+	}
+}

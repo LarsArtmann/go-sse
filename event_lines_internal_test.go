@@ -22,10 +22,13 @@ func TestForEachLine(t *testing.T) {
 		"trailing LF yields no final empty":   {in: "a\n", want: []string{"a"}},
 		"CRLF is one terminator":              {in: "a\r\nb", want: []string{"a", "b"}},
 		"lone CR is a terminator":             {in: "a\rb", want: []string{"a", "b"}},
-		"mixed terminators":                   {in: "a\r\nb\rc\nd", want: []string{"a", "b", "c", "d"}},
-		"empty lines between terminators":     {in: "a\n\nb", want: []string{"a", "", "b"}},
-		"terminator sandwich":                 {in: "\nx\n", want: []string{"", "x"}},
-		"lone CRLF yields one empty line":     {in: "\r\n", want: []string{""}},
+		"mixed terminators": {
+			in:   "a\r\nb\rc\nd",
+			want: []string{"a", "b", "c", "d"},
+		},
+		"empty lines between terminators": {in: "a\n\nb", want: []string{"a", "", "b"}},
+		"terminator sandwich":             {in: "\nx\n", want: []string{"", "x"}},
+		"lone CRLF yields one empty line": {in: "\r\n", want: []string{""}},
 	}
 
 	for name, tt := range tests {
