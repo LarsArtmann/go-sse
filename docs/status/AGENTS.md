@@ -47,6 +47,9 @@ Every report's preamble MUST carry exactly one bullet of this form:
 - **Measured this session** via `nix run .#coverage-gate` (or
   `go tool cover -func=<profile>`) — never quoted from memory or from a
   previous report (reports are snapshots; the number may have moved since).
+  Measure the root library as package `.` (the gate's scope), never `./...`:
+  the 0%-covered `example/` packages dilute the total into a false regression
+  (58.5% vs the real 99.3%, seen 2026-09-29).
 - All three modules — root `sse` library, `ssetest`, and `sseparse` (since
   the 2026-09-29 split) — each with a delta vs the previous report's line.
   `=` when unchanged; `(new)` for a module's first measurement.

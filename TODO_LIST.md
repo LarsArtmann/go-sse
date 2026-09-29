@@ -68,6 +68,7 @@ before being added (grep evidence noted where it matters).
 | 28 | Re-check example docs for stale absolute port URLs         | After the PORT override landed, hardcoded `:8080`/`:8765`/`:8766` prose may lie.            |
 | 29 | `Stream.Send` doc: mention the short-write error path      | The doc currently says only "write fails".                                                  |
 | 30 | Link `docs/guides/` from AGENTS.md's docs pointer          | Four guides exist; AGENTS.md does not reference them.                                       |
+| 31 | Corpus WPT-ingestion generator (IMP3's other half)         | The 2026-09-29 pass shipped the validator half (byte-canonical gate + per-vector `url` citation in `TestCorpusJSONIsCanonical`/`TestCorpusIntegrity`). Still open: a `go:generate`-style script that can ingest future WPT `format-*` updates into canonical JSON (decode → extend → re-marshal via the pinned recipe). |
 
 ## CI & tooling
 
