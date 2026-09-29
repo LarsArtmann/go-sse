@@ -9,7 +9,15 @@
 > pinned by tests, `WithMaxLineBytes` added. go.mod alignment handled with a
 > nuance: sseparse starts at `go 1.27.1` (json/v2 user); ssetest stays at
 > `go 1.27` — post-split its own code no longer needs 1.27.1 and `go mod tidy`
-> reverts any forced parity. Pending: the two release tags (see TODO_LIST).
+> reverts any forced parity. ~~Pending: the two release tags (see TODO_LIST).~~
+> RESOLVED same day: `sseparse/v0.1.0` + `ssetest/v0.4.0` tagged and live on
+> the module proxy; go-daemon adopted sseparse at `36c2ecc` (its
+> `sse_conformance_test.go` asserts all 29 corpus vectors — the corpus
+> surfaced 3 real spec gaps in go-daemon's framing parser, fixed in the same
+> commit); project-discovery-daemon cascaded to ssetest v0.4.0 and added
+> sseparse to `publicDeps`; go-datastar's v0.6.1 lockstep pins ssetest v0.4.0
+> in datastartest. The adoption path this feedback asked for is live end to
+> end.
 
 2026-09-29. Feedback from the go-daemon side
 (github.com/LarsArtmann/go-daemon, private mechanism library for unix-socket
