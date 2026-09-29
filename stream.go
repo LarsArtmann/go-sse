@@ -98,7 +98,12 @@ func NewStream(w http.ResponseWriter, r *http.Request) *Stream {
 }
 
 // Send writes an SSE event to the stream and flushes the response.
-// Returns an error if the write fails (e.g., client disconnected).
+// Returns an error if the write fails: a failed or disconnected write wraps
+// as `sse.send_failed` (Transient — drop the connection and let the client
+// reconnect), and a writer that accepted only part of the frame surfaces
+// `io.ErrShortWrite` (code `sse.write_short`). A partially-written frame is
+// never retried — the accepted bytes are already on the wire, and re-sending
+// would corrupt the stream.
 //
 // Send is safe to call concurrently with Heartbeat: both serialize on the
 // stream's mutex so the underlying ResponseWriter is never written by two
