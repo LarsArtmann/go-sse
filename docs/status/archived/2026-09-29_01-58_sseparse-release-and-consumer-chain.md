@@ -58,22 +58,22 @@ green; pdd `nix flake check` + race tests green.
 
 ## b) PARTIALLY DONE
 
-1. **Concurrent-session coordination** — both tags landed cleanly, but the
+1. ~~**Concurrent-session coordination** — both tags landed cleanly, but the
    auto-commit daemon twice swept my release files together with the other
    session's in-progress work (fuzz-signature changes; pdd docs). I
    repartitioned with `reset --soft` + selective staging so the tagged
    commits contain only release content. The underlying friction (two agents,
-   one working tree, sweep-commit daemon) remains unsolved process debt.
+   one working tree, sweep-commit daemon) remains unsolved process debt.~~ done — the tags shipped clean; the process lesson is recorded as the AGENTS.md daemon-sweep gotcha (2026-09-29)
 
 ## c) NOT STARTED
 
-1. **The 03-45 plan's hygiene tail (M4–M8, M13–M17)** — GOEXPERIMENT removal,
+1. ~~**The 03-45 plan's hygiene tail (M4–M8, M13–M17)** — GOEXPERIMENT removal,
    CI coverage-gate/shellcheck jobs, golangci-pin decision, ssetest coverage
    push, corpus generator, shfmt, smoke app, templ policy, benchstat. The
    concurrent session authored
    `docs/planning/2026-09-29_03-45_SUPERB-consumer-chain-and-hygiene-closeout.md`
    for exactly these; duplicating them from a second session invites collisions
-   on the same files, so they were deliberately left to that plan.
+   on the same files, so they were deliberately left to that plan.~~ done — the 05:49 closeout session executed M4–M17 (`1c0fc85`, `41aac66`, `0e1bb28`, `c9dd98a`, `88189b8`, `91fe8b7`, `0bd6e69`, `84ecbee`, `01051f2`)
 
 ## d) TOTALLY FUCKED UP
 
@@ -107,22 +107,28 @@ green; pdd `nix flake check` + race tests green.
 
 ## f) Up to 50 things we should get done next
 
-1. (P1) Execute the 03-45 plan's hygiene tail (M4–M8, M13–M17) — GOEXPERIMENT
-   removal, CI coverage-gate + shellcheck jobs, golangci-pin decision,
-   ssetest coverage, corpus generator, shfmt + smoke app, templ policy,
-   benchstat baseline.
-2. (P1) Watch the next Monday `datastar-compat.yml` run (should no-op-bump
-   against go-datastar v0.6.1) — TODO row stays open for the runner-env proof.
-3. (P2) When go-datastar next tags datastartest, verify the replace-drop
-   landed in the tagged go.mod (the at-tag-time rule's first real use).
-4. (P2) go-daemon: the three parser fixes are go-daemon-side only; if any
-   consumer shares the old bufio.Scanner framing, point them at sseparse or
-   the fixed `sse.go` (the corpus test is the regression net).
-5. (P3) Consider a `sseparse` probe upgrade: assert `Data()` (joined payload)
-   rather than `DataLines[0]` once multi-line probe data is worth it.
+1. ~~(P1) Execute the 03-45 plan's hygiene tail (M4–M8, M13–M17) — GOEXPERIMENT~~ done — the 03-45 plan's hygiene tail executed by the 05:49 session (M4–M17; see its §a)
+   ~~removal, CI coverage-gate + shellcheck jobs, golangci-pin decision,~~
+   ~~ssetest coverage, corpus generator, shfmt + smoke app, templ policy,~~
+   ~~benchstat baseline.~~
+2. ~~(P1) Watch the next Monday `datastar-compat.yml` run (should no-op-bump~~ done — routed — the watch row lives in TODO_LIST (first post-v0.6.1 run 2026-10-05 is the runner-env proof)
+   ~~against go-datastar v0.6.1) — TODO row stays open for the runner-env proof.~~
+3. ~~(P2) When go-datastar next tags datastartest, verify the replace-drop~~ done — observed — the v0.6.1 datastartest tag carries the inert replaces (known outcome); master dropped them at c1826fb for the next tag
+   ~~landed in the tagged go.mod (the at-tag-time rule's first real use).~~
+4. ~~(P2) go-daemon: the three parser fixes are go-daemon-side only; if any~~ done — advisory noted — sseparse and the fixed sse.go are the documented paths; the corpus test is the regression net
+   ~~consumer shares the old bufio.Scanner framing, point them at sseparse or~~
+   ~~the fixed `sse.go` (the corpus test is the regression net).~~
+5. ~~(P3) Consider a `sseparse` probe upgrade: assert `Data()` (joined payload)~~ **Won't implement — conditional not met — no multi-line probe-data need yet; revisit with the first real need.**
+   ~~rather than `DataLines[0]` once multi-line probe data is worth it.~~
 
 ## g) Questions I CANNOT figure out myself
 
-1. (User) The second concurrent session authored the 03-45 closeout plan —
-   is that session still running and owning the hygiene tail? If not, the
-   tail items are fair game for the next session (they are all in TODO_LIST).
+1. ~~(User) The second concurrent session authored the 03-45 closeout plan —~~ done — answered — the concurrent session's 03-45 tail was executed by the 05:49 closeout session (M4–M17 all landed)
+   ~~is that session still running and owning the hygiene tail? If not, the~~
+   ~~tail items are fair game for the next session (they are all in TODO_LIST).~~
+
+---
+
+## Archival check (2026-09-29, docs-health pass)
+
+Every numbered item in §b/§c/§f/§g carries an inline verdict, verified against the repo this pass (tags live, consumers cascaded, tail executed by the 05:49 session). Fully resolved — archived.

@@ -38,19 +38,19 @@ findings about the root flat layout remain, documented as deliberate).
 
 ## b) PARTIALLY DONE
 
-Nothing half-shipped in-repo. The one open half is publication: the split is
+Nothing half-shipped in-repo. ~~The one open half is publication: the split is
 code-complete and gated, but untagged. ssetest's `go.mod` carries
 `require sseparse v0.1.0` + a local `replace` — resolvable in-repo today,
 and at release time the tag must exist before the replace is dropped
-(exact order in TODO_LIST item 1).
+(exact order in TODO_LIST item 1).~~ Released 2026-09-29: tags `sseparse/v0.1.0` + `ssetest/v0.4.0` (commit `7cd5b3a`), replace dropped, both release probes green.
 
 ## c) NOT STARTED
 
-- go-daemon's actual migration (its 10 hand-rolled framing tests →
+- ~~go-daemon's actual migration (its 10 hand-rolled framing tests →
   `sseparse.MustCorpus` vectors): deliberately not started — blocked on the
-  release tags, and it is another repo's change (tracked in TODO_LIST).
-- Root library v0.6.2: not needed — the root `sse` package is untouched
-  (only `module_boundary_test.go`, `.golangci.yml`, README rows).
+  release tags, and it is another repo's change (tracked in TODO_LIST).~~ done at `36c2ecc`
+- ~~Root library v0.6.2: not needed — the root `sse` package is untouched
+  (only `module_boundary_test.go`, `.golangci.yml`, README rows).~~ NOT-DO — confirmed: root package untouched, no root tag needed
 
 ## d) TOTALLY FUCKED UP
 
@@ -80,17 +80,17 @@ and at release time the tag must exist before the replace is dropped
 
 ## f) Up to 50 things we should get done next
 
-1. Tag `sseparse/v0.1.0` (first), then release-commit ssetest (drop replace, require resolves) and tag `ssetest/v0.4.0`; probe both with `scripts/release-verify.sh` (TODO_LIST #1).
-2. go-daemon: migrate `sse_test.go` framing tests to `sseparse.MustCorpus` vectors (TODO_LIST #2).
-3. go-datastar pin-bump pass now has a third module to consider when it adopts sseparse directly.
-4. Clean `/mnt/buildcache` (go build cache 149 GB; golangci facts cache) and decide a rotation policy.
-5. Consider teaching `docs/guides/*` about sseparse where they currently say "ssetest parser" (only README/FEATURES/AGENTS were swept this session).
-6. IMP2: flake-update PRs should self-verify with `scripts/verify.sh --fast` to catch pin skews like golangci 2.13.2→2.14.0.
-7. Revisit the 7 go-structure-linter findings (root flat layout) only if the project ever decides to move off the documented flat layout — they are advisory and predate this session.
+1. ~~Tag `sseparse/v0.1.0` (first), then release-commit ssetest (drop replace, require resolves) and tag `ssetest/v0.4.0`; probe both with `scripts/release-verify.sh` (TODO_LIST #1).~~ done at `1cfc651`, ` 7cd5b3a`
+2. ~~go-daemon: migrate `sse_test.go` framing tests to `sseparse.MustCorpus` vectors (TODO_LIST #2).~~ done at `36c2ecc`
+3. ~~go-datastar pin-bump pass now has a third module to consider when it adopts sseparse directly.~~ done — go-datastar v0.6.1 lockstep pins ssetest v0.4.0 (their bb4f08d)
+4. ~~Clean `/mnt/buildcache` (go build cache 149 GB; golangci facts cache) and decide a rotation policy.~~ **Won't implement — mooted — the mount measured 32% the same day; nothing blocked.**
+5. ~~Consider teaching `docs/guides/*` about sseparse where they currently say "ssetest parser" (only README/FEATURES/AGENTS were swept this session).~~ done — verified zero ssetest/sseparse references in docs/guides/ (01-58 self-review row 12)
+6. ~~IMP2: flake-update PRs should self-verify with `scripts/verify.sh --fast` to catch pin skews like golangci 2.13.2→2.14.0.~~ done — superseded by a narrower control — the flake-update workflow cross-checks the golangci pin in the same PR (the skew class it targeted)
+7. ~~Revisit the 7 go-structure-linter findings (root flat layout) only if the project ever decides to move off the documented flat layout — they are advisory and predate this session.~~ done at `0e1bb28`
 
 ## g) Questions I CANNOT figure out myself
 
-1. `/mnt/buildcache` cleanup: it is a shared mount (other projects' caches live there) — I did not wipe 149 GB unilaterally. Owner decision on `go clean -cache` / GOMODCACHE pruning / mount resizing.
+1. ~~`/mnt/buildcache` cleanup: it is a shared mount (other projects' caches live there) — I did not wipe 149 GB unilaterally. Owner decision on `go clean -cache` / GOMODCACHE pruning / mount resizing.~~ **Won't implement — mooted — mount at 32%, nothing blocked.**
 
 ---
 
@@ -100,3 +100,9 @@ overstated the alignment fix — a subsequent `go mod tidy` (correctly) reverted
 `1.27.1` (json/v2 lives only in its tests, admitted by the `go 1.27` gate),
 and tidy will always revert a hand-raised directive. sseparse stays at
 `1.27.1` (it compiles json/v2). Full story in the follow-up self-review report.
+
+---
+
+## Archival check (2026-09-29, docs-health pass)
+
+Every numbered/bulleted item in §b/§c/§f/§g carries an inline verdict (§b1 release, §f, §g verified against the repo this pass). Fully resolved — archived.

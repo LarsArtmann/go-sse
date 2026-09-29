@@ -112,27 +112,27 @@ clean; live fuzz bursts clean.
 
 ## f) Up to 50 things we should get done next
 
-1. Watch the next scheduled `datastar-compat.yml` run — only the live runner
-   environment remains unproven (mechanics verified against real tags).
-2. go-daemon: migrate its 10 framing tests to `sseparse.MustCorpus` vectors —
-   unblocked (TODO_LIST).
-3. pdd cascade for `ssetest/v0.4.0`: go-daemon flake rev bump + vendorHash
-   re-derive (TODO_LIST row).
-4. IMP3 generator half: WPT-ingestion generator emitting canonical corpus
-   JSON (TODO_LIST row 31).
-5. Decide the buildflow findings-gate question (g1 below) — one decision
-   closes a per-run advisory failure.
-6. Existing backlog (unchanged): inert `GOEXPERIMENT` removal, private
-   vulnerability reporting setting, CI coverage-gate job, shellcheck job, and
-   the rest of TODO_LIST's P2 table.
+1. ~~Watch the next scheduled `datastar-compat.yml` run — only the live runner~~ done — routed — the watch row lives in TODO_LIST (2026-10-05 runner-env proof)
+   ~~environment remains unproven (mechanics verified against real tags).~~
+2. ~~go-daemon: migrate its 10 framing tests to `sseparse.MustCorpus` vectors —~~ done at `36c2ecc`
+   ~~unblocked (TODO_LIST).~~
+3. ~~pdd cascade for `ssetest/v0.4.0`: go-daemon flake rev bump + vendorHash~~ done at `d2efa06`
+   ~~re-derive (TODO_LIST row).~~
+4. ~~IMP3 generator half: WPT-ingestion generator emitting canonical corpus~~ done at `91fe8b7`
+   ~~JSON (TODO_LIST row 31).~~
+5. ~~Decide the buildflow findings-gate question (g1 below) — one decision~~ done at `0e1bb28`
+   ~~closes a per-run advisory failure.~~
+6. ~~Existing backlog (unchanged): inert `GOEXPERIMENT` removal, private~~ done — every item closed: GOEXPERIMENT removal (1c0fc85), CI gates (41aac66), and the full harvested backlog (see CHANGELOG [Unreleased])
+   ~~vulnerability reporting setting, CI coverage-gate job, shellcheck job, and~~
+   ~~the rest of TODO_LIST's P2 table.~~
 
 ## g) Questions I CANNOT figure out myself
 
-1. **Carried over from the 01-58 report (§g3):** the 7 go-structure-linter
-   findings fail buildflow's findings gate on every full run (root files at
-   project root vs `/internal/` //pkg/). Keep absorbing them as
-   documented-deliberate, or should buildflow's config skip
-   `go-structure-linter` for this repo so the gate is green again?
+1. ~~**Carried over from the 01-58 report (§g3):** the 7 go-structure-linter~~ done at `0e1bb28`
+   ~~findings fail buildflow's findings gate on every full run (root files at~~
+   ~~project root vs `/internal/` //pkg/). Keep absorbing them as~~
+   ~~documented-deliberate, or should buildflow's config skip~~
+   ~~`go-structure-linter` for this repo so the gate is green again?~~
 2. ~~Release timing~~ — answered by reality: released 2026-09-29 02:22.
 3. ~~buildcache policy~~ — unblocked: the mount is at 32%; a rotation policy
    is still worth deciding someday, but nothing waits on it.

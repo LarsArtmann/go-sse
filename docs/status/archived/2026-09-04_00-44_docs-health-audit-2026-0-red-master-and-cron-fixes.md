@@ -150,3 +150,9 @@ Grouped by priority; §1–5 are this session's own loops, §6+ is the harvested
 ---
 
 _Report written at session close; awaiting instructions. Nothing pushed; the daemon owns local commits._
+
+---
+
+## Archival check (2026-09-29, docs-health pass)
+
+Every numbered item in §b/§c/§f/§g carries an inline verdict, verified against the repo this pass. Fully resolved — archived.
