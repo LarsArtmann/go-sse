@@ -13,6 +13,8 @@ nix run .#lint               # golangci-lint (root + ssetest + sseparse)
 nix run .#coverage           # test + coverage report (root + ssetest + sseparse)
 nix run .#coverage-gate      # fail under thresholds (library 90%, ssetest 95%, sseparse 95%)
 scripts/verify.sh            # one-command pre-push gate (fmt+vet+lint+test+flake check; --fast skips flake)
+                            #   --fast is NOT sufficient for go.mod/go.sum/flake.nix changes: the skipped
+                            #   flake check is the only gate that catches vendorHash drift — pair it.
 nix flake check              # full hermetic check (compile + test, root + ssetest + sseparse)
 nix develop                  # enter dev shell (Go 1.27, golangci-lint, gopls, govulncheck, templ)
 ```
