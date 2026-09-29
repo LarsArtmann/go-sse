@@ -31,6 +31,8 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 ### Added
 
+- `nix run .#smoke` boots every example and requires real SSE bytes — the same check CI's smoke job runs, now available as a flake app like `test`/`lint`/`vet`.
+- `shfmt` joined the treefmt formatter set, so `scripts/*.sh` are format-gated by `nix fmt` and the verify gate (previously only Go and Nix were); the four scripts were reformatted to its two-space style with zero semantic changes.
 - CI now enforces the two gates that were local-only: a `Coverage gate` job runs `nix run .#coverage-gate` (90% library / 95% ssetest / 95% sseparse thresholds, one source of truth in the flake app) and a `Shellcheck` job lints `scripts/*.sh` (previously only workflow `run:` blocks were checked). A coverage or shell regression now reddens every push instead of only the author's machine.
 - `scripts/verify.sh` gate hardening: a broken caller `GOCACHE` degrades loudly to a temp dir (same fallback as `coverage-gate`), a tidy-clean check requires every module's `go.mod`/`go.sum` to be a `go mod tidy` no-op (read-only: drift is shown and the tree restored), all three go directives must stay identical, and a bench smoke (`-bench=. -benchtime=1x`) fails the gate when a benchmark no longer executes. The golangci-lint pin extraction moved to `scripts/golangci-pin.sh` so two consumers share one regex.
 - The weekly flake-update workflow now cross-checks the nixpkgs `golangci-lint` against the ci.yml pin (via `scripts/golangci-pin.sh` + `nix develop .#ci`) in the same PR that bumps flake inputs — a nixpkgs lint bump can no longer ship silently and redden the next human push (the 2.13.2 → 2.14.0 skew shipped exactly that way).
