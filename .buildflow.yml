@@ -1,0 +1,12 @@
+# BuildFlow policy file — skips with rationale only; everything else default.
+#
+# go-structure-linter is skipped by decision (SUPERB plan 2026-09-29, task M8):
+# its root-package-files findings flag every file of the library's deliberate
+# architecture. This repo is a single-package flat-layout library (AGENTS.md),
+# so every root .go file trips "Package file found at project root. Should be
+# in /internal/ or /pkg/". Moving files under internal/ or pkg/ would churn
+# every consumer's import path (github.com/larsartmann/go-sse) for zero
+# behavior change. The finding class is structural, not a code defect — the
+# step stays available fleet-wide and is only off here.
+skip_steps:
+  - go-structure-linter
