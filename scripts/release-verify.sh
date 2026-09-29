@@ -11,9 +11,10 @@
 # Usage:
 #   scripts/release-verify.sh vX.Y.Z            # root library tag
 #   scripts/release-verify.sh ssetest/vX.Y.Z    # ssetest module tag
+#   scripts/release-verify.sh sseparse/vX.Y.Z   # sseparse module tag
 set -euo pipefail
 
-tag="${1:?usage: scripts/release-verify.sh <vX.Y.Z | ssetest/vX.Y.Z>}"
+tag="${1:?usage: scripts/release-verify.sh <vX.Y.Z | ssetest/vX.Y.Z | sseparse/vX.Y.Z>}"
 
 module="github.com/larsartmann/go-sse"
 probe_import="sse \"github.com/larsartmann/go-sse\""
@@ -21,6 +22,17 @@ probe_body='_ = sse.Event{Event: "verify", Data: "release probe"}
 	fmt.Fprintln(os.Stderr, "root library probe:", sse.ContentType)'
 
 case "$tag" in
+sseparse/*)
+	module="github.com/larsartmann/go-sse/sseparse"
+	probe_import="sseparse \"github.com/larsartmann/go-sse/sseparse\"
+	\"strings\""
+	probe_body='events, err := sseparse.ReadEvents(strings.NewReader("data: hi\n\n"))
+	if err != nil || len(events) != 1 || len(events[0].DataLines) != 1 || events[0].DataLines[0] != "hi" {
+		fmt.Fprintf(os.Stderr, "sseparse probe FAILED: err=%v events=%v\n", err, events)
+		os.Exit(1)
+	}
+	fmt.Fprintf(os.Stderr, "sseparse probe: parsed %d event(s), data=%q\n", len(events), events[0].Data())'
+	;;
 ssetest/*)
 	module="github.com/larsartmann/go-sse/ssetest"
 	probe_import="ssetest \"github.com/larsartmann/go-sse/ssetest\""
@@ -29,7 +41,7 @@ ssetest/*)
 	;;
 v*) ;;
 *)
-	echo "FAIL: tag must look like vX.Y.Z or ssetest/vX.Y.Z (got: $tag)" >&2
+	echo "FAIL: tag must look like vX.Y.Z, ssetest/vX.Y.Z, or sseparse/vX.Y.Z (got: $tag)" >&2
 	exit 2
 	;;
 esac

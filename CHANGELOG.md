@@ -27,25 +27,37 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 ### Added
 
-- New module `github.com/larsartmann/go-sse/sseparse` — the SSE wire-format parser, assertions, and WPT conformance corpus extracted from ssetest into a zero-dependency module (no go-sse, go-branded-id, or go-error-family in the consumer's module graph; guarded by `TestModuleStaysZeroDependency`). Non-HTTP consumers (unix-socket daemons, other SSE parsers) can adopt it directly; ssetest re-exports its entire API so existing consumers keep compiling unchanged.
-- `sseparse.Corpus()` / `sseparse.MustCorpus(tb)` — the conformance corpus exported as data: 29 vectors (WPT `eventsource/format-*`, spec § 9.2.6 examples, Chromium `event_source_parser_test.cc` cases) with exact wire bytes and expected dispatched events, serialized in `sseparse/testdata/wpt_format_corpus.json` (now the single source of truth — sseparse's own conformance and chunk-boundary tests load it through this API, so parser and data cannot drift). Third-party parsers can assert against the same vectors with no sseparse parsing code in the loop.
-- `sseparse.WithMaxLineBytes(n)` / `sseparse.DefaultMaxLineBytes` (re-exported by ssetest) — configurable per-line cap, accepted by `ReadEvents`, `ReadNEvents`, and `NewStreamReader`; non-positive values keep the 1 MiB default. The 1 MiB cap is now documented on `ReadEvents` and its boundary pinned by tests (the largest parseable line is one byte under the cap — the terminator must fit too; over-cap errors wrap `bufio.ErrTooLong`, `errors.Is`-matchable).
-- `ssetest/compat_test.go` — delegation-contract test exercising every sseparse re-export, keeping ssetest's coverage guarantee honest after the split.
-- CI, `scripts/verify.sh`, `flake.nix` (hermetic check with `vendorHash = null`, lint/vet/test/coverage/coverage-gate apps), and Dependabot now cover the third module; `coverage-gate` enforces sseparse ≥ 95% like ssetest.
-- CI golangci-lint pin bumped v2.13.2 → v2.14.0 to match the nixpkgs binary (the verify.sh skew check caught the drift).
+- Nothing yet.
 
 ### Changed
 
 - `example/datastar`'s `memStore` evicts by copying down instead of re-slicing: evicted events become GC-able immediately and the ring's backing array stabilizes after one relocation (the example now matches the retention guide that cites it).
-- ssetest's reader and assertion API now delegates to sseparse; `ReadEvents`, `ReadNEvents`, `MustReadEvents`, `MustReadNEvents`, and `NewStreamReader` gained trailing variadic `...ReadOption` parameters (source-compatible for all existing callers). Scan errors wrap the underlying cause with `%w` instead of go-error-family wrapping, so `errors.Is`/`errors.As` matching is preserved without the dependency.
+- CI golangci-lint pin bumped v2.13.2 → v2.14.0 to match the nixpkgs binary (the verify.sh skew check caught the drift).
+
+## [sseparse 0.1.0] - 2026-09-29
+
+### Added
+
+- Initial release of the parser module `github.com/larsartmann/go-sse/sseparse` — the SSE wire-format parser, assertions, and conformance corpus extracted from ssetest into a zero-dependency module (no go-sse, go-branded-id, or go-error-family in the consumer's module graph; guarded by `TestModuleStaysZeroDependency`). Non-HTTP consumers (unix-socket daemons, other SSE parsers) can adopt it directly; ssetest re-exports its entire API so existing consumers keep compiling unchanged.
+- `Corpus()` / `MustCorpus(tb)` — the conformance corpus exported as data: 29 vectors (WPT `eventsource/format-*`, spec § 9.2.6 examples, Chromium `event_source_parser_test.cc` cases) with exact wire bytes and expected dispatched events, serialized in `testdata/wpt_format_corpus.json` (now the single source of truth — sseparse's own conformance and chunk-boundary tests load it through this API, so parser and data cannot drift). Third-party parsers can assert against the same vectors with no sseparse parsing code in the loop.
+- `WithMaxLineBytes(n)` / `DefaultMaxLineBytes` — configurable per-line cap, accepted by `ReadEvents`, `ReadNEvents`, and `NewStreamReader`; non-positive values keep the 1 MiB default. The 1 MiB cap is documented on `ReadEvents` and its boundary pinned by tests (the largest parseable line is one byte under the cap — the terminator must fit too; over-cap errors wrap `bufio.ErrTooLong`, `errors.Is`-matchable).
+- Repo support shipping alongside the module: CI, `scripts/verify.sh`, `flake.nix` (hermetic check with `vendorHash = null`, lint/vet/test/coverage/coverage-gate apps), and Dependabot cover the third module; `coverage-gate` enforces sseparse ≥ 95% like ssetest.
+
+## [ssetest 0.4.0] - 2026-09-29
+
+### Added
+
+- `compat_test.go` — delegation-contract test exercising every sseparse re-export, keeping ssetest's coverage guarantee honest after the split.
+- Godoc example for `RequireDataJSON` (compile-only rendering of the handler-test pattern — examples have no live `*testing.T`).
+
+### Changed
+
+- The reader and assertion API now delegates to sseparse; `ReadEvents`, `ReadNEvents`, `MustReadEvents`, `MustReadNEvents`, and `NewStreamReader` gained trailing variadic `...ReadOption` parameters (source-compatible for all existing callers). Scan errors wrap the underlying cause with `%w` instead of go-error-family wrapping, so `errors.Is`/`errors.As` matching is preserved without the dependency.
+- `go` directive bumped 1.26.7 → 1.27 together with the root module: the ssetest half of the bump lagging is what reddened master on 2026-09-18.
 
 ### Removed
 
-- **Breaking (ssetest):** `ssetest.CodeSSEScanFailed` and ssetest's direct `go-error-family` dependency — the parse path is dependency-free now. Classify scan failures via `errors.Is(err, bufio.ErrTooLong)` or the wrapped cause; datastartest already re-wraps with its own error code, so only direct users of the constant are affected.
-
-### Fixed
-
-- `ssetest/go.mod` said `go 1.27` while the root module says `go 1.27.1`; sseparse starts at `go 1.27.1` (it compiles `encoding/json/v2`). ssetest stays at `go 1.27` deliberately: after the split its own code no longer needs more (json/v2 appears only in tests, which the `go 1.27` gate admits), and `go mod tidy` reverts any hand-raised directive — forcing parity would flipflop on every tidy.
+- **Breaking:** `CodeSSEScanFailed` and ssetest's direct `go-error-family` dependency — the parse path is dependency-free now. Classify scan failures via `errors.Is(err, bufio.ErrTooLong)` or the wrapped cause; datastartest already re-wraps with its own error code, so only direct users of the constant are affected.
 
 ## [0.6.1] - 2026-09-19
 
@@ -82,16 +94,6 @@ without changelog lines (`a5ff824`, `7776bc7`).
 - `Stream.Heartbeat` no longer writes into a finished `ResponseWriter`: a heartbeat tick racing the handler's deferred `Close` could flush after the server completed the response, panicking inside `net/http` (seen as a red-master CI crash in `TestIntegration_HeartbeatDelivery` on 2026-09-03). `Close` now marks the stream closed and a racing tick observes that and returns; pinned by `TestStream_HeartbeatStopsAfterClose`. The documented `go stream.Heartbeat(stream.Context(), …)` pattern is safe without extra synchronization.
 - `TestStream_RequestContextCancelMidStream` no longer flakes under parallel-suite load: its 50ms cancellation budget was measured from request creation, racing connection setup; the timer now starts after `Do` returns so the cancellation deterministically lands mid-stream.
 - The weekly flake-update workflow no longer loses its PR silently: the 2026-08-31 scheduled run pushed the branch but `gh pr create` failed ("GitHub Actions is not permitted to create or approve pull requests" — a repo Actions setting) and the workflow's `|| echo` fallback misreported it as "already open". The repo now permits Actions-created PRs, the workflow's already-open case is an explicit check so real failures redden the step, and the orphan `chore/flake-update-2026-08-31` branch was deleted.
-
-## [ssetest Unreleased]
-
-### Added
-
-- Godoc example for `RequireDataJSON` (compile-only rendering of the handler-test pattern — examples have no live `*testing.T`).
-
-### Changed
-
-- `go` directive bumped 1.26.7 → 1.27.1 together with the root module: the ssetest half of the bump lagging is what reddened master on 2026-09-18.
 
 ## [ssetest 0.3.0] - 2026-08-29
 
