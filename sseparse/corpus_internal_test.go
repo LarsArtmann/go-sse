@@ -34,9 +34,8 @@ func corruptCorpusForTest(t *testing.T) {
 	t.Cleanup(func() { corpusJSON = original })
 }
 
-func TestCorpus_DecodeFailure(
-	t *testing.T,
-) { //nolint:paralleltest // mutates corpusJSON; parallel corpus readers must not observe it
+//nolint:paralleltest // mutates corpusJSON; parallel corpus readers must not observe it
+func TestCorpus_DecodeFailure(t *testing.T) {
 	corruptCorpusForTest(t)
 
 	vectors, err := Corpus()
@@ -49,9 +48,8 @@ func TestCorpus_DecodeFailure(
 	}
 }
 
-func TestMustCorpus_FatalsOnCorruptJSON(
-	t *testing.T,
-) { //nolint:paralleltest // mutates corpusJSON; parallel corpus readers must not observe it
+//nolint:paralleltest // mutates corpusJSON; parallel corpus readers must not observe it
+func TestMustCorpus_FatalsOnCorruptJSON(t *testing.T) {
 	corruptCorpusForTest(t)
 
 	tb := &fatalTB{}

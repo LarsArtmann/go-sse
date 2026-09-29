@@ -7,6 +7,9 @@ of [ssetest](../ssetest/), extractable without go-sse in your module graph.
 go get github.com/larsartmann/go-sse/sseparse
 ```
 
+> Tagged `sseparse/v0.1.0` (2026-09-29): `go get` resolves to the latest
+> `sseparse/vX.Y.Z` tag; pass `@v0.1.0` explicitly to pin an exact version.
+
 `sseparse` implements the WHATWG HTML Living Standard
 [§ 9.2.6](https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream)
 event-stream interpretation: what a browser's `EventSource` parses, nothing

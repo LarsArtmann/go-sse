@@ -102,6 +102,7 @@ func FuzzReadEvents(f *testing.F) {
 		)
 		if err != nil {
 			requireTooLongChunkInvariant(t, wire, lineCap, err)
+
 			return
 		}
 
