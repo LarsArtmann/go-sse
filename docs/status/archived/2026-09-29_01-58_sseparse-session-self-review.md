@@ -165,7 +165,7 @@ verify.sh blocking, and everything else traces to the feedback's four asks.
 
 ## f) Up to 50 things we should get done next
 
-1. ~~Release: `sseparse/v0.1.0` → ssetest release commit (drop replace) → `ssetest/v0.4.0`; probe each with `scripts/release-verify.sh` (TODO_LIST #1, CONTRIBUTING updated with exact order).~~ done at `1cfc651`, ` 7cd5b3a`
+1. ~~Release: `sseparse/v0.1.0` → ssetest release commit (drop replace) → `ssetest/v0.4.0`; probe each with `scripts/release-verify.sh` (TODO_LIST #1, CONTRIBUTING updated with exact order).~~ done at `1cfc651`, `7cd5b3a`
 2. ~~Inspect `datastar-compat.yml` against a sseparse-carrying ssetest before the first Monday run after release; extend its pin-bump set if needed.~~ done — mechanics verified against the real v0.4.0 tags (02-05 report a9); the live runner env is TODO_LIST's watch row
 3. ~~go-daemon: migrate `sse_test.go` framing tests to `sseparse.MustCorpus` vectors (TODO_LIST #2).~~ done at `36c2ecc`
 4. ~~IMP1: verify.sh GOCACHE fallback.~~ done — verify.sh GOCACHE probe/fallback shipped (IMP1)

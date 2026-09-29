@@ -110,73 +110,73 @@ three pushes (2026-09-13, 09-15, 09-18).
 
 ### P0 — unblock master (Critical)
 
-| # | Item                                                                                                                                                          | Impact   | Effort | Category |
-| - | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------ | -------- |
-| ~~1~~ | ~~Decide keep-vs-revert for the `531cb96` bump (gated on g1)~~ done — kept — the rollout completed (directives 1.27.1 x3, devShell go_1_27, CI aligned, hashes re-derived); master green | ~~Critical~~ | ~~S~~ | ~~Decision~~ |
-| ~~2~~ | ~~If REVERT: restore go 1.26.7 pins, `.golangci.yml` exhaustruct block, flake.lock; re-run `scripts/verify.sh --fast`; push~~ **NOT-DO — the keep path was taken; no revert happened.** | ~~Critical~~ | ~~M~~ | ~~Bug~~ |
-| ~~3~~ | ~~If KEEP: bump flake devShell Go to 1.27.x + ci.yml go-version + golangci pin alignment + recompute vendorHash/vendorHashSsetest (lib.fakeHash → build → copy)~~ done at `84c3aae`, ` 96f6b37` | ~~Critical~~ | ~~L~~ | ~~Bug~~ |
-| ~~4~~ | ~~Fix the 09-13 Lint red on its own terms: reproduce golangci failure at `34749630537` (likely exhaustruct_v5 naming/version incompatibility), fix or revert~~ done — CI green since the 2026-09-19 pushes (Lint healthy on every run since) | ~~Critical~~ | ~~S~~ | ~~Bug~~ |
-| ~~5~~ | ~~Fix coverage-gate silent exit: print underlying go error, non-empty failure log (extends TODO_LIST's GOCACHE item)~~ done — GOCACHE probe/fallback + unsuppressed stderr in coverage-gate (2026-09-19 pass) | ~~High~~ | ~~S~~ | ~~Tooling~~ |
-| ~~6~~ | ~~After gates green: push, verify CI green, then measure + record the coverage line (retire this report's N/A)~~ done — pushed, CI green, coverage measured in every report since (99.3%) | ~~Critical~~ | ~~M~~ | ~~Process~~ |
+| #     | Item                                                                                                                                                                                                                                         | Impact       | Effort | Category     |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------ | ------------ |
+| ~~1~~ | ~~Decide keep-vs-revert for the `531cb96` bump (gated on g1)~~ done — kept — the rollout completed (directives 1.27.1 x3, devShell go_1_27, CI aligned, hashes re-derived); master green                                                     | ~~Critical~~ | ~~S~~  | ~~Decision~~ |
+| ~~2~~ | ~~If REVERT: restore go 1.26.7 pins, `.golangci.yml` exhaustruct block, flake.lock; re-run `scripts/verify.sh --fast`; push~~ **NOT-DO — the keep path was taken; no revert happened.**                                                      | ~~Critical~~ | ~~M~~  | ~~Bug~~      |
+| ~~3~~ | ~~If KEEP: bump flake devShell Go to 1.27.x + ci.yml go-version + golangci pin alignment + recompute vendorHash/vendorHashSsetest (lib.fakeHash → build → copy)~~ done at `84c3aae`, `96f6b37`                                               | ~~Critical~~ | ~~L~~  | ~~Bug~~      |
+| ~~4~~ | ~~Fix the 09-13 Lint red on its own terms: reproduce golangci failure at `34749630537` (likely exhaustruct_v5 naming/version incompatibility), fix or revert~~ done — CI green since the 2026-09-19 pushes (Lint healthy on every run since) | ~~Critical~~ | ~~S~~  | ~~Bug~~      |
+| ~~5~~ | ~~Fix coverage-gate silent exit: print underlying go error, non-empty failure log (extends TODO_LIST's GOCACHE item)~~ done — GOCACHE probe/fallback + unsuppressed stderr in coverage-gate (2026-09-19 pass)                                | ~~High~~     | ~~S~~  | ~~Tooling~~  |
+| ~~6~~ | ~~After gates green: push, verify CI green, then measure + record the coverage line (retire this report's N/A)~~ done — pushed, CI green, coverage measured in every report since (99.3%)                                                    | ~~Critical~~ | ~~M~~  | ~~Process~~  |
 
 ### P1 — session-derived doc/roadmap work (High)
 
-| #  | Item                                                                                                                                                                        | Impact | Effort | Category |
-| -- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------ | -------- |
-| ~~7~~  | ~~ROADMAP: advance sequencing — §1 exit criteria met; move Now→Developer experience; fold 3 leftover design questions into §5 with sources~~ done at `624eb7d` | ~~High~~ | ~~S~~ | ~~Docs~~ |
-| ~~8~~  | ~~ROADMAP §2: cross-link sentence — an in-tree Redis/PG EventStore re-opens the parked common/server split (§4)~~ done at `624eb7d` | ~~High~~ | ~~S~~ | ~~Docs~~ |
-| ~~9~~  | ~~ROADMAP §3: delete or decode CLTY per g2; fallback wording "SSE extension fields (custom fields)"~~ done at `624eb7d` | ~~High~~ | ~~S~~ | ~~Docs~~ |
-| ~~10~~ | ~~ROADMAP §4 parked split: add go-etag cross-ref (deprecated.go shim + export-parity suite + tombstone doc.go = proven migration playbook)~~ done at `28bbb1a` | ~~Med~~ | ~~S~~ | ~~Docs~~ |
-| ~~11~~ | ~~ROADMAP §5 typed-code raw idea: add go-etag `server/code.go` as reference implementation (declarative templates + bidirectional pinning test)~~ done at `28bbb1a` | ~~Med~~ | ~~S~~ | ~~Docs~~ |
-| ~~12~~ | ~~Promote a LIVING spec-conformance account: distill archived SUPERB plan D1–D6 + closeout into a docs/ doc (go-etag rfc9111-conformance.md analog), link from AGENTS gotchas~~ done — routed — TODO_LIST open item (living docs/conformance.md distillation) | ~~Med~~ | ~~M~~ | ~~Docs~~ |
-| ~~13~~ | ~~Re-verify wire-only consumer count (2→?) across sibling repos; update ROADMAP §4 trigger status (g3)~~ done — routed — ROADMAP §4 now flags the 2-of-4 count as unverified-since 2026-07-25; the recount needs owner knowledge and is left flagged, not faked | ~~Med~~ | ~~M~~ | ~~Docs~~ |
-| ~~14~~ | ~~Adopt benchmark-baseline convention from go-etag: `reports/bench/<date>_<name>.txt`, `-benchmem -count=6` before/after perf changes~~ done at `01051f2` | ~~Med~~ | ~~S~~ | ~~Quality~~ |
-| ~~15~~ | ~~Repair truncated TODO_LIST.md cell (flake-update row ends mid-sentence: "error-swallowing `")~~ done at `5413851` | ~~Med~~ | ~~S~~ | ~~Docs~~ |
-| ~~16~~ | ~~If keeping the bump: read go-branded-id v0.6.0 + error-family v0.10.1 changelogs; consumer-side per go-ecosystem-upgrade sweep~~ done at `55e790c` | ~~High~~ | ~~M~~ | ~~Quality~~ |
+| #      | Item                                                                                                                                                                                                                                                            | Impact   | Effort | Category    |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------ | ----------- |
+| ~~7~~  | ~~ROADMAP: advance sequencing — §1 exit criteria met; move Now→Developer experience; fold 3 leftover design questions into §5 with sources~~ done at `624eb7d`                                                                                                  | ~~High~~ | ~~S~~  | ~~Docs~~    |
+| ~~8~~  | ~~ROADMAP §2: cross-link sentence — an in-tree Redis/PG EventStore re-opens the parked common/server split (§4)~~ done at `624eb7d`                                                                                                                             | ~~High~~ | ~~S~~  | ~~Docs~~    |
+| ~~9~~  | ~~ROADMAP §3: delete or decode CLTY per g2; fallback wording "SSE extension fields (custom fields)"~~ done at `624eb7d`                                                                                                                                         | ~~High~~ | ~~S~~  | ~~Docs~~    |
+| ~~10~~ | ~~ROADMAP §4 parked split: add go-etag cross-ref (deprecated.go shim + export-parity suite + tombstone doc.go = proven migration playbook)~~ done at `28bbb1a`                                                                                                  | ~~Med~~  | ~~S~~  | ~~Docs~~    |
+| ~~11~~ | ~~ROADMAP §5 typed-code raw idea: add go-etag `server/code.go` as reference implementation (declarative templates + bidirectional pinning test)~~ done at `28bbb1a`                                                                                             | ~~Med~~  | ~~S~~  | ~~Docs~~    |
+| ~~12~~ | ~~Promote a LIVING spec-conformance account: distill archived SUPERB plan D1–D6 + closeout into a docs/ doc (go-etag rfc9111-conformance.md analog), link from AGENTS gotchas~~ done — routed — TODO_LIST open item (living docs/conformance.md distillation)   | ~~Med~~  | ~~M~~  | ~~Docs~~    |
+| ~~13~~ | ~~Re-verify wire-only consumer count (2→?) across sibling repos; update ROADMAP §4 trigger status (g3)~~ done — routed — ROADMAP §4 now flags the 2-of-4 count as unverified-since 2026-07-25; the recount needs owner knowledge and is left flagged, not faked | ~~Med~~  | ~~M~~  | ~~Docs~~    |
+| ~~14~~ | ~~Adopt benchmark-baseline convention from go-etag: `reports/bench/<date>_<name>.txt`, `-benchmem -count=6` before/after perf changes~~ done at `01051f2`                                                                                                       | ~~Med~~  | ~~S~~  | ~~Quality~~ |
+| ~~15~~ | ~~Repair truncated TODO_LIST.md cell (flake-update row ends mid-sentence: "error-swallowing `")~~ done at`5413851`                                                                                                                                              | ~~Med~~  | ~~S~~  | ~~Docs~~    |
+| ~~16~~ | ~~If keeping the bump: read go-branded-id v0.6.0 + error-family v0.10.1 changelogs; consumer-side per go-ecosystem-upgrade sweep~~ done at `55e790c`                                                                                                            | ~~High~~ | ~~M~~  | ~~Quality~~ |
 
 ### P2 — existing TODO_LIST backlog (verified open 2026-09-03; re-verify at harvest)
 
-| #  | Item                                                                                                                         | Impact | Effort | Category |
-| -- | ---------------------------------------------------------------------------------------------------------------------------- | ------ | ------ | -------- |
-| ~~17~~ | ~~`Stream.Send` partial-write semantics test (short-write fake)~~ done at `6446288` | ~~High~~ | ~~S~~ | ~~Quality~~ |
-| ~~18~~ | ~~Context-cancellation mid-stream teardown test (clean close, no panic/deadlock)~~ done at `6446288` | ~~High~~ | ~~M~~ | ~~Quality~~ |
-| ~~19~~ | ~~`errors.AsType` migration evaluation sweep (Go 1.26+; never regress sentinel matching)~~ done at `6446288` | ~~Med~~ | ~~M~~ | ~~Quality~~ |
-| ~~20~~ | ~~Pin real `benchmem` numbers behind FEATURES' allocation-free hot-path claim~~ done at `6446288` | ~~Med~~ | ~~S~~ | ~~Docs~~ |
-| ~~21~~ | ~~Confirm flake-update cron created its PR post-2026-09-07 (first run with PR permission)~~ done — PRs created; both resolved by the 23:00 session | ~~Med~~ | ~~S~~ | ~~CI~~ |
-| ~~22~~ | ~~Single-source golangci-lint version (ci.yml ↔ flake.nix enforcement, not comment)~~ done at `6446288` | ~~High~~ | ~~S~~ | ~~CI~~ |
-| ~~23~~ | ~~CI treefmt/format gate job (formatting currently local-only)~~ done — the gate already existed (checks.format) and demonstrably bites | ~~Med~~ | ~~S~~ | ~~CI~~ |
-| ~~24~~ | ~~CI concurrency group to cancel superseded master runs~~ done at `6446288` | ~~Low~~ | ~~S~~ | ~~CI~~ |
-| ~~25~~ | ~~Dependabot/Renovate for Actions SHA pins (Node 20 deprecation warnings active)~~ done at `a2ae921` | ~~Med~~ | ~~S~~ | ~~CI~~ |
-| ~~26~~ | ~~Example smoke script: boot each example server, curl one event, kill~~ done at `6446288` | ~~Med~~ | ~~S~~ | ~~Quality~~ |
-| ~~27~~ | ~~SECURITY.md with private vulnerability reporting contact~~ done at `6446288` | ~~Med~~ | ~~S~~ | ~~Docs~~ |
-| ~~28~~ | ~~CONTRIBUTING release-checklist additions (fuzz budget, govulncheck pin refresh, tag-signing policy, datastar pin-bump owner)~~ done at `6446288` | ~~Med~~ | ~~S~~ | ~~Docs~~ |
-| ~~29~~ | ~~Godoc examples for `RequireDataJSON` and `WithOnDrop`~~ done at `6446288` | ~~Low~~ | ~~S~~ | ~~Docs~~ |
-| ~~30~~ | ~~`docs/guides/eventstore-patterns.md` — retention/GC for replay stores~~ done at `6446288` | ~~Med~~ | ~~M~~ | ~~Docs~~ |
-| ~~31~~ | ~~`docs/guides/` filters and fan-out patterns (read-lock predicate contract)~~ done at `6446288` | ~~Med~~ | ~~M~~ | ~~Docs~~ |
-| ~~32~~ | ~~Cross-repo CI: assert go-datastar tests against latest ssetest tag~~ done at `6446288` | ~~Med~~ | ~~S~~ | ~~CI~~ |
+| #      | Item                                                                                                                                               | Impact   | Effort | Category    |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------ | ----------- |
+| ~~17~~ | ~~`Stream.Send` partial-write semantics test (short-write fake)~~ done at `6446288`                                                                | ~~High~~ | ~~S~~  | ~~Quality~~ |
+| ~~18~~ | ~~Context-cancellation mid-stream teardown test (clean close, no panic/deadlock)~~ done at `6446288`                                               | ~~High~~ | ~~M~~  | ~~Quality~~ |
+| ~~19~~ | ~~`errors.AsType` migration evaluation sweep (Go 1.26+; never regress sentinel matching)~~ done at `6446288`                                       | ~~Med~~  | ~~M~~  | ~~Quality~~ |
+| ~~20~~ | ~~Pin real `benchmem` numbers behind FEATURES' allocation-free hot-path claim~~ done at `6446288`                                                  | ~~Med~~  | ~~S~~  | ~~Docs~~    |
+| ~~21~~ | ~~Confirm flake-update cron created its PR post-2026-09-07 (first run with PR permission)~~ done — PRs created; both resolved by the 23:00 session | ~~Med~~  | ~~S~~  | ~~CI~~      |
+| ~~22~~ | ~~Single-source golangci-lint version (ci.yml ↔ flake.nix enforcement, not comment)~~ done at `6446288`                                            | ~~High~~ | ~~S~~  | ~~CI~~      |
+| ~~23~~ | ~~CI treefmt/format gate job (formatting currently local-only)~~ done — the gate already existed (checks.format) and demonstrably bites            | ~~Med~~  | ~~S~~  | ~~CI~~      |
+| ~~24~~ | ~~CI concurrency group to cancel superseded master runs~~ done at `6446288`                                                                        | ~~Low~~  | ~~S~~  | ~~CI~~      |
+| ~~25~~ | ~~Dependabot/Renovate for Actions SHA pins (Node 20 deprecation warnings active)~~ done at `a2ae921`                                               | ~~Med~~  | ~~S~~  | ~~CI~~      |
+| ~~26~~ | ~~Example smoke script: boot each example server, curl one event, kill~~ done at `6446288`                                                         | ~~Med~~  | ~~S~~  | ~~Quality~~ |
+| ~~27~~ | ~~SECURITY.md with private vulnerability reporting contact~~ done at `6446288`                                                                     | ~~Med~~  | ~~S~~  | ~~Docs~~    |
+| ~~28~~ | ~~CONTRIBUTING release-checklist additions (fuzz budget, govulncheck pin refresh, tag-signing policy, datastar pin-bump owner)~~ done at `6446288` | ~~Med~~  | ~~S~~  | ~~Docs~~    |
+| ~~29~~ | ~~Godoc examples for `RequireDataJSON` and `WithOnDrop`~~ done at `6446288`                                                                        | ~~Low~~  | ~~S~~  | ~~Docs~~    |
+| ~~30~~ | ~~`docs/guides/eventstore-patterns.md` — retention/GC for replay stores~~ done at `6446288`                                                        | ~~Med~~  | ~~M~~  | ~~Docs~~    |
+| ~~31~~ | ~~`docs/guides/` filters and fan-out patterns (read-lock predicate contract)~~ done at `6446288`                                                   | ~~Med~~  | ~~M~~  | ~~Docs~~    |
+| ~~32~~ | ~~Cross-repo CI: assert go-datastar tests against latest ssetest tag~~ done at `6446288`                                                           | ~~Med~~  | ~~S~~  | ~~CI~~      |
 
 ### P3 — harvest candidates routed via docs-health (ROADMAP fuel; apply routing rigor)
 
-| #  | Item                                                                                                               | Impact | Effort | Category   |
-| -- | ------------------------------------------------------------------------------------------------------------------ | ------ | ------ | ---------- |
-| ~~33~~ | ~~Replay pagination (limit/cursor) API sketch for huge reconnect gaps~~ done — routed — ROADMAP raw ideas (replay pagination) | ~~Low~~ | ~~M~~ | ~~Feature~~ |
-| ~~34~~ | ~~`WithDrainPollInterval` + richer ShutdownResult — only on consumer-reported drain-visibility pain~~ done — routed — ROADMAP raw ideas (drain-poll/ShutdownResult) | ~~Low~~ | ~~S~~ | ~~Feature~~ |
-| ~~35~~ | ~~Example servers as flake apps (`nix run .#datastar` etc.) — decide once, stop re-deferring~~ done — routed — ROADMAP raw ideas (example flake apps) | ~~Low~~ | ~~S~~ | ~~Decision~~ |
-| ~~36~~ | ~~CSP headers + SRI posture for example vendored assets~~ done — routed — ROADMAP raw ideas (CSP/SRI) | ~~Low~~ | ~~S~~ | ~~Security~~ |
-| ~~37~~ | ~~`docs/status/INDEX.md` — only if generated from git history, never hand-maintained~~ done — routed — ROADMAP raw ideas (generated INDEX.md) | ~~Low~~ | ~~M~~ | ~~Docs~~ |
-| ~~38~~ | ~~`docs/guides/getting-started.md` distinct from README quickstart~~ done — routed — ROADMAP raw ideas (getting-started guide) | ~~Low~~ | ~~M~~ | ~~Docs~~ |
-| ~~39~~ | ~~Topic/channel multi-broadcaster routing — only on a real multi-hub consumer need~~ done — routed — ROADMAP raw ideas (topic routing) | ~~Low~~ | ~~L~~ | ~~Feature~~ |
-| ~~40~~ | ~~samber/do lifecycle adapter revisit — only on concrete consumer ask~~ done — routed — ROADMAP raw ideas (samber/do adapter) | ~~Low~~ | ~~S~~ | ~~Feature~~ |
-| ~~41~~ | ~~Ecosystem dependency-policy doc for larsartmann/* (pin-vs-track; test coupling to upstream incidental behavior)~~ done — routed — ROADMAP raw ideas (ecosystem dependency policy) | ~~Low~~ | ~~M~~ | ~~Docs~~ |
-| ~~42~~ | ~~Bound the `OnPredicatePanic` observability design question (currently silent recovery)~~ done — routed — ROADMAP §1 design explorations (OnPredicatePanic) | ~~Low~~ | ~~S~~ | ~~Decision~~ |
-| ~~43~~ | ~~Bound the backpressure policy design question (block vs spill vs drop-on-full)~~ done — routed — ROADMAP §1 design explorations (backpressure) | ~~Low~~ | ~~M~~ | ~~Decision~~ |
-| ~~44~~ | ~~Bound metrics-beyond-Health design (drop counters, per-subscriber stats)~~ done — routed — ROADMAP §1 design explorations (metrics beyond Health) | ~~Low~~ | ~~M~~ | ~~Decision~~ |
-| ~~45~~ | ~~Client `Dial` helper — stays deferred until a concrete client consumer exists (do not pre-build)~~ done — routed — ROADMAP §2 (Dial, demand-gated) | ~~Low~~ | ~~—~~ | ~~Deferred~~ |
-| ~~46~~ | ~~In-memory `EventStore` impl — only after item 8's split cross-link is resolved~~ done — routed — ROADMAP §2 (in-memory EventStore) | ~~Low~~ | ~~M~~ | ~~Feature~~ |
-| ~~47~~ | ~~Drop `replace` directives from next datastartest tag (go-datastar checklist)~~ done at `c1826fb` | ~~Low~~ | ~~S~~ | ~~Cross-repo~~ |
-| ~~48~~ | ~~CI headless browser test — stays BLOCKED on E2E scope decision (chromedp brainstorm Option B vs C)~~ done — routed — TODO_LIST Blocked row (E2E scope decision) | ~~Low~~ | ~~L~~ | ~~Blocked~~ |
-| ~~49~~ | ~~Misleading auto-commit `38e79aa` message — stays WONT (no history rewrite) unless ordered~~ done — routed — TODO_LIST Declined row (no history rewrite) | ~~Low~~ | ~~—~~ | ~~WONT~~ |
-| ~~50~~ | ~~Re-run docs-health AUDIT over docs/status after master unblocks (no reports exist for 09-04→09-18, the 5 red days)~~ done — this pass is that re-run (2026-09-29) | ~~Med~~ | ~~M~~ | ~~Docs~~ |
+| #      | Item                                                                                                                                                                                | Impact  | Effort | Category       |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------ | -------------- |
+| ~~33~~ | ~~Replay pagination (limit/cursor) API sketch for huge reconnect gaps~~ done — routed — ROADMAP raw ideas (replay pagination)                                                       | ~~Low~~ | ~~M~~  | ~~Feature~~    |
+| ~~34~~ | ~~`WithDrainPollInterval` + richer ShutdownResult — only on consumer-reported drain-visibility pain~~ done — routed — ROADMAP raw ideas (drain-poll/ShutdownResult)                 | ~~Low~~ | ~~S~~  | ~~Feature~~    |
+| ~~35~~ | ~~Example servers as flake apps (`nix run .#datastar` etc.) — decide once, stop re-deferring~~ done — routed — ROADMAP raw ideas (example flake apps)                               | ~~Low~~ | ~~S~~  | ~~Decision~~   |
+| ~~36~~ | ~~CSP headers + SRI posture for example vendored assets~~ done — routed — ROADMAP raw ideas (CSP/SRI)                                                                               | ~~Low~~ | ~~S~~  | ~~Security~~   |
+| ~~37~~ | ~~`docs/status/INDEX.md` — only if generated from git history, never hand-maintained~~ done — routed — ROADMAP raw ideas (generated INDEX.md)                                       | ~~Low~~ | ~~M~~  | ~~Docs~~       |
+| ~~38~~ | ~~`docs/guides/getting-started.md` distinct from README quickstart~~ done — routed — ROADMAP raw ideas (getting-started guide)                                                      | ~~Low~~ | ~~M~~  | ~~Docs~~       |
+| ~~39~~ | ~~Topic/channel multi-broadcaster routing — only on a real multi-hub consumer need~~ done — routed — ROADMAP raw ideas (topic routing)                                              | ~~Low~~ | ~~L~~  | ~~Feature~~    |
+| ~~40~~ | ~~samber/do lifecycle adapter revisit — only on concrete consumer ask~~ done — routed — ROADMAP raw ideas (samber/do adapter)                                                       | ~~Low~~ | ~~S~~  | ~~Feature~~    |
+| ~~41~~ | ~~Ecosystem dependency-policy doc for larsartmann/* (pin-vs-track; test coupling to upstream incidental behavior)~~ done — routed — ROADMAP raw ideas (ecosystem dependency policy) | ~~Low~~ | ~~M~~  | ~~Docs~~       |
+| ~~42~~ | ~~Bound the `OnPredicatePanic` observability design question (currently silent recovery)~~ done — routed — ROADMAP §1 design explorations (OnPredicatePanic)                        | ~~Low~~ | ~~S~~  | ~~Decision~~   |
+| ~~43~~ | ~~Bound the backpressure policy design question (block vs spill vs drop-on-full)~~ done — routed — ROADMAP §1 design explorations (backpressure)                                    | ~~Low~~ | ~~M~~  | ~~Decision~~   |
+| ~~44~~ | ~~Bound metrics-beyond-Health design (drop counters, per-subscriber stats)~~ done — routed — ROADMAP §1 design explorations (metrics beyond Health)                                 | ~~Low~~ | ~~M~~  | ~~Decision~~   |
+| ~~45~~ | ~~Client `Dial` helper — stays deferred until a concrete client consumer exists (do not pre-build)~~ done — routed — ROADMAP §2 (Dial, demand-gated)                                | ~~Low~~ | ~~—~~  | ~~Deferred~~   |
+| ~~46~~ | ~~In-memory `EventStore` impl — only after item 8's split cross-link is resolved~~ done — routed — ROADMAP §2 (in-memory EventStore)                                                | ~~Low~~ | ~~M~~  | ~~Feature~~    |
+| ~~47~~ | ~~Drop `replace` directives from next datastartest tag (go-datastar checklist)~~ done at `c1826fb`                                                                                  | ~~Low~~ | ~~S~~  | ~~Cross-repo~~ |
+| ~~48~~ | ~~CI headless browser test — stays BLOCKED on E2E scope decision (chromedp brainstorm Option B vs C)~~ done — routed — TODO_LIST Blocked row (E2E scope decision)                   | ~~Low~~ | ~~L~~  | ~~Blocked~~    |
+| ~~49~~ | ~~Misleading auto-commit `38e79aa` message — stays WONT (no history rewrite) unless ordered~~ done — routed — TODO_LIST Declined row (no history rewrite)                           | ~~Low~~ | ~~—~~  | ~~WONT~~       |
+| ~~50~~ | ~~Re-run docs-health AUDIT over docs/status after master unblocks (no reports exist for 09-04→09-18, the 5 red days)~~ done — this pass is that re-run (2026-09-29)                 | ~~Med~~ | ~~M~~  | ~~Docs~~       |
 
 **HARVEST note:** f1–f16 and f50 are bounded and should land in TODO_LIST.md; f33–f49 are
 ROADMAP fuel. Nothing is harvested yet — explicit wait order in effect.

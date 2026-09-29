@@ -6,13 +6,13 @@
 
 ## Sequencing
 
-| Horizon | Theme                                                                   | Trigger to advance                                             |
-| ------- | ----------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Horizon | Theme                                                                                           | Trigger to advance                                                                           |
+| ------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Now     | [Production readiness](#1-production-readiness) — exit criteria met; design explorations remain | A consumer surfaces a real backpressure/observability need (design question becomes bounded) |
-| Next    | [Developer experience](#2-developer-experience)                         | Concrete client consumer or `EventStore`-shape request appears |
-| Later   | [Spec compliance & extensibility](#3-spec-compliance-and-extensibility) | Spec amendment or concrete extension need                      |
-| Parked  | [Parked decisions](#4-parked-decisions)                                 | Trigger criteria in the linked brainstorming docs fire         |
-| —       | [Raw ideas](#5-raw-ideas)                                               | Analyzed enough to become a theme or a parked decision         |
+| Next    | [Developer experience](#2-developer-experience)                                                 | Concrete client consumer or `EventStore`-shape request appears                               |
+| Later   | [Spec compliance & extensibility](#3-spec-compliance-and-extensibility)                         | Spec amendment or concrete extension need                                                    |
+| Parked  | [Parked decisions](#4-parked-decisions)                                                         | Trigger criteria in the linked brainstorming docs fire                                       |
+| —       | [Raw ideas](#5-raw-ideas)                                                                       | Analyzed enough to become a theme or a parked decision                                       |
 
 ## 1. Production readiness
 

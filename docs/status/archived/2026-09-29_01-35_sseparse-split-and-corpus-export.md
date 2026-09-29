@@ -80,7 +80,7 @@ and at release time the tag must exist before the replace is dropped
 
 ## f) Up to 50 things we should get done next
 
-1. ~~Tag `sseparse/v0.1.0` (first), then release-commit ssetest (drop replace, require resolves) and tag `ssetest/v0.4.0`; probe both with `scripts/release-verify.sh` (TODO_LIST #1).~~ done at `1cfc651`, ` 7cd5b3a`
+1. ~~Tag `sseparse/v0.1.0` (first), then release-commit ssetest (drop replace, require resolves) and tag `ssetest/v0.4.0`; probe both with `scripts/release-verify.sh` (TODO_LIST #1).~~ done at `1cfc651`, `7cd5b3a`
 2. ~~go-daemon: migrate `sse_test.go` framing tests to `sseparse.MustCorpus` vectors (TODO_LIST #2).~~ done at `36c2ecc`
 3. ~~go-datastar pin-bump pass now has a third module to consider when it adopts sseparse directly.~~ done — go-datastar v0.6.1 lockstep pins ssetest v0.4.0 (their bb4f08d)
 4. ~~Clean `/mnt/buildcache` (go build cache 149 GB; golangci facts cache) and decide a rotation policy.~~ **Won't implement — mooted — the mount measured 32% the same day; nothing blocked.**

@@ -71,7 +71,7 @@ on `checks.format` (pre-existing unformatted staged file — fixed via
 4. ~~**Red master → green CI.** Shipped: fix validated locally. Remains: nothing~~ done — master CI green from the 2026-09-19 pushes onward
    ~~was committed/pushed by this session; CI green on master is unconfirmed~~
    ~~(auto-commit daemon will pick the tree up).~~
-5. ~~**Open PRs #1 (flake update) and #2 (dependabot).** Tracked in TODO_LIST~~ done at `a2ae921`, ` ecda05a`
+5. ~~**Open PRs #1 (flake update) and #2 (dependabot).** Tracked in TODO_LIST~~ done at `a2ae921`, `ecda05a`
    ~~with merge guidance; human review-merge outstanding.~~
 
 ## c) NOT STARTED

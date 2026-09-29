@@ -86,12 +86,12 @@ pushing the earlier session's commits.
 
 ## c) NOT STARTED
 
-| Item                                                            | Why                                                                                                   |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| ~~M18: watch Monday's `datastar-compat.yml` run (next 2026-10-05)~~ routed — TODO_LIST watch row | ~~Wait-state by design; mechanics already hand-verified; the run is the runner-env proof.~~               |
-| ~~M19: enable GitHub private vulnerability reporting~~ done — enabled via the REST endpoint | ~~USER-ONLY (Settings UI; REST rejects it). Surfaced, needs you.~~ (the 422 pointed at the wrong endpoint) |
-| ~~M20: buildcache rotation policy decision~~ routed — TODO_LIST Blocked row | ~~USER-ONLY (host policy; mount was 32%, no pressure).~~                                                  |
-| ~~go-datastar/go-daemon/pdd coverage bullets for the report line~~ NOT-DO — no changes made in those repos this session, so there is nothing to measure | ~~No changes made in those repos this session (verification + push only) — nothing to measure honestly.~~ |
+| Item                                                                                                                                                    | Why                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| ~~M18: watch Monday's `datastar-compat.yml` run (next 2026-10-05)~~ routed — TODO_LIST watch row                                                        | ~~Wait-state by design; mechanics already hand-verified; the run is the runner-env proof.~~                |
+| ~~M19: enable GitHub private vulnerability reporting~~ done — enabled via the REST endpoint                                                             | ~~USER-ONLY (Settings UI; REST rejects it). Surfaced, needs you.~~ (the 422 pointed at the wrong endpoint) |
+| ~~M20: buildcache rotation policy decision~~ routed — TODO_LIST Blocked row                                                                             | ~~USER-ONLY (host policy; mount was 32%, no pressure).~~                                                   |
+| ~~go-datastar/go-daemon/pdd coverage bullets for the report line~~ NOT-DO — no changes made in those repos this session, so there is nothing to measure | ~~No changes made in those repos this session (verification + push only) — nothing to measure honestly.~~  |
 
 ## d) TOTALLY FUCKED UP
 
