@@ -53,6 +53,23 @@ Bump procedure: bump BOTH, run `templ generate` in the devShell, commit any
 regenerated `*_templ.go` in the same change. CI's `-check` run is the drift
 alarm: a mismatch reddens the Examples job on every push.
 
+### Benchmark regression tracking
+
+Checked-in baselines live in [`docs/benchmarks/`](docs/benchmarks/) (one file
+per module per date). To compare a change against the baseline:
+
+    GOWORK=off go test . -run '^$' -bench=. -benchmem -count=6 > new-root.txt
+    (cd sseparse && GOWORK=off go test . -run '^$' -bench=. -benchmem -count=6 > ../new-sseparse.txt)
+    go run golang.org/x/perf/cmd/benchstat@v1.0.0 docs/benchmarks/<date>-root.txt new-root.txt
+    go run golang.org/x/perf/cmd/benchstat@v1.0.0 docs/benchmarks/<date>-sseparse.txt new-sseparse.txt
+
+`count=6` gives benchstat real statistics (delta + p-value); `count=1` output
+is noise. Rules of thumb: investigate any regression with a p-value under
+0.05 before merging (noise on this hardware is roughly ±10% for the
+broadcaster benches, less for WriteEvent); re-record the baselines — new
+date, new files — when a change lands that deliberately moves performance,
+so the next comparison starts from the new reality.
+
 ## Reporting Issues
 
 Please use GitHub Issues to report bugs or request features.

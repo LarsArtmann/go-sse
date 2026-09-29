@@ -1,0 +1,12 @@
+goos: linux
+goarch: amd64
+pkg: github.com/larsartmann/go-sse/sseparse
+cpu: AMD RYZEN AI MAX+ 395 w/ Radeon 8060S          
+BenchmarkReadEvents-32    	    1646	   1233066 ns/op	  39.74 MB/s	  307640 B/op	    6016 allocs/op
+BenchmarkReadEvents-32    	    1395	    816161 ns/op	  60.04 MB/s	  307638 B/op	    6016 allocs/op
+BenchmarkReadEvents-32    	    2554	    823449 ns/op	  59.51 MB/s	  307633 B/op	    6016 allocs/op
+BenchmarkReadEvents-32    	    1760	    639454 ns/op	  76.63 MB/s	  307635 B/op	    6016 allocs/op
+BenchmarkReadEvents-32    	    2907	    625943 ns/op	  78.28 MB/s	  307629 B/op	    6016 allocs/op
+BenchmarkReadEvents-32    	    1431	    721616 ns/op	  67.90 MB/s	  307623 B/op	    6016 allocs/op
+PASS
+ok  	github.com/larsartmann/go-sse/sseparse	9.324s

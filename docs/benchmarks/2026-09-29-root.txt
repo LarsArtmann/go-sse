@@ -45,4 +45,88 @@ BenchmarkBroadcastManyVsLoop/BroadcastMany-32    	    3862	    684458 ns/op	    
 BenchmarkBroadcastManyVsLoop/BroadcastMany-32    	    2271	    479576 ns/op	       0 B/op	       0 allocs/op
 BenchmarkBroadcastManyVsLoop/BroadcastMany-32    	    2581	    465175 ns/op	       0 B/op	       0 allocs/op
 BenchmarkBroadcastManyVsLoop/BroadcastLoop-32    	    2911	    408591 ns/op	       0 B/op	       0 allocs/op
-BenchmarkBroadcastManyVsLoop/BroadcastLoop-32    	
+BenchmarkBroadcastManyVsLoop/BroadcastLoop-32    	    3690	    365301 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcastManyVsLoop/BroadcastLoop-32    	    4334	    358392 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcastManyVsLoop/BroadcastLoop-32    	    1651	    757113 ns/op	       4 B/op	       0 allocs/op
+BenchmarkBroadcastManyVsLoop/BroadcastLoop-32    	    2035	    767352 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcastManyVsLoop/BroadcastLoop-32    	    1162	   1134757 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/100subs-32          	1000000000	         0.002368 ns/op	      4096 B/sub	       400.0 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/100subs-32          	1000000000	         0.002795 ns/op	      4096 B/sub	       400.0 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/100subs-32          	1000000000	         0.002199 ns/op	      4096 B/sub	       400.0 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/100subs-32          	1000000000	         0.002154 ns/op	      4096 B/sub	       400.0 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/100subs-32          	1000000000	         0.002568 ns/op	      4096 B/sub	       400.0 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/100subs-32          	1000000000	         0.002185 ns/op	      4096 B/sub	       400.0 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/1000subs-32         	1000000000	         0.004283 ns/op	      4170 B/sub	      4072 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/1000subs-32         	1000000000	         0.003337 ns/op	      4170 B/sub	      4072 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/1000subs-32         	1000000000	         0.003709 ns/op	      4170 B/sub	      4072 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/1000subs-32         	1000000000	         0.009309 ns/op	      4170 B/sub	      4072 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/1000subs-32         	1000000000	         0.003825 ns/op	      4170 B/sub	      4072 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/1000subs-32         	1000000000	         0.004233 ns/op	      4170 B/sub	      4072 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/10000subs-32        	1000000000	         0.03681 ns/op	      4144 B/sub	     40464 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/10000subs-32        	1000000000	         0.03428 ns/op	      4136 B/sub	     40392 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/10000subs-32        	1000000000	         0.05040 ns/op	      4139 B/sub	     40424 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/10000subs-32        	1000000000	         0.03295 ns/op	      4143 B/sub	     40456 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/10000subs-32        	1000000000	         0.06606 ns/op	      4138 B/sub	     40408 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkMemoryPerSubscriber/10000subs-32        	1000000000	         0.03272 ns/op	      4153 B/sub	     40552 total-KiB	       0 B/op	       0 allocs/op
+BenchmarkKeyedLines/single_line-32               	25400919	        67.01 ns/op	      48 B/op	       2 allocs/op
+BenchmarkKeyedLines/single_line-32               	17596172	       101.3 ns/op	      48 B/op	       2 allocs/op
+BenchmarkKeyedLines/single_line-32               	22247121	        50.59 ns/op	      48 B/op	       2 allocs/op
+BenchmarkKeyedLines/single_line-32               	24062722	        41.67 ns/op	      48 B/op	       2 allocs/op
+BenchmarkKeyedLines/single_line-32               	29829252	        43.05 ns/op	      48 B/op	       2 allocs/op
+BenchmarkKeyedLines/single_line-32               	27530097	        72.90 ns/op	      48 B/op	       2 allocs/op
+BenchmarkKeyedLines/multi_line_100-32            	   30484	     39420 ns/op	   29680 B/op	      11 allocs/op
+BenchmarkKeyedLines/multi_line_100-32            	   35359	     30176 ns/op	   29680 B/op	      11 allocs/op
+BenchmarkKeyedLines/multi_line_100-32            	   31333	     40702 ns/op	   29680 B/op	      11 allocs/op
+BenchmarkKeyedLines/multi_line_100-32            	   33897	     29909 ns/op	   29680 B/op	      11 allocs/op
+BenchmarkKeyedLines/multi_line_100-32            	   34446	     34326 ns/op	   29680 B/op	      11 allocs/op
+BenchmarkKeyedLines/multi_line_100-32            	   35301	     32842 ns/op	   29680 B/op	      11 allocs/op
+BenchmarkWriteEvent/simple-32                    	11807044	        88.90 ns/op	      48 B/op	       1 allocs/op
+BenchmarkWriteEvent/simple-32                    	18687098	        83.70 ns/op	      48 B/op	       1 allocs/op
+BenchmarkWriteEvent/simple-32                    	15912477	        76.69 ns/op	      48 B/op	       1 allocs/op
+BenchmarkWriteEvent/simple-32                    	17898596	        69.71 ns/op	      48 B/op	       1 allocs/op
+BenchmarkWriteEvent/simple-32                    	19518104	        65.48 ns/op	      48 B/op	       1 allocs/op
+BenchmarkWriteEvent/simple-32                    	20182381	        55.47 ns/op	      48 B/op	       1 allocs/op
+BenchmarkWriteEvent/multiline_50-32              	  245227	      5149 ns/op	   11008 B/op	       2 allocs/op
+BenchmarkWriteEvent/multiline_50-32              	  242965	      5517 ns/op	   11008 B/op	       2 allocs/op
+BenchmarkWriteEvent/multiline_50-32              	  229854	      6446 ns/op	   11008 B/op	       2 allocs/op
+BenchmarkWriteEvent/multiline_50-32              	  226669	      5003 ns/op	   11008 B/op	       2 allocs/op
+BenchmarkWriteEvent/multiline_50-32              	  239482	      5893 ns/op	   11008 B/op	       2 allocs/op
+BenchmarkWriteEvent/multiline_50-32              	  246454	      5535 ns/op	   11008 B/op	       2 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1subs/unfiltered-32         	23983412	        67.61 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1subs/unfiltered-32         	16993221	        61.00 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1subs/unfiltered-32         	24186783	        55.52 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1subs/unfiltered-32         	19281151	        52.60 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1subs/unfiltered-32         	25655246	        45.03 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1subs/unfiltered-32         	26434036	        45.69 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1subs/filtered-32           	25285022	        47.94 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1subs/filtered-32           	24850092	        48.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1subs/filtered-32           	19491460	        60.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1subs/filtered-32           	21633189	        58.13 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1subs/filtered-32           	16424581	        62.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1subs/filtered-32           	22031830	        54.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/100subs/unfiltered-32       	  128082	      7949 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/100subs/unfiltered-32       	  120445	     11388 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/100subs/unfiltered-32       	  103246	      9942 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/100subs/unfiltered-32       	  252769	      4255 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/100subs/unfiltered-32       	  311816	      3915 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/100subs/unfiltered-32       	  223778	      5778 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/100subs/filtered-32         	  216434	      5474 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/100subs/filtered-32         	  194007	      5854 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/100subs/filtered-32         	  284713	      5068 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/100subs/filtered-32         	  259396	      4742 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/100subs/filtered-32         	  227482	      5457 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/100subs/filtered-32         	  224136	      5551 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1000subs/unfiltered-32      	    6084	    214418 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1000subs/unfiltered-32      	    5424	    194457 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1000subs/unfiltered-32      	    7230	    157556 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1000subs/unfiltered-32      	    6687	    175946 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1000subs/unfiltered-32      	    6536	    197738 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1000subs/unfiltered-32      	    5882	    185360 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1000subs/filtered-32        	    5678	    218010 ns/op	      14 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1000subs/filtered-32        	    4413	    319993 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1000subs/filtered-32        	    3680	    291264 ns/op	       8 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1000subs/filtered-32        	    4476	    286379 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1000subs/filtered-32        	    5462	    325795 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubscribeFilter_PredicateOverhead/1000subs/filtered-32        	    3102	    336104 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/larsartmann/go-sse	149.055s
