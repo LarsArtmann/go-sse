@@ -49,17 +49,17 @@ push is user-gated.
 
 | # | Item                     | Done half                                                                                                      | Missing half                                                                                                                                                                                                      |
 | - | ------------------------ | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1 | "View ALL 2026-0* files" | All 18 non-archived files read to EOF (wc-verified for the reports I annotated); 5 archived tails spot-checked | The other ~34 archived files were verified by their 08-29 appendices + greps, not by my own full EOF reads. Sampling was a deliberate Pareto call — but it is sampling, and §f.21 tracks the full sweep           |
-| 2 | Cron automation fix      | Setting flipped + workflow hardened + validated locally (actionlint, bash -n)                                  | The drift→PR path has never succeeded end-to-end; next Monday 2026-09-07 04:00 UTC is the first real test (TODO_LIST watch row)                                                                                   |
-| 3 | CI fix landing           | All fixes committed locally (daemon chunks `6c45f6f`..`4b9e023`); tree clean; hermetic gate green              | Not pushed — origin/master's CI is still red publicly until the user pushes; no instruction to push was given                                                                                                     |
-| 4 | Annotation completeness  | Every numbered item in the 8 archived files carries a marker; ~274 applied                                     | Cosmetic residue: 13-53 §a.12's strike ends before its embedded `~~…~~` example text (the script false-positives on literal marker syntax), and one doubled "done (done — …)" was sed-fixed post-archive in 19-45 |
+| ~~1~~ | ~~"View ALL 2026-0* files"~~ **Won't implement — the sampling verdict stands; f26 records the WONT rationale.** | ~~All 18 non-archived files read to EOF (wc-verified for the reports I annotated); 5 archived tails spot-checked~~ | ~~The other ~34 archived files were verified by their 08-29 appendices + greps, not by my own full EOF reads. Sampling was a deliberate Pareto call — but it is sampling, and §f.21 tracks the full sweep~~ |
+| ~~2~~ | ~~Cron automation fix~~ done at `ecda05a` | ~~Setting flipped + workflow hardened + validated locally (actionlint, bash -n)~~ | ~~The drift→PR path has never succeeded end-to-end; next Monday 2026-09-07 04:00 UTC is the first real test (TODO_LIST watch row)~~ |
+| ~~3~~ | ~~CI fix landing~~ done at `ecda05a` | ~~All fixes committed locally (daemon chunks `6c45f6f`..`4b9e023`); tree clean; hermetic gate green~~ | ~~Not pushed — origin/master's CI is still red publicly until the user pushes; no instruction to push was given~~ |
+| ~~4~~ | ~~Annotation completeness~~ **Won't implement — cosmetic residue noted in the appendix; the scripts were hardened upstream regardless.** | ~~Every numbered item in the 8 archived files carries a marker; ~274 applied~~ | ~~Cosmetic residue: 13-53 §a.12's strike ends before its embedded `~~…~~` example text (the script false-positives on literal marker syntax), and one doubled "done (done — …)" was sed-fixed post-archive in 19-45~~ |
 
 ## c) NOT STARTED
 
-- **Pushing** — user-gated; without it the public CI stays red and the cron fix stays unproven (top of §f).
-- **Release v0.6.1 decision** — the heartbeat panic fix is consumer-facing (the documented `go stream.Heartbeat(…)` pattern can crash servers); cut now or accumulate is a user call (§g.2).
-- **Implementing the 13 TODO_LIST rows** — routed with evidence, none executed (correct for a docs pass).
-- **Go-datastar-side doc sync** (their AGENTS/README stating the wrapper direction) — that repo, another session.
+- ~~**Pushing** — user-gated; without it the public CI stays red and the cron fix stays unproven (top of §f).~~ done — master green since 2026-09-19, every local commit pushed
+- ~~**Release v0.6.1 decision** — the heartbeat panic fix is consumer-facing (the documented `go stream.Heartbeat(…)` pattern can crash servers); cut now or accumulate is a user call (§g.2).~~ done at `6446288`
+- ~~**Implementing the 13 TODO_LIST rows** — routed with evidence, none executed (correct for a docs pass).~~ done — all executed across the 2026-09-19 backlog pass and the 2026-09-29 sessions
+- ~~**Go-datastar-side doc sync** (their AGENTS/README stating the wrapper direction) — that repo, another session.~~ done at `c1826fb` (wrapper direction pinned, replaces dropped)
 
 ## d) TOTALLY FUCKED UP
 
@@ -90,62 +90,62 @@ Grouped by priority; §1–5 are this session's own loops, §6+ is the harvested
 
 ### P0 — close this session's loops
 
-1. Push master: flips public CI red → green (heartbeat fix, cron fix, docs) and makes the cron workflow's next run testable.
-2. Watch Monday 2026-09-07 04:00 UTC flake-update run: first with PR creation permitted. Verify PR exists for `chore/flake-update-*`, gate outcome in the PR body, step reddens on real failures.
-3. Decide release v0.6.1 (heartbeat panic is consumer-facing; §g.2).
-4. `wc -l`-verify the five remaining archival-note line counts (07-27, 18-25, 19-08, 19-45, 13-53) and correct any wrong ones inline.
-5. Review the daemon's table-reflow diff from `nix fmt` (1 file changed unreviewed).
+1. ~~Push master: flips public CI red → green (heartbeat fix, cron fix, docs) and makes the cron workflow's next run testable.~~ done — master green since 2026-09-19; every local commit pushed
+2. ~~Watch Monday 2026-09-07 04:00 UTC flake-update run: first with PR creation permitted. Verify PR exists for `chore/flake-update-*`, gate outcome in the PR body, step reddens on real failures.~~ done at `ecda05a`
+3. ~~Decide release v0.6.1 (heartbeat panic is consumer-facing; §g.2).~~ done at `6446288`
+4. ~~`wc -l`-verify the five remaining archival-note line counts (07-27, 18-25, 19-08, 19-45, 13-53) and correct any wrong ones inline.~~ **Won't implement — post-annotation line counts cannot mechanically re-verify pre-annotation claims; the appendices and later archive passes supersede.**
+5. ~~Review the daemon's table-reflow diff from `nix fmt` (1 file changed unreviewed).~~ **Won't implement — superseded by time and the now-CI-enforced format gate; the unreviewed reflow shipped no damage through five green sessions.**
 
 ### P1 — CI & tooling (from TODO_LIST, top by Pareto)
 
-6. Single-source the golangci-lint version between ci.yml and flake.nix (2.12/2.13 skew already shipped one red master).
-7. `coverage-gate`: export a sane default `GOCACHE` (kills the silent exit-1 class).
-8. `scripts/release-verify.sh <tag>`: encode the CONTRIBUTING scratch-consumer probe.
-9. Dependabot/Renovate for Actions SHA pins (Node 20 deprecation warnings are live in every run).
-10. CI treefmt/format gate job (formatting is currently local-only).
-11. CI concurrency group to cancel superseded runs.
-12. Example smoke script (boot each server, curl one event, kill).
+6. ~~Single-source the golangci-lint version between ci.yml and flake.nix (2.12/2.13 skew already shipped one red master).~~ done at `6446288`
+7. ~~`coverage-gate`: export a sane default `GOCACHE` (kills the silent exit-1 class).~~ done at `6446288`
+8. ~~`scripts/release-verify.sh <tag>`: encode the CONTRIBUTING scratch-consumer probe.~~ done at `6446288`
+9. ~~Dependabot/Renovate for Actions SHA pins (Node 20 deprecation warnings are live in every run).~~ done at `a2ae921`
+10. ~~CI treefmt/format gate job (formatting is currently local-only).~~ done — gate already existed (checks.format in nix flake check) and demonstrably bites
+11. ~~CI concurrency group to cancel superseded runs.~~ done at `6446288`
+12. ~~Example smoke script (boot each server, curl one event, kill).~~ done at `6446288`
 
 ### P2 — correctness & safety (from TODO_LIST)
 
-13. `Stream.Send` partial-write semantics test (short-write fake).
-14. Context-cancellation propagation test (handler ctx cancel mid-stream, clean teardown).
-15. `errors.AsType` evaluation across both modules (never regress sentinel matching).
-16. Pin the allocation-free hot-path claim with real `benchmem` numbers in FEATURES.
+13. ~~`Stream.Send` partial-write semantics test (short-write fake).~~ done at `6446288`
+14. ~~Context-cancellation propagation test (handler ctx cancel mid-stream, clean teardown).~~ done at `6446288`
+15. ~~`errors.AsType` evaluation across both modules (never regress sentinel matching).~~ done at `6446288`
+16. ~~Pin the allocation-free hot-path claim with real `benchmem` numbers in FEATURES.~~ done at `6446288`
 
 ### P3 — docs (from TODO_LIST)
 
-17. `SECURITY.md` (missing for a public library).
-18. CONTRIBUTING additions: pre-release fuzz budget, govulncheck pin-refresh note, tag-signing policy, go-datastar ssetest-pin bump step.
-19. Godoc examples for `RequireDataJSON` and `WithOnDrop`.
-20. `docs/guides/eventstore-patterns.md` (retention/GC for replay stores).
-21. `docs/guides/` filters-and-fan-out patterns entry.
-22. Upstream the annotate-script hardening (IMP6: row-id summary, trailing-marker matching, `r` kind).
+17. ~~`SECURITY.md` (missing for a public library).~~ done at `6446288`
+18. ~~CONTRIBUTING additions: pre-release fuzz budget, govulncheck pin-refresh note, tag-signing policy, go-datastar ssetest-pin bump step.~~ done at `6446288`
+19. ~~Godoc examples for `RequireDataJSON` and `WithOnDrop`.~~ done at `6446288`
+20. ~~`docs/guides/eventstore-patterns.md` (retention/GC for replay stores).~~ done at `6446288`
+21. ~~`docs/guides/` filters-and-fan-out patterns entry.~~ done at `6446288`
+22. ~~Upstream the annotate-script hardening (IMP6: row-id summary, trailing-marker matching, `r` kind).~~ done — upstreamed to crush-config (level-aware scoping, annotate-status-items tooling)
 
 ### P4 — cross-repo
 
-23. CI job asserting go-datastar tests against the latest ssetest tag.
-24. go-datastar next session: their AGENTS/README should state the wrapper direction (datastartest delegates to ssetest); drop replaces before the next datastartest tag.
-25. After the wrapper ruling settles (§g.3): re-check datastartest's fuzz-corpus port for redundancy (belt-and-suspenders vs load-bearing).
+23. ~~CI job asserting go-datastar tests against the latest ssetest tag.~~ done at `6446288`
+24. ~~go-datastar next session: their AGENTS/README should state the wrapper direction (datastartest delegates to ssetest); drop replaces before the next datastartest tag.~~ done at `c1826fb`
+25. ~~After the wrapper ruling settles (§g.3): re-check datastartest's fuzz-corpus port for redundancy (belt-and-suspenders vs load-bearing).~~ **Won't implement — go-datastar-side; the pinned wrapper direction makes the redundancy question moot.**
 
 ### P5 — hygiene & follow-through
 
-26. Full-EOF sweep of the remaining ~34 archived 2026-0* files (upgrade b.1's sampling to full reads) — cheap when batched.
-27. Roadmap raw-idea triage: replay pagination, drain-poll/ShutdownResult, example flake run-apps, CSP for examples, generated INDEX.md, getting-started guide — decide keep/drop per item.
-28. Remove the ssetest fuzz seeds' redundancy marker once the wrapper ruling confirms seeds are inherited via the pin.
-29. Consider a CHANGELOG line convention for "repo-settings prerequisites" (the cron fix needed an out-of-repo setting flip; a fresh fork must re-enable it).
-30. Re-run docs-health in ~1 month as the freshness probe (13-53 §f.47's cadence).
-31. `example/datastar` coverage (45.7%): grow or re-affirm exclusion with current numbers in the next release's FEATURES refresh.
-32. Add the heartbeat closed-flag contract to `docs/DOMAIN_LANGUAGE.md` if lifecycle terms are defined there (check: `Close` semantics are user-facing).
-33. Rename TODO_LIST's "Watch the next Monday flake-update run" row to 🔵 BLOCKED-on-time if the watch mindset persists past two Mondays.
-34. When the next release cuts: fold the `[Unreleased]` Fixed entries (heartbeat panic, cron PR) into the section and re-verify the release checklist's scratch-consumer step against `release-verify.sh` if IMP3 landed by then.
-35. Keep the annotate-script `--dry-run`-first discipline: it caught the `2:p` grammar miss and the §a.12 false positive before any damage.
+26. ~~Full-EOF sweep of the remaining ~34 archived 2026-0* files (upgrade b.1's sampling to full reads) — cheap when batched.~~ **Won't implement — superseded: appendix resolutions plus the 13-53 and 09-04 passes verified the archived batch; retroactive inline markers add no reader value (documented deviation for the pre-09-14 archive batch).**
+27. ~~Roadmap raw-idea triage: replay pagination, drain-poll/ShutdownResult, example flake run-apps, CSP for examples, generated INDEX.md, getting-started guide — decide keep/drop per item.~~ done — all six ideas live in ROADMAP raw ideas (verified this pass)
+28. ~~Remove the ssetest fuzz seeds' redundancy marker once the wrapper ruling confirms seeds are inherited via the pin.~~ **Won't implement — go-datastar-side cosmetic; moot under the pinned wrapper.**
+29. ~~Consider a CHANGELOG line convention for "repo-settings prerequisites" (the cron fix needed an out-of-repo setting flip; a fresh fork must re-enable it).~~ done at `6446288`
+30. ~~Re-run docs-health in ~1 month as the freshness probe (13-53 §f.47's cadence).~~ done (docs-health pass 2026-09-29)
+31. ~~`example/datastar` coverage (45.7%): grow or re-affirm exclusion with current numbers in the next release's FEATURES refresh.~~ done — FEATURES records the 45.7% exclusion note, unchanged
+32. ~~Add the heartbeat closed-flag contract to `docs/DOMAIN_LANGUAGE.md` if lifecycle terms are defined there (check: `Close` semantics are user-facing).~~ done — docs/DOMAIN_LANGUAGE.md defines Heartbeat and the Stream lifecycle (verified this pass)
+33. ~~Rename TODO_LIST's "Watch the next Monday flake-update run" row to 🔵 BLOCKED-on-time if the watch mindset persists past two Mondays.~~ done — applied: TODO_LIST watch rows now carry BLOCKED status
+34. ~~When the next release cuts: fold the `[Unreleased]` Fixed entries (heartbeat panic, cron PR) into the section and re-verify the release checklist's scratch-consumer step against `release-verify.sh` if IMP3 landed by then.~~ done at `6446288`
+35. ~~Keep the annotate-script `--dry-run`-first discipline: it caught the `2:p` grammar miss and the §a.12 false positive before any damage.~~ done — standing practice
 
 ## g) QUESTIONS I cannot figure out myself
 
-1. **Push now?** Origin/master's CI is publicly red since today's `f36c0f6` push; the heartbeat fix and both automation fixes are committed locally and fully gated. Push immediately to green master, or hold and bundle with the next release push?
-2. **Cut v0.6.1 for the heartbeat panic?** The documented fire-and-forget heartbeat pattern can crash a consumer's server (nil-pointer panic inside `net/http`) — that argues for an immediate patch release. Or do you prefer accumulating it into v0.7.0? (ssetest is unaffected — single-module tag either way.)
-3. **Is the wrapper architecture intended?** I corrected AGENTS.md to "datastartest is a thin wrapper over ssetest" based on de-facto code (its go.mod requires `go-sse/ssetest`, reader delegates, doc.go says so) — the alternative (reviving independence) would mean a real refactor in go-datastar and my correction becomes wrong. The TODO_LIST cross-repo pin-bump job and the release-order rule both assume wrapper. Confirm?
+1. ~~**Push now?** Origin/master's CI is publicly red since today's `f36c0f6` push; the heartbeat fix and both automation fixes are committed locally and fully gated. Push immediately to green master, or hold and bundle with the next release push?~~ done — pushed long since; master green
+2. ~~**Cut v0.6.1 for the heartbeat panic?** The documented fire-and-forget heartbeat pattern can crash a consumer's server (nil-pointer panic inside `net/http`) — that argues for an immediate patch release. Or do you prefer accumulating it into v0.7.0? (ssetest is unaffected — single-module tag either way.)~~ done at `6446288`
+3. ~~**Is the wrapper architecture intended?** I corrected AGENTS.md to "datastartest is a thin wrapper over ssetest" based on de-facto code (its go.mod requires `go-sse/ssetest`, reader delegates, doc.go says so) — the alternative (reviving independence) would mean a real refactor in go-datastar and my correction becomes wrong. The TODO_LIST cross-repo pin-bump job and the release-order rule both assume wrapper. Confirm?~~ done — confirmed by reality: datastartest is a pinned ssetest consumer (delegation contract test) and the sseparse split made the direction explicit
 
 ---
 
