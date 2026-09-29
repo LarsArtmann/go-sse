@@ -28,6 +28,8 @@ without changelog lines (`a5ff824`, `7776bc7`).
 ### Changed
 
 - Removed `GOEXPERIMENT=jsonv2` from every live surface (flake devShell + apps + hermetic checks, CI workflow envs including `datastar-compat.yml`, `scripts/*.sh`, and the local `.envrc` pattern): it became unnecessary when `encoding/json/v2` turned into a `go1.27`-gated stable API. README no longer claims the flag (or Go 1.26) is required; the only surviving mentions are historical records and the module-directive-skew trap doc. Consumers on Go 1.26 toolchains must not use this version range — the `go 1.27` directives already say so.
+- All three module `go` directives aligned at `1.27.1`: this is a hard floor, not a preference — go-sse v0.6.1 on the module proxy declares `go 1.27.1` (verified via `go mod download -json` + `.mod` inspection), so every consumer of any module in this repo needs a 1.27.1+ toolchain regardless of what older directives say.
+- Dependency bumps adopted on master (untagged): ssetest now requires go-sse v0.6.1 (adding go-branded-id v0.6.0 as indirect); the root module's go-error-family moved to v0.10.2.
 
 ### Added
 
