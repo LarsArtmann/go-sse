@@ -110,9 +110,14 @@ func TestCollectN_NonPositiveCountReturnsNil(t *testing.T) {
 func TestCollectN_FatalsWhenStreamEndsEarly(t *testing.T) {
 	t.Parallel()
 
+	// A clean early EOF is NOT an error (ReadNEvents returns what it got),
+	// so the fatal branch needs a real read error: declare a Content-Length
+	// longer than the bytes delivered and the client read fails before any
+	// event is parsed.
 	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/event-stream")
-		_, _ = io.WriteString(w, "data: only\n\n")
+		w.Header().Set("Content-Length", "100")
+		_, _ = io.WriteString(w, "garbage")
 	})
 
 	ftb := &fatalTB{T: t}

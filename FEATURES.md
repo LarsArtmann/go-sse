@@ -118,7 +118,7 @@ Separate zero-dependency Go module (`github.com/larsartmann/go-sse/sseparse`) �
 
 ## Consumer test helpers (`ssetest/`)
 
-Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never leaks into consumer production builds. The parsing core lives in [`sseparse`](#parser-core-sseparse) — ssetest re-exports its entire API (`compat.go`, delegation contract pinned by `compat_test.go`) and layers the HTTP helpers on top. 98.0% statement coverage (2026-09-29).
+Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never leaks into consumer production builds. The parsing core lives in [`sseparse`](#parser-core-sseparse) — ssetest re-exports its entire API (`compat.go`, delegation contract pinned by `compat_test.go`) and layers the HTTP helpers on top. 100.0% statement coverage (2026-09-29).
 
 | Feature                                                                          | Status           | Evidence                                                                                                                                          |
 | -------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
