@@ -37,7 +37,7 @@ Every Go project that serves SSE reinvents the same four pieces: event serializa
 go get github.com/larsartmann/go-sse
 ```
 
-Requires Go 1.27+ (see `go.mod`). No build tags or `GOEXPERIMENT` needed.
+Requires Go 1.27.1+ (see `go.mod`; the module proxy enforces this floor). No build tags or `GOEXPERIMENT` needed.
 
 ## Quick Start
 
@@ -274,7 +274,7 @@ n, err := sse.ReplayFiltered(stream, store, lastEventID, pred) // filtered repla
 - **Mutex-protected Stream**: `Send` and `Heartbeat` serialize on a mutex because `http.ResponseWriter` is not safe for concurrent use. Both goroutines can write safely.
 - **Channel pointer identity**: `Unsubscribe` uses `reflect.ValueOf(ch).Pointer()` for O(1) lookup. No subscriber IDs to manage.
 - **Branded EventID**: `EventID` uses `go-branded-id` to prevent accidental cross-assignment with other string-typed IDs in your codebase.
-- **Zero allocation on fast path**: `WriteEvent` uses direct byte appends. No `fmt.Fprintf` on the SSE hot path.
+- **Allocation-minimized hot path**: `WriteEvent` uses direct byte appends, no `fmt.Fprintf` on the SSE hot path. Measured with `-benchmem`: a simple event serializes in 1 alloc (48 B), a 50-line event in 2. Baselines live in [`docs/benchmarks/`](docs/benchmarks/).
 - **Predicate under read lock**: `SubscribeFilter` predicates run inside the fan-out loop under the read lock. This is intentional — the predicate must be pure, fast, and non-blocking. A panicking predicate is recovered and treated as a non-match (the event is skipped for that subscriber). One broken predicate cannot crash the broadcaster.
 
 ## Non-Blocking Drop Policy

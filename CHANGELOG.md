@@ -29,7 +29,7 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 - Removed `GOEXPERIMENT=jsonv2` from every live surface (flake devShell + apps + hermetic checks, CI workflow envs including `datastar-compat.yml`, `scripts/*.sh`, and the local `.envrc` pattern): it became unnecessary when `encoding/json/v2` turned into a `go1.27`-gated stable API. README no longer claims the flag (or Go 1.26) is required; the only surviving mentions are historical records and the module-directive-skew trap doc. Consumers on Go 1.26 toolchains must not use this version range — the `go 1.27` directives already say so.
 - All three module `go` directives aligned at `1.27.1`: this is a hard floor, not a preference — go-sse v0.6.1 on the module proxy declares `go 1.27.1` (verified via `go mod download -json` + `.mod` inspection), so every consumer of any module in this repo needs a 1.27.1+ toolchain regardless of what older directives say.
-- Dependency bumps adopted on master (untagged): ssetest now requires go-sse v0.6.1 (adding go-branded-id v0.6.0 as indirect); the root module's go-error-family moved to v0.10.2.
+- Dependency bumps adopted on master (untagged): ssetest now requires go-sse v0.6.1 (adding go-branded-id v0.6.0 as indirect); the root module's go-error-family moved to v0.11.0 (race suites green on the bumped tree).
 
 ### Added
 
@@ -39,9 +39,14 @@ without changelog lines (`a5ff824`, `7776bc7`).
 - `scripts/verify.sh` gate hardening: a broken caller `GOCACHE` degrades loudly to a temp dir (same fallback as `coverage-gate`), a tidy-clean check requires every module's `go.mod`/`go.sum` to be a `go mod tidy` no-op (read-only: drift is shown and the tree restored), all three go directives must stay identical, and a bench smoke (`-bench=. -benchtime=1x`) fails the gate when a benchmark no longer executes. The golangci-lint pin extraction moved to `scripts/golangci-pin.sh` so two consumers share one regex.
 - The weekly flake-update workflow now cross-checks the nixpkgs `golangci-lint` against the ci.yml pin (via `scripts/golangci-pin.sh` + `nix develop .#ci`) in the same PR that bumps flake inputs — a nixpkgs lint bump can no longer ship silently and redden the next human push (the 2.13.2 → 2.14.0 skew shipped exactly that way).
 - sseparse test-contract additions: `FuzzReadEvents` takes a line-cap argument (the `WithMaxLineBytes` axis; the cap boundary is pinned chunk-invariant, wrapping `bufio.ErrTooLong`), the corpus JSON is byte-canonical-gated (`json.MarshalIndent` two-space + trailing newline) with a required per-vector `url` citation, and `Corpus()`/`MustCorpus` decode-failure branches are covered.
+- `sseparse/gen_corpus.go` — the corpus WPT-ingestion generator, wired via `go:generate` (directive in `sseparse/corpus.go`): ingests future WPT `format-*` vectors into the canonical JSON (decode → validate dispatch against the parser → merge → re-marshal through the byte-canonical recipe), aborting on any mismatch; proven idempotent, and its proof run caught a real append-aliasing bug before it shipped. Procedure: `sseparse/README.md` §"Ingesting new WPT vectors".
+- Check-in benchmark baselines + a benchstat comparison workflow: `docs/benchmarks/<date>-<module>.txt` (count=6, self-describing via [`docs/benchmarks/README.md`](docs/benchmarks/README.md)) and a CONTRIBUTING §"Benchmark regression tracking" section (pinned `benchstat@v1.0.0`, why count=1 is useless, re-record rule) — perf claims in FEATURES are no longer hand-pinned numbers with no baseline.
+- CONTRIBUTING §"The templ CLI pin": both pin sites (the CI `templ generate -check` drift alarm and the devShell `pkgs.templ`), why the `go run ...@version` form is mandatory, and the bump-both-and-regenerate procedure — Dependabot cannot bump `@version` pins, so the refresh policy is documented instead.
+- Test-contract hardening: direct unit tests for `forEachLine` (CR/LF/CRLF/empty/trailing/sandwich table) and all three examples' `listenAddr()` PORT override (forced both ways via `t.Setenv`); five ssetest branch tests closed the module's last uncovered paths (it now measures 100.0% statement coverage).
 
 ### Changed
 
+- Recorded policy decisions as repo config: `.buildflow.yml` skips exactly one step (`go-structure-linter` — its findings flag the deliberate single-package flat layout), and golangci-lint stays intentionally unpinned in `flake.nix` (the effective version is pinned by `flake.lock`; `scripts/golangci-pin.sh` + the flake-update cross-check surface any CI↔flake skew).
 - `example/datastar`'s `memStore` evicts by copying down instead of re-slicing: evicted events become GC-able immediately and the ring's backing array stabilizes after one relocation (the example now matches the retention guide that cites it).
 - CI golangci-lint pin bumped v2.13.2 → v2.14.0 to match the nixpkgs binary (the verify.sh skew check caught the drift).
 
@@ -352,7 +357,12 @@ and the subsequent DataStar integration work.
 
 - `LastEventIDFromRequest` validates header input with `ParseEventID`, preventing SSE wire-format injection via crafted `Last-Event-ID` headers
 
-[Unreleased]: https://github.com/larsartmann/go-sse/compare/ssetest/v0.2.0...HEAD
+[Unreleased]: https://github.com/larsartmann/go-sse/compare/v0.6.1...HEAD
+[sseparse 0.1.0]: https://github.com/larsartmann/go-sse/releases/tag/sseparse/v0.1.0
+[ssetest 0.4.0]: https://github.com/larsartmann/go-sse/compare/sseparse/v0.1.0...ssetest/v0.4.0
+[0.6.1]: https://github.com/larsartmann/go-sse/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/larsartmann/go-sse/compare/v0.5.1...v0.6.0
+[ssetest 0.3.0]: https://github.com/larsartmann/go-sse/compare/v0.6.0...ssetest/v0.3.0
 [ssetest 0.2.0]: https://github.com/larsartmann/go-sse/compare/ssetest/v0.1.0...ssetest/v0.2.0
 [ssetest 0.1.0]: https://github.com/larsartmann/go-sse/compare/v0.5.1...ssetest/v0.1.0
 [0.5.1]: https://github.com/larsartmann/go-sse/compare/v0.5.0...v0.5.1
