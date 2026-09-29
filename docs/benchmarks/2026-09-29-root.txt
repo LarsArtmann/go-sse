@@ -1,0 +1,48 @@
+goos: linux
+goarch: amd64
+pkg: github.com/larsartmann/go-sse
+cpu: AMD RYZEN AI MAX+ 395 w/ Radeon 8060S          
+BenchmarkBroadcasterFanOut/1-32                  	16948848	        62.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/1-32                  	17977636	        67.90 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/1-32                  	15107742	        66.78 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/1-32                  	18411495	        65.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/1-32                  	17587206	        68.80 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/1-32                  	15797733	        63.70 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/10-32                 	 3732518	       363.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/10-32                 	 2895440	       403.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/10-32                 	 3419868	       344.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/10-32                 	 2642562	       430.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/10-32                 	 3125456	       386.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/10-32                 	 4185802	       367.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/100-32                	  277028	      4015 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/100-32                	  454110	      4894 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/100-32                	  170071	      6461 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/100-32                	  209995	      9571 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/100-32                	  135679	      8648 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/100-32                	  114378	     10057 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/1000-32               	    7099	    178971 ns/op	       8 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/1000-32               	   10000	    127448 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/1000-32               	    9399	    123285 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/1000-32               	   10000	    155506 ns/op	       1 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/1000-32               	    7432	    199073 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/1000-32               	    6346	    172658 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/10000-32              	      92	  11634974 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/10000-32              	      96	  12297372 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/10000-32              	     160	   6745629 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/10000-32              	     271	   3762028 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/10000-32              	     241	   5395064 ns/op	      18 B/op	       0 allocs/op
+BenchmarkBroadcasterFanOut/10000-32              	     471	   3194710 ns/op	      49 B/op	       0 allocs/op
+BenchmarkSubscribeUnsubscribe-32                 	 1000000	      1205 ns/op	    4224 B/op	       3 allocs/op
+BenchmarkSubscribeUnsubscribe-32                 	 1000000	      1050 ns/op	    4224 B/op	       3 allocs/op
+BenchmarkSubscribeUnsubscribe-32                 	 1000000	      1203 ns/op	    4224 B/op	       3 allocs/op
+BenchmarkSubscribeUnsubscribe-32                 	 1000000	      1539 ns/op	    4224 B/op	       3 allocs/op
+BenchmarkSubscribeUnsubscribe-32                 	  689409	      1713 ns/op	    4224 B/op	       3 allocs/op
+BenchmarkSubscribeUnsubscribe-32                 	  897379	      1688 ns/op	    4224 B/op	       3 allocs/op
+BenchmarkBroadcastManyVsLoop/BroadcastMany-32    	    2404	    420420 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcastManyVsLoop/BroadcastMany-32    	    2001	    614151 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcastManyVsLoop/BroadcastMany-32    	    3079	    735163 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcastManyVsLoop/BroadcastMany-32    	    3862	    684458 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcastManyVsLoop/BroadcastMany-32    	    2271	    479576 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcastManyVsLoop/BroadcastMany-32    	    2581	    465175 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcastManyVsLoop/BroadcastLoop-32    	    2911	    408591 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBroadcastManyVsLoop/BroadcastLoop-32    	
