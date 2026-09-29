@@ -21,7 +21,8 @@ export GOWORK=off
 # instead of dying mid-gate.
 if [[ -n "${GOCACHE:-}" ]] && ! mkdir -p "${GOCACHE}" 2>/dev/null; then
 	echo "GOCACHE='${GOCACHE}' is not writable; falling back to a temp dir" >&2
-	export GOCACHE="$(mktemp -d)"
+	fallback="$(mktemp -d)"
+	export GOCACHE="$fallback"
 fi
 
 echo "==> treefmt (formatting check)"
@@ -43,18 +44,36 @@ trap 'rm -rf "$tidy_tmp"' EXIT
 for mod in . ssetest sseparse; do
 	(
 	cd "$mod"
-	cp go.mod "$tidy_tmp/go.mod"
-	if [[ -f go.sum ]]; then cp go.sum "$tidy_tmp/go.sum"; fi
+	name="$(echo "$mod" | tr '/' '_')"
+	snap_mod="$tidy_tmp/$name.go.mod"
+	snap_sum="$tidy_tmp/$name.go.sum"
+	cp go.mod "$snap_mod"
+	had_sum=0
+	if [[ -f go.sum ]]; then
+		cp go.sum "$snap_sum"
+		had_sum=1
+	fi
 	if ! go mod tidy >/dev/null; then
 		echo "FAIL: go mod tidy errored in $mod" >&2
 		exit 1
 	fi
-	if ! cmp -s "$tidy_tmp/go.mod" go.mod || { [[ -f $tidy_tmp/go.sum ]] && ! cmp -s "$tidy_tmp/go.sum" go.sum; }; then
-		diff -u "$tidy_tmp/go.mod" go.mod >&2 || true
-		if [[ -f $tidy_tmp/go.sum ]]; then diff -u "$tidy_tmp/go.sum" go.sum >&2 || true; fi
+	drift=0
+	cmp -s "$snap_mod" go.mod || drift=1
+	if (( had_sum )); then
+		cmp -s "$snap_sum" go.sum || drift=1
+	elif [[ -f go.sum ]]; then
+		drift=1 # tidy created a go.sum where none belonged
+	fi
+	if (( drift )); then
+		diff -u "$snap_mod" go.mod >&2 || true
+		if [[ -f go.sum ]] && (( ! had_sum )); then
+			echo "--- unexpected new file: go.sum ---" >&2
+		elif (( had_sum )); then
+			diff -u "$snap_sum" go.sum >&2 || true
+		fi
 		echo "FAIL: '$mod' go.mod/go.sum is not tidy-clean — run 'go mod tidy' in $mod and commit the result (tree restored)." >&2
-		cp "$tidy_tmp/go.mod" go.mod
-		if [[ -f $tidy_tmp/go.sum ]]; then cp "$tidy_tmp/go.sum" go.sum; fi
+		cp "$snap_mod" go.mod
+		if (( had_sum )); then cp "$snap_sum" go.sum; else rm -f go.sum; fi
 		exit 1
 	fi
 	) || exit 1
