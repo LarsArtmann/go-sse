@@ -51,7 +51,7 @@
           # module sets — and therefore FOD hashes — differ. sseparse has ZERO
           # third-party requires (guarded by TestModuleStaysZeroDependency),
           # so its check carries no vendorHash at all.
-          vendorHash = "sha256-P6LFnFSujgu4uPE0TXpwYwf7U1FlagPSs+H4Zqfssfw=";
+          vendorHash = "sha256-ie+xYhbDS5+WQKUPKK3wmuXkGe4K9e4QarYwd4d8XaQ=";
           vendorHashSsetest = "sha256-93dIbslmRx17ueswPC/f0RLuMOWDkwsWvGL27hPLtPc=";
 
           # go-sse is a pure library (no `main` package), so we do not publish a

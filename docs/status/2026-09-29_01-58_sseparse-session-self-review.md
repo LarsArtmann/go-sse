@@ -14,6 +14,7 @@ pre-existing root-flat-layout findings remain, deliberate).
 ## Self-review: what did I forget / do badly / can still improve
 
 **What did you forget?**
+
 1. **CONTRIBUTING.md entirely.** Its release checklist (steps 1–9) is THE
    pairing-rule document my TODO release item cites — and it still described
    two modules. Fixed this pass (three modules, sseparse-first tag order,
@@ -42,6 +43,7 @@ pre-existing root-flat-layout findings remain, deliberate).
    post-move (they compile; `-bench` was never run).
 
 **What could you have done better?**
+
 - **Naming discipline.** I took `ssetestcore` straight from the feedback
   file — implementation naming ("core of ssetest") that my own global rules
   call an anti-pattern — and created the directory before you caught it.
@@ -87,21 +89,21 @@ verify.sh blocking, and everything else traces to the feedback's four asks.
 
 ## a) FULLY DONE
 
-| #  | Work                                                                                      | Evidence (re-verified this pass)                                                                                                                                           |
-| -- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1  | `sseparse` zero-dependency module (parser, assertions, corpus; `go 1.27.1`)                 | `sseparse/go.mod` (no require block); `checks.build-sseparse` green with `vendorHash = null`; `TestModuleStaysZeroDependency`                                              |
-| 2  | Corpus-as-data: JSON single source of truth + `Corpus()`/`MustCorpus`                      | `sseparse/testdata/wpt_format_corpus.json` (29 vectors, generator round-trip-proven); `sseparse/corpus.go`; `TestWPTFormatCorpus` + `TestCorpusIntegrity` consume data     |
-| 3  | `WithMaxLineBytes`/`DefaultMaxLineBytes`; cap documented + boundary pinned                  | `sseparse/reader.go`; `TestReadEvents_LineCapDefault` (cap−1 parses, cap fails wrapping `bufio.ErrTooLong`), `TestReadEvents_WithMaxLineBytes`, ReadNEvents/StreamReader variants |
-| 4  | ssetest backward compat via re-exports + delegation-contract test                           | `ssetest/compat.go`, `compat_test.go`; ssetest coverage 98.0% (gate 95%)                                                                                                    |
-| 5  | errorfamily out of the parse path; `CodeSSEScanFailed` removed (breaking, changelogged)     | `sseparse/reader.go` `%w` wrapping; `ssetest/errors.go` deleted; datastartest unaffected (re-wraps with its own code — verified in its reader.go)                           |
-| 6  | Reader API promoted to first-class docs                                                     | `ssetest/README.md` ("Reading from any io.Reader" before the HTTP table), new `sseparse/README.md` (spec-oracle recipe), root README, `ssetest/doc.go`                      |
-| 7  | Boundary guards both directions                                                             | Root `TestRootModuleDoesNotRequireSubmodules` (green); `TestModuleStaysZeroDependency` (green)                                                                              |
-| 8  | Infra: flake (check + apps + third coverage gate), verify.sh, ci.yml (+fuzz relocation), dependabot, .golangci.yml | `nix flake check` 6/6 green post-correction; actionlint + shellcheck clean; fuzz seeds moved with targets                                                                   |
-| 9  | golangci-lint pin skew caught + fixed (2.13.2→2.14.0, all three `version:` lines)           | verify.sh cross-check passes; lint 0 issues × 3 modules                                                                                                                     |
-| 10 | **This pass:** go-directive settled truthfully (`ssetest` 1.27, `sseparse` 1.27.1)          | `go mod tidy` clean; ssetest tests + both nested hermetic checks re-run green; AGENTS/CHANGELOG/feedback corrected; 01-35 report annotated                                  |
-| 11 | **This pass:** CONTRIBUTING release checklist extended (3 modules, sseparse-first order)    | `CONTRIBUTING.md` steps: tag list + release-verify lines + order rationale ("a ssetest tag whose sseparse require cannot resolve is a dead tag")                            |
-| 12 | **This pass:** datastartest memory restored in AGENTS.md; tag-scheme assumption verified    | `git tag -l 'ssetest/*'` → v0.1.0/v0.2.0/v0.3.0 exist (prefix-tag scheme confirmed); AGENTS bullet back, updated for the split                                              |
-| 13 | Meta-docs: CHANGELOG, FEATURES, TODO_LIST, AGENTS, feedback annotated; daemon commits sane  | `git log --stat` messages plausible for the diffs (no false-message trap this session); status-report conventions updated for the third cover field                          |
+| #  | Work                                                                                                               | Evidence (re-verified this pass)                                                                                                                                                  |
+| -- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | `sseparse` zero-dependency module (parser, assertions, corpus; `go 1.27.1`)                                        | `sseparse/go.mod` (no require block); `checks.build-sseparse` green with `vendorHash = null`; `TestModuleStaysZeroDependency`                                                     |
+| 2  | Corpus-as-data: JSON single source of truth + `Corpus()`/`MustCorpus`                                              | `sseparse/testdata/wpt_format_corpus.json` (29 vectors, generator round-trip-proven); `sseparse/corpus.go`; `TestWPTFormatCorpus` + `TestCorpusIntegrity` consume data            |
+| 3  | `WithMaxLineBytes`/`DefaultMaxLineBytes`; cap documented + boundary pinned                                         | `sseparse/reader.go`; `TestReadEvents_LineCapDefault` (cap−1 parses, cap fails wrapping `bufio.ErrTooLong`), `TestReadEvents_WithMaxLineBytes`, ReadNEvents/StreamReader variants |
+| 4  | ssetest backward compat via re-exports + delegation-contract test                                                  | `ssetest/compat.go`, `compat_test.go`; ssetest coverage 98.0% (gate 95%)                                                                                                          |
+| 5  | errorfamily out of the parse path; `CodeSSEScanFailed` removed (breaking, changelogged)                            | `sseparse/reader.go` `%w` wrapping; `ssetest/errors.go` deleted; datastartest unaffected (re-wraps with its own code — verified in its reader.go)                                 |
+| 6  | Reader API promoted to first-class docs                                                                            | `ssetest/README.md` ("Reading from any io.Reader" before the HTTP table), new `sseparse/README.md` (spec-oracle recipe), root README, `ssetest/doc.go`                            |
+| 7  | Boundary guards both directions                                                                                    | Root `TestRootModuleDoesNotRequireSubmodules` (green); `TestModuleStaysZeroDependency` (green)                                                                                    |
+| 8  | Infra: flake (check + apps + third coverage gate), verify.sh, ci.yml (+fuzz relocation), dependabot, .golangci.yml | `nix flake check` 6/6 green post-correction; actionlint + shellcheck clean; fuzz seeds moved with targets                                                                         |
+| 9  | golangci-lint pin skew caught + fixed (2.13.2→2.14.0, all three `version:` lines)                                  | verify.sh cross-check passes; lint 0 issues × 3 modules                                                                                                                           |
+| 10 | **This pass:** go-directive settled truthfully (`ssetest` 1.27, `sseparse` 1.27.1)                                 | `go mod tidy` clean; ssetest tests + both nested hermetic checks re-run green; AGENTS/CHANGELOG/feedback corrected; 01-35 report annotated                                        |
+| 11 | **This pass:** CONTRIBUTING release checklist extended (3 modules, sseparse-first order)                           | `CONTRIBUTING.md` steps: tag list + release-verify lines + order rationale ("a ssetest tag whose sseparse require cannot resolve is a dead tag")                                  |
+| 12 | **This pass:** datastartest memory restored in AGENTS.md; tag-scheme assumption verified                           | `git tag -l 'ssetest/*'` → v0.1.0/v0.2.0/v0.3.0 exist (prefix-tag scheme confirmed); AGENTS bullet back, updated for the split                                                    |
+| 13 | Meta-docs: CHANGELOG, FEATURES, TODO_LIST, AGENTS, feedback annotated; daemon commits sane                         | `git log --stat` messages plausible for the diffs (no false-message trap this session); status-report conventions updated for the third cover field                               |
 
 ## b) PARTIALLY DONE
 
@@ -151,15 +153,15 @@ verify.sh blocking, and everything else traces to the feedback's four asks.
 
 ## e) WHAT WE SHOULD IMPROVE
 
-| IMP  | Improvement (process, not product)                                                                                                        | Priority |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| IMP1 | `scripts/verify.sh`: add the coverage-gate GOCACHE probe/fallback so a full (or unwritable) cache mount degrades loudly instead of failing the gate | high     |
+| IMP  | Improvement (process, not product)                                                                                                                                | Priority |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| IMP1 | `scripts/verify.sh`: add the coverage-gate GOCACHE probe/fallback so a full (or unwritable) cache mount degrades loudly instead of failing the gate               | high     |
 | IMP2 | Make `go mod tidy` part of ANY go.mod edit — add a tidy-clean check to verify.sh (git diff --exit-code go.mod after tidy) to stop directive flipflops at the gate | high     |
 | IMP3 | Corpus-as-data needs a maintenance loop: a small `go:generate`-style validator (or generator) that enforces notes/url citations and can ingest future WPT updates | med      |
-| IMP4 | flake-update PRs should run `scripts/verify.sh --fast` on themselves — the golangci 2.13.2→2.14.0 skew shipped silently through that workflow | med      |
-| IMP5 | AGENTS.md edits: after replacing a bullet, re-read the removed text for distinct concepts worth keeping (memory-loss guard) — encode in the global memory rules | med      |
-| IMP6 | Add a `-bench=. -benchtime=1x` smoke line to verify.sh so moved benchmarks can't silently rot unexecuted                                  | low      |
-| IMP7 | Consolidate `scanAllLines`'s duplicated scanner setup onto `newSSEScanner` (kills the micro split brain and exercises the new min() logic in fuzzing) | low      |
+| IMP4 | flake-update PRs should run `scripts/verify.sh --fast` on themselves — the golangci 2.13.2→2.14.0 skew shipped silently through that workflow                     | med      |
+| IMP5 | AGENTS.md edits: after replacing a bullet, re-read the removed text for distinct concepts worth keeping (memory-loss guard) — encode in the global memory rules   | med      |
+| IMP6 | Add a `-bench=. -benchtime=1x` smoke line to verify.sh so moved benchmarks can't silently rot unexecuted                                                          | low      |
+| IMP7 | Consolidate `scanAllLines`'s duplicated scanner setup onto `newSSEScanner` (kills the micro split brain and exercises the new min() logic in fuzzing)             | low      |
 
 ## f) Up to 50 things we should get done next
 

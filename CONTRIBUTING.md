@@ -105,14 +105,14 @@ ssetest tag whose sseparse require cannot resolve is a dead tag.
 
 4. **Burn a fuzz budget before tagging.** CI fuzzes each target for only
    1m; a release deserves a longer soak. Run every target (root + sseparse
-   + ssetest) for 5m each:
+   - ssetest) for 5m each:
 
-       nix develop -c bash -c 'go test . -fuzz=FuzzWriteEvent -fuzztime=5m && \
-         go test . -fuzz=FuzzParseEventID -fuzztime=5m && \
-         go test . -fuzz=FuzzKeyedLines -fuzztime=5m && \
-         cd sseparse && GOWORK=off go test . -fuzz=FuzzReadEvents -fuzztime=5m && \
-         go test . -fuzz=FuzzSplitSSELines -fuzztime=5m && \
-         cd ../ssetest && GOWORK=off go test . -fuzz=FuzzWriteReadRoundTrip -fuzztime=5m'
+     nix develop -c bash -c 'go test . -fuzz=FuzzWriteEvent -fuzztime=5m &&\
+     go test . -fuzz=FuzzParseEventID -fuzztime=5m &&\
+     go test . -fuzz=FuzzKeyedLines -fuzztime=5m &&\
+     cd sseparse && GOWORK=off go test . -fuzz=FuzzReadEvents -fuzztime=5m &&\
+     go test . -fuzz=FuzzSplitSSELines -fuzztime=5m &&\
+     cd ../ssetest && GOWORK=off go test . -fuzz=FuzzWriteReadRoundTrip -fuzztime=5m'
 
    Any crasher found here blocks the release; minimize it, add it to the
    committed corpus as a regression test, fix, and re-run.
