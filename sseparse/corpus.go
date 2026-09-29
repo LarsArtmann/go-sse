@@ -15,6 +15,10 @@ import (
 //go:embed testdata/wpt_format_corpus.json
 var corpusJSON []byte
 
+// Generate the corpus file's canonical byte form (and ingest pending WPT
+// vectors): go run gen_corpus.go — see that file's header for the procedure.
+//go:generate go run gen_corpus.go
+
 // ConformanceVector is one wire-format conformance vector: the exact bytes on
 // the wire, and the events a spec-conformant parser must dispatch for them.
 //
