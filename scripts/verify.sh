@@ -34,11 +34,13 @@ else
 fi
 
 echo "==> go mod tidy (drift check)"
-# A go.mod edit without a follow-up tidy has flipflopped go directives in
-# this repo repeatedly (the 2026-09-18 red master; buildflow's "go line
-# changed 9 times" warning). tidy must be a no-op on any committed tree;
-# the snapshots make this check read-only — a dirty result is shown and
-# the tree restored, never silently kept.
+# Module files must be tidy-clean: a go.mod/go.sum edit without a follow-up
+# tidy has repeatedly drifted this repo (buildflow's "go line changed 9
+# times" warning). The snapshots make this check read-only — a dirty result
+# is shown and the tree restored, never silently kept. (Note: plain `go mod
+# tidy` does not revert hand-raised go directives — buildflow's normalize
+# step does — but it does pin requires and sums, and the directive-equality
+# check below closes the together-bump trap.)
 tidy_tmp="$(mktemp -d)"
 trap 'rm -rf "$tidy_tmp"' EXIT
 for mod in . ssetest sseparse; do
@@ -80,7 +82,16 @@ for mod in . ssetest sseparse; do
 done
 rm -rf "$tidy_tmp"
 trap - EXIT
-echo "    tidy clean in all three modules"
+# All three go.mod files must declare the SAME go directive: a lagging
+# nested module is exactly what reddened master on 2026-09-18 (root bumped,
+# ssetest left behind).
+directive_drift="$(grep -h '^go ' go.mod ssetest/go.mod sseparse/go.mod | sort -u)"
+if [[ $(grep -c . <<<"$directive_drift") -ne 1 ]]; then
+	echo "FAIL: module go directives diverged — bump all three go.mod files together (found: $(echo "$directive_drift" | tr '\n' ' '))" >&2
+	exit 1
+fi
+echo "    tidy clean in all three modules; go directives aligned ($(echo "$directive_drift" | tr -d '
+'))"
 
 echo "==> go vet"
 go vet ./...
