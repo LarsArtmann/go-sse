@@ -160,6 +160,15 @@ jobs:
       # SSE bytes (scripts/smoke-examples.sh).
       - run: scripts/smoke-examples.sh
 
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # actionlint only shellchecks the workflow `run:` blocks; the repo's
+      # own scripts were covered by nothing. ubuntu-latest ships shellcheck.
+      - run: shellcheck scripts/*.sh
+
   nix:
     name: Nix flake check
     runs-on: ubuntu-latest
