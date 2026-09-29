@@ -133,6 +133,7 @@ func TestDoRequest_FatalsOnInvalidMethod(t *testing.T) {
 	ftb := &fatalTB{T: t}
 
 	requireFatalPanic(t, ftb, "build", func() {
+		//nolint:bodyclose // the call cannot return a response: Fatalf panics inside doRequest before one exists
 		doRequest(
 			ftb,
 			http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}),
@@ -153,6 +154,7 @@ func TestDoRequest_FatalsWhenRequestFails(t *testing.T) {
 	cancel()
 
 	requireFatalPanic(t, ftb, "test server", func() {
+		//nolint:bodyclose // the call cannot return a response: the canceled context fails Do, Fatalf panics
 		doRequest(
 			ftb,
 			http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}),

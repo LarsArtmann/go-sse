@@ -93,6 +93,22 @@ The corpus JSON (`testdata/wpt_format_corpus.json`) is the single source of
 truth: sseparse's own conformance tests load it through `Corpus()`, so parser
 and data cannot drift apart.
 
+### Ingesting new WPT vectors
+
+The corpus grows through `gen_corpus.go` (wired via `go:generate`), never by
+hand-editing the JSON — the byte-form gate rejects anything the canonical
+recipe did not write:
+
+1. Transcribe the upstream test into a vector (name, url, wire, events) in
+   `testdata/corpus_pending.json`, same shape as the corpus.
+2. Run `go generate .` from `sseparse/`. Every pending vector is executed
+   through the real reader first; the declared `Events` must match what
+   actually dispatches, or the run aborts and nothing is written.
+3. Delete `testdata/corpus_pending.json` and commit the rewritten corpus.
+
+Running `go generate .` with no pending file is a no-op — and the idempotence
+proof: a zero diff means the checked-in bytes are still canonical.
+
 ## Relationship to ssetest
 
 [ssetest](../ssetest/) layers the HTTP collection helpers (`Collect`,

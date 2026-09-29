@@ -141,7 +141,10 @@ func validateVector(v sseparse.ConformanceVector) error {
 // what the parser dispatches or the run aborts. Returns the grown slice —
 // the caller must take it, because append cannot grow a slice in place —
 // and the ingested count.
-func ingest(vectors []sseparse.ConformanceVector, known map[string]int) ([]sseparse.ConformanceVector, int, error) {
+func ingest(
+	vectors []sseparse.ConformanceVector,
+	known map[string]int,
+) ([]sseparse.ConformanceVector, int, error) {
 	pendingRaw, err := os.ReadFile(pendingPath)
 	if err != nil {
 		return vectors, 0, fmt.Errorf("read pending: %w", err)
@@ -161,7 +164,12 @@ func ingest(vectors []sseparse.ConformanceVector, known map[string]int) ([]ssepa
 
 		dispatched, err := sseparse.ReadEvents(strings.NewReader(v.Wire))
 		if err != nil {
-			return vectors, added, fmt.Errorf("pending vector %q (%s): wire does not parse: %w", v.Name, v.URL, err)
+			return vectors, added, fmt.Errorf(
+				"pending vector %q (%s): wire does not parse: %w",
+				v.Name,
+				v.URL,
+				err,
+			)
 		}
 
 		if err := requireDispatchMatch(v, dispatched); err != nil {
@@ -176,7 +184,11 @@ func ingest(vectors []sseparse.ConformanceVector, known map[string]int) ([]ssepa
 				continue
 			}
 
-			return vectors, added, fmt.Errorf("pending vector %q duplicates corpus vector %d with different content", v.Name, idx)
+			return vectors, added, fmt.Errorf(
+				"pending vector %q duplicates corpus vector %d with different content",
+				v.Name,
+				idx,
+			)
 		}
 
 		vectors = append(vectors, v)
@@ -203,13 +215,37 @@ func requireDispatchMatch(v sseparse.ConformanceVector, dispatched []sseparse.Ev
 
 		switch {
 		case got.Type != want.Type:
-			return fmt.Errorf("pending vector %q: event %d type %q, declared %q", v.Name, i, got.Type, want.Type)
+			return fmt.Errorf(
+				"pending vector %q: event %d type %q, declared %q",
+				v.Name,
+				i,
+				got.Type,
+				want.Type,
+			)
 		case got.Data() != want.Data:
-			return fmt.Errorf("pending vector %q: event %d data %q, declared %q", v.Name, i, got.Data(), want.Data)
+			return fmt.Errorf(
+				"pending vector %q: event %d data %q, declared %q",
+				v.Name,
+				i,
+				got.Data(),
+				want.Data,
+			)
 		case got.ID != want.ID:
-			return fmt.Errorf("pending vector %q: event %d id %q, declared %q", v.Name, i, got.ID, want.ID)
+			return fmt.Errorf(
+				"pending vector %q: event %d id %q, declared %q",
+				v.Name,
+				i,
+				got.ID,
+				want.ID,
+			)
 		case got.Retry != want.Retry:
-			return fmt.Errorf("pending vector %q: event %d retry %d, declared %d", v.Name, i, got.Retry, want.Retry)
+			return fmt.Errorf(
+				"pending vector %q: event %d retry %d, declared %d",
+				v.Name,
+				i,
+				got.Retry,
+				want.Retry,
+			)
 		}
 	}
 
