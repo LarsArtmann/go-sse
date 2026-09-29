@@ -69,7 +69,6 @@
             subPackages = [ "." ];
             proxyVendor = true;
             doCheck = true;
-            env.GOEXPERIMENT = "jsonv2";
 
             meta = {
               description = "Server-Sent Events transport for Go";
@@ -100,7 +99,6 @@
             subPackages = [ "./..." ];
             proxyVendor = true;
             doCheck = true;
-            env.GOEXPERIMENT = "jsonv2";
             preBuild = "cd ssetest";
 
             meta = {
@@ -130,7 +128,6 @@
             };
             subPackages = [ "./..." ];
             doCheck = true;
-            env.GOEXPERIMENT = "jsonv2";
             preBuild = "cd sseparse";
 
             meta = {
@@ -216,11 +213,9 @@
 
             GOWORK = "off";
             GOTOOLCHAIN = "local";
-            GOEXPERIMENT = "jsonv2";
 
             shellHook = ''
               echo "go-sse dev shell: $(go version)"
-              echo "GOEXPERIMENT=$GOEXPERIMENT"
             '';
           };
 
@@ -232,47 +227,40 @@
 
             GOWORK = "off";
             GOTOOLCHAIN = "local";
-            GOEXPERIMENT = "jsonv2";
           };
 
           apps = {
             test = mkApp "test" [ goPkg ] ''
-              export GOEXPERIMENT=jsonv2
               go test ./... -count=1 "$@"
               (cd ssetest && GOWORK=off go test ./... -count=1)
               (cd sseparse && GOWORK=off go test ./... -count=1)
             '';
 
             test-race = mkApp "test-race" [ goPkg ] ''
-              export GOEXPERIMENT=jsonv2
               go test ./... -race -count=1 "$@"
               (cd ssetest && GOWORK=off go test ./... -race -count=1)
               (cd sseparse && GOWORK=off go test ./... -race -count=1)
             '';
 
             build = mkApp "build" [ goPkg ] ''
-              export GOEXPERIMENT=jsonv2
               go build ./...
               (cd ssetest && GOWORK=off go build ./...)
               (cd sseparse && GOWORK=off go build ./...)
             '';
 
             vet = mkApp "vet" [ goPkg ] ''
-              export GOEXPERIMENT=jsonv2
               go vet ./...
               (cd ssetest && GOWORK=off go vet ./...)
               (cd sseparse && GOWORK=off go vet ./...)
             '';
 
             lint = mkApp "lint" [ pkgs.golangci-lint ] ''
-              export GOEXPERIMENT=jsonv2
               golangci-lint run ./...
               (cd ssetest && GOWORK=off golangci-lint run ./...)
               (cd sseparse && GOWORK=off golangci-lint run ./...)
             '';
 
             coverage = mkApp "coverage" [ goPkg ] ''
-              export GOEXPERIMENT=jsonv2
               go test ./... -coverprofile=coverage.out -covermode=atomic "$@"
               go tool cover -func=coverage.out
               (cd ssetest && GOWORK=off go test ./... -coverprofile=../ssetest-coverage.out -covermode=atomic && go tool cover -func=../ssetest-coverage.out)
@@ -280,7 +268,6 @@
             '';
 
             coverage-gate = mkApp "coverage-gate" [ goPkg pkgs.bc pkgs.gnugrep pkgs.coreutils ] ''
-              export GOEXPERIMENT=jsonv2
               export GOWORK=off
 
               # A caller-exported GOCACHE pointing at a nonexistent or

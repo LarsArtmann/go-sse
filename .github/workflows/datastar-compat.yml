@@ -20,7 +20,6 @@ jobs:
     name: go-datastar tests on latest go-sse + ssetest
     runs-on: ubuntu-latest
     env:
-      GOEXPERIMENT: jsonv2
       GOWORK: "off"
     steps:
       - name: Clone go-datastar

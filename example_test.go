@@ -201,7 +201,11 @@ func ExampleStream_SendKeyed() {
 	stream := sse.NewStream(w, r)
 	defer func() { _ = stream.Close() }()
 
-	_ = stream.SendKeyed("datastar-patch-elements", "elements", "<div id=\"feed\">\n  <span>hello</span>\n</div>")
+	_ = stream.SendKeyed(
+		"datastar-patch-elements",
+		"elements",
+		"<div id=\"feed\">\n  <span>hello</span>\n</div>",
+	)
 
 	fmt.Print(w.Body.String())
 

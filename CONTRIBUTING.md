@@ -24,15 +24,14 @@ With Nix (recommended — provides Go 1.27, golangci-lint, gopls, govulncheck):
 
 Without Nix, use raw `go` tooling:
 
-    GOEXPERIMENT=jsonv2 go test ./... -race
-    GOEXPERIMENT=jsonv2 go vet ./...
+    GOWORK=off go test ./... -race
+    GOWORK=off go vet ./...
     golangci-lint run ./...
 
-`GOEXPERIMENT=jsonv2` is required to build (transitive dependency via
-`go-branded-id`). Without it, compilation fails. This environment variable
-enables the `goexperiment.jsonv2` build tag. The `flake.nix` devShell sets
-both `GOEXPERIMENT=jsonv2` and `GOWORK=off` automatically; in non-Nix
-environments you must set them yourself.
+No `GOEXPERIMENT` is needed: `encoding/json/v2` became a stable,
+`go1.27`-gated API, and the repo removed the flag everywhere on
+2026-09-29. The `flake.nix` devShell sets `GOWORK=off` automatically; in
+non-Nix environments you must set it yourself.
 
 If a parent `go.work` includes sibling projects with checksum conflicts,
 also set `GOWORK=off` to isolate this module's dependency graph.
@@ -91,8 +90,8 @@ ssetest tag whose sseparse require cannot resolve is a dead tag.
 
        git worktree add ../go-sse-release vX.Y.Z
        cd ../go-sse-release
-       GOWORK=off GOEXPERIMENT=jsonv2 go build ./...
-       GOWORK=off GOEXPERIMENT=jsonv2 go test ./... -race -count=1
+       GOWORK=off go build ./...
+       GOWORK=off go test ./... -race -count=1
        cd - && git worktree remove ../go-sse-release
 
 6. **Tag locally, then push.** Use a signed tag when a signing key is

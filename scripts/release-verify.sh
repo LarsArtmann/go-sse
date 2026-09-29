@@ -47,7 +47,6 @@ v*) ;;
 esac
 
 export GOWORK=off
-export GOEXPERIMENT=jsonv2
 export GOPROXY="https://proxy.golang.org,direct"
 # The ambient shell may carry an older toolchain pinned via GOTOOLCHAIN=local;
 # go list would then die with "go.mod requires go >= 1.27" and the failure

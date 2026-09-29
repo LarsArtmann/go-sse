@@ -5,14 +5,13 @@
 #   scripts/verify.sh          full gate: fmt + vet + lint + test + nix flake check
 #   scripts/verify.sh --fast   skip `nix flake check` (~2 min) for quick iteration
 #
-# Every go/golangci-lint invocation sets GOWORK=off and GOEXPERIMENT=jsonv2
-# explicitly, so the script works with or without direnv (the .envrc exports
-# the same values). Tools missing outside `nix develop` are skipped with a
-# note rather than failing the gate.
+# Every go/golangci-lint invocation sets GOWORK=off explicitly, so the script
+# works with or without direnv (the .envrc exports the same value). Tools
+# missing outside `nix develop` are skipped with a note rather than failing
+# the gate.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-export GOEXPERIMENT=jsonv2
 export GOWORK=off
 
 # A caller-exported GOCACHE pointing at a nonexistent or unwritable path

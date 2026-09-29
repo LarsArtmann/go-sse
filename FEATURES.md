@@ -151,4 +151,4 @@ Two same-author utility modules (the only `require` entries in `go.mod`):
 - `github.com/larsartmann/go-branded-id` — phantom-type branded IDs (`EventID`)
 - `github.com/larsartmann/go-error-family` — structured error wrapping
 
-Requires Go 1.27.1+ (both modules' `go` directives). `GOEXPERIMENT=jsonv2` is no longer required under the 1.27 toolchain (verified 2026-09-19).
+Requires Go 1.27.1+ (both modules' `go` directives). `GOEXPERIMENT=jsonv2` was removed repo-wide on 2026-09-29 — unnecessary under the 1.27 toolchain (verified 2026-09-19).

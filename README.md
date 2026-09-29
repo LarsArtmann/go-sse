@@ -37,7 +37,7 @@ Every Go project that serves SSE reinvents the same four pieces: event serializa
 go get github.com/larsartmann/go-sse
 ```
 
-Requires Go 1.26.7+ (see `go.mod`) with `GOEXPERIMENT=jsonv2` (transitive dependency on go-branded-id).
+Requires Go 1.27+ (see `go.mod`). No build tags or `GOEXPERIMENT` needed.
 
 ## Quick Start
 

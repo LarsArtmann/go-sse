@@ -11,7 +11,6 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 export GOWORK=off
-export GOEXPERIMENT=jsonv2
 
 bin_dir="$(mktemp -d)"
 pids=()

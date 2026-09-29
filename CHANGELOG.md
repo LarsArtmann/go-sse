@@ -25,6 +25,10 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 ## [Unreleased]
 
+### Changed
+
+- Removed `GOEXPERIMENT=jsonv2` from every live surface (flake devShell + apps + hermetic checks, CI workflow envs including `datastar-compat.yml`, `scripts/*.sh`, and the local `.envrc` pattern): it became unnecessary when `encoding/json/v2` turned into a `go1.27`-gated stable API. README no longer claims the flag (or Go 1.26) is required; the only surviving mentions are historical records and the module-directive-skew trap doc. Consumers on Go 1.26 toolchains must not use this version range — the `go 1.27` directives already say so.
+
 ### Added
 
 - `scripts/verify.sh` gate hardening: a broken caller `GOCACHE` degrades loudly to a temp dir (same fallback as `coverage-gate`), a tidy-clean check requires every module's `go.mod`/`go.sum` to be a `go mod tidy` no-op (read-only: drift is shown and the tree restored), all three go directives must stay identical, and a bench smoke (`-bench=. -benchtime=1x`) fails the gate when a benchmark no longer executes. The golangci-lint pin extraction moved to `scripts/golangci-pin.sh` so two consumers share one regex.
