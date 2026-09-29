@@ -55,23 +55,23 @@ clean; live fuzz bursts clean.
 
 ## b) PARTIALLY DONE
 
-1. **IMP3** — validator half shipped (canonical + citation gates); the WPT
+1. ~~**IMP3** — validator half shipped (canonical + citation gates); the WPT
    _ingestion_ generator (decode → extend → re-marshal through the pinned
    recipe) remains open, now TODO_LIST backlog row 31. The gate makes the
-   generator's output contract enforceable, which is the load-bearing half.
-2. **buildflow findings gate** — the 7 pre-existing go-structure-linter
+   generator's output contract enforceable, which is the load-bearing half.~~ done at `91fe8b7` — the generator shipped (go:generate-wired, proven idempotent)
+2. ~~**buildflow findings gate** — the 7 pre-existing go-structure-linter
    root-flat-layout findings remain absorbed as documented-deliberate; the
-   keep-vs-skip decision stays with the user (see g).
+   keep-vs-skip decision stays with the user (see g).~~ done at `0e1bb28` — decided: skip_steps policy recorded in `.buildflow.yml`
 
 ## c) NOT STARTED
 
-1. **f6 `/mnt/buildcache` cleanup** — moot before starting: the mount
+1. ~~**f6 `/mnt/buildcache` cleanup** — moot before starting: the mount
    measured 32% used (65G/220G, 144G free) this session; the 100%-full
    condition that motivated the item resolved externally. No rotation policy
-   was decided (still user territory), but nothing is blocked.
-2. **go-daemon corpus migration + pdd cascade** — unblocked by the release;
+   was decided (still user territory), but nothing is blocked.~~ Won't implement — mooted; rotation stays owner-territory (TODO_LIST Blocked row)
+2. ~~**go-daemon corpus migration + pdd cascade** — unblocked by the release;
    both live in the go-daemon repo, out of scope here (TODO_LIST rows updated
-   to UNBLOCKED/tracking).
+   to UNBLOCKED/tracking).~~ done at `36c2ecc` (go-daemon) and `d2efa06` (pdd)
 
 ## d) TOTALLY FUCKED UP
 
@@ -136,3 +136,9 @@ clean; live fuzz bursts clean.
 2. ~~Release timing~~ — answered by reality: released 2026-09-29 02:22.
 3. ~~buildcache policy~~ — unblocked: the mount is at 32%; a rotation policy
    is still worth deciding someday, but nothing waits on it.
+
+---
+
+## Archival check (2026-09-29, docs-health pass)
+
+Every numbered item in §b/§c/§f/§g carries an inline verdict (g2/g3 were already struck), verified against the repo this pass. Fully resolved — archived.

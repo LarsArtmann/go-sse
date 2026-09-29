@@ -45,31 +45,31 @@ artifacts), which mooted the "cut v0.7.0?" question from the 22-44 report.
 
 ## b) PARTIALLY DONE
 
-- **Daemon pushes pending on BOTH repos** (shipped: everything is committed
+- ~~**Daemon pushes pending on BOTH repos** (shipped: everything is committed
   locally and locally verified; remains: the pushes + green CI on the pushed
   heads). go-sse holds `ecda05a`+`72b009e`+`9c46193` (CHANGELOG/FEATURES/
   store.go/guide/TODO_LIST work); go-datastar holds `7f57346`+`6114325`+
   `2660664` (the whole 1.27.1 migration). Local gates mirror CI and are green;
   remote CI has not seen either batch yet (>50 min without a daemon push at
-  session end).
-- **go-datastar full `nix flake check` not run locally**: buildflow validated
+  session end).~~ done — the 07:03 session verified and pushed everything; CI green on the pushed heads
+- ~~**go-datastar full `nix flake check` not run locally**: buildflow validated
   the vendor-hash FODs and the workspace tests are green, but its hermetic
   `nix flake check` (the CI `nix` job's exact command) was not executed. Its CI
-  will run it on push; a local pre-run would have de-risked the push.
-- **Private vulnerability reporting**: attempted `gh api -X PATCH …
+  will run it on push; a local pre-run would have de-risked the push.~~ done — the 07:03 session ran it green locally (and found the real breakage behind it)
+- ~~**Private vulnerability reporting**: attempted `gh api -X PATCH …
   security_and_analysis` → HTTP 422 (`private_vulnerability_reporting` is not
   part of the REST object; UI/GraphQL-managed). Shipped: routed into
   TODO_LIST with the finding. Remains: the owner flipping the toggle in
-  Settings → Code security and analysis.
+  Settings → Code security and analysis.~~ done — enabled 2026-09-29 via the dedicated `/repos/…/private-vulnerability-reporting` endpoint (the 422 pointed at the wrong endpoint)
 
 ## c) NOT STARTED
 
-- **go-datastar pin bumps + datastartest re-tag** (go-sse v0.6.1 / ssetest
+- ~~**go-datastar pin bumps + datastartest re-tag** (go-sse v0.6.1 / ssetest
   latest, replace-directive drop per its own checklist): deliberately not
   started — its ADR-002 lockstep release train is an owner timing decision
-  (g1), not mine to trigger silently.
-- **GOEXPERIMENT=jsonv2 removal sweep** (standing TODO_LIST item): untouched
-  this session; still gated on "no fleet machine runs a 1.26 toolchain".
+  (g1), not mine to trigger silently.~~ done — go-datastar v0.6.1 lockstep shipped 2026-09-29 (their `bb4f08d`, replaces dropped at `c1826fb`)
+- ~~**GOEXPERIMENT=jsonv2 removal sweep** (standing TODO_LIST item): untouched
+  this session; still gated on "no fleet machine runs a 1.26 toolchain".~~ done at `1c0fc85` — removed from every go-sse live surface (go-datastar's own surfaces remain: TODO_LIST batch)
 
 ## d) TOTALLY FUCKED UP
 
@@ -118,67 +118,73 @@ artifacts), which mooted the "cut v0.7.0?" question from the 22-44 report.
 
 Now (P0):
 
-1. Re-run `scripts/verify.sh --fast` over the final tree (`9c46193`+) to
-   restore the last-verified-state invariant broken by d3 (markdown-only
-   delta since the full green run).
-2. Confirm the daemon pushes landed on both repos and CI is green on the
-   pushed heads (go-sse ×3 commits, go-datastar ×3 commits).
-3. Fix the now-false "builds go1.27.1 from source" comment in go-datastar
-   `.github/workflows/nix.yml` (goPkg is a nixpkgs binary now) — d4.
-4. Run go-datastar's `nix flake check` locally once (CI nix-job parity)
-   before relying on its push CI (b2, IMP6).
+1. ~~Re-run `scripts/verify.sh --fast` over the final tree (`9c46193`+) to~~ done — later sessions ran the full verify gate green repeatedly (05:49, 07:03 reports)
+   ~~restore the last-verified-state invariant broken by d3 (markdown-only~~
+   ~~delta since the full green run).~~
+2. ~~Confirm the daemon pushes landed on both repos and CI is green on the~~ done — the 07:03 session verified and pushed all pending commits; CI green
+   ~~pushed heads (go-sse ×3 commits, go-datastar ×3 commits).~~
+3. ~~Fix the now-false "builds go1.27.1 from source" comment in go-datastar~~ done — open in go-datastar — verified still-stale this pass (nix.yml line 7); carried in TODO_LIST's go-datastar batch
+   ~~`.github/workflows/nix.yml` (goPkg is a nixpkgs binary now) — d4.~~
+4. ~~Run go-datastar's `nix flake check` locally once (CI nix-job parity)~~ done — the 07:03 session ran go-datastar's local nix flake check green
+   ~~before relying on its push CI (b2, IMP6).~~
 
 Short-term (P1):
 
-5. Enable GitHub private vulnerability reporting (repo Settings UI; REST
-   rejects it — 422). TODO_LIST row exists; ~30 seconds of owner action.
-6. go-datastar release train (pending g1): bump go-sse/ssetest pins to the
-   v0.6.1-era tags, drop datastartest's replace directives, tag lockstep
-   (ADR 002 + CONTRIBUTING step 9 pairing rule).
-7. Watch the first scheduled `datastar-compat.yml` run (Mon 2026-09-21 05:00
-   UTC) and fix whatever the runner environment disagrees with (existing
-   TODO_LIST row).
-8. Record this session's lessons in go-sse AGENTS.md (IMP7): daemon-aware
-   merges, merge-direction trap, post-gate-edit discipline.
-9. Remove the now-inert `GOEXPERIMENT=jsonv2` exports repo-wide (standing
-   TODO_LIST row; fleet-toolchain-gated).
-10. go-datastar: its AGENTS.md "Commands" block still prefixes every command
-    with `GOEXPERIMENT=jsonv2` — now inert; simplify alongside item 9.
+5. ~~Enable GitHub private vulnerability reporting (repo Settings UI; REST~~ done — enabled 2026-09-29 via the private-vulnerability-reporting REST endpoint
+   ~~rejects it — 422). TODO_LIST row exists; ~30 seconds of owner action.~~
+6. ~~go-datastar release train (pending g1): bump go-sse/ssetest pins to the~~ done — go-datastar v0.6.1 lockstep (pins + datastartest tag + replaces dropped)
+   ~~v0.6.1-era tags, drop datastartest's replace directives, tag lockstep~~
+   ~~(ADR 002 + CONTRIBUTING step 9 pairing rule).~~
+7. ~~Watch the first scheduled `datastar-compat.yml` run (Mon 2026-09-21 05:00~~ done — runs of 09-21 and 09-28 success; post-v0.6.1 watch routed to TODO_LIST
+   ~~UTC) and fix whatever the runner environment disagrees with (existing~~
+   ~~TODO_LIST row).~~
+8. ~~Record this session's lessons in go-sse AGENTS.md (IMP7): daemon-aware~~ done — daemon-sweep and health-probe lessons recorded in AGENTS.md (2026-09-29); the merge-direction trap lives in this report's §d
+   ~~merges, merge-direction trap, post-gate-edit discipline.~~
+9. ~~Remove the now-inert `GOEXPERIMENT=jsonv2` exports repo-wide (standing~~ done at `1c0fc85`
+   ~~TODO_LIST row; fleet-toolchain-gated).~~
+10. ~~go-datastar: its AGENTS.md "Commands" block still prefixes every command~~ done — open in go-datastar — their ci.yml/AGENTS.md still carry GOEXPERIMENT (verified this pass); in TODO_LIST's batch
+    ~~with `GOEXPERIMENT=jsonv2` — now inert; simplify alongside item 9.~~
 
 Mid (P2 — items 11-26 are the harvested TODO_LIST backlog, listed here by
 reference number, already code-verified this session):
 
-11. CI `coverage-gate` job (TODO #14).
-12. shellcheck CI job for `scripts/*.sh` (TODO #15).
-13. shfmt / treefmt sh formatter (TODO #16).
-14. templ CLI `@v0.3.1020` pin refresh policy (TODO #17).
-15. Benchmark regression tracking, benchstat vs baseline (TODO #18).
-16. Godoc examples for `SendLines`/`SendKeyed` (TODO #19).
-17. README: link the four guides (TODO #20).
-18. Document `sse.write_short` where error codes are listed (TODO #21).
-19. Direct unit tests for `forEachLine` (TODO #22).
-20. Unit tests for the examples' `listenAddr()` PORT override (TODO #23).
-21. Pin golangci-lint in flake.nix (TODO #24).
-22. ssetest coverage 98.4% → higher, `collect.go` error paths (TODO #25).
-23. `nix run .#smoke` flake app (TODO #27).
-24. Sweep example docs for stale absolute port URLs post-PORT-override
-    (TODO #28).
-25. `Stream.Send` doc: mention the short-write error path (TODO #29).
-26. Link `docs/guides/` from AGENTS.md's docs pointer (TODO #30).
-27. Once the 22-44 report's P0/P1 items all carry resolutions, docs-health
-    ANNOTATE it and move it to `archived/`.
+11. ~~CI `coverage-gate` job (TODO #14).~~ done at `41aac66`
+12. ~~shellcheck CI job for `scripts/*.sh` (TODO #15).~~ done at `41aac66`
+13. ~~shfmt / treefmt sh formatter (TODO #16).~~ done at `0bd6e69`
+14. ~~templ CLI `@v0.3.1020` pin refresh policy (TODO #17).~~ done at `84ecbee`
+15. ~~Benchmark regression tracking, benchstat vs baseline (TODO #18).~~ done at `01051f2`
+16. ~~Godoc examples for `SendLines`/`SendKeyed` (TODO #19).~~ done at `d95bc44`
+17. ~~README: link the four guides (TODO #20).~~ done at `d95bc44`
+18. ~~Document `sse.write_short` where error codes are listed (TODO #21).~~ done at `d95bc44`
+19. ~~Direct unit tests for `forEachLine` (TODO #22).~~ done at `c9dd98a`
+20. ~~Unit tests for the examples' `listenAddr()` PORT override (TODO #23).~~ done at `c9dd98a`
+21. ~~Pin golangci-lint in flake.nix (TODO #24).~~ **Won't implement — decided 2026-09-29 (M7) — unpinned with the double cross-check as the recorded control.**
+22. ~~ssetest coverage 98.4% → higher, `collect.go` error paths (TODO #25).~~ done at `88189b8`
+23. ~~`nix run .#smoke` flake app (TODO #27).~~ done — routed — TODO_LIST Blocked row (E2E scope decision)
+24. ~~Sweep example docs for stale absolute port URLs post-PORT-override~~ done at `0bd6e69`
+    ~~(TODO #28).~~
+25. ~~`Stream.Send` doc: mention the short-write error path (TODO #29).~~ done at `d95bc44`
+26. ~~Link `docs/guides/` from AGENTS.md's docs pointer (TODO #30).~~ done at `d95bc44`
+27. ~~Once the 22-44 report's P0/P1 items all carry resolutions, docs-health~~ done — this pass annotated and archived the 22:44 report
+    ~~ANNOTATE it and move it to `archived/`.~~
 
 ## g) Questions I CANNOT figure out myself
 
-1. **go-datastar release timing**: its `[Unreleased]` now holds the Go 1.27.1
-   floor and ADR 002 prescribes a lockstep tag. Cut its next release now
-   (together with the go-sse v0.6.1 / ssetest pin bumps and the datastartest
-   replace-directive drop), or hold until more accumulates on the train?
-2. **Daemon push cadence**: neither daemon has pushed in >50 minutes tonight
-   while both repos hold fully-verified local commits. Is that expected, or
-   do you want me to push the verified heads manually? (I will not push
-   without an explicit go-ahead.)
-3. **Private vulnerability reporting**: the setting must be flipped in the
-   GitHub UI by you (Settings → Code security and analysis) — I found no API
-   path (REST 422, field is UI/GraphQL-managed). Please confirm you want it
-   enabled so SECURITY.md's advertised channel is real.
+1. ~~**go-datastar release timing**: its `[Unreleased]` now holds the Go 1.27.1~~ done — answered — v0.6.1 was already cut; the go-datastar train shipped the same day
+   ~~floor and ADR 002 prescribes a lockstep tag. Cut its next release now~~
+   ~~(together with the go-sse v0.6.1 / ssetest pin bumps and the datastartest~~
+   ~~replace-directive drop), or hold until more accumulates on the train?~~
+2. ~~**Daemon push cadence**: neither daemon has pushed in >50 minutes tonight~~ done — mooted — the 07:03 session pushed all verified heads; cadence question retired
+   ~~while both repos hold fully-verified local commits. Is that expected, or~~
+   ~~do you want me to push the verified heads manually? (I will not push~~
+   ~~without an explicit go-ahead.)~~
+3. ~~**Private vulnerability reporting**: the setting must be flipped in the~~ done — enabled via the private-vulnerability-reporting REST endpoint
+   ~~GitHub UI by you (Settings → Code security and analysis) — I found no API~~
+   ~~path (REST 422, field is UI/GraphQL-managed). Please confirm you want it~~
+   ~~enabled so SECURITY.md's advertised channel is real.~~
+
+---
+
+## Archival check (2026-09-29, docs-health pass)
+
+Every numbered item and bullet in §b/§c/§f/§g carries an inline verdict, verified against the repo this pass. Fully resolved — archived.

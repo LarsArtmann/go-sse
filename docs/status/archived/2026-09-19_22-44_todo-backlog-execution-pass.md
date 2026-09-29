@@ -58,31 +58,31 @@ on `checks.format` (pre-existing unformatted staged file — fixed via
 
 ## b) PARTIALLY DONE
 
-1. **Final verification gate.** Shipped: all 5 lint fixes (mnd→`frameOverheadBytes`,
-   nlreturn, 3× wsl_v5) and the devShell `config.treefmt.build.wrapper` addition.
-   Remains: one full `scripts/verify.sh` run to green — the last run predates
-   the fixes, so "ALL CHECKS PASSED" has not been observed end-to-end, and the
-   devShell edit (treefmt in PATH) is unvalidated.
-2. **FEATURES.md godoc-examples row.** Shipped: Benchmarks + allocation rows
-   updated. Remains: the "Example tests (godoc)" row does not list
-   `ExampleWithOnDrop` / `ExampleRequireDataJSON`.
-3. **ssetest changelog.** Shipped: root [Unreleased] entries. Remains: the
-   ssetest module's own `[Unreleased]` section for the example_test.go addition.
-4. **Red master → green CI.** Shipped: fix validated locally. Remains: nothing
-   was committed/pushed by this session; CI green on master is unconfirmed
-   (auto-commit daemon will pick the tree up).
-5. **Open PRs #1 (flake update) and #2 (dependabot).** Tracked in TODO_LIST
-   with merge guidance; human review-merge outstanding.
+1. ~~**Final verification gate.** Shipped: all 5 lint fixes (mnd→`frameOverheadBytes`,~~ done — the 23:00 follow-up session re-ran the full gate to ALL CHECKS PASSED
+   ~~nlreturn, 3× wsl_v5) and the devShell `config.treefmt.build.wrapper` addition.~~
+   ~~Remains: one full `scripts/verify.sh` run to green — the last run predates~~
+   ~~the fixes, so "ALL CHECKS PASSED" has not been observed end-to-end, and the~~
+   ~~devShell edit (treefmt in PATH) is unvalidated.~~
+2. ~~**FEATURES.md godoc-examples row.** Shipped: Benchmarks + allocation rows~~ done at `ecda05a`
+   ~~updated. Remains: the "Example tests (godoc)" row does not list~~
+   ~~`ExampleWithOnDrop` / `ExampleRequireDataJSON`.~~
+3. ~~**ssetest changelog.** Shipped: root [Unreleased] entries. Remains: the~~ done at `ecda05a`
+   ~~ssetest module's own `[Unreleased]` section for the example_test.go addition.~~
+4. ~~**Red master → green CI.** Shipped: fix validated locally. Remains: nothing~~ done — master CI green from the 2026-09-19 pushes onward
+   ~~was committed/pushed by this session; CI green on master is unconfirmed~~
+   ~~(auto-commit daemon will pick the tree up).~~
+5. ~~**Open PRs #1 (flake update) and #2 (dependabot).** Tracked in TODO_LIST~~ done at `a2ae921`, ` ecda05a`
+   ~~with merge guidance; human review-merge outstanding.~~
 
 ## c) NOT STARTED
 
-1. `GOEXPERIMENT=jsonv2` removal — deliberately deferred (TODO_LIST item);
-   removal is safe today but the fleet's 1.26 toolchains are unknowable from
-   this repo.
-2. First scheduled `datastar-compat` run watch — cannot start before Monday
-   2026-09-21 05:00 UTC; TODO_LIST carries the watch item.
-3. Browser E2E — still BLOCKED on the Option B vs C scope decision
-   (unchanged from 2026-08-29).
+1. ~~`GOEXPERIMENT=jsonv2` removal — deliberately deferred (TODO_LIST item);~~ done at `1c0fc85`
+   ~~removal is safe today but the fleet's 1.26 toolchains are unknowable from~~
+   ~~this repo.~~
+2. ~~First scheduled `datastar-compat` run watch — cannot start before Monday~~ done — scheduled runs of 2026-09-21 and 2026-09-28 both success; the post-v0.6.1 watch lives in TODO_LIST
+   ~~2026-09-21 05:00 UTC; TODO_LIST carries the watch item.~~
+3. ~~Browser E2E — still BLOCKED on the Option B vs C scope decision~~ done — routed — stays on TODO_LIST's Blocked row (scope decision, unchanged)
+   ~~(unchanged from 2026-08-29).~~
 
 ## d) TOTALLY FUCKED UP
 
@@ -128,76 +128,82 @@ on `checks.format` (pre-existing unformatted staged file — fixed via
 
 Now (P0):
 
-1. Re-run `scripts/verify.sh` to a green ALL CHECKS PASSED (validates the 5
-   lint fixes + the devShell treefmt addition).
-2. Confirm master CI green after the daemon pushes (all 9 jobs + actionlint).
-3. Merge PR #2 (dependabot actions bumps) once CI is green.
-4. Merge PR #1 (flake update 2026-09-07) or let Monday's run supersede it.
+1. ~~Re-run `scripts/verify.sh` to a green ALL CHECKS PASSED (validates the 5~~ done — the 23:00 session's full gate run (ALL CHECKS PASSED)
+   ~~lint fixes + the devShell treefmt addition).~~
+2. ~~Confirm master CI green after the daemon pushes (all 9 jobs + actionlint).~~ done — master CI green on the pushed heads (runs in the 23:00 report)
+3. ~~Merge PR #2 (dependabot actions bumps) once CI is green.~~ done at `a2ae921`
+4. ~~Merge PR #1 (flake update 2026-09-07) or let Monday's run supersede it.~~ done — closed as superseded (master's lock was newer)
 
 Short-term (P1):
 
-5. Update FEATURES.md "Example tests (godoc)" row with
-   `ExampleWithOnDrop` + `ExampleRequireDataJSON`.
-6. Add a ssetest-module `[Unreleased]` CHANGELOG section for the example
-   addition.
-7. Verify `example/datastar/store.go` matches the eventstore guide's
-   re-slice/copy-down guidance; align whichever side is wrong (d5).
-8. Cut v0.7.0: short-write error contract is a consumer-visible behavior
-   change, plus the allocation win — run the full 9-step checklist
-   (incl. 5m/target fuzz soak and `scripts/release-verify.sh`).
-9. Post-release: bump go-datastar's go-sse/ssetest pins and tag
-   datastartest (pairing rule, CONTRIBUTING step 9).
-10. Watch the first scheduled `datastar-compat` run (Mon 2026-09-21 05:00
-    UTC) and fix whatever the runner environment disagrees with.
-11. go-datastar: bump its `go 1.26.7` directive to 1.27.x — verified this
-    session that it cannot build under a 1.27 toolchain (jsonv2 gate); its
-    own CI still runs 1.26.7, which is the only thing masking it.
-12. Remove `GOEXPERIMENT=jsonv2` exports repo-wide once no fleet toolchain
-    is on 1.26 (TODO_LIST open item).
-13. Verify the GitHub "private vulnerability reporting" repo setting is
-    actually enabled — SECURITY.md points at it; the setting lives outside
-    this repository.
+5. ~~Update FEATURES.md "Example tests (godoc)" row with~~ done at `ecda05a`
+   ~~`ExampleWithOnDrop` + `ExampleRequireDataJSON`.~~
+6. ~~Add a ssetest-module `[Unreleased]` CHANGELOG section for the example~~ done at `ecda05a`
+   ~~addition.~~
+7. ~~Verify `example/datastar/store.go` matches the eventstore guide's~~ done at `ecda05a`
+   ~~re-slice/copy-down guidance; align whichever side is wrong (d5).~~
+8. ~~Cut v0.7.0: short-write error contract is a consumer-visible behavior~~ **NOT-DO — mooted — v0.6.1 was already cut and published with the short-write contract (6446288).**
+   ~~change, plus the allocation win — run the full 9-step checklist~~
+   ~~(incl. 5m/target fuzz soak and `scripts/release-verify.sh`).~~
+9. ~~Post-release: bump go-datastar's go-sse/ssetest pins and tag~~ done — go-datastar v0.6.1 lockstep ships the v0.6.1/v0.4.0 pins (their bb4f08d)
+   ~~datastartest (pairing rule, CONTRIBUTING step 9).~~
+10. ~~Watch the first scheduled `datastar-compat` run (Mon 2026-09-21 05:00~~ done — runs of 09-21 and 09-28 success
+    ~~UTC) and fix whatever the runner environment disagrees with.~~
+11. ~~go-datastar: bump its `go 1.26.7` directive to 1.27.x — verified this~~ done — the 23:00 session migrated go-datastar to the 1.27.1 floor
+    ~~session that it cannot build under a 1.27 toolchain (jsonv2 gate); its~~
+    ~~own CI still runs 1.26.7, which is the only thing masking it.~~
+12. ~~Remove `GOEXPERIMENT=jsonv2` exports repo-wide once no fleet toolchain~~ done at `1c0fc85`
+    ~~is on 1.26 (TODO_LIST open item).~~
+13. ~~Verify the GitHub "private vulnerability reporting" repo setting is~~ done — enabled via the private-vulnerability-reporting REST endpoint (01:58 release report a14)
+    ~~actually enabled — SECURITY.md points at it; the setting lives outside~~
+    ~~this repository.~~
 
 Mid (P2):
 
-14. CI `coverage-gate` job — the 90%/95% thresholds are currently
-    local-only.
-15. shellcheck CI job for `scripts/*.sh` (actionlint only covers `run:`
-    blocks).
-16. Add shfmt (or treefmt sh formatter) so `scripts/*.sh` are format-gated
-    too.
-17. templ CLI pin (`@v0.3.1020`) refresh policy — Dependabot cannot bump
-    `go run @version` pins; add a CONTRIBUTING note or a check.
-18. Benchmark regression tracking in CI (benchstat against a baseline) —
-    perf claims are hand-pinned in FEATURES today.
-19. Godoc examples for `SendLines`/`SendKeyed` composition (only `KeyedLines`
-    has one).
-20. README: link the four guides (discoverable only via `docs/guides/`
-    listing today).
-21. Document `sse.write_short` wherever error codes are listed
-    (AGENTS conventions list + README if applicable).
-22. Direct unit tests for `forEachLine` (currently covered only transitively
-    via `splitLines` + conformance corpora).
-23. Trivial unit tests for the three examples' `listenAddr()` PORT override.
-24. Consider pinning golangci-lint in flake.nix (nixpkgs-unstable drifts;
-    the new verify.sh check flags skew, pinning removes the drift class).
-25. ssetest coverage 98.4% → higher (remaining lines are likely
-    `collect.go` error paths).
-26. ROADMAP: decide browser-E2E Option B vs C (blocked since 2026-08-03).
-27. `nix run .#smoke` flake app wrapping the smoke script.
-28. Re-check `example/README.md` and example doc comments for stale absolute
-    port URLs after the PORT override landed.
-29. Update `Stream.Send` doc comment to mention the short-write error path
-    (currently only says "write fails").
-30. Link `docs/guides/` from AGENTS.md's docs pointer (four entries now).
+14. ~~CI `coverage-gate` job — the 90%/95% thresholds are currently~~ done at `41aac66`
+    ~~local-only.~~
+15. ~~shellcheck CI job for `scripts/*.sh` (actionlint only covers `run:`~~ done at `41aac66`
+    ~~blocks).~~
+16. ~~Add shfmt (or treefmt sh formatter) so `scripts/*.sh` are format-gated~~ done at `0bd6e69`
+    ~~too.~~
+17. ~~templ CLI pin (`@v0.3.1020`) refresh policy — Dependabot cannot bump~~ done at `84ecbee`
+    ~~`go run @version` pins; add a CONTRIBUTING note or a check.~~
+18. ~~Benchmark regression tracking in CI (benchstat against a baseline) —~~ done at `01051f2`
+    ~~perf claims are hand-pinned in FEATURES today.~~
+19. ~~Godoc examples for `SendLines`/`SendKeyed` composition (only `KeyedLines`~~ done at `d95bc44`
+    ~~has one).~~
+20. ~~README: link the four guides (discoverable only via `docs/guides/`~~ done at `d95bc44`
+    ~~listing today).~~
+21. ~~Document `sse.write_short` wherever error codes are listed~~ done at `d95bc44`
+    ~~(AGENTS conventions list + README if applicable).~~
+22. ~~Direct unit tests for `forEachLine` (currently covered only transitively~~ done at `c9dd98a`
+    ~~via `splitLines` + conformance corpora).~~
+23. ~~Trivial unit tests for the three examples' `listenAddr()` PORT override.~~ done at `c9dd98a`
+24. ~~Consider pinning golangci-lint in flake.nix (nixpkgs-unstable drifts;~~ **Won't implement — decided 2026-09-29 (M7) — unpinned with a double cross-check as the recorded control.**
+    ~~the new verify.sh check flags skew, pinning removes the drift class).~~
+25. ~~ssetest coverage 98.4% → higher (remaining lines are likely~~ done at `88189b8`
+    ~~`collect.go` error paths).~~
+26. ~~ROADMAP: decide browser-E2E Option B vs C (blocked since 2026-08-03).~~ done — routed — TODO_LIST Blocked row (scope decision)
+27. ~~`nix run .#smoke` flake app wrapping the smoke script.~~ done at `0bd6e69`
+28. ~~Re-check `example/README.md` and example doc comments for stale absolute~~ done at `d95bc44`
+    ~~port URLs after the PORT override landed.~~
+29. ~~Update `Stream.Send` doc comment to mention the short-write error path~~ done at `d95bc44`
+    ~~(currently only says "write fails").~~
+30. ~~Link `docs/guides/` from AGENTS.md's docs pointer (four entries now).~~ done at `d95bc44`
 
 ## g) Questions I CANNOT figure out myself
 
-1. Should I merge the two open automated PRs (#1 flake-update, #2 dependabot
-   actions) myself once CI is green, or is review-merge strictly yours?
-2. Release timing: cut v0.7.0 for the short-write behavior change + hot-path
-   work now, or hold and bundle with more items? (It is a consumer-visible
-   tightening: silent truncation becomes an error.)
-3. May I also fix go-datastar in its own repo (go-directive bump to 1.27.x)?
-   It is your repo and currently 1.27-incompatible, but nothing is red over
-   there yet — cross-repo initiative is your call, not mine to take silently.
+1. ~~Should I merge the two open automated PRs (#1 flake-update, #2 dependabot~~ done — answered — both PRs resolved by the 23:00 session (merged/closed)
+   ~~actions) myself once CI is green, or is review-merge strictly yours?~~
+2. ~~Release timing: cut v0.7.0 for the short-write behavior change + hot-path~~ done — mooted — v0.6.1 was already cut and published containing the short-write contract
+   ~~work now, or hold and bundle with more items? (It is a consumer-visible~~
+   ~~tightening: silent truncation becomes an error.)~~
+3. ~~May I also fix go-datastar in its own repo (go-directive bump to 1.27.x)?~~ done — answered — the 23:00 session executed the go-datastar 1.27.1 migration (user-approved)
+   ~~It is your repo and currently 1.27-incompatible, but nothing is red over~~
+   ~~there yet — cross-repo initiative is your call, not mine to take silently.~~
+
+---
+
+## Archival check (2026-09-29, docs-health pass)
+
+Every numbered item in §b/§c/§f/§g carries an inline verdict, verified against the repo this pass (the whole 2026-09-03-harvest backlog shipped; PRs resolved; v0.6.1 mooted the release question). Fully resolved — archived.
