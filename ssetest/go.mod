@@ -11,5 +11,3 @@ require (
 	github.com/larsartmann/go-branded-id v0.5.1 // indirect
 	github.com/larsartmann/go-error-family v0.10.1 // indirect
 )
-
-replace github.com/larsartmann/go-sse/sseparse => ../sseparse

@@ -49,6 +49,10 @@ esac
 export GOWORK=off
 export GOEXPERIMENT=jsonv2
 export GOPROXY="https://proxy.golang.org,direct"
+# The ambient shell may carry an older toolchain pinned via GOTOOLCHAIN=local;
+# go list would then die with "go.mod requires go >= 1.27" and the failure
+# would masquerade as a proxy lag below.
+export GOTOOLCHAIN=auto
 
 echo "==> 1/3 proxy lists $module@$tag in its version index"
 if ! go list -m -versions "$module" | tr ' ' '\n' | grep -qx "$tag"; then
