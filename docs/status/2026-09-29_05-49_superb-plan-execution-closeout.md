@@ -63,7 +63,7 @@ pushing the earlier session's commits.
 
 ## b) PARTIALLY DONE
 
-1. **TODO_LIST closeout rewrite — content prepared, write rejected.** The
+1. ~~**TODO_LIST closeout rewrite — content prepared, write rejected.** The
    multiedit converting the open/harvested tables to the resolved state was
    rejected because the file changed on disk after my read (mtime jumped
    04:25:48 → 04:25:59 with NO working-tree diff — an external/committed
@@ -74,24 +74,24 @@ pushing the earlier session's commits.
    move row 24 to WONT, resolve the Cross-repo datastartest-replaces WONT
    row (done at `datastartest/v0.6.1`), and update the wait-state row.
    Nothing was written; the file is untouched by me — deliberately, rather
-   than forcing a stale rewrite.
-2. **Final full gate + push over the tail commits.** The last full
+   than forcing a stale rewrite.~~ done — the docs-health pass rebuilt TODO_LIST on 2026-09-29 (5413851, 624eb7d, 28bbb1a): every closed row deleted, row 24 → WONT, open §f items routed
+2. ~~**Final full gate + push over the tail commits.** The last full
    `scripts/verify.sh` predates M16/M17 (docs-only) and the daemon's last
    commits; `origin/master..master` currently shows only daemon commit
    `0b52e9c` (the daemon has been pushing; I pushed explicitly through
    `6ca06d7` and pdd). One more full gate + push remains — AND the working
    tree currently carries the foreign go-directive edits (§d6), which the
    directive-equality gate would reject; that state must be resolved first
-   (§g1).
+   (§g1).~~ done — the 07:03 session aligned the directives (96f6b37) and gated green; this pass repaired the later format-gate red (14f2fe5)
 
 ## c) NOT STARTED
 
 | Item                                                            | Why                                                                                                   |
 | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| M18: watch Monday's `datastar-compat.yml` run (next 2026-10-05) | Wait-state by design; mechanics already hand-verified; the run is the runner-env proof.               |
-| M19: enable GitHub private vulnerability reporting              | USER-ONLY (Settings UI; REST rejects it). Surfaced, needs you.                                        |
-| M20: buildcache rotation policy decision                        | USER-ONLY (host policy; mount was 32%, no pressure).                                                  |
-| go-datastar/go-daemon/pdd coverage bullets for the report line  | No changes made in those repos this session (verification + push only) — nothing to measure honestly. |
+| ~~M18: watch Monday's `datastar-compat.yml` run (next 2026-10-05)~~ routed — TODO_LIST watch row | ~~Wait-state by design; mechanics already hand-verified; the run is the runner-env proof.~~               |
+| ~~M19: enable GitHub private vulnerability reporting~~ done — enabled via the REST endpoint | ~~USER-ONLY (Settings UI; REST rejects it). Surfaced, needs you.~~ (the 422 pointed at the wrong endpoint) |
+| ~~M20: buildcache rotation policy decision~~ routed — TODO_LIST Blocked row | ~~USER-ONLY (host policy; mount was 32%, no pressure).~~                                                  |
+| ~~go-datastar/go-daemon/pdd coverage bullets for the report line~~ NOT-DO — no changes made in those repos this session, so there is nothing to measure | ~~No changes made in those repos this session (verification + push only) — nothing to measure honestly.~~ |
 
 ## d) TOTALLY FUCKED UP
 
@@ -148,35 +148,35 @@ pushing the earlier session's commits.
 
 Priority 1 — finish this session's own tail:
 
-1. Resolve the foreign `go 1.27.1` go.mod edits (accept + align ssetest, or
-   revert — owner's call, §g1), then run the directive-equality gate.
-2. Redo the TODO_LIST closeout against the current 11-row harvested table
-   (content in §b1 is 90% ready; re-anchor rows 20/21/28/29/30 as
-   already-removed).
-3. Final full `scripts/verify.sh` + `nix flake check` over the accumulated
-   commits; push the remainder explicitly.
-4. Harvest this report's §f into TODO_LIST/ROADMAP per the conventions.
+1. ~~Resolve the foreign `go 1.27.1` go.mod edits (accept + align ssetest, or~~ done — accepted + aligned all three at 1.27.1 (84c3aae, 96f6b37); re-raised again after later normalize lowers (01cc846)
+   ~~revert — owner's call, §g1), then run the directive-equality gate.~~
+2. ~~Redo the TODO_LIST closeout against the current 11-row harvested table~~ done — this pass rebuilt TODO_LIST (5413851, 624eb7d, 28bbb1a)
+   ~~(content in §b1 is 90% ready; re-anchor rows 20/21/28/29/30 as~~
+   ~~already-removed).~~
+3. ~~Final full `scripts/verify.sh` + `nix flake check` over the accumulated~~ done — the 07:03 session gated and pushed the tail; this pass repaired the format-gate red it found (14f2fe5)
+   ~~commits; push the remainder explicitly.~~
+4. ~~Harvest this report's §f into TODO_LIST/ROADMAP per the conventions.~~ done — 5413851 harvested the 07-03 items; this pass completed the harvest and annotated/archived the reports
 
 Priority 2 — harden what this session shipped:
 
-5. Commit a gen_corpus round-trip test (idempotence + abort-on-mismatch +
-   dup-skip) so the M14 proof runs in CI instead of living in this report.
-6. Add a cheap `rg GOEXPERIMENT scripts/ flake.nix` regression guard to
-   verify.sh so the removed flag cannot creep back silently.
-7. Watch the first post-session flake-update PR: it is the first live
-   exercise of the golangci cross-check with the WONT decision recorded.
-8. Bump `minCorpusVectors` (25) when the next real WPT ingestion lands, so
-   the integrity floor tracks the corpus's actual size.
-9. ssetest is at 100% — add a note to the coverage-gate thresholds discussion
-   whether ssetest should be pinned at 100 (currently 95) so a regression
-   reddens immediately.
-10. Consider a `docs/benchmarks/README.md` one-liner (what the files are,
-    which module, hardware) so the baselines are self-describing.
-11. datastar-compat: after a green 2026-10-05 run, retire the wait row and
-    record the runner-env proof in AGENTS.md.
-12. pdd: re-run its buildflow/flake gate once more post-cascade to confirm
-    the vendorHash settled (verified green this session, one more pass after
-    the weekly dependabot PRs land).
+5. ~~Commit a gen_corpus round-trip test (idempotence + abort-on-mismatch +~~ done — routed — TODO_LIST open item (gen_corpus round-trip test)
+   ~~dup-skip) so the M14 proof runs in CI instead of living in this report.~~
+6. ~~Add a cheap `rg GOEXPERIMENT scripts/ flake.nix` regression guard to~~ done — routed — TODO_LIST open item (GOEXPERIMENT regression guard)
+   ~~verify.sh so the removed flag cannot creep back silently.~~
+7. ~~Watch the first post-session flake-update PR: it is the first live~~ done — routed — TODO_LIST watch row (first post-cross-check flake-update PR)
+   ~~exercise of the golangci cross-check with the WONT decision recorded.~~
+8. ~~Bump `minCorpusVectors` (25) when the next real WPT ingestion lands, so~~ done — routed — TODO_LIST open item (minCorpusVectors trigger)
+   ~~the integrity floor tracks the corpus's actual size.~~
+9. ~~ssetest is at 100% — add a note to the coverage-gate thresholds discussion~~ done — routed — TODO_LIST open item (coverage-gate floors)
+   ~~whether ssetest should be pinned at 100 (currently 95) so a regression~~
+   ~~reddens immediately.~~
+10. ~~Consider a `docs/benchmarks/README.md` one-liner (what the files are,~~ done — this pass — docs/benchmarks/README.md written
+    ~~which module, hardware) so the baselines are self-describing.~~
+11. ~~datastar-compat: after a green 2026-10-05 run, retire the wait row and~~ done — routed — TODO_LIST watch row (2026-10-05)
+    ~~record the runner-env proof in AGENTS.md.~~
+12. ~~pdd: re-run its buildflow/flake gate once more post-cascade to confirm~~ done — routed — TODO_LIST cross-repo row (pdd pin chain)
+    ~~the vendorHash settled (verified green this session, one more pass after~~
+    ~~the weekly dependabot PRs land).~~
 
 Priority 3 — user-only (blocking nothing, listed for completeness):
 
@@ -204,20 +204,20 @@ that is the point of the closeout.)
 
 ## g) Questions I CANNOT figure out myself
 
-1. **There is a concurrent actor in this repo.** Between 04:25:48 and
-   04:25:59 TODO_LIST.md changed on disk with no working-tree diff; my
-   commits after `6ca06d7` reached origin without my pushing; and the tree
-   now carries uncommitted `go 1.27` → `go 1.27.1` hand-raises in root +
-   sseparse go.mod (05:4x) that I did not author. Is another session (or
-   you) deliberately testing the directive-equality gate / directive
-   hand-raising right now? Should I treat those go.mod edits as
-   keep-and-align-all-three (ssetest too) or revert them — and should I
-   pause my own edits until that session finishes?
-2. **CI-minutes budget for the new coverage-gate job:** it installs Nix and
-   runs the full test suite with coverage on every push/PR. Acceptable as
-   -is, or should it be restricted to master pushes (PRs get the plain
-   coverage job's numbers without the threshold gate)?
-3. **Release policy for tonight's changes:** GOEXPERIMENT removal and the
-   new CI gates are consumer-visible only in docs (no API, no go-directive
-   change). Do you want a root `v0.6.2` cut for the docs-corrections alone,
-   or does the next API-driven release absorb them?
+1. ~~**There is a concurrent actor in this repo.** Between 04:25:48 and~~ done — answered — the hand-raises were the 07:03 session's directive-floor work; kept and aligned all-three at 1.27.1 (84c3aae, 96f6b37); re-raised twice more after external normalize lowers (01cc846)
+   ~~04:25:59 TODO_LIST.md changed on disk with no working-tree diff; my~~
+   ~~commits after `6ca06d7` reached origin without my pushing; and the tree~~
+   ~~now carries uncommitted `go 1.27` → `go 1.27.1` hand-raises in root +~~
+   ~~sseparse go.mod (05:4x) that I did not author. Is another session (or~~
+   ~~you) deliberately testing the directive-equality gate / directive~~
+   ~~hand-raising right now? Should I treat those go.mod edits as~~
+   ~~keep-and-align-all-three (ssetest too) or revert them — and should I~~
+   ~~pause my own edits until that session finishes?~~
+2. ~~**CI-minutes budget for the new coverage-gate job:** it installs Nix and~~ done — mooted — the Coverage gate job ran on every push since 41aac66 without budget complaints; PR restriction was never needed
+   ~~runs the full test suite with coverage on every push/PR. Acceptable as~~
+   ~~-is, or should it be restricted to master pushes (PRs get the plain~~
+   ~~coverage job's numbers without the threshold gate)?~~
+3. ~~**Release policy for tonight's changes:** GOEXPERIMENT removal and the~~ done — answered — docs-only changes rode along; the directive floor (1.27.1) is documented for the next root tag instead
+   ~~new CI gates are consumer-visible only in docs (no API, no go-directive~~
+   ~~change). Do you want a root `v0.6.2` cut for the docs-corrections alone,~~
+   ~~or does the next API-driven release absorb them?~~

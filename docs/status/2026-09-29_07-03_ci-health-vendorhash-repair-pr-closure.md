@@ -49,45 +49,45 @@ on the follow-up dep sweep).
 
 ## b) PARTIALLY DONE
 
-1. **go-datastar tag-CI on v0.6.1** — master is green, but the four frozen
-   v0.6.1 tags keep permanently red tag-CI (the workflow file at a tag is
-   immutable; the old pin + stale hash live there forever). Shipped: the
-   CHANGELOG `[Unreleased]` note documenting this. Remains: the decide-and-
-   maybe-execute of a v0.6.2 re-cut (question for Lars, section g). No
-   technical blocker — release content was verified green before tagging.
-2. **TODO_LIST harvest of this report's section f** — the report is written,
-   but nothing from section f has been harvested into TODO_LIST.md /
-   ROADMAP.md yet. Deliberately paused: the concurrent session actively edits
-   TODO_LIST (11-file sweeps today), and the user instruction was
-   "write report, then WAIT". Remaining: HARVEST after coordination.
-3. **Concurrent session's 03-45 plan tail (M4–M17)** — observed large chunks
-   landing today from the OTHER session (GOEXPERIMENT removal `1c0fc85`,
-   CI coverage-gate + shellcheck `41aac66`, ssetest 100% coverage `88189b8`,
-   corpus generator `91fe8b7`, templ pin policy `84ecbee`, benchstat
-   baselines `01051f2`). Not my ledger — I deliberately did not duplicate
-   it — but "the hygiene tail is done" cannot be claimed by this session;
-   it can only be claimed by theirs.
+1. ~~**go-datastar tag-CI on v0.6.1** — master is green, but the four frozen~~ done — routed — the v0.6.2 decision is TODO_LIST's top Blocked row (owner's call)
+   ~~v0.6.1 tags keep permanently red tag-CI (the workflow file at a tag is~~
+   ~~immutable; the old pin + stale hash live there forever). Shipped: the~~
+   ~~CHANGELOG `[Unreleased]` note documenting this. Remains: the decide-and-~~
+   ~~maybe-execute of a v0.6.2 re-cut (question for Lars, section g). No~~
+   ~~technical blocker — release content was verified green before tagging.~~
+2. ~~**TODO_LIST harvest of this report's section f** — the report is written,~~ done — this pass — the docs-health harvest landed (5413851 + TODO_LIST rebuild 624eb7d/28bbb1a) and this report's open items are routed
+   ~~but nothing from section f has been harvested into TODO_LIST.md /~~
+   ~~ROADMAP.md yet. Deliberately paused: the concurrent session actively edits~~
+   ~~TODO_LIST (11-file sweeps today), and the user instruction was~~
+   ~~"write report, then WAIT". Remaining: HARVEST after coordination.~~
+3. ~~**Concurrent session's 03-45 plan tail (M4–M17)** — observed large chunks~~ done — the 05:49 session claimed it in its own §a (M4–M17, hashes cited there)
+   ~~landing today from the OTHER session (GOEXPERIMENT removal `1c0fc85`,~~
+   ~~CI coverage-gate + shellcheck `41aac66`, ssetest 100% coverage `88189b8`,~~
+   ~~corpus generator `91fe8b7`, templ pin policy `84ecbee`, benchstat~~
+   ~~baselines `01051f2`). Not my ledger — I deliberately did not duplicate~~
+   ~~it — but "the hygiene tail is done" cannot be claimed by this session;~~
+   ~~it can only be claimed by theirs.~~
 
 ## c) NOT STARTED
 
-1. **Workflow-approval gate for Actions-created PRs** (both repos) — the
-   weekly flake-update workflow pushes a branch and opens a PR under
-   GITHUB_TOKEN; GitHub then holds ALL pull_request CI runs in
-   `action_required` until a human approves. Nobody approved PR #4 in 26
-   hours, so it merged-blind risk sat there unnoticed. I documented it in
-   the close comment but configured nothing (approve bot, workflow_run
-   pattern, or repo setting). Blocked on: a policy decision (see g).
-2. **Dependabot-on-nix-hash policy** — every dependabot PR that bumps a
-   go.mod in a vendorHash-carrying module will now (correctly) fail the nix
-   job with a hash mismatch, and dependabot cannot fix nix hashes. Today I
-   handled it ad hoc (adopt-the-bump-on-master). No standing policy exists
-   (auto-close-and-adopt? maintainer hash-fix push? `nix` job made
-   non-blocking for dependabot branches?). Started: no. Blocked on: policy.
-3. **Directive-floored normalize** — buildflow's normalize step lowered
-   root/sseparse to `go 1.27` twice today, fighting the hard 1.27.1 floor
-   imposed by go-sse v0.6.1. The fix (normalize to max(dep directives)
-   instead of a hardcoded version) lives in buildflow, not go-sse. Not
-   started; flip-flop currently prevented only by my AGENTS.md rationale.
+1. ~~**Workflow-approval gate for Actions-created PRs** (both repos) — the~~ done — routed — TODO_LIST Blocked row (approval-gate policy)
+   ~~weekly flake-update workflow pushes a branch and opens a PR under~~
+   ~~GITHUB_TOKEN; GitHub then holds ALL pull_request CI runs in~~
+   ~~`action_required` until a human approves. Nobody approved PR #4 in 26~~
+   ~~hours, so it merged-blind risk sat there unnoticed. I documented it in~~
+   ~~the close comment but configured nothing (approve bot, workflow_run~~
+   ~~pattern, or repo setting). Blocked on: a policy decision (see g).~~
+2. ~~**Dependabot-on-nix-hash policy** — every dependabot PR that bumps a~~ done — routed — TODO_LIST Blocked row (dependabot-on-nix-hash policy)
+   ~~go.mod in a vendorHash-carrying module will now (correctly) fail the nix~~
+   ~~job with a hash mismatch, and dependabot cannot fix nix hashes. Today I~~
+   ~~handled it ad hoc (adopt-the-bump-on-master). No standing policy exists~~
+   ~~(auto-close-and-adopt? maintainer hash-fix push? `nix` job made~~
+   ~~non-blocking for dependabot branches?). Started: no. Blocked on: policy.~~
+3. ~~**Directive-floored normalize** — buildflow's normalize step lowered~~ done — routed — TODO_LIST Blocked row (buildflow normalize fix)
+   ~~root/sseparse to `go 1.27` twice today, fighting the hard 1.27.1 floor~~
+   ~~imposed by go-sse v0.6.1. The fix (normalize to max(dep directives)~~
+   ~~instead of a hardcoded version) lives in buildflow, not go-sse. Not~~
+   ~~started; flip-flop currently prevented only by my AGENTS.md rationale.~~
 
 ## d) TOTALLY FUCKED UP
 
@@ -143,19 +143,19 @@ against code — several will be done by the concurrent session meanwhile.
 
 ### Critical
 
-1. Decide and execute the go-datastar v0.6.2 question (re-cut to get green
-   tag-CI, or accept frozen red tag-CI on v0.6.1). User decision; execution
-   ~30 min if yes. Impact: Critical (release hygiene). Effort: S.
-2. Handle the `action_required` approval gate for Actions-created PRs on
-   go-sse and go-datastar (approve current/future flake-update runs; or
-   switch the workflow to a self-gating pattern). Impact: Critical — weekly
-   automation currently produces PRs nobody can trust. Effort: S–M.
-3. Fix buildflow's normalize step to derive the target go directive from
-   max(dep directives) instead of a hardcoded value, ending the 1.27/1.27.1
-   flip-flop at the root. Impact: Critical (recurring gate churn). Effort: M.
-4. go-datastar: fix the stale vendorHash-movement comment in flake.nix
-   (~lines 49–57) to match the ADR-004 minimal filesets, so the next
-   session does not fear ghost hash movement. Impact: High. Effort: S.
+1. ~~Decide and execute the go-datastar v0.6.2 question (re-cut to get green~~ done — routed — TODO_LIST Blocked row
+   ~~tag-CI, or accept frozen red tag-CI on v0.6.1). User decision; execution~~
+   ~~~30 min if yes. Impact: Critical (release hygiene). Effort: S.~~
+2. ~~Handle the `action_required` approval gate for Actions-created PRs on~~ done — routed — TODO_LIST Blocked row
+   ~~go-sse and go-datastar (approve current/future flake-update runs; or~~
+   ~~switch the workflow to a self-gating pattern). Impact: Critical — weekly~~
+   ~~automation currently produces PRs nobody can trust. Effort: S–M.~~
+3. ~~Fix buildflow's normalize step to derive the target go directive from~~ done — routed — TODO_LIST Blocked row
+   ~~max(dep directives) instead of a hardcoded value, ending the 1.27/1.27.1~~
+   ~~flip-flop at the root. Impact: Critical (recurring gate churn). Effort: M.~~
+4. ~~go-datastar: fix the stale vendorHash-movement comment in flake.nix~~ done — routed — TODO_LIST go-datastar batch
+   ~~(~lines 49–57) to match the ADR-004 minimal filesets, so the next~~
+   ~~session does not fear ghost hash movement. Impact: High. Effort: S.~~
 
 ### High
 
@@ -167,57 +167,57 @@ against code — several will be done by the concurrent session meanwhile.
 7. go-datastar: enforce the golangci pin mechanically — a verify-style
    cross-check script (go-sse's `scripts/golangci-pin.sh` pattern) so
    CI==devshell skew fails locally before push. Effort: S.
-8. Raise coverage-gate floors in go-sse now that ssetest is at 100.0%
-   (ssetest floor 95 → 100; consider library 90 → 99, sseparse 95 → 99) to
-   make the new levels the enforced minimums. Effort: S.
-9. go-sse CHANGELOG `[Unreleased]`: add entries for the dep bumps
-   (go-sse v0.6.1 in ssetest, error-family v0.10.2) + the 1.27.1 directive
-   alignment — the daemon commits shipped none. Effort: S.
+8. ~~Raise coverage-gate floors in go-sse now that ssetest is at 100.0%~~ done — routed — TODO_LIST open item (coverage-gate floors)
+   ~~(ssetest floor 95 → 100; consider library 90 → 99, sseparse 95 → 99) to~~
+   ~~make the new levels the enforced minimums. Effort: S.~~
+9. ~~go-sse CHANGELOG `[Unreleased]`: add entries for the dep bumps~~ done — this pass — the CHANGELOG [Unreleased] carries the dep bumps + 1.27.1 alignment (5413851, dc3d485)
+   ~~(go-sse v0.6.1 in ssetest, error-family v0.10.2) + the 1.27.1 directive~~
+   ~~alignment — the daemon commits shipped none. Effort: S.~~
 10. go-datastar CHANGELOG `[Unreleased]`: add the error-family v0.11.0 bump
     entry (their 11-file sweep touched go.mod ×3 but not CHANGELOG).
     Effort: S.
 11. Bump pdd's go-sse pin v0.6.0 → v0.6.1 (+ vendorHash) so the consumer
     chain is uniformly on v0.6.1; go-daemon likewise. Effort: S–M each.
-12. Verify tag-CI state for go-sse's sseparse/v0.1.0 + ssetest/v0.4.0 tags
-    (same frozen-tag-CI class as go-datastar; unknown whether they ran
-    green at tag time). Effort: S.
+12. ~~Verify tag-CI state for go-sse's sseparse/v0.1.0 + ssetest/v0.4.0 tags~~ done — answered by config — ci.yml triggers on master pushes/PRs only; go-sse module tags never run CI, so there is no frozen tag-CI to audit
+    ~~(same frozen-tag-CI class as go-datastar; unknown whether they ran~~
+    ~~green at tag time). Effort: S.~~
 13. Sweep go-datastar's open dependabot PRs under the new reality (nix job
     will fail on hash moves; adopt-or-close each deliberately). Effort: M.
-14. Proactive go-error-family v0.11.0 evaluation for go-sse root (go-datastar
-    already bumped; a dependabot PR will arrive anyway — get ahead of it with
-    the vendor-hash dance done once). Effort: S–M.
-15. Update go-sse AGENTS.md "go-directive claims" one more time if/when the
-    next root tag ships at 1.27.1 (the tag-vs-master directive split is now
-    v0.6.1@1.27.1 vs master@1.27.1 — re-check on next release). Effort: S.
+14. ~~Proactive go-error-family v0.11.0 evaluation for go-sse root (go-datastar~~ done — the bump already landed on master (55e790c); race suites green
+    ~~already bumped; a dependabot PR will arrive anyway — get ahead of it with~~
+    ~~the vendor-hash dance done once). Effort: S–M.~~
+15. ~~Update go-sse AGENTS.md "go-directive claims" one more time if/when the~~ done — this pass — AGENTS.md's directive claims re-recorded (1.27.1 x3 floor + buildflow-normalize adversary)
+    ~~next root tag ships at 1.27.1 (the tag-vs-master directive split is now~~
+    ~~v0.6.1@1.27.1 vs master@1.27.1 — re-check on next release). Effort: S.~~
 
 ### Medium
 
 16. Record the cross-project lesson in crush-config
     `references/lessons.md`: "verify handoff facts + measure tool versions
     before pin changes; path filters are not gates". Effort: S.
-17. Run a local 5-minute fuzz soak on go-sse's bumped tree (deps changed
-    today; CI's scheduled Fuzz runs green but a fresh soak is cheap).
-    Effort: S.
+17. ~~Run a local 5-minute fuzz soak on go-sse's bumped tree (deps changed~~ done — routed — TODO_LIST open item (local fuzz soak)
+    ~~today; CI's scheduled Fuzz runs green but a fresh soak is cheap).~~
+    ~~Effort: S.~~
 18. Confirm go-sse's weekly `datastar-compat.yml` workflow ran/passed after
     go-datastar v0.6.1 (consumer compat gate). Effort: S.
-19. Annotate `docs/status/2026-09-29_01-58_sseparse-release-and-consumer-chain.md`
-    with resolution markers (tags live) per the ANNOTATE convention, then
-    archive when fully resolved. Effort: S.
+19. ~~Annotate `docs/status/2026-09-29_01-58_sseparse-release-and-consumer-chain.md`~~ done — this pass — annotated and archived (docs/status/archived/)
+    ~~with resolution markers (tags live) per the ANNOTATE convention, then~~
+    ~~archive when fully resolved. Effort: S.~~
 20. Check go-datastar's private-vulnerability-reporting repo setting (was
     enabled for go-sse last session; go-datastar state unverified). Effort: S.
-21. Verify go-sse's coverage-gate measures root as package `.` (the doc's
-    scope rule) — if it uses `./...` the gate understates by ~40 points.
-    Effort: S.
+21. ~~Verify go-sse's coverage-gate measures root as package `.` (the doc's~~ done — this pass — verified: the coverage-gate app measures the root as package `.` (flake.nix measure call)
+    ~~scope rule) — if it uses `./...` the gate understates by ~40 points.~~
+    ~~Effort: S.~~
 22. go-datastar: wire a coverage gate for datastartest (95.5%) and broadcast
     (87.8%) if their coverage workflow lacks thresholds. Effort: S–M.
-23. Document the "Actions-created PR approval gate" behavior in both repos'
-    AGENTS.md (currently only in a PR close comment — invisible to future
-    sessions). Effort: S.
+23. ~~Document the "Actions-created PR approval gate" behavior in both repos'~~ done — this pass — AGENTS.md gotcha records the action_required approval gate
+    ~~AGENTS.md (currently only in a PR close comment — invisible to future~~
+    ~~sessions). Effort: S.~~
 24. go-daemon: re-run its corpus conformance after the next sseparse tag to
     keep the consumer oracle chain warm. Effort: S.
-25. Harvest section f into TODO_LIST.md / ROADMAP.md (docs-health HARVEST),
-    after coordinating with the concurrent session that owns TODO_LIST
-    today. Effort: M.
+25. ~~Harvest section f into TODO_LIST.md / ROADMAP.md (docs-health HARVEST),~~ done — this pass — 5413851 + the TODO_LIST rebuild (624eb7d/28bbb1a)
+    ~~after coordinating with the concurrent session that owns TODO_LIST~~
+    ~~today. Effort: M.~~
 
 ### Low / Roadmap fuel
 
@@ -239,27 +239,27 @@ against code — several will be done by the concurrent session meanwhile.
 33. Add a scheduled `nix flake check --all-systems`-equivalent note for
     aarch64-darwin when nixpkgs support returns (both repos carry the
     systems pin).
-34. go-sse: cover the `Stream.Send` short-write path in an example test if
-    not already (doc claims pinned — verify the pinning test exists).
-35. Keep `docs/status/` archive hygiene: audit for all-resolved reports
-    older than the 2026-09-29 batch and `git mv` to `archived/`.
+34. ~~go-sse: cover the `Stream.Send` short-write path in an example test if~~ done — (existing) — TestStream_SendReturnsErrorOnShortWrite pins the path; the README allocation claim was also corrected this pass
+    ~~not already (doc claims pinned — verify the pinning test exists).~~
+35. ~~Keep `docs/status/` archive hygiene: audit for all-resolved reports~~ done — this pass — six reports annotated and archived; the rest carry their open markers
+    ~~older than the 2026-09-29 batch and `git mv` to `archived/`.~~
 36. Evaluate a shared "session handoff facts" template that separates
     MEASURED facts from CLAIMED facts (today's v2.14.0 error).
 37. go-datastar: pin golangci-lint version in ONE place (flake app) and
     have ci.yml read it (action input) to eliminate the 4-site pin.
 38. Consider Renovate vs Dependabot for the nix-hash-aware update flow
     (Renovate supports lock-file maintenance hooks better).
-39. Add release-verify.sh probes for the OTHER nested module (ssetest case)
-    if only the sseparse case was added last session — parity audit.
+39. ~~Add release-verify.sh probes for the OTHER nested module (ssetest case)~~ done — (existing) — release-verify.sh carries BOTH ssetest/* and sseparse/* cases
+    ~~if only the sseparse case was added last session — parity audit.~~
 40. go-sse: module-boundary test for "root must never require ssetest or
     sseparse" — confirm it also covers indirect requires via go.sum.
-41. Track go-branded-id v0.6.0 in go-sse's own root go.mod (ssetest got it
-    transitively; root still pins its own version — align on next bump).
+41. ~~Track go-branded-id v0.6.0 in go-sse's own root go.mod (ssetest got it~~ done — aligned: root and ssetest both at go-branded-id v0.6.0
+    ~~transitively; root still pins its own version — align on next bump).~~
 42. Add a `directive-equality` check to go-datastar's gates (go-sse has one
     in verify.sh; go-datastar has 3 modules too).
-43. Document in go-sse AGENTS.md that `verify.sh` skips the flake check
-    under `--fast` and MUST be paired with a flake check for go.mod/flake
-    pushes (trap hit today at go-datastar scale).
+43. ~~Document in go-sse AGENTS.md that `verify.sh` skips the flake check~~ done — this pass — AGENTS.md's verify.sh entry documents the --fast + flake-check pairing rule
+    ~~under `--fast` and MUST be paired with a flake check for go.mod/flake~~
+    ~~pushes (trap hit today at go-datastar scale).~~
 44. Evaluate caching golangci-lint 2.13.2 binary in CI cache key bump policy
     (cache key now v2.13.2 — remember to bump BOTH key and install line next
     time; note it in the workflow comment).
@@ -274,28 +274,28 @@ against code — several will be done by the concurrent session meanwhile.
 49. Investigate why PR #4's branch ALSO carried a stale ci.yml pin (v2.13.2
     at branch point) — confirms skew existed on master pre-2026-09-28; write
     the timeline into the pin-parity AGENTS.md note.
-50. Celebrate: ssetest hit 100.0% statement coverage today (other session)
-    — update FEATURES.md if it tracks coverage milestones.
+50. ~~Celebrate: ssetest hit 100.0% statement coverage today (other session)~~ done — FEATURES records ssetest at 100.0% (2026-09-29)
+    ~~— update FEATURES.md if it tracks coverage milestones.~~
 
 ## g) Questions I CANNOT figure out myself
 
-1. **go-datastar v0.6.2: re-cut or not?** The four v0.6.1 tags have frozen
-   red tag-CI (immutable old workflow: panicking lint pin + stale hash).
-   Release content was verified green pre-tag and master is green. Do you
-   want a v0.6.2 re-cut purely for green tag-CI, or is master-green +
-   the CHANGELOG note the accepted end state? I tried to answer via the
-   repos' release conventions (ADR 002 lockstep, CONTRIBUTING) — neither
-   speaks to re-cutting for CI cosmetics.
-2. **What is the intended control for Actions-created PRs (weekly flake
-   update)?** Their CI sits in `action_required` until a human approves —
-   so the weekly automation currently opens PRs that can never gate
-   themselves. Should I (a) approve runs routinely as part of sessions,
-   (b) restructure the workflow to self-verify before opening the PR (run
-   verify.sh inside the workflow, PR becomes a formality), or (c) is
-   manual approval the deliberate safety control you want kept?
-3. **How should concurrent sessions coordinate go.mod/directive/normalize
-   work?** Today two sessions flip-flopped the same three go.mod lines.
-   Do you want a convention (claim file in a shared note before editing),
-   is one session per repo the rule and today's overlap was the anomaly,
-   or should buildflow's normalize simply be fixed to respect the
-   dependency-derived floor (my recommendation, task #3)?
+1. ~~**go-datastar v0.6.2: re-cut or not?** The four v0.6.1 tags have frozen~~ done — routed — TODO_LIST Blocked row (owner's call; no technical blocker)
+   ~~red tag-CI (immutable old workflow: panicking lint pin + stale hash).~~
+   ~~Release content was verified green pre-tag and master is green. Do you~~
+   ~~want a v0.6.2 re-cut purely for green tag-CI, or is master-green +~~
+   ~~the CHANGELOG note the accepted end state? I tried to answer via the~~
+   ~~repos' release conventions (ADR 002 lockstep, CONTRIBUTING) — neither~~
+   ~~speaks to re-cutting for CI cosmetics.~~
+2. ~~**What is the intended control for Actions-created PRs (weekly flake~~ done — routed — TODO_LIST Blocked row (policy decision)
+   ~~update)?** Their CI sits in `action_required` until a human approves —~~
+   ~~so the weekly automation currently opens PRs that can never gate~~
+   ~~themselves. Should I (a) approve runs routinely as part of sessions,~~
+   ~~(b) restructure the workflow to self-verify before opening the PR (run~~
+   ~~verify.sh inside the workflow, PR becomes a formality), or (c) is~~
+   ~~manual approval the deliberate safety control you want kept?~~
+3. ~~**How should concurrent sessions coordinate go.mod/directive/normalize~~ done — routed — TODO_LIST Blocked row (buildflow fix is the recommended path)
+   ~~work?** Today two sessions flip-flopped the same three go.mod lines.~~
+   ~~Do you want a convention (claim file in a shared note before editing),~~
+   ~~is one session per repo the rule and today's overlap was the anomaly,~~
+   ~~or should buildflow's normalize simply be fixed to respect the~~
+   ~~dependency-derived floor (my recommendation, task #3)?~~
