@@ -160,6 +160,7 @@
             projectRootFile = "go.mod";
             programs = {
               gofumpt.enable = true;
+              shfmt.enable = true;
               # nixpkgs gotools' goimports wrapper APPENDS its build go
               # (1.26.7) to PATH, and goimports shells out to `go list` for
               # module-mode import resolution. With go.mod at `go 1.27.1`,
@@ -326,6 +327,10 @@
                   trash-put coverage.out 2>/dev/null || true
                   go clean -testcache
                 '';
+
+            smoke = mkApp "smoke" [ goPkg pkgs.curl pkgs.coreutils ] ''
+              scripts/smoke-examples.sh "$@"
+            '';
           };
         };
     };

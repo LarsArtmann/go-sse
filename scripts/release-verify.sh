@@ -17,33 +17,33 @@ set -euo pipefail
 tag="${1:?usage: scripts/release-verify.sh <vX.Y.Z | ssetest/vX.Y.Z | sseparse/vX.Y.Z>}"
 
 module="github.com/larsartmann/go-sse"
-probe_import="sse \"github.com/larsartmann/go-sse\""
+probe_import='sse "github.com/larsartmann/go-sse"'
 probe_body='_ = sse.Event{Event: "verify", Data: "release probe"}
 	fmt.Fprintln(os.Stderr, "root library probe:", sse.ContentType)'
 
 case "$tag" in
 sseparse/*)
-	module="github.com/larsartmann/go-sse/sseparse"
-	probe_import="sseparse \"github.com/larsartmann/go-sse/sseparse\"
-	\"strings\""
-	probe_body='events, err := sseparse.ReadEvents(strings.NewReader("data: hi\n\n"))
+  module="github.com/larsartmann/go-sse/sseparse"
+  probe_import='sseparse "github.com/larsartmann/go-sse/sseparse"
+	"strings"'
+  probe_body='events, err := sseparse.ReadEvents(strings.NewReader("data: hi\n\n"))
 	if err != nil || len(events) != 1 || len(events[0].DataLines) != 1 || events[0].DataLines[0] != "hi" {
 		fmt.Fprintf(os.Stderr, "sseparse probe FAILED: err=%v events=%v\n", err, events)
 		os.Exit(1)
 	}
 	fmt.Fprintf(os.Stderr, "sseparse probe: parsed %d event(s), data=%q\n", len(events), events[0].Data())'
-	;;
+  ;;
 ssetest/*)
-	module="github.com/larsartmann/go-sse/ssetest"
-	probe_import="ssetest \"github.com/larsartmann/go-sse/ssetest\""
-	probe_body='_ = ssetest.ReadEvents
+  module="github.com/larsartmann/go-sse/ssetest"
+  probe_import='ssetest "github.com/larsartmann/go-sse/ssetest"'
+  probe_body='_ = ssetest.ReadEvents
 	fmt.Fprintln(os.Stderr, "ssetest probe: ReadEvents resolved")'
-	;;
+  ;;
 v*) ;;
 *)
-	echo "FAIL: tag must look like vX.Y.Z, ssetest/vX.Y.Z, or sseparse/vX.Y.Z (got: $tag)" >&2
-	exit 2
-	;;
+  echo "FAIL: tag must look like vX.Y.Z, ssetest/vX.Y.Z, or sseparse/vX.Y.Z (got: $tag)" >&2
+  exit 2
+  ;;
 esac
 
 export GOWORK=off
@@ -55,9 +55,9 @@ export GOTOOLCHAIN=auto
 
 echo "==> 1/3 proxy serves $module@$tag (version-specific fetch; the @v/list index lags for brand-new modules)"
 if ! GOPROXY="https://proxy.golang.org" go list -m -json "$module@$tag" >/dev/null 2>&1; then
-	echo "FAIL: the proxy does not serve $module@$tag yet" >&2
-	echo "      (the proxy can lag a few minutes behind the push; retry)" >&2
-	exit 1
+  echo "FAIL: the proxy does not serve $module@$tag yet" >&2
+  echo "      (the proxy can lag a few minutes behind the push; retry)" >&2
+  exit 1
 fi
 
 echo "==> 2/3 proxy serves the module zip"
