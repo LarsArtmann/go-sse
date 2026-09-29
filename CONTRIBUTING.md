@@ -36,6 +36,23 @@ non-Nix environments you must set it yourself.
 If a parent `go.work` includes sibling projects with checksum conflicts,
 also set `GOWORK=off` to isolate this module's dependency graph.
 
+### The templ CLI pin
+
+The examples' generated code is checked in (`*_templ.go`), and CI verifies it
+is current with `go run github.com/a-h/templ/cmd/templ@<version> generate
+-check` — that `@version` form is deliberate: module-mode `go run templ`
+fails because templ's cmd dependencies are intentionally absent from
+`go.sum`. Dependabot cannot bump `go run pkg@version` pins, so the version
+lives in two places and must move together:
+
+1. `.github/workflows/ci.yml` (examples job, the `templ@vX.Y.Z` run line)
+2. The devShell's `pkgs.templ` (flake.nix) — bump it in the same commit so
+   local `templ generate` output matches what CI accepts.
+
+Bump procedure: bump BOTH, run `templ generate` in the devShell, commit any
+regenerated `*_templ.go` in the same change. CI's `-check` run is the drift
+alarm: a mismatch reddens the Examples job on every push.
+
 ## Reporting Issues
 
 Please use GitHub Issues to report bugs or request features.
