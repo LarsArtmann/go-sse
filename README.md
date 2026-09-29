@@ -172,6 +172,15 @@ func TestFeedHandler(t *testing.T) {
 
 The parser (in `sseparse`) is spec-conformant to WHATWG HTML § 9.2.6 and pinned by the official Web Platform Tests `eventsource/format-*` corpus — exported as data (`sseparse.Corpus()`), executed as Go tests (`sseparse/wpt_format_corpus_test.go`), re-run through 1–4096-byte chunked readers (`sseparse/chunk_boundary_test.go`), and closed against `WriteEvent` with round-trip property tests (`ssetest/roundtrip_test.go`).
 
+## Guides
+
+Deeper dives live in [`docs/guides/`](./docs/guides/):
+
+- [EventStore patterns](./docs/guides/eventstore-patterns.md) — retention, GC, and reconnect-budget design for replay stores
+- [Filters and fan-out](./docs/guides/filters-and-fanout.md) — `SubscribeFilter` recipes under the read-lock contract
+- [Reconnection and retry](./docs/guides/reconnection-and-retry.md) — Last-Event-ID replay and reconnect flows end to end
+- [Migrating from the DataStar SDK](./docs/guides/migrating-from-datastar-sdk.md) — moving from the official SDK's SSE handling to go-sse
+
 ## API Reference
 
 ### Event Types

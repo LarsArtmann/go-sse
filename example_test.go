@@ -173,3 +173,41 @@ func ExampleReplayFiltered() {
 	// data: world
 	// id: 3
 }
+
+// ExampleStream_SendLines shows the multi-line convenience: each argument
+// becomes one data: line of a single event.
+func ExampleStream_SendLines() {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/events", nil)
+	stream := sse.NewStream(w, r)
+	defer func() { _ = stream.Close() }()
+
+	_ = stream.SendLines("progress", "step 1", "step 2")
+
+	fmt.Print(w.Body.String())
+
+	// Output:
+	// event: progress
+	// data: step 1
+	// data: step 2
+}
+
+// ExampleStream_SendKeyed shows the DataStar-style keyed-data pattern: every
+// line of the value is prefixed with the key, producing one event whose data
+// lines all carry "key: " prefixes.
+func ExampleStream_SendKeyed() {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/events", nil)
+	stream := sse.NewStream(w, r)
+	defer func() { _ = stream.Close() }()
+
+	_ = stream.SendKeyed("datastar-patch-elements", "elements", "<div id=\"feed\">\n  <span>hello</span>\n</div>")
+
+	fmt.Print(w.Body.String())
+
+	// Output:
+	// event: datastar-patch-elements
+	// data: elements <div id="feed">
+	// data: elements   <span>hello</span>
+	// data: elements </div>
+}

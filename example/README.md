@@ -26,6 +26,9 @@ go run example/datastar/      # DataStar UI         → http://localhost:8765
 go run example/htmx/          # HTMX UI             → http://localhost:8766
 ```
 
+The URLs above are the defaults; every example honors a `PORT` environment
+variable override (`PORT=9000 go run example/datastar/`).
+
 > Each example is an independent `package main`. Run the package
 > (`example/datastar/`), not a single file, because the page is rendered by
 > generated templ code (`index_templ.go`). The JS bundles and CSS are embedded
