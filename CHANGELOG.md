@@ -38,8 +38,6 @@ without changelog lines (`a5ff824`, `7776bc7`).
 - CI now enforces the two gates that were local-only: a `Coverage gate` job runs `nix run .#coverage-gate` (90% library / 95% ssetest / 95% sseparse thresholds, one source of truth in the flake app) and a `Shellcheck` job lints `scripts/*.sh` (previously only workflow `run:` blocks were checked). A coverage or shell regression now reddens every push instead of only the author's machine.
 - `scripts/verify.sh` gate hardening: a broken caller `GOCACHE` degrades loudly to a temp dir (same fallback as `coverage-gate`), a tidy-clean check requires every module's `go.mod`/`go.sum` to be a `go mod tidy` no-op (read-only: drift is shown and the tree restored), all three go directives must stay identical, and a bench smoke (`-bench=. -benchtime=1x`) fails the gate when a benchmark no longer executes. The golangci-lint pin extraction moved to `scripts/golangci-pin.sh` so two consumers share one regex.
 - The weekly flake-update workflow now cross-checks the nixpkgs `golangci-lint` against the ci.yml pin (via `scripts/golangci-pin.sh` + `nix develop .#ci`) in the same PR that bumps flake inputs — a nixpkgs lint bump can no longer ship silently and redden the next human push (the 2.13.2 → 2.14.0 skew shipped exactly that way).
-- sseparse test-contract additions: `FuzzReadEvents` takes a line-cap argument (the `WithMaxLineBytes` axis; the cap boundary is pinned chunk-invariant, wrapping `bufio.ErrTooLong`), the corpus JSON is byte-canonical-gated (`json.MarshalIndent` two-space + trailing newline) with a required per-vector `url` citation, and `Corpus()`/`MustCorpus` decode-failure branches are covered.
-- `sseparse/gen_corpus.go` — the corpus WPT-ingestion generator, wired via `go:generate` (directive in `sseparse/corpus.go`): ingests future WPT `format-*` vectors into the canonical JSON (decode → validate dispatch against the parser → merge → re-marshal through the byte-canonical recipe), aborting on any mismatch; proven idempotent, and its proof run caught a real append-aliasing bug before it shipped. Procedure: `sseparse/README.md` §"Ingesting new WPT vectors".
 - Check-in benchmark baselines + a benchstat comparison workflow: `docs/benchmarks/<date>-<module>.txt` (count=6, self-describing via [`docs/benchmarks/README.md`](docs/benchmarks/README.md)) and a CONTRIBUTING §"Benchmark regression tracking" section (pinned `benchstat@v1.0.0`, why count=1 is useless, re-record rule) — perf claims in FEATURES are no longer hand-pinned numbers with no baseline.
 - CONTRIBUTING §"The templ CLI pin": both pin sites (the CI `templ generate -check` drift alarm and the devShell `pkgs.templ`), why the `go run ...@version` form is mandatory, and the bump-both-and-regenerate procedure — Dependabot cannot bump `@version` pins, so the refresh policy is documented instead.
 - Test-contract hardening: direct unit tests for `forEachLine` (CR/LF/CRLF/empty/trailing/sandwich table) and all three examples' `listenAddr()` PORT override (forced both ways via `t.Setenv`); five ssetest branch tests closed the module's last uncovered paths (it now measures 100.0% statement coverage).
@@ -49,6 +47,13 @@ without changelog lines (`a5ff824`, `7776bc7`).
 - Recorded policy decisions as repo config: `.buildflow.yml` skips exactly one step (`go-structure-linter` — its findings flag the deliberate single-package flat layout), and golangci-lint stays intentionally unpinned in `flake.nix` (the effective version is pinned by `flake.lock`; `scripts/golangci-pin.sh` + the flake-update cross-check surface any CI↔flake skew).
 - `example/datastar`'s `memStore` evicts by copying down instead of re-slicing: evicted events become GC-able immediately and the ring's backing array stabilizes after one relocation (the example now matches the retention guide that cites it).
 - CI golangci-lint pin bumped v2.13.2 → v2.14.0 to match the nixpkgs binary (the verify.sh skew check caught the drift).
+
+## [sseparse 0.2.0] - 2026-10-01
+
+### Added
+
+- sseparse test-contract additions: `FuzzReadEvents` takes a line-cap argument (the `WithMaxLineBytes` axis; the cap boundary is pinned chunk-invariant, wrapping `bufio.ErrTooLong`), the corpus JSON is byte-canonical-gated (`json.MarshalIndent` two-space + trailing newline) with a required per-vector `url` citation, and `Corpus()`/`MustCorpus` decode-failure branches are covered.
+- `sseparse/gen_corpus.go` — the corpus WPT-ingestion generator, wired via `go:generate` (directive in `sseparse/corpus.go`): ingests future WPT `format-*` vectors into the canonical JSON (decode → validate dispatch against the parser → merge → re-marshal through the byte-canonical recipe), aborting on any mismatch; proven idempotent, and its proof run caught a real append-aliasing bug before it shipped. Procedure: `sseparse/README.md` §"Ingesting new WPT vectors".
 
 ## [sseparse 0.1.0] - 2026-09-29
 
@@ -358,6 +363,7 @@ and the subsequent DataStar integration work.
 - `LastEventIDFromRequest` validates header input with `ParseEventID`, preventing SSE wire-format injection via crafted `Last-Event-ID` headers
 
 [Unreleased]: https://github.com/larsartmann/go-sse/compare/v0.6.1...HEAD
+[sseparse 0.2.0]: https://github.com/larsartmann/go-sse/compare/sseparse/v0.1.0...sseparse/v0.2.0
 [sseparse 0.1.0]: https://github.com/larsartmann/go-sse/releases/tag/sseparse/v0.1.0
 [ssetest 0.4.0]: https://github.com/larsartmann/go-sse/compare/sseparse/v0.1.0...ssetest/v0.4.0
 [0.6.1]: https://github.com/larsartmann/go-sse/compare/v0.6.0...v0.6.1
