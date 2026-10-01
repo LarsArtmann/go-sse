@@ -297,21 +297,21 @@
               }
 
               cov="$(measure /tmp/sse-cov .)"
-              echo "library coverage: ''${cov}% (threshold: 90%)"
-              if (( $(echo "$cov < 90" | bc -l) )); then
-                echo "FAIL: library coverage ''${cov}% < 90%"
+              echo "library coverage: ''${cov}% (threshold: 99%)"
+              if (( $(echo "$cov < 99" | bc -l) )); then
+                echo "FAIL: library coverage ''${cov}% < 99%"
                 exit 1
               fi
               scov="$(cd ssetest && measure /tmp/ssetest-cov ./...)"
-              echo "ssetest coverage: ''${scov}% (threshold: 95%)"
-              if (( $(echo "$scov < 95" | bc -l) )); then
-                echo "FAIL: ssetest coverage ''${scov}% < 95%"
+              echo "ssetest coverage: ''${scov}% (threshold: 100%)"
+              if (( $(echo "$scov < 100" | bc -l) )); then
+                echo "FAIL: ssetest coverage ''${scov}% < 100%"
                 exit 1
               fi
               pcov="$(cd sseparse && measure /tmp/sseparse-cov ./...)"
-              echo "sseparse coverage: ''${pcov}% (threshold: 95%)"
-              if (( $(echo "$pcov < 95" | bc -l) )); then
-                echo "FAIL: sseparse coverage ''${pcov}% < 95%"
+              echo "sseparse coverage: ''${pcov}% (threshold: 99%)"
+              if (( $(echo "$pcov < 99" | bc -l) )); then
+                echo "FAIL: sseparse coverage ''${pcov}% < 99%"
                 exit 1
               fi
               echo "OK"
