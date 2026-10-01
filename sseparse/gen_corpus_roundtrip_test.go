@@ -148,7 +148,10 @@ func TestGenCorpusRoundTrip(t *testing.T) {
 		writePending(t, dir, []sseparse.ConformanceVector{mismatched})
 
 		if stdout, exitErr := runGenerator(t, dir); exitErr == nil {
-			t.Fatalf("generator accepted a vector whose events disagree with the parser:\n%s", stdout)
+			t.Fatalf(
+				"generator accepted a vector whose events disagree with the parser:\n%s",
+				stdout,
+			)
 		}
 
 		assertSandboxCorpusUnchanged(t, dir, original)
@@ -200,7 +203,11 @@ func newGenSandbox(t *testing.T, corpus []byte) string {
 		t.Fatalf("create sandbox testdata: %v", err)
 	}
 
-	if err := os.WriteFile(filepath.Join(dir, "testdata", "wpt_format_corpus.json"), corpus, testFilePerm); err != nil {
+	if err := os.WriteFile(
+		filepath.Join(dir, "testdata", "wpt_format_corpus.json"),
+		corpus,
+		testFilePerm,
+	); err != nil {
 		t.Fatalf("write corpus fixture: %v", err)
 	}
 
@@ -242,7 +249,11 @@ func runGenerator(t *testing.T, dir string) (string, error) {
 	if err := cmd.Run(); err != nil {
 		// The generator reports failures on stderr; carry it in the error so
 		// scenario failures are diagnosable without rerunning by hand.
-		return stdout.String(), fmt.Errorf("%w\nstderr: %s", err, strings.TrimSpace(stderr.String()))
+		return stdout.String(), fmt.Errorf(
+			"%w\nstderr: %s",
+			err,
+			strings.TrimSpace(stderr.String()),
+		)
 	}
 
 	return stdout.String(), nil
