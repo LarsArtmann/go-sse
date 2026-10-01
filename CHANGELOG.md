@@ -41,12 +41,17 @@ without changelog lines (`a5ff824`, `7776bc7`).
 - Check-in benchmark baselines + a benchstat comparison workflow: `docs/benchmarks/<date>-<module>.txt` (count=6, self-describing via [`docs/benchmarks/README.md`](docs/benchmarks/README.md)) and a CONTRIBUTING §"Benchmark regression tracking" section (pinned `benchstat@v1.0.0`, why count=1 is useless, re-record rule) — perf claims in FEATURES are no longer hand-pinned numbers with no baseline.
 - CONTRIBUTING §"The templ CLI pin": both pin sites (the CI `templ generate -check` drift alarm and the devShell `pkgs.templ`), why the `go run ...@version` form is mandatory, and the bump-both-and-regenerate procedure — Dependabot cannot bump `@version` pins, so the refresh policy is documented instead.
 - Test-contract hardening: direct unit tests for `forEachLine` (CR/LF/CRLF/empty/trailing/sandwich table) and all three examples' `listenAddr()` PORT override (forced both ways via `t.Setenv`); five ssetest branch tests closed the module's last uncovered paths (it now measures 100.0% statement coverage).
+- `sseparse/gen_corpus_roundtrip_test.go` — the ingestion generator's contract runs in CI as a process test (`go run gen_corpus.go` on throwaway sandbox modules, never touching the real testdata corpus): idempotence on a canonical corpus, genuine ingestion of a dispatch-valid vector, byte-identical-duplicate skip, and abort on duplicate content drift or declared-events/parser disagreement.
+- `docs/conformance.md` — the living WHATWG § 9.2.6 conformance account: the three conformance surfaces, the corpus contract, and deviations D1–D6 found 2026-08-16 and fixed with their pinning tests; linked from AGENTS.md's parser gotchas.
+- `scripts/verify.sh` GOEXPERIMENT regression guard: a must-find-nothing grep over flake.nix, scripts/, and .github/workflows/ fails the gate if the removed flag resurfaces anywhere.
+- `TestRootModuleDoesNotRequireSubmodules` now also scans `go.sum`, so an indirect submodule require sneaking into the root module graph fails the boundary guard — previously only a direct `require` line in `go.mod` was caught.
 
 ### Changed
 
 - Recorded policy decisions as repo config: `.buildflow.yml` skips exactly one step (`go-structure-linter` — its findings flag the deliberate single-package flat layout), and golangci-lint stays intentionally unpinned in `flake.nix` (the effective version is pinned by `flake.lock`; `scripts/golangci-pin.sh` + the flake-update cross-check surface any CI↔flake skew).
 - `example/datastar`'s `memStore` evicts by copying down instead of re-slicing: evicted events become GC-able immediately and the ring's backing array stabilizes after one relocation (the example now matches the retention guide that cites it).
 - CI golangci-lint pin bumped v2.13.2 → v2.14.0 to match the nixpkgs binary (the verify.sh skew check caught the drift).
+- Coverage-gate floors raised to the measured reality: library 90% → 99%, ssetest 95% → 100% (pinned — any regression reddens), sseparse 95% → 99% (measured 2026-10-01: 99.3 / 100.0 / 99.2).
 
 ## [sseparse 0.2.0] - 2026-10-01
 
