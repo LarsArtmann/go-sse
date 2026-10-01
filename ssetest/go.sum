@@ -4,5 +4,5 @@ github.com/larsartmann/go-error-family v0.10.1 h1:lf1RNjpdK7k+tCzphkg5qRolAY76U8
 github.com/larsartmann/go-error-family v0.10.1/go.mod h1:SYSVwVMTkw2GcqXI4khjMYOg7ey39o8sh7rXC9LfNcY=
 github.com/larsartmann/go-sse v0.6.1 h1:GSc2ueXIjNAsYlZjOR8kfOlm/UwiOh5eNwVmnrqyGVw=
 github.com/larsartmann/go-sse v0.6.1/go.mod h1:yN/gsqxOYwt9aqfcsfnIAzENNk+libcm2t3M4ByW1KU=
-github.com/larsartmann/go-sse/sseparse v0.1.0 h1:GwMNf9cKhO1ST77LR3CYYrLluNRuiEwhqm7x3HVIf20=
-github.com/larsartmann/go-sse/sseparse v0.1.0/go.mod h1:1Nql3y1hf9v/IVd4/26AfRilz0/OiDyF7YA2mvwwtHw=
+github.com/larsartmann/go-sse/sseparse v0.2.0 h1:P7cOS8GHWtoAH/cVCer4gkWXPtlldOoluU8JXrwkVbU=
+github.com/larsartmann/go-sse/sseparse v0.2.0/go.mod h1:O+sHE700ADpedtlTfcHcpH/VcNM7M/7WBwuCYNXqyEo=

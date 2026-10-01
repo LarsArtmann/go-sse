@@ -52,7 +52,7 @@
           # third-party requires (guarded by TestModuleStaysZeroDependency),
           # so its check carries no vendorHash at all.
           vendorHash = "sha256-1G5uXHCxyHiUpePSEI5cXabxA0eOx8sS+BaP+VcQAio=";
-          vendorHashSsetest = "sha256-93dIbslmRx17ueswPC/f0RLuMOWDkwsWvGL27hPLtPc=";
+          vendorHashSsetest = "sha256-7MosZT5qlrtMwXbL6iX3LALmMOhOjvxLpfL/5/CpJ64=";
 
           # go-sse is a pure library (no `main` package), so we do not publish a
           # binary `packages.default` or an overlay. Instead, buildGoModule is used
