@@ -45,6 +45,7 @@ without changelog lines (`a5ff824`, `7776bc7`).
 - `docs/conformance.md` — the living WHATWG § 9.2.6 conformance account: the three conformance surfaces, the corpus contract, and deviations D1–D6 found 2026-08-16 and fixed with their pinning tests; linked from AGENTS.md's parser gotchas.
 - `scripts/verify.sh` GOEXPERIMENT regression guard: a must-find-nothing grep over flake.nix, scripts/, and .github/workflows/ fails the gate if the removed flag resurfaces anywhere.
 - `TestRootModuleDoesNotRequireSubmodules` now also scans `go.sum`, so an indirect submodule require sneaking into the root module graph fails the boundary guard — previously only a direct `require` line in `go.mod` was caught.
+- `TestFuzzTargetsLiveHere` in all three modules: each asserts the fuzz targets CI runs against that module actually exist in its test files. A fuzz target that moves modules otherwise turns its CI step into a green no-op (`-fuzz=Name` exits 0 with only a stderr warning) — the guard turns that silence red.
 
 ### Changed
 
