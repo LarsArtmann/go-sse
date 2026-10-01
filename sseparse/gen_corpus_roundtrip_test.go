@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -74,6 +75,9 @@ func TestGenCorpusRoundTrip(t *testing.T) {
 		dir := newGenSandbox(t, original)
 
 		ingested := base
+		// Events is a slice: clone it so parallel scenarios mutating their own
+		// copy (the mismatch scenario) cannot corrupt this vector.
+		ingested.Events = slices.Clone(ingested.Events)
 		ingested.Name = "gen-roundtrip-ingested"
 		writePending(t, dir, []sseparse.ConformanceVector{ingested})
 
@@ -116,6 +120,7 @@ func TestGenCorpusRoundTrip(t *testing.T) {
 		dir := newGenSandbox(t, original)
 
 		drifted := base
+		drifted.Events = slices.Clone(drifted.Events)
 		drifted.Notes = base.Notes + " (content drifted by the round-trip test)"
 		writePending(t, dir, []sseparse.ConformanceVector{drifted})
 
@@ -132,6 +137,7 @@ func TestGenCorpusRoundTrip(t *testing.T) {
 		dir := newGenSandbox(t, original)
 
 		mismatched := base
+		mismatched.Events = slices.Clone(mismatched.Events)
 		mismatched.Name = "gen-roundtrip-mismatch"
 		if len(mismatched.Events) == 0 {
 			t.Skip("base vector declares no events; nothing to mismatch")
