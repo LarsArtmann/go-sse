@@ -24,6 +24,19 @@ if [[ -n ${GOCACHE:-} ]] && ! mkdir -p "${GOCACHE}" 2>/dev/null; then
   export GOCACHE="$fallback"
 fi
 
+echo "==> GOEXPERIMENT regression guard"
+# GOEXPERIMENT=jsonv2 was removed from every live surface in 1c0fc85
+# (2026-09-29): encoding/json/v2 is a go1.27-gated stable API, so the flag is
+# unnecessary on the 1.27 toolchain and one stray export or build tag
+# resurrects the directive/toolchain split this repo just dug out of. The
+# gate must-find-nothing, so any reappearance fails here instead of master.
+# (--exclude=verify.sh: this guard's own text is the one legit mention.)
+if grep -rn --exclude=verify.sh "GOEXPERIMENT" flake.nix scripts/ .github/workflows/ 2>/dev/null; then
+  echo "FAIL: GOEXPERIMENT resurfaced (matches above) — removed everywhere on 2026-09-29; do not re-add it." >&2
+  exit 1
+fi
+echo "    no GOEXPERIMENT references"
+
 echo "==> treefmt (formatting check)"
 if command -v treefmt >/dev/null 2>&1; then
   treefmt --fail-on-change
