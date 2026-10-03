@@ -1,7 +1,7 @@
 # Status: Conformance-Plan Closeout — Self-Review
 
 **Date:** 2026-08-16 11:58
-**Scope:** This session only — finishing F21/F22 of [the SUPERB conformance plan](../archived/2026-08-16_09-21_SUPERB-spec-based-hardcore-sse-conformance-testing.md) (lint fixes, full Nix verification, plan closure, commits, push).
+**Scope:** This session only — finishing F21/F22 of [the SUPERB conformance plan](../../planning/archived/2026-08-16_09-21_SUPERB-spec-based-hardcore-sse-conformance-testing.md) (lint fixes, full Nix verification, plan closure, commits, push).
 **Repo state at close:** go-sse `master` == `origin/master` at `37e9791`, working tree clean.
 
 ---

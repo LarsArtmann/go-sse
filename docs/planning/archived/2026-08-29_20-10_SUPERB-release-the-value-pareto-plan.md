@@ -1,6 +1,6 @@
 # SUPERB — Release-the-Value Pareto Plan (go-sse, 2026-08-29)
 
-> **Status:** EXECUTED (2026-08-29) — execution report: [2026-08-29_18-25 superb-plan-execution](../status/archived/2026-08-29_18-25_superb-plan-execution-releases-and-ci-hardening.md) (P1–P15 all landed; D1/D2 resolved, D3 default applied); closeout commit `2bcb0ce`; 2026-09-03 archival pass inline-annotated every task row.
+> **Status:** EXECUTED (2026-08-29) — execution report: [2026-08-29_18-25 superb-plan-execution](../../status/archived/2026-08-29_18-25_superb-plan-execution-releases-and-ci-hardening.md) (P1–P15 all landed; D1/D2 resolved, D3 default applied); closeout commit `2bcb0ce`; 2026-09-03 archival pass inline-annotated every task row.
 >
 > Point-in-time plan (snapshot). Living state lives in `TODO_LIST.md`; completed work lands in
 > `CHANGELOG.md`. Generated from `TODO_LIST.md` + the 2026-08-29 19:45 self-review follow-ups.

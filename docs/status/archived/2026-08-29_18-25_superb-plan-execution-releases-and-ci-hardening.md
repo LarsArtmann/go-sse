@@ -1,6 +1,6 @@
 # Status Report — 2026-08-29 18:25 — SUPERB plan execution: releases cut, CI hardened, gates resolved
 
-Executed the full [SUPERB Pareto plan](../planning/2026-08-29_20-10_SUPERB-release-the-value-pareto-plan.md):
+Executed the full [SUPERB Pareto plan](../../planning/archived/2026-08-29_20-10_SUPERB-release-the-value-pareto-plan.md):
 both go-sse releases cut and consumer-verified, the go-datastar batch verified
 behind its full gate, CI red-master repaired and hardened, quick wins shipped,
 and all three decision gates resolved via their documented defaults. Final

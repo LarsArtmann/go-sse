@@ -89,7 +89,7 @@ I verified the SSE wire format with `curl` but never confirmed that the HTMX SSE
 ### Immediate Fixes (under 1 hour each)
 
 1. **Rewrite `example/README.md` from scratch** — stop patching. Write it fresh with honest framing: DataStar is a full showcase, HTMX is a focused demo, the comparison is about _mechanism_ not feature parity.
-2. **Add HTMX to root `README.md`** — at minimum a cross-reference: "See [`example/README.md`](example/README.md) for a DataStar vs HTMX comparison."
+2. **Add HTMX to root `README.md`** — at minimum a cross-reference: "See [`example/README.md`](../../../example/README.md) for a DataStar vs HTMX comparison."
 3. **Verify HTMX in a browser** — load `http://localhost:8766`, confirm the progress bar fills, confirm the Restart button works. Use `chromedp` or manual check.
 4. **Add a `flake.nix` app for HTMX** — `apps.htmx` so `nix run .#htmx` works.
 5. **Update `CHANGELOG.md`** — the HTMX example is a user-visible addition.

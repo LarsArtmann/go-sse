@@ -1,7 +1,7 @@
 # Status Report — 2026-09-29 05:49 — SUPERB plan execution closeout (M3–M17)
 
 Session scope: execute the remaining SUPERB-plan tasks
-([plan](../planning/2026-09-29_03-45_SUPERB-consumer-chain-and-hygiene-closeout.md))
+([plan](../planning/archived/2026-09-29_03-45_SUPERB-consumer-chain-and-hygiene-closeout.md))
 after auditing that M1/M2/M9/M10/M12 were already landed by the earlier
 04:2x session. This session verified + pushed that prior work, then executed
 M3–M17: the pdd cascade finish, GOEXPERIMENT removal, two new CI gates, two

@@ -120,7 +120,7 @@
 30. ~~Audit `WriteEvent` (event.go) — it uses `evt.ID.Get()` directly; confirm that's intentional (wire format wants raw value, not brand-prefixed).~~ done (confirmed intentional - wire format wants the raw value (event.go:166); exact wire assertions pin it)
 31. ~~Add integration test asserting the SSE wire `id:` field contains the raw value, not a brand-prefixed string.~~ done (integration_test.go:246 asserts exact 'id: 3\n' over real HTTP)
 32. ~~Review whether `MustParseEventID` needs a brand-aware test now that `Name()` coverage is gone.~~ done (TestMustParseEventID_Valid exists (event_test.go:280))
-33. ~~Consider whether the library should expose a `BrandName` constant instead of relying on the method.~~ **Won't implement — use brandid.BrandName[eventBrand]() instead (tested at event_brand_internal_test.go:31); a duplicate constant forks the source of truth.**
+33. ~~Consider whether the library should expose a `BrandName` constant instead of relying on the method.~~ **Won't implement — use `brandid.BrandName[eventBrand]()` instead (tested at event_brand_internal_test.go:31); a duplicate constant forks the source of truth.**
 34. ~~Check `ROADMAP.md` for any items referencing brand-name display.~~ done (checked 2026-08-29: no brand-name references in ROADMAP.md)
 35. ~~Verify the `docs/DOMAIN_LANGUAGE.md` mentions `EventID` and its branding semantics correctly.~~ done (correct at docs/DOMAIN_LANGUAGE.md:13,31)
 36. ~~Look into whether `go-branded-id` v0.4.0's `BrandName[B]()` exported function (visible in vendored copy) is callable and worth using.~~ done at `eb2b31d`
