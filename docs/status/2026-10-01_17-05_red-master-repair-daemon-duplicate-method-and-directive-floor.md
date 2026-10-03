@@ -48,6 +48,7 @@ Noticed during the session's probe/buildflow output, never began — all parked 
 2. **Misdiagnosed the Nix failure.** I theorized vendorHash drift and nixpkgs buildGoModule behavior changes (chased the `flake.lock` diff in `292c56f`) before reading the full job log. The grep excerpt (`go: downloading error-family v0.11.0`) was noise; the full log's compile error named the duplicate method directly. Full logs first, theories second.
 3. **Sloppy final verification.** `git status -sb | head -1` truncated the dirty-file list, so the wrap-up claimed completion without actually confirming the TODO_LIST edit's state (daemon swept it later as `af62866` — right outcome, unverified check).
 4. **Idled through the daemon wait.** ~12 minutes of poll loops while coverage (required by this report) could have been measured then.
+5. **Edit-tool slip during the TODO_LIST harvest.** Swapped old/new content on the first edit, truncating the ubuntu-26 row mid-cell (`…2026-10-19) | GitHub migrates` → `…2026-10-19)`); caught via `git diff` and restored byte-identical before re-doing the insertion correctly. Net damage zero, process sloppiness real.
 
 Neither breakage was authored this session — both rode in on daemon commit `292c56f` — but the session's whole job was to catch that class, and probe #1 almost reported the wrong incident.
 
