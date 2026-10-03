@@ -14,6 +14,8 @@ import (
 // cross-assignment with other string-typed IDs.
 type eventBrand struct{}
 
+func (eventBrand) Name() string { return "event" }
+
 // eventBrandName is what go-branded-id diagnostics render for [EventID].
 const eventBrandName = "SSEEvent"
 
