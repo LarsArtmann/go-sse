@@ -27,6 +27,13 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 ### Changed
 
+- Nothing yet.
+
+## [0.6.2] - 2026-10-03
+
+### Changed
+
+- **`go` directives back to minor form (`go 1.27`)** — root and sseparse re-tagged as the fleet supply-side de-poisoning (go-version-auto-configure campaign, 2026-10-03): a patch-form floor (`1.27.1`) re-poisons every consumer's `go` directive through MVS (`go mod tidy` raises the directive to the highest dependency floor in the graph), so the "hard floor" alignment recorded below is reversed — patch-pinned floors break trailing toolchain environments and are fleet-policy-incorrect for libraries. ssetest follows on master (require bumped to v0.6.2, directive `1.27`); its published v0.4.0 tag already declares minor form. Proxy `.mod` for v0.6.2 and sseparse v0.2.1 verified post-push.
 - Removed `GOEXPERIMENT=jsonv2` from every live surface (flake devShell + apps + hermetic checks, CI workflow envs including `datastar-compat.yml`, `scripts/*.sh`, and the local `.envrc` pattern): it became unnecessary when `encoding/json/v2` turned into a `go1.27`-gated stable API. README no longer claims the flag (or Go 1.26) is required; the only surviving mentions are historical records and the module-directive-skew trap doc. Consumers on Go 1.26 toolchains must not use this version range — the `go 1.27` directives already say so.
 - All three module `go` directives aligned at `1.27.1`: this is a hard floor, not a preference — go-sse v0.6.1 on the module proxy declares `go 1.27.1` (verified via `go mod download -json` + `.mod` inspection), so every consumer of any module in this repo needs a 1.27.1+ toolchain regardless of what older directives say.
 - Dependency bumps adopted on master (untagged): ssetest now requires go-sse v0.6.1 (adding go-branded-id v0.6.0 as indirect); the root module's go-error-family moved to v0.11.0 (race suites green on the bumped tree).
@@ -53,6 +60,12 @@ without changelog lines (`a5ff824`, `7776bc7`).
 - `example/datastar`'s `memStore` evicts by copying down instead of re-slicing: evicted events become GC-able immediately and the ring's backing array stabilizes after one relocation (the example now matches the retention guide that cites it).
 - CI golangci-lint pin bumped v2.13.2 → v2.14.0 to match the nixpkgs binary (the verify.sh skew check caught the drift).
 - Coverage-gate floors raised to the measured reality: library 90% → 99%, ssetest 95% → 100% (pinned — any regression reddens), sseparse 95% → 99% (measured 2026-10-01: 99.3 / 100.0 / 99.2).
+
+## [sseparse 0.2.1] - 2026-10-03
+
+### Changed
+
+- `go` directive `1.27.1` → `1.27` (minor form; same fleet de-poisoning campaign as the root module's v0.6.2).
 
 ## [sseparse 0.2.0] - 2026-10-01
 
