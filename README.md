@@ -270,7 +270,7 @@ n, err := sse.ReplayFiltered(stream, store, lastEventID, pred) // filtered repla
 
 ## Design Decisions
 
-- **Non-blocking broadcast**: Slow consumers never block the broadcaster. Events are dropped when a subscriber's 64-deep buffer is full. This prevents head-of-line blocking. Consumers recover via snapshot/replay on reconnect.
+- **Non-blocking broadcast**: Slow consumers never block the broadcaster. Events are dropped when a subscriber's 64-deep buffer is full (`sse.DefaultSubscriberBuffer`, tunable via `WithBufferSize`). This prevents head-of-line blocking. Consumers recover via snapshot/replay on reconnect.
 - **Mutex-protected Stream**: `Send` and `Heartbeat` serialize on a mutex because `http.ResponseWriter` is not safe for concurrent use. Both goroutines can write safely.
 - **Channel pointer identity**: `Unsubscribe` uses `reflect.ValueOf(ch).Pointer()` for O(1) lookup. No subscriber IDs to manage.
 - **Branded EventID**: `EventID` uses `go-branded-id` to prevent accidental cross-assignment with other string-typed IDs in your codebase.
@@ -280,10 +280,10 @@ n, err := sse.ReplayFiltered(stream, store, lastEventID, pred) // filtered repla
 ## Non-Blocking Drop Policy
 
 `Broadcaster.Broadcast` and `BroadcastMany` never block. Each subscriber has a
-64-message buffer; if it's full, new events are silently dropped for that
-subscriber. This prevents one slow consumer from stalling the entire fan-out.
-`BroadcastMany` acquires the read lock once for the entire batch, guaranteeing
-per-subscriber ordering across the batch.
+64-message buffer (`sse.DefaultSubscriberBuffer`); if it's full, new events are
+silently dropped for that subscriber. This prevents one slow consumer from
+stalling the entire fan-out. `BroadcastMany` acquires the read lock once for
+the entire batch, guaranteeing per-subscriber ordering across the batch.
 
 **Implications:**
 

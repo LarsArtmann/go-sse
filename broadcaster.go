@@ -41,9 +41,10 @@ import (
 // # Backpressure and Drop Policy
 //
 // Broadcast is non-blocking. If a subscriber's channel buffer is full (default
-// capacity 64), the message is silently dropped for that subscriber. This
-// prevents one slow consumer from blocking the entire fan-out. Consumers that
-// need guaranteed delivery should implement application-level ack/retry.
+// capacity [DefaultSubscriberBuffer]), the message is silently dropped for
+// that subscriber. This prevents one slow consumer from blocking the entire
+// fan-out. Consumers that need guaranteed delivery should implement
+// application-level ack/retry.
 //
 // The buffer size is configurable via [WithBufferSize] for workloads that
 // tolerate more buffering (fewer drops, more memory) or less (more drops, less

@@ -11,11 +11,12 @@ import (
 	errorfamily "github.com/larsartmann/go-error-family"
 )
 
-// defaultSubscriberBuffer is the per-subscriber channel capacity. Broadcasts
-// are non-blocking: a subscriber whose buffer is full has events dropped.
-// 64 is large enough to absorb short bursts without dropping under normal
-// fan-out, while bounding memory per subscriber.
-const defaultSubscriberBuffer = 64
+// DefaultSubscriberBuffer is the per-subscriber channel capacity used when
+// [WithBufferSize] is not called (or called with a non-positive value).
+// Broadcasts are non-blocking: a subscriber whose buffer is full has events
+// dropped. 64 is large enough to absorb short bursts without dropping under
+// normal fan-out, while bounding memory per subscriber.
+const DefaultSubscriberBuffer = 64
 
 // drainPollInterval is how often [fanOut.shutdownLocked] re-checks whether
 // all subscriber buffers have been drained while waiting for consumers to
@@ -28,7 +29,7 @@ const drainPollInterval = time.Millisecond
 type Option[T any] func(*fanOut[T])
 
 // WithBufferSize overrides the per-subscriber channel capacity. The default
-// is [defaultSubscriberBuffer] (64). Pass any positive integer; values ≤ 0
+// is [DefaultSubscriberBuffer] (64). Pass any positive integer; values ≤ 0
 // are ignored and the default is kept.
 //
 // Larger buffers absorb longer consumer slow-downs before drops begin; smaller
@@ -94,7 +95,7 @@ type BroadcasterHealth struct {
 	SubscriberCount int
 
 	// BufferSize is the per-subscriber channel capacity, in events.
-	// Defaults to [defaultSubscriberBuffer] (64). Configurable via
+	// Defaults to [DefaultSubscriberBuffer] (64). Configurable via
 	// [WithBufferSize] at construction time.
 	BufferSize int
 }
@@ -124,7 +125,7 @@ func newFanOut[T any](opts ...Option[T]) *fanOut[T] {
 	hub := &fanOut[T]{
 		mu:            sync.RWMutex{},
 		subscribers:   make(map[uintptr]*subscriber[T]),
-		bufferSize:    defaultSubscriberBuffer,
+		bufferSize:    DefaultSubscriberBuffer,
 		draining:      false,
 		onSubscribe:   nil,
 		onUnsubscribe: nil,
@@ -145,13 +146,13 @@ func (f *fanOut[T]) effectiveBufferSize() int {
 		return f.bufferSize
 	}
 
-	return defaultSubscriberBuffer
+	return DefaultSubscriberBuffer
 }
 
 // Subscribe creates a new subscriber channel that receives all broadcast
-// messages. The channel has a buffer of 64 by default (configurable via
-// [WithBufferSize]); slower consumers may miss messages when the buffer is
-// full.
+// messages. The channel has a buffer of [DefaultSubscriberBuffer] by default
+// (configurable via [WithBufferSize]); slower consumers may miss messages when
+// the buffer is full.
 //
 // Call [Broadcaster.Unsubscribe] when the client disconnects to prevent memory leaks.
 // After [Broadcaster.Close] or during [Broadcaster.Shutdown], Subscribe returns

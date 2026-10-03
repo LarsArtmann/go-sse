@@ -31,7 +31,7 @@ func ExampleWriteEvent() {
 
 // ExampleBroadcaster demonstrates fan-out: one Broadcast reaches every
 // subscriber. Broadcast is non-blocking; slow consumers miss events when
-// their 64-deep buffer is full.
+// their DefaultSubscriberBuffer-deep buffer is full.
 func ExampleBroadcaster() {
 	bc := sse.NewBroadcaster[sse.Event]()
 

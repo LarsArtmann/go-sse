@@ -207,8 +207,12 @@ func TestBroadcaster_Health_InitialState(t *testing.T) {
 		t.Errorf("SubscriberCount: got %d, want 0", health.SubscriberCount)
 	}
 
-	if health.BufferSize != 64 {
-		t.Errorf("BufferSize: got %d, want default 64", health.BufferSize)
+	if health.BufferSize != sse.DefaultSubscriberBuffer {
+		t.Errorf(
+			"BufferSize: got %d, want default %d",
+			health.BufferSize,
+			sse.DefaultSubscriberBuffer,
+		)
 	}
 }
 
@@ -291,14 +295,22 @@ func TestBroadcaster_WithBufferSize_NonPositiveIsIgnored(t *testing.T) {
 
 	b := sse.NewBroadcaster(sse.WithBufferSize[sse.Event](0))
 
-	if h := b.Health(); h.BufferSize != 64 {
-		t.Errorf("BufferSize with 0 option: got %d, want default 64", h.BufferSize)
+	if h := b.Health(); h.BufferSize != sse.DefaultSubscriberBuffer {
+		t.Errorf(
+			"BufferSize with 0 option: got %d, want default %d",
+			h.BufferSize,
+			sse.DefaultSubscriberBuffer,
+		)
 	}
 
 	// Negative also ignored.
 	b2 := sse.NewBroadcaster(sse.WithBufferSize[sse.Event](-1))
-	if h := b2.Health(); h.BufferSize != 64 {
-		t.Errorf("BufferSize with -1 option: got %d, want default 64", h.BufferSize)
+	if h := b2.Health(); h.BufferSize != sse.DefaultSubscriberBuffer {
+		t.Errorf(
+			"BufferSize with -1 option: got %d, want default %d",
+			h.BufferSize,
+			sse.DefaultSubscriberBuffer,
+		)
 	}
 }
 
