@@ -72,13 +72,16 @@
 
             meta = {
               description = "Server-Sent Events transport for Go";
+              homepage = "https://github.com/larsartmann/go-sse";
               license = lib.licenses.mit;
+              mainProgram = null;
               maintainers = [
                 {
                   name = "Lars Artmann";
                   github = "LarsArtmann";
                 }
               ];
+              platforms = lib.platforms.all;
             };
           };
 
@@ -103,13 +106,16 @@
 
             meta = {
               description = "Consumer test helpers for go-sse";
+              homepage = "https://github.com/larsartmann/go-sse";
               license = lib.licenses.mit;
+              mainProgram = null;
               maintainers = [
                 {
                   name = "Lars Artmann";
                   github = "LarsArtmann";
                 }
               ];
+              platforms = lib.platforms.all;
             };
           };
 
@@ -132,13 +138,16 @@
 
             meta = {
               description = "Zero-dependency SSE wire-format parser and conformance corpus";
+              homepage = "https://github.com/larsartmann/go-sse";
               license = lib.licenses.mit;
+              mainProgram = null;
               maintainers = [
                 {
                   name = "Lars Artmann";
                   github = "LarsArtmann";
                 }
               ];
+              platforms = lib.platforms.all;
             };
           };
 
@@ -191,10 +200,12 @@
             };
           };
 
-          checks.format = config.treefmt.build.check self;
-          checks.build = hermeticCheck;
-          checks.build-ssetest = hermeticCheckSsetest;
-          checks.build-sseparse = hermeticCheckSseparse;
+          checks = {
+            format = config.treefmt.build.check self;
+            build = hermeticCheck;
+            build-ssetest = hermeticCheckSsetest;
+            build-sseparse = hermeticCheckSseparse;
+          };
 
           devShells.default = pkgs.mkShellNoCC {
             packages = [
