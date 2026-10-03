@@ -8,9 +8,7 @@
 # every consumer's import path (github.com/larsartmann/go-sse) for zero
 # behavior change. The finding class is structural, not a code defect — the
 # step stays available fleet-wide and is only off here.
-skip_steps:
-  - go-structure-linter
-
+#
 # shfmt is skipped by decision (2026-10-03): buildflow's shfmt disposition is
 # a bare `shfmt -w` (tab indent), while this repo's canonical shell formatting
 # is treefmt's shfmt via `nix fmt` (2-space indent). Every buildflow run
