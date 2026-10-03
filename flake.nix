@@ -74,7 +74,7 @@
               description = "Server-Sent Events transport for Go";
               homepage = "https://github.com/larsartmann/go-sse";
               license = lib.licenses.mit;
-              mainProgram = null;
+              mainProgram = "go-sse";
               maintainers = [
                 {
                   name = "Lars Artmann";
@@ -108,7 +108,7 @@
               description = "Consumer test helpers for go-sse";
               homepage = "https://github.com/larsartmann/go-sse";
               license = lib.licenses.mit;
-              mainProgram = null;
+              mainProgram = "go-sse-ssetest";
               maintainers = [
                 {
                   name = "Lars Artmann";
@@ -140,7 +140,7 @@
               description = "Zero-dependency SSE wire-format parser and conformance corpus";
               homepage = "https://github.com/larsartmann/go-sse";
               license = lib.licenses.mit;
-              mainProgram = null;
+              mainProgram = "go-sse-sseparse";
               maintainers = [
                 {
                   name = "Lars Artmann";
