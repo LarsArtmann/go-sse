@@ -13,20 +13,20 @@ Session opened with the mandated CI health probe instead of a feature task. Foun
 
 ## a) FULLY DONE
 
-| # | Work | Evidence |
-| - | ---- | -------- |
-| 1 | Session-start CI health probe; identified red master at HEAD with 3 failing jobs | `gh run list --workflow CI`; run `36880874852` (Lint X, Nix X, Vet X) |
-| 2 | Removed daemon-injected duplicate `eventBrand.Name()` (returned `"event"`) at event.go:17, kept the documented `eventBrandName` method | commit `e83fb52`; `go vet ./...` + `go build ./...` clean after; the duplicate was the root cause of all three CI failures incl. the Nix job (its `go: downloading error-family v0.11.0` tail line was log noise — vendorHash was already correct) |
-| 3 | Re-raised go directives `1.27` → `1.27.1` in root + `sseparse/go.mod` (3rd 2026-10-01 lowering, 5th overall; normalize-step trap) | commit `4e50d31`; `go mod tidy` no-op in all three modules; verify.sh directive-equality gate passes |
-| 4 | Full local gate green | `scripts/verify.sh` (full, not `--fast`): treefmt clean, tidy clean + directives aligned (`go 1.27.1` ×3), vet clean, golangci-lint clean (pin matches local v2.14.0), race tests ok ×6 packages, bench smoke pass, `nix flake check` → "all checks passed!" |
-| 5 | Master CI green | run `36883370012` for `e83fb52`: all 11 jobs ✓ (Nix flake check 1m32s, Fuzz 6m53s) |
-| 6 | AGENTS.md updated: lowering count 2→3 on 2026-10-01 (`292c56f` cited); new daemon-failure-mode bullet — the daemon can commit NON-COMPILING code; run `go vet ./...` after any sweep touching `.go` files | commit `e83fb52` |
-| 7 | TODO_LIST.md: added ubuntu-latest → Ubuntu 26 runner-migration item (label switches 2026-10-19; 10 of 11 jobs exposed) | commit `af62866` |
-| 8 | Coverage measured this session (not quoted) | `nix run .#coverage-gate` → 99.3 / 100.0 / 99.2, all above thresholds, all `(=)` vs previous report line |
+| # | Work                                                                                                                                                                                                      | Evidence                                                                                                                                                                                                                                                     |
+| - | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1 | Session-start CI health probe; identified red master at HEAD with 3 failing jobs                                                                                                                          | `gh run list --workflow CI`; run `36880874852` (Lint X, Nix X, Vet X)                                                                                                                                                                                        |
+| 2 | Removed daemon-injected duplicate `eventBrand.Name()` (returned `"event"`) at event.go:17, kept the documented `eventBrandName` method                                                                    | commit `e83fb52`; `go vet ./...` + `go build ./...` clean after; the duplicate was the root cause of all three CI failures incl. the Nix job (its `go: downloading error-family v0.11.0` tail line was log noise — vendorHash was already correct)           |
+| 3 | Re-raised go directives `1.27` → `1.27.1` in root + `sseparse/go.mod` (3rd 2026-10-01 lowering, 5th overall; normalize-step trap)                                                                         | commit `4e50d31`; `go mod tidy` no-op in all three modules; verify.sh directive-equality gate passes                                                                                                                                                         |
+| 4 | Full local gate green                                                                                                                                                                                     | `scripts/verify.sh` (full, not `--fast`): treefmt clean, tidy clean + directives aligned (`go 1.27.1` ×3), vet clean, golangci-lint clean (pin matches local v2.14.0), race tests ok ×6 packages, bench smoke pass, `nix flake check` → "all checks passed!" |
+| 5 | Master CI green                                                                                                                                                                                           | run `36883370012` for `e83fb52`: all 11 jobs ✓ (Nix flake check 1m32s, Fuzz 6m53s)                                                                                                                                                                           |
+| 6 | AGENTS.md updated: lowering count 2→3 on 2026-10-01 (`292c56f` cited); new daemon-failure-mode bullet — the daemon can commit NON-COMPILING code; run `go vet ./...` after any sweep touching `.go` files | commit `e83fb52`                                                                                                                                                                                                                                             |
+| 7 | TODO_LIST.md: added ubuntu-latest → Ubuntu 26 runner-migration item (label switches 2026-10-19; 10 of 11 jobs exposed)                                                                                    | commit `af62866`                                                                                                                                                                                                                                             |
+| 8 | Coverage measured this session (not quoted)                                                                                                                                                               | `nix run .#coverage-gate` → 99.3 / 100.0 / 99.2, all above thresholds, all `(=)` vs previous report line                                                                                                                                                     |
 
 ## b) PARTIALLY DONE
 
-**Buildflow gate re-greening.** The session-opening `buildflow --fix --build-mode=full` run failed (exit 69): `test-race`, `golangci-lint`, `govalid-generate`, `go-mod-update` all failed *downstream of the duplicate method* — those are now fixed by `e83fb52`/`4e50d31`. What remains, explicitly:
+**Buildflow gate re-greening.** The session-opening `buildflow --fix --build-mode=full` run failed (exit 69): `test-race`, `golangci-lint`, `govalid-generate`, `go-mod-update` all failed _downstream of the duplicate method_ — those are now fixed by `e83fb52`/`4e50d31`. What remains, explicitly:
 
 - buildflow was **not re-run** after the fixes, so "everything but lychee now passes" is inference, not measurement.
 - **lychee will still fail it**: 8 broken links remain (see f/2).
@@ -54,17 +54,17 @@ Neither breakage was authored this session — both rode in on daemon commit `29
 
 ## e) WHAT WE SHOULD IMPROVE
 
-| IMP | Improvement (process, not product) | Priority |
-| --- | ---------------------------------- | -------- |
-| IMP1 | Session-start probe: filter `--workflow CI` AND diff origin head SHA vs local HEAD before concluding anything | high |
-| IMP2 | Read the FULL failing CI job log before theorizing; grep excerpts actively mislead (this session: vendorHash ghost) | high |
-| IMP3 | Habit (now also AGENTS.md): `go vet ./...` after every daemon sweep that touches `.go` files | high |
-| IMP4 | buildflow-side durable fix for the normalize step (derive target from `max(dep directives)`) — 5th lowering observed; detector works, generator still broken | high |
-| IMP5 | Exclude vendored `example/*/static/*.js` bundles from oxlint (179 warnings on minified third-party code is config noise) | med |
-| IMP6 | Add `lychee` + `vulnix` to `devShells.default` so buildflow stops falling back to `nix run nixpkgs#…` without project deps | med |
-| IMP7 | Use daemon-wait windows for required measurements (coverage) instead of poll-sleeping | med |
-| IMP8 | Final checks: plain `git status --short`, never `head -1`-truncated status output | low |
-| IMP9 | Wrap the health probe as `scripts/ci-health.sh` (sha compare + workflow filter + annotation scan — the ubuntu-latest deprecation annotation sat unnoticed since 2026-09-29) | low |
+| IMP  | Improvement (process, not product)                                                                                                                                          | Priority |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| IMP1 | Session-start probe: filter `--workflow CI` AND diff origin head SHA vs local HEAD before concluding anything                                                               | high     |
+| IMP2 | Read the FULL failing CI job log before theorizing; grep excerpts actively mislead (this session: vendorHash ghost)                                                         | high     |
+| IMP3 | Habit (now also AGENTS.md): `go vet ./...` after every daemon sweep that touches `.go` files                                                                                | high     |
+| IMP4 | buildflow-side durable fix for the normalize step (derive target from `max(dep directives)`) — 5th lowering observed; detector works, generator still broken                | high     |
+| IMP5 | Exclude vendored `example/*/static/*.js` bundles from oxlint (179 warnings on minified third-party code is config noise)                                                    | med      |
+| IMP6 | Add `lychee` + `vulnix` to `devShells.default` so buildflow stops falling back to `nix run nixpkgs#…` without project deps                                                  | med      |
+| IMP7 | Use daemon-wait windows for required measurements (coverage) instead of poll-sleeping                                                                                       | med      |
+| IMP8 | Final checks: plain `git status --short`, never `head -1`-truncated status output                                                                                           | low      |
+| IMP9 | Wrap the health probe as `scripts/ci-health.sh` (sha compare + workflow filter + annotation scan — the ubuntu-latest deprecation annotation sat unnoticed since 2026-09-29) | low      |
 
 ## f) Up to 50 things we should get done next
 
