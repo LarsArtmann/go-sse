@@ -10,7 +10,7 @@ import (
 )
 
 // wantBrandName states the expectation independently of the production
-// constant, so a wrong edit to eventBrandName cannot turn the assertions
+// literal, so a wrong edit to eventBrand.Name cannot turn the assertions
 // below tautological.
 const wantBrandName = "SSEEvent"
 

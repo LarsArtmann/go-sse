@@ -10,3 +10,14 @@
 # step stays available fleet-wide and is only off here.
 skip_steps:
   - go-structure-linter
+
+# shfmt is skipped by decision (2026-10-03): buildflow's shfmt disposition is
+# a bare `shfmt -w` (tab indent), while this repo's canonical shell formatting
+# is treefmt's shfmt via `nix fmt` (2-space indent). Every buildflow run
+# re-indented scripts/*.sh to tabs and the CI format gate then rejected them
+# (the 6e7e80e re-canonicalization trap, observed three times in one day).
+# The two dispositions cannot agree; `nix fmt` owns shell style here, so the
+# buildflow step is off rather than in conflict.
+skip_steps:
+  - go-structure-linter
+  - shfmt

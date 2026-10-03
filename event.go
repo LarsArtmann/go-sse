@@ -14,10 +14,10 @@ import (
 // cross-assignment with other string-typed IDs.
 type eventBrand struct{}
 
-// eventBrandName is what go-branded-id diagnostics render for [EventID].
-const eventBrandName = "SSEEvent"
-
-func (eventBrand) Name() string { return eventBrandName }
+// Name is what go-branded-id diagnostics render for [EventID]. It returns a
+// string literal (not a constant) because go-branded-id's linter only
+// recognizes literal returns and would otherwise re-flag the brand type.
+func (eventBrand) Name() string { return "SSEEvent" }
 
 // EventID is a branded identifier for SSE event identifiers (the id: field
 // and the Last-Event-ID request header). It prevents accidental cross-assignment
