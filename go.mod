@@ -7,3 +7,5 @@ require (
 	github.com/larsartmann/go-branded-id v0.7.0
 	github.com/larsartmann/go-error-family v0.11.0
 )
+
+require github.com/google/go-cmp v0.7.0 // indirect
