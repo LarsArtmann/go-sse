@@ -9,4 +9,3 @@
 # behavior change. The finding class is structural, not a code defect — the
 # step stays available fleet-wide and is only off here.
 skip_steps:
-  - go-structure-linter

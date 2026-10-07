@@ -1,0 +1,4 @@
+# Root-level .go files ARE the public API of this library; /internal or
+# /pkg would break every consumer import path. Flat single-package layout
+# by design (same pattern as go-datastar ADR-002).
+presets: [flat]
