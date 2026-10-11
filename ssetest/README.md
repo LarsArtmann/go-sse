@@ -127,7 +127,7 @@ Every `Collect*` helper accepts options:
 ssetest.Collect(t, mux, ssetest.WithPath("/events?filter=alerts"))
 
 // Simulate a reconnecting browser for replay testing:
-events := ssetest.Collect(t, handler, ssetest.WithLastEventID("42"))
+events := ssetest.Collect(t, handler, ssetest.WithLastEventID(sse.NewEventID("42")))
 
 // Any custom header:
 ssetest.Collect(t, handler, ssetest.WithHeader("X-Trace", "abc"))

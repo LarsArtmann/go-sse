@@ -164,7 +164,7 @@ func TestFeedHandler(t *testing.T) {
     ssetest.RequireData(t, events[0], "hello")
 
     // Simulate a reconnecting browser for replay testing:
-    replayed := ssetest.Collect(t, myHandler, ssetest.WithLastEventID("42"))
+    replayed := ssetest.Collect(t, myHandler, ssetest.WithLastEventID(sse.NewEventID("42")))
 }
 ```
 

@@ -62,7 +62,7 @@
 // browser for replay testing, and [WithHeader] adds any custom header:
 //
 //	events := ssetest.Collect(t, mux, ssetest.WithPath("/events?filter=alerts"))
-//	events := ssetest.Collect(t, handler, ssetest.WithLastEventID("42"))
+//	events := ssetest.Collect(t, handler, ssetest.WithLastEventID(sse.NewEventID("42")))
 //
 // # Streaming handlers
 //

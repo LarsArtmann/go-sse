@@ -142,13 +142,14 @@ func generateItem() activityItem {
 }
 
 // feedItemEvent builds a DataStar patch-elements SSE event that prepends
-// a single feed item to the #feed div. The event carries a sequential ID
-// so it can be replayed on reconnection.
+// a single feed item to the #feed div. The id is the event's replay identity
+// — the branded [sse.EventID] the browser echoes back as Last-Event-ID, and
+// the key the EventStore replays from on reconnection.
 //
 // The "category" data line embeds the event category for server-side
 // predicate filtering. DataStar ignores unknown keys in patch-elements
 // payloads, so this line has no client-side effect.
-func feedItemEvent(id int64, item activityItem) sse.Event {
+func feedItemEvent(id sse.EventID, item activityItem) sse.Event {
 	data := strings.Join([]string{
 		"selector #feed",
 		"mode prepend",
@@ -159,7 +160,7 @@ func feedItemEvent(id int64, item activityItem) sse.Event {
 	return sse.Event{
 		Event: eventPatchElements,
 		Data:  data,
-		ID:    sse.NewEventID(strconv.FormatInt(id, 10)),
+		ID:    id,
 	}
 }
 
@@ -203,20 +204,21 @@ func feedItemHTML(item activityItem) string {
 }
 
 // startProducer runs a background goroutine that emits a random activity
-// event every emitInterval. Each event gets a monotonically increasing ID
-// so reconnecting clients can replay missed events.
+// event every emitInterval. total counts emitted events; its decimal form is
+// each feed event's sse.EventID so reconnecting clients can replay missed
+// events.
 func (s *activityServer) startProducer(ctx context.Context) {
-	var id int64
+	var total int64
 
 	emit := func() {
-		id++
+		total++
 
 		item := generateItem()
 
-		evt := feedItemEvent(id, item)
+		evt := feedItemEvent(sse.NewEventID(strconv.FormatInt(total, 10)), item)
 
 		s.store.Append(evt)
-		s.broadcaster.BroadcastMany(evt, totalEventSignal(id))
+		s.broadcaster.BroadcastMany(evt, totalEventSignal(total))
 	}
 
 	emit() // emit one immediately so the user sees something fast

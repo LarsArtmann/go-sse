@@ -141,7 +141,7 @@ func TestE2E_ReplayWithLastEventID(t *testing.T) {
 	t.Run("reconnect from ID 2 replays only missed events", func(t *testing.T) {
 		t.Parallel()
 
-		events := ssetest.Collect(t, handler, ssetest.WithLastEventID("2"))
+		events := ssetest.Collect(t, handler, ssetest.WithLastEventID(sse.NewEventID("2")))
 		ssetest.RequireEventCount(t, events, 2) // event 3 + live
 
 		ssetest.RequireEventID(t, events[0], "3")
@@ -249,7 +249,7 @@ func TestE2E_StickyIDSurvivesReconnect(t *testing.T) {
 
 	// Reconnect from ID 1: event 2 replays, then the live event arrives with
 	// no id: on the wire — the parsed event must still report ID "2".
-	reconnect := ssetest.Collect(t, handler, ssetest.WithLastEventID("1"))
+	reconnect := ssetest.Collect(t, handler, ssetest.WithLastEventID(sse.NewEventID("1")))
 	ssetest.RequireEventCount(t, reconnect, 2)
 	ssetest.RequireEventID(t, reconnect[0], "2")
 	ssetest.RequireEventID(t, reconnect[1], "2")

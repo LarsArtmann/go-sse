@@ -64,9 +64,32 @@ func TestCollect_WithLastEventID_HeaderArrives(t *testing.T) {
 		_ = stream.Send(sse.Event{Event: "lastID", Data: lastID})
 	})
 
-	events := ssetest.Collect(t, handler, ssetest.WithLastEventID("42"))
+	events := ssetest.Collect(t, handler, ssetest.WithLastEventID(sse.NewEventID("42")))
 	ssetest.RequireEventCount(t, events, 1)
 	ssetest.RequireData(t, events[0], "42")
+}
+
+// TestCollect_WithLastEventID_ZeroIDSendsNoHeader pins the initial-connection
+// semantics of a zero sse.EventID: browsers never send Last-Event-ID before
+// they have seen an id: field, so the option must not set an empty header.
+func TestCollect_WithLastEventID_ZeroIDSendsNoHeader(t *testing.T) {
+	t.Parallel()
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sent := "absent"
+		if _, ok := r.Header[http.CanonicalHeaderKey("Last-Event-ID")]; ok {
+			sent = "present"
+		}
+
+		stream := sse.NewStream(w, r)
+		defer func() { _ = stream.Close() }()
+
+		_ = stream.Send(sse.Event{Event: "header", Data: sent})
+	})
+
+	events := ssetest.Collect(t, handler, ssetest.WithLastEventID(sse.EventID{}))
+	ssetest.RequireEventCount(t, events, 1)
+	ssetest.RequireData(t, events[0], "absent")
 }
 
 func TestCollectN_WithOptions(t *testing.T) {
@@ -92,7 +115,7 @@ func TestCollectN_WithOptions(t *testing.T) {
 
 	events := ssetest.CollectN(t, mux, 2,
 		ssetest.WithPath("/stream"),
-		ssetest.WithLastEventID("1"),
+		ssetest.WithLastEventID(sse.NewEventID("1")),
 	)
 	ssetest.RequireEventCount(t, events, 2)
 }

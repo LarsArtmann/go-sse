@@ -311,7 +311,7 @@ func TestFilterPredicate_AlertsOnly(t *testing.T) {
 
 		server.broadcaster.BroadcastMany(
 			feedItemEvent(
-				1,
+				sse.NewEventID("1"),
 				activityItem{
 					category: categoryAlert,
 					badge:    badgeAlert,
@@ -320,7 +320,7 @@ func TestFilterPredicate_AlertsOnly(t *testing.T) {
 				},
 			),
 			feedItemEvent(
-				2,
+				sse.NewEventID("2"),
 				activityItem{
 					category: categorySuccess,
 					badge:    badgeSuccess,
@@ -329,7 +329,7 @@ func TestFilterPredicate_AlertsOnly(t *testing.T) {
 				},
 			),
 			feedItemEvent(
-				3,
+				sse.NewEventID("3"),
 				activityItem{
 					category: categoryInfo,
 					badge:    badgeInfo,

@@ -2,6 +2,8 @@ package ssetest
 
 import (
 	"net/http"
+
+	"github.com/larsartmann/go-sse"
 )
 
 // RequestOption customizes the HTTP request that a Collect* helper sends.
@@ -42,13 +44,25 @@ func WithHeader(key, value string) RequestOption {
 // reconnecting after a dropped connection. Handlers that replay missed events
 // (e.g., via go-sse's Replay) respond with everything after the given event ID.
 // Use this to E2E test reconnection replay without a real browser.
-func WithLastEventID(id string) RequestOption {
+//
+// The id is an [sse.EventID] — the same branded type go-sse writes to the id:
+// field and reads back via sse.LastEventIDFromRequest — so an event ID cannot
+// be confused with any other string at the call site. Construct test literals
+// with sse.NewEventID, or sse.MustParseEventID for values that must validate.
+// The zero [sse.EventID] sends no header at all, exactly like a browser's
+// initial connection (browsers only send Last-Event-ID after observing an
+// id: field).
+func WithLastEventID(id sse.EventID) RequestOption {
 	return func(cfg *requestConfig) {
+		if id.IsZero() {
+			return
+		}
+
 		if cfg.headers == nil {
 			cfg.headers = make(http.Header)
 		}
 
-		cfg.headers.Set("Last-Event-ID", id)
+		cfg.headers.Set("Last-Event-ID", id.Get())
 	}
 }
 
