@@ -27,7 +27,8 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 ### Changed
 
-- Nothing yet.
+- **ssetest (breaking): `WithLastEventID` now takes an `sse.EventID`** instead of a raw string — the same branded type `sse.LastEventIDFromRequest` returns and `sse.Replay` accepts, so an event ID cannot be confused with any other string at the call site. Construct test literals with `sse.NewEventID` (or `sse.MustParseEventID` for values that must validate). The zero `sse.EventID` now sends no `Last-Event-ID` header at all (an empty string previously set an empty-valued header), matching a browser's initial connection — pinned by `TestCollect_WithLastEventID_ZeroIDSendsNoHeader`. The next ssetest tag must be v0.5.0.
+- DataStar example: `feedItemEvent` now takes an `sse.EventID` instead of a raw `int64` (which silently accepted any int in a file full of them); the producer counter is honestly named `total` and the event ID is constructed at the boundary. Part of the strong-ID triage: IDs are `sse.EventID` at every Go boundary; `sseparse`'s raw-string ID fields stay raw (zero-dependency module; branding belongs to the transport boundary).
 
 ## [0.6.2] - 2026-10-03
 
