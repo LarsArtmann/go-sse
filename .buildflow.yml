@@ -6,4 +6,22 @@
 # root-package-files for flat modules, the go-version rule is detect-only
 # (it reports, never rewrites the pin), and any future rule-level conflict
 # belongs in this repo's own .go-structure-linter.yaml.
+#
+# Deliberate WONT-adopt policies (recorded 2026-10-11 so the weekly tool
+# suggestions stop being re-triaged):
+#
+# 1. sseparse stays on encoding/json v1 (gen_corpus.go,
+#    gen_corpus_roundtrip_test.go, wpt_format_corpus_test.go). The module's
+#    entire reason to exist is ZERO third-party requires (guarded by
+#    sseparse/go_mod_boundary_test.go). json/v2 is stdlib so a migration
+#    would not remove a require — it would only rewrite corpus-critical
+#    marshal/unmarshal code that the byte-canonical gate pins, for zero
+#    consumer-visible gain. Revisit only if sseparse ever needs a
+#    jsonv2-only feature.
+#
+# 2. lo.Filter suggestions (example/datastar/main_test.go,
+#    ssetest/e2e_test.go) are WONT: samber/lo is not a dependency of this
+#    repo, and the suggested sites are one-line loops where the explicit
+#    form is clearer than a utility-module import. Revisit only if the repo
+#    adopts samber/lo for other reasons.
 skip_steps:
