@@ -90,20 +90,24 @@ pending), everything else in `52b1aad`/`fa52815`.
   `scripts/release-verify.sh`, module-proxy verification, and the go-datastar compat
   confirmation (the weekly `datastar-compat.yml` run would prove it; this session's claim
   that datastartest is unaffected rests on AGENTS + its go.mod, not a fresh run).
+  → routed — TODO_LIST release row (2026-10-11 audit).
 - **Master CI redness** — the 10-09/10-10 failures (Examples, Nix flake check) are locally
   green now (`verify.sh` + flake check pass on the current tree, and f8513c6's templ
   regen predates my work); a fresh push's CI run remains unproven.
+  → done — pushed and CI-green (run 38107984621 success, 2026-10-11).
 - **AGENTS.md staleness** — fixed exactly the spots this session hit (thresholds ×2,
   added 2 gotchas); a full docs-health audit was not run.
+  → done — this pass — the 2026-10-11 audit ran over all six living docs.
 
 ## c) NOT STARTED
 
 - **TODO_LIST/ROADMAP harvest of section f** — deliberate: this report is the harvest
-  source; run docs-health HARVEST on instruction.
+  source; run docs-health HARVEST on instruction. → done — this pass (2026-10-11 audit).
 - **Coverage ratchet mechanism** (structural fix for toolchain drift) — designed as IMP3,
-  not implemented.
+  not implemented. → routed — TODO_LIST coverage-ratchet row.
 - **sseparse README "IDs are raw strings by design" contract line** — the skip rationale
   lives in AGENTS.md only; parser consumers reading sseparse/README don't see it.
+  → routed — TODO_LIST sseparse/README row.
 
 ## d) TOTALLY FUCKED UP
 
@@ -138,46 +142,46 @@ pending), everything else in `52b1aad`/`fa52815`.
 
 **Release (blocks consumers of the typed API)**
 
-1. Cut ssetest v0.5.0: final docs pass, tag, `scripts/release-verify.sh`, proxy `.mod` check (per AGENTS release order: sseparse first only if it changed — it didn't this time beyond tests).
-2. Confirm go-datastar compatibility post-change: run the compat workflow manually or inspect datastartest for any `WithLastEventID` usage (session verified by reasoning only).
-3. Add the v0.5.0 release section to CHANGELOG at tag time (entries currently under `[Unreleased]`).
+1. Cut ssetest v0.5.0: final docs pass, tag, `scripts/release-verify.sh`, proxy `.mod` check (per AGENTS release order: sseparse first only if it changed — it didn't this time beyond tests). **→ routed — TODO_LIST release row (ssetest v0.5.0, top of the list)**
+2. Confirm go-datastar compatibility post-change: run the compat workflow manually or inspect datastartest for any `WithLastEventID` usage (session verified by reasoning only). **→ routed — TODO_LIST release row (compat confirmation step)**
+3. Add the v0.5.0 release section to CHANGELOG at tag time (entries currently under `[Unreleased]`). **→ routed — TODO_LIST release row (CHANGELOG cut at tag time)**
 
 **Gate robustness (this session's near-miss)**
 
-4. Implement IMP3 coverage ratchet (baseline file + up-only movement; drift-proof against Go patch bumps).
-5. Implement IMP4: verify.sh step asserting AGENTS-documented thresholds equal flake.nix's.
-6. Implement IMP2 daemon guard for config/threshold diffs (flake.nix, ci.yml pins).
-7. Re-check CI on the next push: Examples + Nix flake check jobs should be green locally-proven; confirm no regression from this session's files.
-8. Consider a weekly coverage-trend annotation in the flake-update PR (surface drift before it flips a gate).
+4. Implement IMP3 coverage ratchet (baseline file + up-only movement; drift-proof against Go patch bumps). **→ routed — TODO_LIST coverage-ratchet row**
+5. Implement IMP4: verify.sh step asserting AGENTS-documented thresholds equal flake.nix's. **→ routed — TODO_LIST AGENTS-facts verify row**
+6. Implement IMP2 daemon guard for config/threshold diffs (flake.nix, ci.yml pins). **→ routed — ROADMAP raw ideas (daemon gates: config/threshold diffs)**
+7. ~~Re-check CI on the next push: Examples + Nix flake check jobs should be green locally-proven; confirm no regression from this session's files.~~ done — pushed and CI-green (run 38107984621 success 2026-10-11, Examples + Nix jobs included)
+8. Consider a weekly coverage-trend annotation in the flake-update PR (surface drift before it flips a gate). **→ routed — ROADMAP raw ideas (coverage-trend annotation in the flake-update PR)**
 
 **Docs**
 
-9. sseparse/README: one-line contract note — parse-layer IDs are raw wire strings by design; validation/branding lives at the transport boundary (`sse.ParseEventID`).
-10. ssetest/README options section: zero-`EventID` semantics (IMP6).
-11. Run docs-health HARVEST over this report's section f into TODO_LIST/ROADMAP.
-12. docs/guides/reconnection-and-retry: refresh any `WithLastEventID("...")` snippets if present (grep said none — verify at harvest time).
+9. sseparse/README: one-line contract note — parse-layer IDs are raw wire strings by design; validation/branding lives at the transport boundary (`sse.ParseEventID`). **→ routed — TODO_LIST sseparse/README row (raw-ID contract note)**
+10. ssetest/README options section: zero-`EventID` semantics (IMP6). **→ routed — TODO_LIST ssetest/README row (zero-EventID semantics)**
+11. ~~Run docs-health HARVEST over this report's section f into TODO_LIST/ROADMAP.~~ done — this pass — the 2026-10-11 audit harvested section f into TODO_LIST/ROADMAP
+12. ~~docs/guides/reconnection-and-retry: refresh any `WithLastEventID("...")` snippets if present (grep said none — verify at harvest time).~~ done — verified — no WithLastEventID snippets exist in docs/guides (grep clean 2026-10-11)
 
 **Strong-ID follow-through**
 
-13. Check whether `branching-flow` supports an acknowledgement/ignore config for the three deliberate sseparse rows (question g3); if not, the AGENTS bullet is the canonical skip record.
-14. datastar example: consider a tiny `nextEventID(total)` helper if the inline `strconv.FormatInt` ever grows a second caller (YAGNI today — one call site).
-15. If go-datastar ever wants typed reconnect headers, `sse.EventID` is now the round-trip type on both sides — note in the DataStar SDK migration guide only if asked.
+13. Check whether `branching-flow` supports an acknowledgement/ignore config for the three deliberate sseparse rows (question g3); if not, the AGENTS bullet is the canonical skip record. **→ routed — TODO_LIST upstream-queue row (branching-flow ack config); the AGENTS bullet stays the canonical skip record**
+14. ~~datastar example: consider a tiny `nextEventID(total)` helper if the inline `strconv.FormatInt` ever grows a second caller (YAGNI today — one call site).~~ **Won't implement — Won't implement — one call site; YAGNI (as the item itself notes).**
+15. ~~If go-datastar ever wants typed reconnect headers, `sse.EventID` is now the round-trip type on both sides — note in the DataStar SDK migration guide only if asked.~~ **Won't implement — Won't implement unless asked — note it in the DataStar migration guide only on a go-datastar request.**
 
 **Tests (keep 100.0 honest)**
 
-16. Keep an eye on the two new fakes (`failingFilteredStore`, zero-ID header test) — they pin branches that previously rotted uncovered; do not delete as "redundant" in future sweeps.
-17. Add fuzz seeds only if new parse code lands (none this session — parser untouched).
+16. ~~Keep an eye on the two new fakes (`failingFilteredStore`, zero-ID header test) — they pin branches that previously rotted uncovered; do not delete as "redundant" in future sweeps.~~ done — the two fakes pin real branches; FEATURES cites them (2026-10-11 audit re-verified)
+17. ~~Add fuzz seeds only if new parse code lands (none this session — parser untouched).~~ **Won't implement — Won't implement — no parser changes landed; CI runs the 6 targets on every push.**
 
 **Hygiene**
 
-18. Sweep check: confirm the daemon committed the final `AGENTS.md` + `fanout.go` edits and `git log --stat -5` messages aren't contradicting the content (AGENTS warns about plausible-but-false daemon messages).
-19. `gopls check` once inside `nix develop` on the changed files (ambient-toolchain diagnostics are known-noise; CLI check should be 0).
-20. TODO_LIST: close any stale items this session's work obsoleted (strong-ID / coverage items, if listed).
-21. Verify FEATURES.md's ssetest options row still reads correctly after the typed change (signature not shown — likely fine; check once).
-22. Consider an examples-level test asserting the datastar feed's ID sequence (currently pinned indirectly via memStore replay tests).
+18. ~~Sweep check: confirm the daemon committed the final `AGENTS.md` + `fanout.go` edits and `git log --stat -5` messages aren't contradicting the content (AGENTS warns about plausible-but-false daemon messages).~~ done — 2026-10-11 sessions confirmed the daemon commits (git log --stat checks; no contradictions recorded)
+19. `gopls check` once inside `nix develop` on the changed files (ambient-toolchain diagnostics are known-noise; CLI check should be 0). **→ routed — gopls check hygiene on the next gate pass (expected zero; ambient-toolchain noise is documented)**
+20. ~~TODO_LIST: close any stale items this session's work obsoleted (strong-ID / coverage items, if listed).~~ done — this pass — TODO_LIST swept and rebuilt by the audit
+21. ~~Verify FEATURES.md's ssetest options row still reads correctly after the typed change (signature not shown — likely fine; check once).~~ done — verified 2026-10-11 — FEATURES options row now cites the typed signature + zero-ID semantics
+22. Consider an examples-level test asserting the datastar feed's ID sequence (currently pinned indirectly via memStore replay tests). **→ routed — ROADMAP raw ideas (example-level ID-sequence test)**
 
 ## g) Questions I CANNOT figure out myself
 
-1. **Release cadence:** cut ssetest v0.5.0 now to unblock the typed `WithLastEventID`, or hold and batch it with the next ssetest change set? (Tagging is a human decision per repo policy.)
-2. **Threshold policy:** now that all three modules measure 100.0%, keep the 99/100/99 thresholds, or lower them back toward a deliberate margin and rely on a ratchet (IMP3) for drift-proofing? Both are defensible; the choice is yours.
-3. **branching-flow tool:** does the CLI have an ack/ignore config for recurring findings (the three deliberate sseparse rows), or is AGENTS.md the only place the skip rationale can live? You own the tool; I can't inspect it from this repo.
+1. **Release cadence:** cut ssetest v0.5.0 now to unblock the typed `WithLastEventID`, or hold and batch it with the next ssetest change set? (Tagging is a human decision per repo policy.) **→ routed — TODO_LIST release row (owner timing call)**
+2. **Threshold policy:** now that all three modules measure 100.0%, keep the 99/100/99 thresholds, or lower them back toward a deliberate margin and rely on a ratchet (IMP3) for drift-proofing? Both are defensible; the choice is yours. **→ routed — TODO_LIST coverage-ratchet row records both defensible options**
+3. **branching-flow tool:** does the CLI have an ack/ignore config for recurring findings (the three deliberate sseparse rows), or is AGENTS.md the only place the skip rationale can live? You own the tool; I can't inspect it from this repo. **→ routed — TODO_LIST upstream-queue row (branching-flow ack config)**

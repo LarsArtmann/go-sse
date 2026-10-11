@@ -56,45 +56,45 @@ times).
 
 ## b) PARTIALLY DONE
 
-1. **Buildflow environment health (the "9 tools unavailable" class).** Triaged the visible
+1. **Buildflow environment health (the "9 tools unavailable" class).** Triaged the visible **→ routed — environment-side (BuildFlow rebuild + devShell formatter ownership are not go-sse tasks)**
    preflight warnings — stale BuildFlow binary (built at `13d32f7`, repo HEAD `2851a16`),
    `go-licenses` and `interrogate` not in PATH, `prettier`/`dprint` running via
    `nix run nixpkgs#…` without project config. **Not done:** none of the fixes applied —
    rebuilding/reinstalling BuildFlow touches the user's global profile and a shared checkout that
    twelve concurrent sessions may be using; the devShell additions (prettier/dprint) are a policy
    choice about which formatter owns md/json. All fixes are known one-liners, deliberately left.
-2. **Flip-war regression safety.** Root cause fixed and documented, but there is **no automated
+2. **Flip-war regression safety.** Root cause fixed and documented, but there is **no automated **→ routed — root fix shipped (literal return, 30ce48b); a permanent BD001/shfmt gate is ROADMAP daemon-gates material**
    guard**: the temporary inotify watcher and the 5-second auto-removal loop I ran during the
    session were session-scoped and are gone. If a future BuildFlow binary changes the linter's
    behavior (or a re-run of an old binary happens), nothing re-alarms except the AGENTS.md note.
    A `brandid-lint` step in CI (or in `scripts/verify.sh`) would close this permanently — not done.
-3. **Findings-triage bookkeeping.** The three declined advisory classes (samber/lo suggestions ×3
+3. **Findings-triage bookkeeping.** The three declined advisory classes (samber/lo suggestions ×3 **→ routed — TODO_LIST buildflow-gate row (suppress-vs-keep policy, question g3)**
    tool-modules, encoding/json v2 notes ×4 files, nix-checker's vendorHash-extraction suggestion ×2)
    are declined in this report with rationale but **not encoded where the tools can see it** — they
    will resurface on every future buildflow run as visible noise unless suppressed via
    `.buildflow.yml`-style policy notes or tool-native suppression (if supported). Deferred pending
    a user decision (question g3).
-4. **Working-tree hygiene during the flip-war.** Final state is clean and every named fix is in a
-   message-bearing commit, but several intermediate states (doc-link fixes, one nix-fmt sweep, one
-   flake-meta state) were swept into daemon heuristic commits (`3659c65`, `bdf0bd6`, `10d04d7`,
-   `d2086e1`, `5b14057`, `4e50d31`) before I could commit surgically — including one sweep
-   (`10d04d7`) that committed the **duplicate method and tab-formatted scripts**, i.e. non-canonical
-   content now permanent in history. Per convention, published history stays unrewritten; this
-   report is the record. Not done: nothing — this is the honest cost accounting.
+4. ~~**Working-tree hygiene during the flip-war.** Final state is clean and every named fix is in a~~ done — honest cost accounting; the report is the record
+   ~~message-bearing commit, but several intermediate states (doc-link fixes, one nix-fmt sweep, one~~
+   ~~flake-meta state) were swept into daemon heuristic commits (`3659c65`, `bdf0bd6`, `10d04d7`,~~
+   ~~`d2086e1`, `5b14057`, `4e50d31`) before I could commit surgically — including one sweep~~
+   ~~(`10d04d7`) that committed the **duplicate method and tab-formatted scripts**, i.e. non-canonical~~
+   ~~content now permanent in history. Per convention, published history stays unrewritten; this~~
+   ~~report is the record. Not done: nothing — this is the honest cost accounting.~~
 
 ## c) NOT STARTED
 
-1. **CHANGELOG `[Unreleased]` entries** for the user-visible fixes (churn root-causes, flake meta,
-   doc links) — per docs/status conventions this follows the report; not started.
-2. **Harvest of section f) into `TODO_LIST.md` / `ROADMAP.md`** — not started (the convention says
-   this follows the report; the list below is the input).
-3. **CI confirmation on the pushed tip** — resolved while writing this report: run 37126765073
-   finished **green** (see preamble).
-4. **BuildFlow binary rebuild + reinstall** — advisory fix (`nix build . && nix run .#reinstall`
+1. ~~**CHANGELOG `[Unreleased]` entries** for the user-visible fixes (churn root-causes, flake meta,~~ **Won't implement — Won't implement — churn root-cause/flake-meta/config fixes are chore-tier per the CHANGELOG policy (git-history-only); the doc-link fixes touch archived history only.**
+   ~~doc links) — per docs/status conventions this follows the report; not started.~~
+2. ~~**Harvest of section f) into `TODO_LIST.md` / `ROADMAP.md`** — not started (the convention says~~ done — this pass — the 2026-10-11 audit harvested every open report into TODO_LIST/ROADMAP
+   ~~this follows the report; the list below is the input).~~
+3. ~~**CI confirmation on the pushed tip** — resolved while writing this report: run 37126765073~~ done — run 37126765073 finished success (see this report's preamble)
+   ~~finished **green** (see preamble).~~
+4. **BuildFlow binary rebuild + reinstall** — advisory fix (`nix build . && nix run .#reinstall` **→ routed — BuildFlow binary rebuild (environment-side, owner timing)**
    in `/home/lars/projects/BuildFlow`); not started (see b1 and question g2).
-5. **`nix run .#govulncheck` sanity on the final tree** — CI has its own vulncheck job, but the
-   convention of a local pre-push run wasn't executed this session (low risk: only internal Go
-   files changed).
+5. ~~**`nix run .#govulncheck` sanity on the final tree** — CI has its own vulncheck job, but the~~ **Won't implement — Won't implement as a standing local step — CI runs govulncheck on every push; probe locally only before security-relevant pushes.**
+   ~~convention of a local pre-push run wasn't executed this session (low risk: only internal Go~~
+   ~~files changed).~~
 
 ## d) TOTALLY FUCKED UP
 
@@ -146,136 +146,136 @@ times).
 
 **P0 — gate integrity and this session's loose ends**
 
-1. Confirm CI run 37126765073 on `1b571a8` goes green (in progress at report time); if the format
-   gate reddens on script content, re-canonicalize via `nix fmt` and commit.
-2. Rebuild + reinstall the BuildFlow binary (`cd /home/lars/projects/BuildFlow && nix build . &&
+1. ~~Confirm CI run 37126765073 on `1b571a8` goes green (in progress at report time); if the format~~ done — CI success (37126765073 and the 2026-10-11 runs)
+   ~~gate reddens on script content, re-canonicalize via `nix fmt` and commit.~~
+2. Rebuild + reinstall the BuildFlow binary (`cd /home/lars/projects/BuildFlow && nix build . && **→ routed — BuildFlow binary rebuild (environment-side)**
    nix run .#reinstall`) after checking for concurrent BuildFlow sessions — clears the
    binary-freshness advisory (see question g2).
-3. Run one clean `buildflow --fix` from inside `nix develop` so `go-licenses`/`interrogate` are on
+3. Run one clean `buildflow --fix` from inside `nix develop` so `go-licenses`/`interrogate` are on **→ routed — buildflow-in-devShell run (environment-side)**
    PATH; record which warnings disappear.
-4. Add `prettier`/`dprint` to the project devShell **or** add a minimal project `dprint.json`
+4. Add `prettier`/`dprint` to the project devShell **or** add a minimal project `dprint.json` **→ routed — md/json formatter ownership decision (environment/policy)**
    deciding md/json ownership — stops the "running via nix run WITHOUT project deps" class.
-5. Encode the declined advisory findings as policy: `.buildflow.yml` rationale notes (established
+5. Encode the declined advisory findings as policy: `.buildflow.yml` rationale notes (established **→ routed — TODO_LIST buildflow-gate row (policy notes pending g3)**
    pattern) for samber/lo, json-v2, vendorHash-extraction — or tool-native suppression if the
    tools support it (see question g3).
-6. Add a permanent guard against the BD001 repair loop: a `brandid-lint` step in
+6. Add a permanent guard against the BD001 repair loop: a `brandid-lint` step in **→ routed — ROADMAP raw ideas (daemon gates: brandid-lint guard)**
    `scripts/verify.sh` (binary already in the flake's reach via BuildFlow) or a nix check — so a
    future BuildFlow update cannot silently re-arm the injector.
-7. CHANGELOG `[Unreleased]`: entries for `30ce48b` (churn root-cause), `626272b` (flake meta),
-   `bb3226a` (config fix), doc-link repair (bdf0bd6).
-8. Harvest this section into `TODO_LIST.md` (P0/P1 items) and `ROADMAP.md` (P2/vague) — per
-   docs/status conventions, before the session ends.
-9. Post-push `git log --stat` review of the daemon sweep commits (`10d04d7`, `3659c65`, `bdf0bd6`,
-   `d2086e1`, `5b14057`, `4e50d31`) — confirm no other mislabeled content; record contradictions
-   here if found.
-10. `grep -rn "eventBrandName"` repo-wide (docs, DOMAIN_LANGUAGE.md, README) — the production
-    constant is gone; any remaining prose references are stale (test file reference already fixed).
+7. ~~CHANGELOG `[Unreleased]`: entries for `30ce48b` (churn root-cause), `626272b` (flake meta),~~ **Won't implement — Won't implement — those fixes are chore-tier per the CHANGELOG policy (git-history-only).**
+   ~~`bb3226a` (config fix), doc-link repair (bdf0bd6).~~
+8. ~~Harvest this section into `TODO_LIST.md` (P0/P1 items) and `ROADMAP.md` (P2/vague) — per~~ done — this pass — the 2026-10-11 audit harvested all reports
+   ~~docs/status conventions, before the session ends.~~
+9. ~~Post-push `git log --stat` review of the daemon sweep commits (`10d04d7`, `3659c65`, `bdf0bd6`,~~ done — 2026-10-11 sessions ran the git log --stat sanity; no new contradictions recorded
+   ~~`d2086e1`, `5b14057`, `4e50d31`) — confirm no other mislabeled content; record contradictions~~
+   ~~here if found.~~
+10. ~~`grep -rn "eventBrandName"` repo-wide (docs, DOMAIN_LANGUAGE.md, README) — the production~~ done — verified 2026-10-11 — only historical status-report prose mentions eventBrandName; DOMAIN_LANGUAGE.md/README clean
+    ~~constant is gone; any remaining prose references are stale (test file reference already fixed).~~
 
 **P1 — near-term, concrete**
 
-11. Upstream the const-ident limitation to the go-branded-id linter (`parseNameReturnValue` could
+11. Upstream the const-ident limitation to the go-branded-id linter (`parseNameReturnValue` could **→ routed — TODO_LIST upstream-queue row (go-branded-id const resolution)**
     resolve package-level constants) — with verify-before-filing gate first; our workaround note
     is the evidence.
-12. Upstream or configure the shfmt disposition in BuildFlow: respect project treefmt config for
+12. Upstream or configure the shfmt disposition in BuildFlow: respect project treefmt config for **→ routed — TODO_LIST upstream-queue row (BuildFlow shfmt args)**
     shfmt flags (or support formatter-args in `.buildflow.yml`) so the fleet-wide skip isn't the
     only cure.
-13. BuildFlow: BD001 repair should check for an _adjacent existing_ `Name()` method before
+13. BuildFlow: BD001 repair should check for an _adjacent existing_ `Name()` method before **→ routed — TODO_LIST upstream-queue row (BD001 idempotence guard)**
     inserting its stub (idempotence guard) — the five-injections-a-day failure mode.
-14. nix-checker's vendorHash-extraction suggestion (`vendorHash.nix` import): adopt-or-wont
-    decision, recorded (current inline form is the documented convention in AGENTS.md).
-15. lychee policy: add a repo `lychee.toml` (buildflow's invocation honors it) pinning
+14. ~~nix-checker's vendorHash-extraction suggestion (`vendorHash.nix` import): adopt-or-wont~~ **Won't implement — Won't implement — the inline vendorHash form is the documented AGENTS convention; extraction adds indirection for zero behavior change.**
+    ~~decision, recorded (current inline form is the documented convention in AGENTS.md).~~
+15. lychee policy: add a repo `lychee.toml` (buildflow's invocation honors it) pinning **→ routed — TODO_LIST buildflow-gate row (lychee.toml policy)**
     `--offline`-equivalent excludes and deciding whether `docs/**/archived/**` is excluded or
     link-fixed-in-place — prevents the class from resurfacing.
-16. go-auto-upgrade jsonv2 findings: record an explicit WONT/deferred decision with the
-    GOEXPERIMENT-removal rationale so future sessions don't re-litigate.
-17. Review `go.mod`/`go.sum` diffs in daemon sweep commits `5b14057`/`4e50d31` — confirm
+16. ~~go-auto-upgrade jsonv2 findings: record an explicit WONT/deferred decision with the~~ done — the jsonv2 boundary is WONT-recorded (TODO_LIST buildflow-gate row: sseparse json v1 boundaries)
+    ~~GOEXPERIMENT-removal rationale so future sessions don't re-litigate.~~
+17. Review `go.mod`/`go.sum` diffs in daemon sweep commits `5b14057`/`4e50d31` — confirm **→ routed — standing post-push log --stat rule (AGENTS daemon gotcha)**
     go-mod-update's successful run this session didn't bump anything unintentionally.
-18. Grep the repo for remaining empty-URL markdown patterns (`]()` inside prose) — one was found
-    by lychee; check for siblings in non-archived docs.
-19. Verify `docs/DOMAIN_LANGUAGE.md` and `docs/conformance.md` make no claims invalidated by the
-    `eventBrandName` const removal (internal symbol; likely clean — verify, don't assume).
-20. Local `nix run .#govulncheck` on the final tree (CI runs it, but a local probe before the next
-    push keeps the pre-push gate honest).
-21. Decide whether `platforms = lib.platforms.all` should narrow to the flake's declared systems
-    (x86_64-linux, aarch64-linux, aarch64-darwin) — honesty vs. churn; record decision.
-22. Document the flake-meta convention (homepage/mainProgram=mainProgram/platforms on every
+18. ~~Grep the repo for remaining empty-URL markdown patterns (`]()` inside prose) — one was found~~ done — verified 2026-10-11 — no empty-URL markdown links remain in live docs
+    ~~by lychee; check for siblings in non-archived docs.~~
+19. ~~Verify `docs/DOMAIN_LANGUAGE.md` and `docs/conformance.md` make no claims invalidated by the~~ done — verified 2026-10-11 — DOMAIN_LANGUAGE.md and docs/conformance.md carry no eventBrandName claims
+    ~~`eventBrandName` const removal (internal symbol; likely clean — verify, don't assume).~~
+20. ~~Local `nix run .#govulncheck` on the final tree (CI runs it, but a local probe before the next~~ **Won't implement — Won't implement as a standing step — CI covers it; local probe only before security-relevant pushes.**
+    ~~push keeps the pre-push gate honest).~~
+21. ~~Decide whether `platforms = lib.platforms.all` should narrow to the flake's declared systems~~ **Won't implement — Won't decide now — platforms=all is harmless for pure-Go checks; revisit on a real cross-compile need.**
+    ~~(x86_64-linux, aarch64-linux, aarch64-darwin) — honesty vs. churn; record decision.~~
+22. Document the flake-meta convention (homepage/mainProgram=mainProgram/platforms on every **→ routed — TODO_LIST buildflow-gate row context (document with the next flake-meta touch)**
     package; literal-return rule for brand `Name()`) in AGENTS.md Conventions so future packages
     inherit it.
-23. After next weekly flake update: confirm statix stays clean on the `checks` attrset and the
-    flake-update workflow's treefmt doesn't fight the new grouping.
-24. Investigate what the `interrogate` tool is and whether this repo wants it (it's been
+23. ~~After next weekly flake update: confirm statix stays clean on the `checks` attrset and the~~ done — the 2026-10-05 flake-update workflow ran with the cross-check green (PR #7; its merge is the recorded Actions-PR incident)
+    ~~flake-update workflow's treefmt doesn't fight the new grouping.~~
+24. Investigate what the `interrogate` tool is and whether this repo wants it (it's been **→ routed — TODO_LIST buildflow-gate row (decide if interrogate is wanted)**
     "not installed" in every preflight this session).
-25. Confirm go-datastar's weekly compat workflow stays green (ssetest untouched this session, but
-    the weekly job re-verifies the consumer chain).
+25. ~~Confirm go-datastar's weekly compat workflow stays green (ssetest untouched this session, but~~ done — datastar-compat green 2026-10-05
+    ~~the weekly job re-verifies the consumer chain).~~
 
 **P2 — hygiene, upstreams, ideas**
 
-26. Move the flip-war diagnostic playbook (inotifywait one-liner + fd-scan) into AGENTS.md gotchas
+26. Move the flip-war diagnostic playbook (inotifywait one-liner + fd-scan) into AGENTS.md gotchas **→ routed — ROADMAP raw ideas (daemon gates: flip-war playbook)**
     as a reusable recipe for future sessions.
-27. Consider a crushrc hook that runs `go vet ./...` automatically after any daemon sweep touching
+27. Consider a crushrc hook that runs `go vet ./...` automatically after any daemon sweep touching **→ routed — ROADMAP raw ideas (daemon gates: vet hook)**
     `.go` files (the AGENTS.md manual rule, automated).
-28. ssetest is at 100.0% coverage — consider raising its coverage-gate threshold from 95 so a
-    regression can't hide under the old slack.
-29. example/datastar `main_test.go:584` manual Filter loop: optional local helper refactor for
-    readability without the samber/lo dependency (declined dependency, not declined clarity).
-30. ssetest `e2e_test.go:21` same treatment (one small named predicate helper).
-31. Revisit sseparse corpus-generator json-v2 migration only when `encoding/json/v2` becomes the
+28. ~~ssetest is at 100.0% coverage — consider raising its coverage-gate threshold from 95 so a~~ done — ssetest coverage-gate threshold pinned at 100 (2026-10-01)
+    ~~regression can't hide under the old slack.~~
+29. ~~example/datastar `main_test.go:584` manual Filter loop: optional local helper refactor for~~ **Won't implement — Won't implement — the samber/lo dependency is declined; the two inline filter loops stay.**
+    ~~readability without the samber/lo dependency (declined dependency, not declined clarity).~~
+30. ~~ssetest `e2e_test.go:21` same treatment (one small named predicate helper).~~ **Won't implement — Won't implement — same reasoning as f29 (inline predicate helpers at two sites are fine).**
+31. Revisit sseparse corpus-generator json-v2 migration only when `encoding/json/v2` becomes the **→ routed — revisit only when encoding/json/v2 becomes the default-gated stdlib path**
     default-gated stdlib path (ROADMAP; corpus byte-canonicality gate must survive).
-32. Add `nix eval .#checks.x86_64-linux.build.meta.mainProgram` (or a loop over all three) to
+32. Add `nix eval .#checks.x86_64-linux.build.meta.mainProgram` (or a loop over all three) to **→ routed — TODO_LIST buildflow-gate row (pre-flake sanity probe)**
     verify.sh as a 1-second pre-flake sanity (formalizes IMP5).
-33. Consider annotating (not rewriting) the 2026-10-03_14-40 report if it references the old
-    duplicate-method theory — docs-health ANNOTATE pass when convenient.
-34. BuildFlow idea: findings-gate summary line should distinguish "findings from a step that is
+33. ~~Consider annotating (not rewriting) the 2026-10-03_14-40 report if it references the old~~ done — this pass — the 2026-10-11 audit annotated the 14:40 report
+    ~~duplicate-method theory — docs-health ANNOTATE pass when convenient.~~
+34. BuildFlow idea: findings-gate summary line should distinguish "findings from a step that is **→ routed — TODO_LIST upstream-queue row (BuildFlow findings-gate summary)**
     in skip_steps of a _different_ key" — the duplicate-YAML-key failure was invisible.
-35. BuildFlow idea: preflight could warn when two formatter dispositions claim the same file
+35. BuildFlow idea: preflight could warn when two formatter dispositions claim the same file **→ routed — TODO_LIST upstream-queue row (BuildFlow formatter-disposition preflight)**
     extension (shfmt vs treefmt-shfmt) — the root cause of today's script churn.
-36. Review whether the auto-commit daemon should refuse to sweep `event.go`-class files when
+36. Review whether the auto-commit daemon should refuse to sweep `event.go`-class files when **→ routed — ROADMAP raw ideas (daemon gates: refuse non-compiling sweeps)**
     `go build ./...` fails (it committed non-compiling code twice today) — BuildFlow/crush-config
     proposal.
-37. Time-box a background fuzz run (`FuzzReadEvents`, `FuzzSplitSSELines`, 30s each) post-changes —
-    parser untouched this session, so purely routine.
-38. Check whether `example/README.md` (linked from repaired docs) still matches the two-example
-    scope claims after recent sessions.
-39. Sweep `TODO_LIST.md` for items this session completed silently (e.g. anything referencing the
-    duplicate-method incident) — mark done at hashes.
-40. Consider renaming the report-time convention conflict: docs/status/AGENTS.md says "session
-    start time", the skill's process says run `date` and use it — align the two texts.
-41. Add the three declined advisory classes to a "known noise" section in `.buildflow.yml` header
+37. ~~Time-box a background fuzz run (`FuzzReadEvents`, `FuzzSplitSSELines`, 30s each) post-changes —~~ **Won't implement — Won't implement routinely — CI runs 6 fuzz targets on every push; soak only after parser/writer changes.**
+    ~~parser untouched this session, so purely routine.~~
+38. ~~Check whether `example/README.md` (linked from repaired docs) still matches the two-example~~ done — verified 2026-10-11 — example/README.md matches the two-example scope (README compares DataStar vs HTMX)
+    ~~scope claims after recent sessions.~~
+39. ~~Sweep `TODO_LIST.md` for items this session completed silently (e.g. anything referencing the~~ done — this pass — TODO_LIST swept and rebuilt by the audit
+    ~~duplicate-method incident) — mark done at hashes.~~
+40. ~~Consider renaming the report-time convention conflict: docs/status/AGENTS.md says "session~~ **Won't implement — Won't implement — the conventions wording causes no observed confusion; defer.**
+    ~~start time", the skill's process says run `date` and use it — align the two texts.~~
+41. Add the three declined advisory classes to a "known noise" section in `.buildflow.yml` header **→ routed — TODO_LIST buildflow-gate row (known-noise header)**
     comment so `--verbose` triage starts from the policy, not from zero.
-42. Verify the `# v31.11.1` comment update survives the next dependabot/renovate-style action bump
-    without reverting to bare `# v31` (pin-comment drift detector exists in buildflow — confirmed
-    working today).
-43. Evaluate `nix run .#coverage-gate` locally once (the convention's canonical command) instead of
-    raw `go tool cover` next time — parity with the CI gate's 90/95/95 thresholds.
-44. Consider narrowing vulnix noise: the 28 findings are all in nixpkgs-provided build tools — a
+42. ~~Verify the `# v31.11.1` comment update survives the next dependabot/renovate-style action bump~~ done — the pin-comment drift detector in buildflow confirmed working (2026-10-03)
+    ~~without reverting to bare `# v31` (pin-comment drift detector exists in buildflow — confirmed~~
+    ~~working today).~~
+43. ~~Evaluate `nix run .#coverage-gate` locally once (the convention's canonical command) instead of~~ done — the 2026-10-11 audit measured via nix run .#coverage-gate
+    ~~raw `go tool cover` next time — parity with the CI gate's 90/95/95 thresholds.~~
+44. Consider narrowing vulnix noise: the 28 findings are all in nixpkgs-provided build tools — a **→ routed — TODO_LIST buildflow-gate row (vulnix policy)**
     vulnix allowlist/exclude for build-time-only tools, or accept-and-document as fleet policy.
-45. Re-run `buildflow doctor` after the BuildFlow rebuild (item 2) to confirm the "9 tools
+45. Re-run `buildflow doctor` after the BuildFlow rebuild (item 2) to confirm the "9 tools **→ routed — BuildFlow doctor after the rebuild (environment-side)**
     unavailable" set shrinks to the genuinely-absent ones.
-46. Document in AGENTS.md that `checks.build*` packages are never `nix run` targets (their
+46. Document in AGENTS.md that `checks.build*` packages are never `nix run` targets (their **→ routed — TODO_LIST buildflow-gate row (document with the next flake-meta touch)**
     mainProgram is convention, not intent) — prevents a future "why doesn't nix run work" rabbit hole.
-47. Verify the final `flake.lock` state from this session's `nix-flake-update` repair steps didn't
-    drift vs. the last committed weekly update (diff `flake.lock` against origin if CI green).
-48. Add a tiny `scripts/` sanity probe used before long gates: `go build ./...` + `nix flake check`
+47. ~~Verify the final `flake.lock` state from this session's `nix-flake-update` repair steps didn't~~ done — flake.lock verified: origin == master; the 10-05 weekly + 10-11 local union state matches the AGENTS rebase rule
+    ~~drift vs. the last committed weekly update (diff `flake.lock` against origin if CI green).~~
+48. Add a tiny `scripts/` sanity probe used before long gates: `go build ./...` + `nix flake check` **→ routed — TODO_LIST buildflow-gate row (pre-gate sanity probe)**
     dry eval — formalizes IMP6 for all future sessions, not just mine.
-49. Schedule the next docs-health pass to reconcile FEATURES.md with this session's fixes (none
-    were user-facing features, but the flake meta change is inventory-relevant).
-50. Post-incident review item for the fleet: the same brandid-lint BD001 stub-insertion could hit
+49. ~~Schedule the next docs-health pass to reconcile FEATURES.md with this session's fixes (none~~ done — this pass — the 2026-10-11 docs-health audit reconciled FEATURES with the interim fixes
+    ~~were user-facing features, but the flake meta change is inventory-relevant).~~
+50. Post-incident review item for the fleet: the same brandid-lint BD001 stub-insertion could hit **→ routed — TODO_LIST upstream-queue row (fleet-wide Name-literal sweep)**
     every LarsArtmann repo whose brand `Name()` returns a constant — grep sibling repos
     (go-branded-id consumers) for `func (\w+) Name\(\) string { return` + non-literal and fix
     them before their next buildflow run.
 
 ## g) Questions I CANNOT figure out myself
 
-1. **Push/review policy for the churn-fix series:** ~10 commits are already on `origin/master`
+1. **Push/review policy for the churn-fix series:** ~10 commits are already on `origin/master` **→ routed — user policy question, still open (pushes have flowed daemon/user-side since)**
    (pushed at ~15:36, mid-session — not by me). Do you want this kind of multi-commit root-cause
    series pre-reviewed before pushing in the future, or is green-gates-then-push acceptable for
    repair work like today's?
-2. **BuildFlow binary rebuild:** the running binary is two repo-days stale (`13d32f7` vs
+2. **BuildFlow binary rebuild:** the running binary is two repo-days stale (`13d32f7` vs **→ routed — BuildFlow rebuild timing (environment-side, owner call)**
    `2851a16`). I can rebuild and reinstall (`nix build . && nix run .#reinstall`), but that
    checkout is shared with other live sessions and the rebuild would ship whatever is dirty there
    right now. Is another session mid-work in BuildFlow, and do you want the reinstall now or
    after it settles?
-3. **Advisory-findings noise policy:** the samber/lo suggestions, encoding/json v2 notes, and
+3. **Advisory-findings noise policy:** the samber/lo suggestions, encoding/json v2 notes, and **→ routed — TODO_LIST buildflow-gate row (suppress-vs-keep policy)**
    vendorHash-extraction hint reappear on every buildflow run. Should I formally suppress them
    (`.buildflow.yml` policy notes / tool-native suppression where it exists), or keep them
    visible as deliberate noise so they aren't forgotten?

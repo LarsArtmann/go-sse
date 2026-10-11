@@ -40,15 +40,18 @@ the auto-commit daemon pushed `b2847cd` carrying a bare-shfmt drift in `scripts/
 ## b) PARTIALLY DONE
 
 - **Suppression work**: shipped and verified at sseparse-module level. Remaining: repo-level proof (`scripts/verify.sh` full gate incl. `nix flake check` ×3 modules) never ran; CI green state not restored (blocked on push approval — harness forbids pushing unasked).
+  → done — pushed; CI run 38107984621 (full matrix incl. Nix flake check) success 2026-10-11.
 - **verify.sh canonical fix**: done locally in `b2347b5`; NOT on origin — origin/master sits at the red `b2847cd`; local master is ahead 4 (`2d89664`, `b2347b5`, `31b09e2` + this report pending daemon sweep).
-- **Root-cause of red CI**: fully diagnosed (see TL;DR + d) but remediation (push + watch CI) not started.
+  → done — pushed; origin == master at the 2026-10-11 audit.
+- **Root-cause of red CI**: fully diagnosed (see TL;DR + d) but remediation (push + watch CI) not started. → done — CI green on the fixed head (38107984621).
 
 ## c) NOT STARTED
 
 - `scripts/verify.sh` full run on the final tree — deliberate skip on "comment-only change" reasoning; wrong call per the repo's gate culture, should have run it.
-- Harvest of this report's f) into `TODO_LIST.md`/`ROADMAP.md`/`CHANGELOG.md` — this report is the input, harvest is the next session's (or this one's, on instruction) first move.
-- Annotation of the 02-05 report (its "working tree dirty at report time" note now has a known downstream consequence: the daemon push of that dirt reddened CI).
-- ssetest v0.5.0 release steps (tag still pending from the 02-05 session's breaking `WithLastEventID` change).
+  → done — CI's full matrix (incl. Nix flake check ×3) ran green on the final tree; the local full-gate habit is reinforced in the 02-05 report's IMP list.
+- Harvest of this report's f) into `TODO_LIST.md`/`ROADMAP.md`/`CHANGELOG.md` — this report is the input, harvest is the next session's (or this one's, on instruction) first move. → done — this pass (2026-10-11 audit).
+- Annotation of the 02-05 report (its "working tree dirty at report time" note now has a known downstream consequence: the daemon push of that dirt reddened CI). → done — this pass (annotated and archived).
+- ssetest v0.5.0 release steps (tag still pending from the 02-05 session's breaking `WithLastEventID` change). → routed — TODO_LIST release row (top of the open list).
 
 ## d) TOTALLY FUCKED UP
 
@@ -73,37 +76,37 @@ the auto-commit daemon pushed `b2847cd` carrying a bare-shfmt drift in `scripts/
 
 P0 — unbreak master / close this session out:
 
-1. Get user approval and push the 4 unpushed commits; `gh run watch` until CI is green (the fix for 38103016812 is already in `b2347b5`).
-2. Run `scripts/verify.sh` (full, incl. flake check) on the final tree — never ran this session.
-3. `git log --stat -5` sanity over this session's daemon commits (message-vs-content check per AGENTS.md; "4 changed files" swept mixed concerns).
-4. Harvest this report's f) into `TODO_LIST.md` (bounded items) and `ROADMAP.md` (vague ones); move done work to `CHANGELOG.md` `[Unreleased]`.
-5. Annotate the 02-05 report (docs-health ANNOTATE): its end-of-session dirty tree produced the daemon push that reddened CI; record resolution hash once pushed.
+1. ~~Get user approval and push the 4 unpushed commits; `gh run watch` until CI is green (the fix for 38103016812 is already in `b2347b5`).~~ done — pushed; origin == master (2026-10-11 audit)
+2. ~~Run `scripts/verify.sh` (full, incl. flake check) on the final tree — never ran this session.~~ done — CI matrix success on the fixed tree (run 38107984621, all 11 jobs incl. Nix flake check ×3 modules)
+3. ~~`git log --stat -5` sanity over this session's daemon commits (message-vs-content check per AGENTS.md; "4 changed files" swept mixed concerns).~~ done — 2026-10-11 sessions ran the git log --stat sanity; no contradictions recorded
+4. ~~Harvest this report's f) into `TODO_LIST.md` (bounded items) and `ROADMAP.md` (vague ones); move done work to `CHANGELOG.md` `[Unreleased]`.~~ done — this pass — the 2026-10-11 audit harvested f) into TODO_LIST/ROADMAP/CHANGELOG
+5. ~~Annotate the 02-05 report (docs-health ANNOTATE): its end-of-session dirty tree produced the daemon push that reddened CI; record resolution hash once pushed.~~ done — this pass — the audit annotated and archived the 02-05 report
 
 P1 — release & correctness:
 
-6. Cut ssetest v0.5.0 (breaking `WithLastEventID` from the 02-05 session): CHANGELOG cut, `scripts/release-verify.sh`, tag; sseparse needs no new tag (this session's changes are comments only).
-7. Fix `nix run .#coverage` root scope to package `.` (IMP5; kill the 59.1% dilution at the source).
-8. Decide and wire `branching-flow strong-id --exit-code` as a standing gate in `scripts/verify.sh` and/or CI (blocked on g/Q2).
-9. Check the weekly flake-update PR and the Actions-PR approval queue (standing policy item in TODO_LIST; approval-required runs can sit ungated for days).
-10. Verify last `go-datastar compat` weekly run green (ssetest-consuming downstream).
-11. LSP diagnostics pass over the three edited sseparse files (expected zero; never checked this session).
+6. Cut ssetest v0.5.0 (breaking `WithLastEventID` from the 02-05 session): CHANGELOG cut, `scripts/release-verify.sh`, tag; sseparse needs no new tag (this session's changes are comments only). **→ routed — TODO_LIST release row (ssetest v0.5.0)**
+7. Fix `nix run .#coverage` root scope to package `.` (IMP5; kill the 59.1% dilution at the source). **→ routed — TODO_LIST coverage-root-scope row (IMP5)**
+8. Decide and wire `branching-flow strong-id --exit-code` as a standing gate in `scripts/verify.sh` and/or CI (blocked on g/Q2). **→ routed — TODO_LIST Blocked row (branching-flow exit-code gate policy)**
+9. ~~Check the weekly flake-update PR and the Actions-PR approval queue (standing policy item in TODO_LIST; approval-required runs can sit ungated for days).~~ done — the 2026-10-05 flake-update workflow opened PR #7 with the cross-check green (first live exercise); the PR merge itself is the recorded Actions-PR incident (AGENTS gotcha)
+10. ~~Verify last `go-datastar compat` weekly run green (ssetest-consuming downstream).~~ done — datastar-compat 2026-10-05 success
+11. ~~LSP diagnostics pass over the three edited sseparse files (expected zero; never checked this session).~~ done — verified 2026-10-11 — LSP diagnostics over the three edited sseparse files: zero
 
 P2 — hardening, docs, cross-repo:
 
-12. Cheap grep guard in `verify.sh`: fail on the bare-shfmt fingerprint (e.g. `((!` without following space) in `scripts/*.sh` — a second net beyond CI's treefmt check for the flip-flop class that struck twice now (2026-10-03, 2026-10-11).
-13. Daemon-side pre-push treefmt check (outside this repo; prevents red-master pushes of non-canonical files entirely).
-14. Upstream to branching-flow: README note that the native `//branching-flow:ignore <type>` form is the golangci-invisible one (its issue #21 only documents the nolint form's nolintlint safety).
-15. Sweep sibling repos still on `//nolint:branching-flow:panic` (wise-go webhooks.go ×2, go-business-rules ×2): they emit the same golangci unknown-linter warning on every lint run; migrate to the native form.
-16. ROADMAP/crush-config: session-start CI-health probe as a crush hook (mechanize IMP1 across all repos).
-17. Extend the two public-field reason comments (sseparse/event.go, sseparse/corpus.go) with the ssetest-re-export/API-break rationale (currently only in AGENTS.md).
-18. docs-health VERIFY pass over the updated AGENTS.md strong-ID bullet next session (claims vs code).
-19. Optional local fuzz smoke (`-fuzz` 10s × targets) after any reader/writer change; CI already runs 6 targets.
-20. Confirm `go.sum`/`ssetest/go.sum` (dirty in the session-start snapshot) are fully accounted for by daemon commits — final `git status` should be clean apart from reports.
-21. After push: confirm pkg.go.dev unaffected (comment-only, no tag expected to move).
-22. Decide whether the suppression directives warrant a CHANGELOG line (likely no — internal tooling observability; record the decision either way).
+12. Cheap grep guard in `verify.sh`: fail on the bare-shfmt fingerprint (e.g. `((!` without following space) in `scripts/*.sh` — a second net beyond CI's treefmt check for the flip-flop class that struck twice now (2026-10-03, 2026-10-11). **→ routed — TODO_LIST bare-shfmt grep-guard row**
+13. Daemon-side pre-push treefmt check (outside this repo; prevents red-master pushes of non-canonical files entirely). **→ routed — ROADMAP raw ideas (daemon-side pre-push treefmt check)**
+14. Upstream to branching-flow: README note that the native `//branching-flow:ignore <type>` form is the golangci-invisible one (its issue #21 only documents the nolint form's nolintlint safety). **→ routed — TODO_LIST upstream-queue row (branching-flow README note)**
+15. Sweep sibling repos still on `//nolint:branching-flow:panic` (wise-go webhooks.go ×2, go-business-rules ×2): they emit the same golangci unknown-linter warning on every lint run; migrate to the native form. **→ routed — TODO_LIST cross-repo row (sibling-repo nolint migration)**
+16. ROADMAP/crush-config: session-start CI-health probe as a crush hook (mechanize IMP1 across all repos). **→ routed — TODO_LIST cross-repo row (crush-config session-start CI probe hook)**
+17. Extend the two public-field reason comments (sseparse/event.go, sseparse/corpus.go) with the ssetest-re-export/API-break rationale (currently only in AGENTS.md). **→ routed — TODO_LIST sseparse reason-comments row**
+18. ~~docs-health VERIFY pass over the updated AGENTS.md strong-ID bullet next session (claims vs code).~~ done — this pass — the audit verified the AGENTS strong-ID bullet against the tree (all three directives present at sseparse/event.go:28, corpus.go:56, reader.go:253)
+19. ~~Optional local fuzz smoke (`-fuzz` 10s × targets) after any reader/writer change; CI already runs 6 targets.~~ **Won't implement — Won't implement routinely — CI covers the fuzz corpus; soak only after reader/writer changes.**
+20. ~~Confirm `go.sum`/`ssetest/go.sum` (dirty in the session-start snapshot) are fully accounted for by daemon commits — final `git status` should be clean apart from reports.~~ done — working tree clean at audit time; go.sum states accounted for by the daemon commits
+21. ~~After push: confirm pkg.go.dev unaffected (comment-only, no tag expected to move).~~ **Won't implement — Won't implement — no tag moved, so pkg.go.dev is unaffected.**
+22. ~~Decide whether the suppression directives warrant a CHANGELOG line (likely no — internal tooling observability; record the decision either way).~~ **Won't implement — Won't implement — internal tooling observability; the CHANGELOG git-history-only tier applies (TODO_LIST Declined row records the decision).**
 
 ## g) Questions I CANNOT figure out myself
 
-1. **May I push?** Local master is ahead 4 (incl. the CI fix `b2347b5`); origin is red. The harness forbids pushing without an explicit request — this is exactly the case where the rule and the remedy collide. Push now, or do you want to review the daemon-swept commits first?
-2. **Should `branching-flow strong-id --exit-code` become a standing gate** (verify.sh / CI)? Pro: findings like today's three surface as gate failures instead of recurring report rows. Con: another tool-version-sensitive pin in the gate chain (cf. the golangci pin-check saga). This is policy, not something I can derive.
-3. **ssetest v0.5.0 timing**: cut it now (breaking `WithLastEventID` change is sitting untagged on master, and datastartest pins v0.4.0 until then), or batch it with the next planned ssetest work? Sequencing is a release-strategy call.
+1. ~~**May I push?** Local master is ahead 4 (incl. the CI fix `b2347b5`); origin is red. The harness forbids pushing without an explicit request — this is exactly the case where the rule and the remedy collide. Push now, or do you want to review the daemon-swept commits first?~~ done — pushed; origin == master at the 2026-10-11 audit
+2. **Should `branching-flow strong-id --exit-code` become a standing gate** (verify.sh / CI)? Pro: findings like today's three surface as gate failures instead of recurring report rows. Con: another tool-version-sensitive pin in the gate chain (cf. the golangci pin-check saga). This is policy, not something I can derive. **→ routed — TODO_LIST Blocked row (branching-flow exit-code gate policy)**
+3. **ssetest v0.5.0 timing**: cut it now (breaking `WithLastEventID` change is sitting untagged on master, and datastartest pins v0.4.0 until then), or batch it with the next planned ssetest work? Sequencing is a release-strategy call. **→ routed — TODO_LIST release row (v0.5.0 timing)**
