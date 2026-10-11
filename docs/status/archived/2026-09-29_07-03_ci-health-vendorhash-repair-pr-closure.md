@@ -160,12 +160,12 @@ against code — several will be done by the concurrent session meanwhile.
 
 ### High
 
-5. Audit both repos for OTHER master commits that path filters silently
+5. Audit both repos for OTHER master commits that path filters silently **→ go-sse half closed (no workflow here carries a paths: filter — verified 2026-10-01); the go-datastar half lives in the TODO_LIST cross-repo batch**
    skipped (join `git log --name-only` against every workflow's `paths`) —
    today's nix.yml gap was found by luck, not by process. Effort: M.
-6. Add `nix flake check` (or `--fast` verify) to the pre-push habit docs of
+6. Add `nix flake check` (or `--fast` verify) to the pre-push habit docs of **→ routed — TODO_LIST go-datastar batch (CONTRIBUTING pre-push habit)**
    go-datastar CONTRIBUTING the way go-sse documents verify.sh. Effort: S.
-7. go-datastar: enforce the golangci pin mechanically — a verify-style
+7. go-datastar: enforce the golangci pin mechanically — a verify-style **→ routed — TODO_LIST go-datastar batch (golangci pin cross-check)**
    cross-check script (go-sse's `scripts/golangci-pin.sh` pattern) so
    CI==devshell skew fails locally before push. Effort: S.
 8. ~~Raise coverage-gate floors in go-sse now that ssetest is at 100.0%~~ done — routed — TODO_LIST open item (coverage-gate floors)
@@ -174,107 +174,107 @@ against code — several will be done by the concurrent session meanwhile.
 9. ~~go-sse CHANGELOG `[Unreleased]`: add entries for the dep bumps~~ done — this pass — the CHANGELOG [Unreleased] carries the dep bumps + 1.27.1 alignment (5413851, dc3d485)
    ~~(go-sse v0.6.1 in ssetest, error-family v0.10.2) + the 1.27.1 directive~~
    ~~alignment — the daemon commits shipped none. Effort: S.~~
-10. go-datastar CHANGELOG `[Unreleased]`: add the error-family v0.11.0 bump
+10. go-datastar CHANGELOG `[Unreleased]`: add the error-family v0.11.0 bump **→ routed — TODO_LIST go-datastar batch (CHANGELOG error-family entry)**
     entry (their 11-file sweep touched go.mod ×3 but not CHANGELOG).
     Effort: S.
-11. Bump pdd's go-sse pin v0.6.0 → v0.6.1 (+ vendorHash) so the consumer
+11. Bump pdd's go-sse pin v0.6.0 → v0.6.1 (+ vendorHash) so the consumer **→ routed — TODO_LIST consumer-pin row (pdd → now go-sse v0.6.2)**
     chain is uniformly on v0.6.1; go-daemon likewise. Effort: S–M each.
 12. ~~Verify tag-CI state for go-sse's sseparse/v0.1.0 + ssetest/v0.4.0 tags~~ done — answered by config — ci.yml triggers on master pushes/PRs only; go-sse module tags never run CI, so there is no frozen tag-CI to audit
     ~~(same frozen-tag-CI class as go-datastar; unknown whether they ran~~
     ~~green at tag time). Effort: S.~~
-13. Sweep go-datastar's open dependabot PRs under the new reality (nix job
+13. Sweep go-datastar's open dependabot PRs under the new reality (nix job **→ routed — TODO_LIST go-datastar batch (dependabot sweep)**
     will fail on hash moves; adopt-or-close each deliberately). Effort: M.
 14. ~~Proactive go-error-family v0.11.0 evaluation for go-sse root (go-datastar~~ done — the bump already landed on master (55e790c); race suites green
     ~~already bumped; a dependabot PR will arrive anyway — get ahead of it with~~
     ~~the vendor-hash dance done once). Effort: S–M.~~
-15. ~~Update go-sse AGENTS.md "go-directive claims" one more time if/when the~~ done — this pass — AGENTS.md's directive claims re-recorded (1.27.1 x3 floor + buildflow-normalize adversary)
+15. ~~Update go-sse AGENTS.md "go-directive claims" one more time if/when the~~ routed — TODO_LIST trigger row (re-verify the directive claims at the next root tag); claims were re-recorded 2026-09-29 and superseded 2026-10-11 by the deliberate minor-form policy (AGENTS.md Go-directive paragraph)
     ~~next root tag ships at 1.27.1 (the tag-vs-master directive split is now~~
     ~~v0.6.1@1.27.1 vs master@1.27.1 — re-check on next release). Effort: S.~~
 
 ### Medium
 
-16. Record the cross-project lesson in crush-config
+16. Record the cross-project lesson in crush-config **→ routed — crush-config references/lessons.md (cross-project lesson)**
     `references/lessons.md`: "verify handoff facts + measure tool versions
     before pin changes; path filters are not gates". Effort: S.
 17. ~~Run a local 5-minute fuzz soak on go-sse's bumped tree (deps changed~~ done — routed — TODO_LIST open item (local fuzz soak)
     ~~today; CI's scheduled Fuzz runs green but a fresh soak is cheap).~~
     ~~Effort: S.~~
-18. Confirm go-sse's weekly `datastar-compat.yml` workflow ran/passed after
-    go-datastar v0.6.1 (consumer compat gate). Effort: S.
+18. ~~Confirm go-sse's weekly `datastar-compat.yml` workflow ran/passed after~~ done — the 2026-10-05 weekly datastar-compat run completed success (first live run against the v0.6.1 pins; runner-env proof recorded in AGENTS.md 2026-10-11)
+    ~~go-datastar v0.6.1 (consumer compat gate). Effort: S.~~
 19. ~~Annotate `docs/status/2026-09-29_01-58_sseparse-release-and-consumer-chain.md`~~ done — this pass — annotated and archived (docs/status/archived/)
     ~~with resolution markers (tags live) per the ANNOTATE convention, then~~
     ~~archive when fully resolved. Effort: S.~~
-20. Check go-datastar's private-vulnerability-reporting repo setting (was
+20. Check go-datastar's private-vulnerability-reporting repo setting (was **→ routed — TODO_LIST go-datastar batch (private-vulnerability-reporting check)**
     enabled for go-sse last session; go-datastar state unverified). Effort: S.
 21. ~~Verify go-sse's coverage-gate measures root as package `.` (the doc's~~ done — this pass — verified: the coverage-gate app measures the root as package `.` (flake.nix measure call)
     ~~scope rule) — if it uses `./...` the gate understates by ~40 points.~~
     ~~Effort: S.~~
-22. go-datastar: wire a coverage gate for datastartest (95.5%) and broadcast
+22. go-datastar: wire a coverage gate for datastartest (95.5%) and broadcast **→ routed — TODO_LIST go-datastar batch (coverage gates)**
     (87.8%) if their coverage workflow lacks thresholds. Effort: S–M.
 23. ~~Document the "Actions-created PR approval gate" behavior in both repos'~~ done — this pass — AGENTS.md gotcha records the action_required approval gate
     ~~AGENTS.md (currently only in a PR close comment — invisible to future~~
     ~~sessions). Effort: S.~~
-24. go-daemon: re-run its corpus conformance after the next sseparse tag to
-    keep the consumer oracle chain warm. Effort: S.
+24. ~~go-daemon: re-run its corpus conformance after the next sseparse tag to~~ done — 2026-10-01 — go-daemon corpus conformance re-ran green against sseparse v0.2.0 (TODO_LIST consumer-pin row records it)
+    ~~keep the consumer oracle chain warm. Effort: S.~~
 25. ~~Harvest section f into TODO_LIST.md / ROADMAP.md (docs-health HARVEST),~~ done — this pass — 5413851 + the TODO_LIST rebuild (624eb7d/28bbb1a)
     ~~after coordinating with the concurrent session that owns TODO_LIST~~
     ~~today. Effort: M.~~
 
 ### Low / Roadmap fuel
 
-26. Automate module-proxy warm-up (`@v/list` staleness purge + version
+26. Automate module-proxy warm-up (`@v/list` staleness purge + version **→ routed — ROADMAP raw ideas (post-release hygiene fuel: proxy warm-up)**
     download) into `scripts/release-verify.sh` for future first-tags.
-27. Add a `smoke` flake app caller to go-datastar CI if it gains runnable
+27. Add a `smoke` flake app caller to go-datastar CI if it gains runnable **→ routed — ROADMAP raw ideas (go-datastar smoke parity)**
     examples (go-sse has the job; go-datastar's app exists — parity check).
-28. Evaluate a dependabot config change: group all go.mod bumps per module
+28. Evaluate a dependabot config change: group all go.mod bumps per module **→ routed — ROADMAP raw ideas (dependabot grouping)**
     so one PR = one hash-fix instead of three.
-29. Add `broadcastVendorHash`/`datastartestVendorHash` derivation notes to
+29. Add `broadcastVendorHash`/`datastartestVendorHash` derivation notes to **→ routed — TODO_LIST go-datastar batch (vendorHash derivation notes in CONTRIBUTING)**
     go-datastar CONTRIBUTING (the paste-loop recipe, ADR-004 references).
-30. Consider `GOTOOLCHAIN=auto` pinning policy documentation (devshell pins
+30. Consider `GOTOOLCHAIN=auto` pinning policy documentation (devshell pins **→ routed — ROADMAP raw ideas (GOTOOLCHAIN pinning policy doc)**
     the toolchain; ambient 1.26 gopls false positives still confuse — keep
     the "trust CLI over editor" note current).
-31. go-datastar: extend the JS-version drift test to broadcast/static docs
+31. go-datastar: extend the JS-version drift test to broadcast/static docs **→ routed — TODO_LIST go-datastar batch (JS-version CHANGELOG test)**
     mention in CHANGELOG (JS-version-in-CHANGELOG test exists for root).
-32. Split the go-datastar CI lint job per module for clearer failures (one
+32. Split the go-datastar CI lint job per module for clearer failures (one **→ routed — TODO_LIST go-datastar batch (split lint job per module)**
     panic currently fails the whole matrix).
-33. Add a scheduled `nix flake check --all-systems`-equivalent note for
+33. Add a scheduled `nix flake check --all-systems`-equivalent note for **→ routed — ROADMAP raw ideas (aarch64 when nixpkgs support returns)**
     aarch64-darwin when nixpkgs support returns (both repos carry the
     systems pin).
 34. ~~go-sse: cover the `Stream.Send` short-write path in an example test if~~ done — (existing) — TestStream_SendReturnsErrorOnShortWrite pins the path; the README allocation claim was also corrected this pass
     ~~not already (doc claims pinned — verify the pinning test exists).~~
 35. ~~Keep `docs/status/` archive hygiene: audit for all-resolved reports~~ done — this pass — six reports annotated and archived; the rest carry their open markers
     ~~older than the 2026-09-29 batch and `git mv` to `archived/`.~~
-36. Evaluate a shared "session handoff facts" template that separates
+36. Evaluate a shared "session handoff facts" template that separates **→ routed — ROADMAP raw ideas (session-handoff-facts template)**
     MEASURED facts from CLAIMED facts (today's v2.14.0 error).
-37. go-datastar: pin golangci-lint version in ONE place (flake app) and
+37. go-datastar: pin golangci-lint version in ONE place (flake app) and **→ routed — TODO_LIST go-datastar batch (single-source the pin)**
     have ci.yml read it (action input) to eliminate the 4-site pin.
-38. Consider Renovate vs Dependabot for the nix-hash-aware update flow
+38. Consider Renovate vs Dependabot for the nix-hash-aware update flow **→ routed — ROADMAP raw ideas (Renovate vs Dependabot)**
     (Renovate supports lock-file maintenance hooks better).
 39. ~~Add release-verify.sh probes for the OTHER nested module (ssetest case)~~ done — (existing) — release-verify.sh carries BOTH ssetest/* and sseparse/* cases
     ~~if only the sseparse case was added last session — parity audit.~~
-40. go-sse: module-boundary test for "root must never require ssetest or
-    sseparse" — confirm it also covers indirect requires via go.sum.
+40. ~~go-sse: module-boundary test for "root must never require ssetest or~~ done — TestRootModuleDoesNotRequireSubmodules scans go.sum too (landed 2026-10-01; CHANGELOG 0.6.2 records it)
+    ~~sseparse" — confirm it also covers indirect requires via go.sum.~~
 41. ~~Track go-branded-id v0.6.0 in go-sse's own root go.mod (ssetest got it~~ done — aligned: root and ssetest both at go-branded-id v0.6.0
     ~~transitively; root still pins its own version — align on next bump).~~
-42. Add a `directive-equality` check to go-datastar's gates (go-sse has one
+42. Add a `directive-equality` check to go-datastar's gates (go-sse has one **→ routed — TODO_LIST go-datastar batch (directive-equality check)**
     in verify.sh; go-datastar has 3 modules too).
 43. ~~Document in go-sse AGENTS.md that `verify.sh` skips the flake check~~ done — this pass — AGENTS.md's verify.sh entry documents the --fast + flake-check pairing rule
     ~~under `--fast` and MUST be paired with a flake check for go.mod/flake~~
     ~~pushes (trap hit today at go-datastar scale).~~
-44. Evaluate caching golangci-lint 2.13.2 binary in CI cache key bump policy
+44. Evaluate caching golangci-lint 2.13.2 binary in CI cache key bump policy **→ routed — ROADMAP raw ideas (golangci cache-key/pin alignment notes)**
     (cache key now v2.13.2 — remember to bump BOTH key and install line next
     time; note it in the workflow comment).
-45. go-datastar AGENTS.md: add the "CI health probe at session start" step
+45. go-datastar AGENTS.md: add the "CI health probe at session start" step **→ routed — TODO_LIST go-datastar batch (session-start CI probe note)**
     to the commands section (IMP2 institutionalized).
-46. Sweep stale `nolint`/exclusion comments in ssetest `.golangci.yml` that
-    referenced the pre-split layout (bodyclose exclusion for collect.go —
-    still correct, but re-verify after the 100% coverage work).
-47. Consider tagging go-sse root v0.6.2 only after directives settle a
-    release cycle at 1.27.1 (avoid churning the proxy).
-48. Add PR template checkbox for "ran nix flake check" in both repos.
-49. Investigate why PR #4's branch ALSO carried a stale ci.yml pin (v2.13.2
-    at branch point) — confirms skew existed on master pre-2026-09-28; write
-    the timeline into the pin-parity AGENTS.md note.
+46. ~~Sweep stale `nolint`/exclusion comments in ssetest `.golangci.yml` that~~ done — verified 2026-10-11 — the bodyclose exclusion for collect.go is the documented contract (AGENTS.md gotcha); no pre-split leftovers found
+    ~~referenced the pre-split layout (bodyclose exclusion for collect.go —~~
+    ~~still correct, but re-verify after the 100% coverage work).~~
+47. ~~Consider tagging go-sse root v0.6.2 only after directives settle a~~ done — v0.6.2 tagged 2026-10-03 (the de-poisoning release; directives minor form)
+    ~~release cycle at 1.27.1 (avoid churning the proxy).~~
+48. Add PR template checkbox for "ran nix flake check" in both repos. **→ routed — ROADMAP raw ideas (PR template checkbox)**
+49. ~~Investigate why PR #4's branch ALSO carried a stale ci.yml pin (v2.13.2~~ done — moot — PR #4 closed as superseded 2026-09-29 with the root-cause note; the pin-parity guards shipped since
+    ~~at branch point) — confirms skew existed on master pre-2026-09-28; write~~
+    ~~the timeline into the pin-parity AGENTS.md note.~~
 50. ~~Celebrate: ssetest hit 100.0% statement coverage today (other session)~~ done — FEATURES records ssetest at 100.0% (2026-09-29)
     ~~— update FEATURES.md if it tracks coverage milestones.~~
 

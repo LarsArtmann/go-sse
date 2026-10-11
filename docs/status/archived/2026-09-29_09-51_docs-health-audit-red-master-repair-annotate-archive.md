@@ -181,86 +181,86 @@ session (docs + go.mod directives only).
 
 Priority 0 — this session's own tail:
 
-1. Push the 10 local commits (user/daemon-owned): flips public CI red →
-   green; `14f2fe5` is the fix and has never been seen by remote CI.
-2. Confirm CI green on the pushed head (run list check — the format gate
-   was only ever green locally).
-3. Reword the 07:03 §f15 marker non-destructively (`done this pass` →
-   `routed — TODO_LIST trigger row`), so the annotation and TODO_LIST agree.
-4. Add `routed` markers to the bare 07:03 Low/Roadmap-fuel items the
-   concurrent session already routed into ROADMAP (f26–f33, f36–f38, f40,
-   f42, f44–f49 as applicable) so bare = genuinely open everywhere.
-5. AGENTS.md pruning pass (45 KB → target ≤ 30 KB): temporal incident
+1. ~~Push the 10 local commits (user/daemon-owned): flips public CI red →~~ done — pushed; origin == master as of the 2026-10-11 audit
+   ~~green; `14f2fe5` is the fix and has never been seen by remote CI.~~
+2. ~~Confirm CI green on the pushed head (run list check — the format gate~~ done — CI run 38107984621 success on master (2026-10-11), after the 10-04→10-10 red streak was fixed
+   ~~was only ever green locally).~~
+3. ~~Reword the 07:03 §f15 marker non-destructively (`done this pass` →~~ done — this pass — the 07:03 §f15 marker reworded to routed + the TODO_LIST trigger row
+   ~~`routed — TODO_LIST trigger row`), so the annotation and TODO_LIST agree.~~
+4. ~~Add `routed` markers to the bare 07:03 Low/Roadmap-fuel items the~~ done — this pass — all bare 07:03 §f items now carry routed/done verdicts
+   ~~concurrent session already routed into ROADMAP (f26–f33, f36–f38, f40,~~
+   ~~f42, f44–f49 as applicable) so bare = genuinely open everywhere.~~
+5. AGENTS.md pruning pass (45 KB → target ≤ 30 KB): temporal incident **→ routed — TODO_LIST deep-prune row (stale-claim fixes + narrative compression applied this pass; the ≤30 KB prune is its own session)**
    narratives → current-truth statements; resolved-incident detail stays in
    the reports; every removal verified before deleting.
 
 Priority 1 — the five verified-open TODO_LIST items (bounded, in impact order):
 
-6. Raise coverage-gate floors to measured levels (ssetest 95→100; consider
-   99 for root/sseparse) — one-line flake change + CHANGELOG.
-7. Commit the gen_corpus round-trip test (idempotence + abort-on-mismatch +
-   dup-skip) so the M14 proof runs in CI, not in a report.
-8. Add the GOEXPERIMENT regression guard line to `scripts/verify.sh`.
-9. Path-filter audit: join `git log --name-only` against every workflow's
-   `paths:` in both repos (the go-datastar nix gap was found by luck).
-10. Bump `minCorpusVectors` 25→29 — trigger-gated on the next real WPT
+6. ~~Raise coverage-gate floors to measured levels (ssetest 95→100; consider~~ done — 2026-10-01 — thresholds 99/100/99 (CHANGELOG 0.6.2 records it)
+   ~~99 for root/sseparse) — one-line flake change + CHANGELOG.~~
+7. ~~Commit the gen_corpus round-trip test (idempotence + abort-on-mismatch +~~ done — sseparse/gen_corpus_roundtrip_test.go (2026-10-01; CHANGELOG 0.6.2)
+   ~~dup-skip) so the M14 proof runs in CI, not in a report.~~
+8. ~~Add the GOEXPERIMENT regression guard line to `scripts/verify.sh`.~~ done — verify.sh GOEXPERIMENT guard (2026-10-01; CHANGELOG 0.6.2)
+9. ~~Path-filter audit: join `git log --name-only` against every workflow's~~ done — no workflow in this repo carries a paths: filter (2026-10-01)
+   ~~`paths:` in both repos (the go-datastar nix gap was found by luck).~~
+10. Bump `minCorpusVectors` 25→29 — trigger-gated on the next real WPT **→ routed — TODO_LIST trigger row (minCorpusVectors at the next real WPT ingestion)**
     ingestion, but bundling it with item 7's test work would be natural.
 
 Priority 2 — the decisions only the owner can make (each ~5–30 min):
 
-11. go-datastar v0.6.2: re-cut for green tag-CI, or accept frozen red tags.
-12. Actions-created PR approval gate: approve-per-session, workflow_run
+11. go-datastar v0.6.2: re-cut for green tag-CI, or accept frozen red tags. **→ routed — TODO_LIST Blocked row (go-datastar v0.6.2)**
+12. Actions-created PR approval gate: approve-per-session, workflow_run **→ routed — TODO_LIST Blocked row (Actions-PR gate; second incident recorded 2026-10-11: PR #7)**
     self-gating, or keep manual (the weekly PRs currently cannot gate).
-13. Dependabot-on-nix-hash policy: adopt-on-master, hash-fix push, or
+13. Dependabot-on-nix-hash policy: adopt-on-master, hash-fix push, or **→ routed — TODO_LIST Blocked row (dependabot-on-nix-hash policy)**
     non-blocking nix job for dependabot branches.
-14. Buildflow normalize fix: derive the target go directive from
+14. Buildflow normalize fix: derive the target go directive from **→ routed — TODO_LIST Blocked row (buildflow normalize target)**
     max(dep directives) — ends the flip-flop that struck twice today.
-15. Buildcache rotation policy (mount 32%, no pressure).
-16. The 37 appendix-style archived files: leave as documented deviation, or
+15. Buildcache rotation policy (mount 32%, no pressure). **→ routed — TODO_LIST Blocked row (buildcache rotation)**
+16. The 37 appendix-style archived files: leave as documented deviation, or **→ routed — user ruling still open; the documented deviation stands (2026-10-11 audit: 45 archived files lack inline markers, all pre-09-14 appendix style)**
     mandate retro inline-strikes (see g3).
 
 Priority 3 — cross-repo batches (own repos, own gates):
 
-17. go-datastar hygiene batch (TODO_LIST row): nix.yml + flake.nix comment
+17. go-datastar hygiene batch (TODO_LIST row): nix.yml + flake.nix comment **→ routed — TODO_LIST cross-repo row (go-datastar hygiene batch)**
     fixes, GOEXPERIMENT removal from their ci.yml/AGENTS, golangci pin
     cross-check, dependabot sweep, coverage gates, directive-equality check,
     the rest of the cited 07:03 items.
-18. Consumer pin chain: pdd → go-sse v0.6.1; go-daemon corpus re-run after
+18. Consumer pin chain: pdd → go-sse v0.6.1; go-daemon corpus re-run after **→ routed — TODO_LIST consumer-pin row (go-daemon half done 2026-10-01; pdd half open)**
     the next sseparse tag.
-19. go-datastar private-vulnerability-reporting setting check (part of the
+19. go-datastar private-vulnerability-reporting setting check (part of the **→ routed — TODO_LIST go-datastar batch (private-vulnerability-reporting check)**
     batch, listed separately because it is a 30-second Settings check).
 
 Priority 4 — Monday 2026-10-05 watches (time-gated):
 
-20. `datastar-compat.yml` first post-v0.6.1 run (runner-env proof) + first
-    flake-update PR exercising the golangci cross-check; after both green,
-    retire the watch row and record the proof in AGENTS.md.
+20. ~~`datastar-compat.yml` first post-v0.6.1 run (runner-env proof) + first~~ done — datastar-compat 2026-10-05 success (runner-env proof in AGENTS.md); the flake-update cross-check ran green in-workflow on 10-05 (PR #7), whose later red merge-commit CI is the recorded Actions-PR incident
+    ~~flake-update PR exercising the golangci cross-check; after both green,~~
+    ~~retire the watch row and record the proof in AGENTS.md.~~
 
 Priority 5 — small tails surfaced by this pass:
 
-21. After item 6 lands, re-measure and pin the new thresholds in the CI job
-    description text so the flake app and ci.yml narrative agree.
-22. Consider an upstream `r` (routed) marker kind for the annotate scripts
-    if not already present — this pass hand-spelled "routed" four times.
-23. Consider a tiny CI-summary line in verify.sh full mode (`gh run list
+21. ~~After item 6 lands, re-measure and pin the new thresholds in the CI job~~ **Won't implement — Won't implement — the flake app is the single source of truth and the ci.yml job carries no contradicting threshold text (verified 2026-10-11).**
+    ~~description text so the flake app and ci.yml narrative agree.~~
+22. ~~Consider an upstream `r` (routed) marker kind for the annotate scripts~~ done — the annotate tooling supports kind r (routed verdict, no strike)
+    ~~if not already present — this pass hand-spelled "routed" four times.~~
+23. Consider a tiny CI-summary line in verify.sh full mode (`gh run list **→ routed — TODO_LIST cross-repo row (session-start CI probe hook in crush-config)**
     --branch master --limit 1`) to institutionalize the health probe (IMP of
     three sessions running).
-24. `docs/benchmarks/`: record a second baseline after the next dep bump so
+24. `docs/benchmarks/`: record a second baseline after the next dep bump so **→ routed — record the second baseline when the next dependency bump lands (benchstat workflow contract)**
     the benchstat workflow gets its first real before/after exercise.
-25. example_test.go: the two newer godoc examples use `_ =` discards —
-    consider asserting output instead (carried from 05:49 §f17, still open).
-26. scripts/smoke-examples.sh: consider a `--timeout` flag (05:49 §f18,
-    still open).
-27. sseparse README: cross-link the ingestion procedure from
+25. ~~example_test.go: the two newer godoc examples use `_ =` discards —~~ **Won't implement — Won't implement — examples double as docs; output assertions are optional polish (2026-10-11 audit).**
+    ~~consider asserting output instead (carried from 05:49 §f17, still open).~~
+26. ~~scripts/smoke-examples.sh: consider a `--timeout` flag (05:49 §f18,~~ **Won't implement — Won't implement — CI bounds the smoke job; an explicit flag is polish (2026-10-11 audit).**
+    ~~still open).~~
+27. sseparse README: cross-link the ingestion procedure from **→ routed — TODO_LIST sseparse/README row (corpus-failure-message cross-link, bundled 2026-10-11)**
     `TestCorpusJSONIsCanonical`'s failure message (05:49 §f16, still open).
-28. When the next root tag ships: re-verify the AGENTS directive notes
+28. When the next root tag ships: re-verify the AGENTS directive notes **→ routed — TODO_LIST trigger row (directive claims at the next root tag; CHANGELOG cut is part of the release checklist)**
     (TODO_LIST trigger row) and cut the CHANGELOG section.
-29. Re-run docs-health on this cadence after the next report batch (~10 new
-    files will exist); the archive passed today was the 2026-09 batch only.
-30. If the fleet's 1.26 toolchains are confirmed gone: delete the retired
-    GOEXPERIMENT trap paragraphs from AGENTS.md history sections entirely
-    (part of the pruning pass, listed separately because it needs owner
-    confirmation that no consumer machine regressed).
+29. ~~Re-run docs-health on this cadence after the next report batch (~10 new~~ done — this pass — the 2026-10-11 audit annotated and archived every open report
+    ~~files will exist); the archive passed today was the 2026-09 batch only.~~
+30. ~~If the fleet's 1.26 toolchains are confirmed gone: delete the retired~~ done — this pass — the 1.27.1-floor narrative rewritten to the current minor-form policy in AGENTS.md
+    ~~GOEXPERIMENT trap paragraphs from AGENTS.md history sections entirely~~
+    ~~(part of the pruning pass, listed separately because it needs owner~~
+    ~~confirmation that no consumer machine regressed).~~
 
 (31–50 intentionally unused: everything else actionable already lives in
 TODO_LIST's five open rows, two watch rows, five blocked rows, and two
@@ -268,19 +268,19 @@ cross-repo batches — that is the whole open surface as verified today.)
 
 ## g) Questions I CANNOT figure out myself
 
-1. **Push the 10 local commits now?** Master CI is publicly red until they
-   land and the fix (`14f2fe5`) is gated green locally, but pushes are
-   daemon/user-owned and I have no standing go-ahead. Push immediately, or
-   wait for the daemon?
-2. **Authorize the AGENTS.md pruning pass?** 45 KB is over the 30 KB budget
-   flag. Pruning means deleting resolved-incident narratives (they live in
-   the archived reports and git history) and compressing date-stamped
-   policy records into current-truth statements. If yes: is there a floor
-   below which I should NOT prune (e.g., keep every gotcha verbatim, prune
-   only Commands/GOEXPERIMENT/CI-enumeration prose)?
-3. **Which way should the archived-completeness gate be honored?** The 37
-   pre-2026-09-14 archived files use appendix-Resolution style and fail
-   `grep -rLn '~~' archived/`. Options: (a) amend the gate's note to
-   "applies to files archived from 2026-09-14 on" (my recommendation —
-   their appendices were verified twice; retro-striking is mechanical noise
-   with mis-strike risk), or (b) mandate the retro inline-strike sweep.
+1. ~~**Push the 10 local commits now?** Master CI is publicly red until they~~ done — pushed; origin == master (2026-10-11 audit)
+   ~~land and the fix (`14f2fe5`) is gated green locally, but pushes are~~
+   ~~daemon/user-owned and I have no standing go-ahead. Push immediately, or~~
+   ~~wait for the daemon?~~
+2. ~~**Authorize the AGENTS.md pruning pass?** 45 KB is over the 30 KB budget~~ done — authorized by the 2026-10-11 superb-docs instruction; executed this pass (stale claims + compression; the deeper ≤30 KB prune is the TODO_LIST row)
+   ~~flag. Pruning means deleting resolved-incident narratives (they live in~~
+   ~~the archived reports and git history) and compressing date-stamped~~
+   ~~policy records into current-truth statements. If yes: is there a floor~~
+   ~~below which I should NOT prune (e.g., keep every gotcha verbatim, prune~~
+   ~~only Commands/GOEXPERIMENT/CI-enumeration prose)?~~
+3. ~~**Which way should the archived-completeness gate be honored?** The 37~~ routed — user ruling still open; the documented deviation stands (2026-10-11 audit: 45 pre-09-14 appendix-style files)
+   ~~pre-2026-09-14 archived files use appendix-Resolution style and fail~~
+   ~~`grep -rLn '~~' archived/`. Options: (a) amend the gate's note to~~
+   ~~"applies to files archived from 2026-09-14 on" (my recommendation —~~
+   ~~their appendices were verified twice; retro-striking is mechanical noise~~
+   ~~with mis-strike risk), or (b) mandate the retro inline-strike sweep.~~

@@ -180,24 +180,24 @@ Priority 2 — harden what this session shipped:
 
 Priority 3 — user-only (blocking nothing, listed for completeness):
 
-13. M19: enable private vulnerability reporting (Settings → Code security).
-14. M20: decide the buildcache rotation policy; note it in AGENTS if it
+13. ~~M19: enable private vulnerability reporting (Settings → Code security).~~ done — M19 enabled via the REST endpoint (see §c; the 422 pointed at the wrong endpoint)
+14. M20: decide the buildcache rotation policy; note it in AGENTS if it **→ routed — TODO_LIST Blocked row (buildcache rotation policy)**
     generalizes.
-15. Confirm whether another session is intentionally experimenting with
-    go-directive hand-raises (§g1) so concurrent edits stop surprising gates.
+15. ~~Confirm whether another session is intentionally experimenting with~~ done — answered — the hand-raises were the 07:03 session directive-floor work, kept and aligned (see §g1)
+    ~~go-directive hand-raises (§g1) so concurrent edits stop surprising gates.~~
 
 Priority 4 — optional tail (none verified-open beyond these):
 
-16. sseparse README: link the gen procedure from the corpus doc-comment too
+16. sseparse README: link the gen procedure from the corpus doc-comment too **→ routed — TODO_LIST sseparse/README row (corpus-failure-message cross-link, bundled with the raw-ID note, 2026-10-11 audit)**
     (currently only `corpus.go:18-20` and README carry it — fine, but a
     cross-link from `TestCorpusJSONIsCanonical`'s failure message to the
     README section would help the next human who trips the gate).
-17. example_test.go: the two new godoc examples use `_ = stream.Send...`
-    discards — consider asserting output instead of printing it, so the
-    examples double as tests (godoc convention permits either; note the
-    tradeoff before changing).
-18. scripts/smoke-examples.sh: shfmt reformatted it; consider a `--timeout`
-    flag so the CI smoke job can bound total runtime explicitly.
+17. ~~example_test.go: the two new godoc examples use `_ = stream.Send...`~~ **Won't implement — examples double as docs; output assertions are optional polish (2026-10-11 audit).**
+    ~~discards — consider asserting output instead of printing it, so the~~
+    ~~examples double as tests (godoc convention permits either; note the~~
+    ~~tradeoff before changing).~~
+18. ~~scripts/smoke-examples.sh: shfmt reformatted it; consider a `--timeout`~~ **Won't implement — CI bounds the smoke job; an explicit flag is polish (2026-10-11 audit).**
+    ~~flag so the CI smoke job can bound total runtime explicitly.~~
 
 (19–50 intentionally unused: the backlog is genuinely empty past these —
 that is the point of the closeout.)
