@@ -28,6 +28,8 @@ without changelog lines (`a5ff824`, `7776bc7`).
 ### Added
 
 - `DefaultSubscriberBuffer` — the per-subscriber channel capacity (64) is now an exported constant ([`WithBufferSize`] docs and the drop-policy text reference it), so downstream hubs can size their channels by construction instead of duplicating the literal and a lockstep test. Direct rename of the unexported default; no alias. Resolves [#6](https://github.com/LarsArtmann/go-sse/issues/6).
+- `scripts/verify.sh` gate hardening (2026-10-11): an AGENTS-facts assertion compares AGENTS.md's documented coverage thresholds and go-directive policy against `flake.nix` and the three `go.mod` files (both claims went stale silently once — 90/95/95 for ten days, and the 1.27.1 floor outliving the minor-form reversal), and a bare-shfmt fingerprint grep over `scripts/*.sh` fails the gate on the exact arithmetic-negation drift that reddened master twice as a "formatting" daemon commit.
+- `nix run .#coverage` measures the root library as package `.` instead of `./...` — the example packages are 0%-covered by design and diluted the reported library number to ~59% (the documented trap that bit report authors twice).
 
 ### Changed
 
