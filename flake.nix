@@ -273,7 +273,11 @@
             '';
 
             coverage = mkApp "coverage" [ goPkg ] ''
-              go test ./... -coverprofile=coverage.out -covermode=atomic "$@"
+              # Root measured as package `.` (never ./...): the example
+              # packages are 0%-covered by design and dilute the library
+              # number to ~59% — the documented trap that bit report
+              # authors twice (2026-09-29, 2026-10-11).
+              go test . -coverprofile=coverage.out -covermode=atomic "$@"
               go tool cover -func=coverage.out
               (cd ssetest && GOWORK=off go test ./... -coverprofile=../ssetest-coverage.out -covermode=atomic && go tool cover -func=../ssetest-coverage.out)
               (cd sseparse && GOWORK=off go test ./... -coverprofile=../sseparse-coverage.out -covermode=atomic && go tool cover -func=../sseparse-coverage.out)

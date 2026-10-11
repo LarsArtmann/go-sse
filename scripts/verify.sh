@@ -146,7 +146,9 @@ else
     facts_ok=0
   fi
 fi
-if ! grep -qF "minor form (\`go ${directive}\`), all three modules identical" AGENTS.md; then
+directive="${directive#"go "}"
+policy_claim='minor form (`go '"${directive}"'`), all three modules identical'
+if ! grep -qF "$policy_claim" AGENTS.md; then
   echo "FAIL: AGENTS.md's go-directive-policy claim is stale — the tree declares '${directive}' in all three go.mod files." >&2
   echo "      Fix: update AGENTS.md's 'Go directive policy' line to the tree's '${directive}' (and only then ask whether the policy itself changed)." >&2
   facts_ok=0
