@@ -424,6 +424,16 @@ The example source is split into focused files: `main.go` (server setup + embed)
 - [go-branded-id](https://github.com/larsartmann/go-branded-id) — phantom-type branded IDs (used by go-sse for `EventID`)
 - [httputil](https://github.com/larsartmann/httputil) — HTTP middleware utilities (compression, client IP, capabilities) that pair naturally with SSE handlers
 
+## Security Practices
+
+Vulnerabilities are reported **privately** via GitHub's security advisories —
+never public issues (see [SECURITY.md](SECURITY.md) for the full policy,
+supported versions, and scope). For your own deployments: SSE responses are
+plain HTTP responses, so the usual practices apply — authenticate the stream
+endpoint, keep `Last-Event-ID` handling strict (`sse.ParseEventID` rejects
+NUL/newline/CR), and set CORS headers explicitly (the examples show the
+pattern). The library never logs event payloads.
+
 ## License
 
 MIT

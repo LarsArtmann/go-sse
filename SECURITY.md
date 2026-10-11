@@ -43,3 +43,18 @@ parses requests from untrusted clients beyond the documented
 
 Out of scope: vulnerabilities in consumer applications built on this
 library, and generic Go runtime issues (report those upstream).
+
+## Security Practices
+
+- The library performs **no logging** of event payloads or headers — nothing
+  sensitive leaks through go-sse itself.
+- Keep stream endpoints authenticated and authorized like any other HTTP
+  route; go-sse is transport-only and adds no auth layer.
+- Treat `Last-Event-ID` request values as untrusted input: parse them with
+  `sse.ParseEventID` (rejects NUL, newline, and CR per the spec's
+  Last-Event-ID value space) before feeding them to a store query.
+- Set CORS headers explicitly on SSE endpoints that browsers call
+  cross-origin (see the examples for the pattern).
+- Broadcast buffers are bounded (`DefaultSubscriberBuffer`); subscribers
+  that cannot keep up drop events rather than growing memory unboundedly —
+  size consumer channels deliberately.
