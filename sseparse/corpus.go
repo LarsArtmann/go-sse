@@ -50,9 +50,10 @@ type ConformanceVector struct {
 // MessageEvent (type, data, lastEventId) plus the retry field the suite
 // observes through reconnection timing.
 type ExpectedEvent struct {
-	Type  string `json:"type,omitempty"`
-	Data  string `json:"data"`
-	//nolint:branching-flow // :strong-id zero-dep module: raw wire ID, branding lives at the sse boundary
+	Type string `json:"type,omitempty"`
+	Data string `json:"data"`
+	// Raw wire ID: branding belongs at the sse transport boundary (zero-dep module).
+	//branching-flow:ignore strong-id
 	ID    string `json:"id,omitempty"`
 	Retry uint   `json:"retry,omitempty"`
 }

@@ -24,9 +24,10 @@ import (
 type Event struct {
 	Type      string
 	DataLines []string
-	//nolint:branching-flow // :strong-id zero-dep module: raw wire ID, branding lives at the sse boundary
-	ID        string
-	Retry     uint
+	// Raw wire ID: branding belongs at the sse transport boundary (zero-dep module).
+	//branching-flow:ignore strong-id
+	ID    string
+	Retry uint
 }
 
 // Data returns the event payload with its data: lines rejoined by "\n",
