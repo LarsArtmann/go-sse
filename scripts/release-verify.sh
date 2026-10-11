@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Post-push release probe: verify the module proxy serves a freshly tagged
 # release AND that a from-scratch consumer (fresh temp module, no replace
-# directives, proxy-only resolution) can resolve, build, and import it.
+# directives, proxy-only resolution) can resolve, build, and import it —
+# then verify the GitHub release page exists (the last mile; see step 4/4).
 #
-# This encodes CONTRIBUTING.md release-checklist step 6 as a script: the
+# This encodes CONTRIBUTING.md release-checklist steps 6–8 as a script: the
 # hand-run version was fumbled per release (wrong function signatures,
 # masked exit codes — 18-25 report d2). Every command here runs under
 # set -euo pipefail with no fallbacks: a failure reddens the script.
@@ -12,6 +13,7 @@
 #   scripts/release-verify.sh vX.Y.Z            # root library tag
 #   scripts/release-verify.sh ssetest/vX.Y.Z    # ssetest module tag
 #   scripts/release-verify.sh sseparse/vX.Y.Z   # sseparse module tag
+#   RELEASE_PAGE_CHECK=off scripts/release-verify.sh <tag>  # pre-page probe
 set -euo pipefail
 
 tag="${1:?usage: scripts/release-verify.sh <vX.Y.Z | ssetest/vX.Y.Z | sseparse/vX.Y.Z>}"
@@ -88,6 +90,24 @@ EOF
 
 go build ./...
 go vet ./...
+
+echo "==> 4/4 GitHub release page exists for $tag"
+# The 2026-10-11 audit found v0.6.2 + sseparse/v0.2.1 shipped with proxy-
+# verified tags but NO release pages — the public landing page advertised a
+# version behind for nine days. The page is the last mile of a release;
+# create it (gh release create <tag> --notes-from-tag or --notes-file)
+# and re-run this script, or pass RELEASE_PAGE_CHECK=off for a mid-release
+# probe (before the page exists).
+if [[ ${RELEASE_PAGE_CHECK:-on} == on ]]; then
+  if ! gh release view "$tag" --repo LarsArtmann/go-sse >/dev/null 2>&1; then
+    echo "FAIL: no GitHub release page for $tag yet." >&2
+    echo "      Create it: gh release create $tag --title '$tag' --notes-from-tag" >&2
+    exit 1
+  fi
+  echo "    release page live"
+else
+  echo "    skipped (RELEASE_PAGE_CHECK=off)"
+fi
 
 echo ""
 echo "RELEASE PROBE PASSED: $module@$tag is consumable from scratch"

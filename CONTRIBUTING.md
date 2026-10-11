@@ -159,6 +159,11 @@ ssetest tag whose sseparse require cannot resolve is a dead tag.
 
        gh release create vX.Y.Z --title "vX.Y.Z" --notes-from-tag
 
+   Then re-run `scripts/release-verify.sh <tag>` — its step 4/4 fails while
+   the release page is missing (the gap class: v0.6.2 and sseparse/v0.2.1
+   shipped proxy-verified in 2026-10 but had no release pages for nine
+   days because nothing checked).
+
 9. **Post-release.** Close or update issues referenced in the CHANGELOG;
    re-run the CI workflow on the release tag if it did not trigger.
    Deliberately refresh two pins that must never float via `@latest`:
