@@ -84,6 +84,7 @@ decision. Promoted to a numbered theme when bounded; dropped if ruled out.
 - Coverage ratchet as the long-term gate design: checked-in per-module baseline that only moves up (or threshold = measured − margin), replacing float compares against a floating Go toolchain (a patch bump shifts statement attribution by tenths of a point — measured 2026-10-11). Bounded near-term version lives in [TODO_LIST.md](TODO_LIST.md). Source: 2026-10-11_02-05 report IMP3.
 - Daemon-side quality gates outside this repo's reach: a pre-push treefmt check in the auto-commit daemon (prevents red-master pushes of non-canonical files), a refuse-to-sweep rule for `flake.nix`/CI-pin/threshold diffs, and a `go vet` hook after any sweep touching `.go` files. Each is a crush-config/BuildFlow proposal, not a go-sse task. Source: 2026-10-11_02-05 report IMP2 + 2026-10-11_03-45 report §f13/§f16.
 - Weekly coverage-trend annotation in the flake-update PR (surface toolchain-driven drift before it flips a gate). Source: 2026-10-11_02-05 report §f8.
+- A durable decision note (ADR or `docs/decisions/`) for the fleet minor-form go-directive policy — AGENTS.md carries the rule, but the WHY (patch-pinned floors re-poison consumer directives through MVS) deserves a home that survives AGENTS pruning. Source: 2026-10-11_05-52 report IMP8.
 
 ## Non-goals
 
