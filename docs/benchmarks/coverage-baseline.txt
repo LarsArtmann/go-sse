@@ -1,0 +1,18 @@
+# Coverage ratchet baseline — the floor each module must meet. Up-only.
+#
+# Format: <module> <percentage>, one line per module. The coverage-gate flake
+# app reads these values; a module measuring BELOW its floor fails the gate.
+#
+# The ratchet only moves UP, and only deliberately: when coverage measurably
+# improves, raise the value here, commit, done. The gate never lowers it and
+# never raises it implicitly. Escape hatch for a legitimate toolchain-driven
+# dip (a Go patch bump can shift statement attribution by tenths of a point):
+# lower the value here in the same commit with the reason in the message.
+#
+# Toolchain attribution: measured 2026-10-11 (root 100.0 / ssetest 100.0 /
+# sseparse 100.0 on the flake.lock Go 1.27 toolchain; all three modules at
+# statement-coverage parity — there is currently zero headroom, by design:
+# any coverage regression reddens).
+library 100.0
+ssetest 100.0
+sseparse 100.0
