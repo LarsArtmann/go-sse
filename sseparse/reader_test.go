@@ -541,3 +541,18 @@ func TestMustReadNextEvent(t *testing.T) {
 		t.Errorf("data: got %q, want %q", evt.Data(), "pong")
 	}
 }
+
+// TestMustReadNextEvent_Failure pins the must-helper's fatal path: a failing
+// reader surfaces as a tb.Fatalf (via recordingTB, which also proves the
+// helper works with any testing.TB, not just *testing.T).
+func TestMustReadNextEvent_Failure(t *testing.T) {
+	t.Parallel()
+
+	tb := &recordingTB{}
+
+	evt := sseparse.MustReadNextEvent(tb, sseparse.NewStreamReader(failingReader{}))
+
+	if len(tb.fatals) != 1 || !strings.Contains(tb.fatals[0], "read SSE event") {
+		t.Errorf("expected read-failure fatal; got %v (event %+v)", tb.fatals, evt)
+	}
+}

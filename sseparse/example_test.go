@@ -31,14 +31,15 @@ func ExampleReadEvents() {
 }
 
 // ExampleEventsString shows the debug representation for test failure
-// messages.
+// messages: one Event per line, so multi-event diffs stay readable.
 func ExampleEventsString() {
-	wire := "event: feed\ndata: hello\n\n"
+	wire := "event: feed\ndata: hello\n\nevent: alert\ndata: watch out\n\n"
 	events, _ := sseparse.ReadEvents(strings.NewReader(wire))
 
 	fmt.Println(sseparse.EventsString(events))
 	// Output:
 	// Event{type=feed datalines=1}
+	// Event{type=alert datalines=1}
 }
 
 // ExampleRequireDataJSON asserts a JSON payload on a collected event inside a
