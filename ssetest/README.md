@@ -129,6 +129,11 @@ ssetest.Collect(t, mux, ssetest.WithPath("/events?filter=alerts"))
 // Simulate a reconnecting browser for replay testing:
 events := ssetest.Collect(t, handler, ssetest.WithLastEventID(sse.NewEventID("42")))
 
+// The id is a typed sse.EventID (not a raw string), and the zero value sends
+// no Last-Event-ID header at all — exactly like a browser's initial
+// connection. Omit the option or pass sse.EventID{} for first-connect tests:
+events := ssetest.Collect(t, handler)
+
 // Any custom header:
 ssetest.Collect(t, handler, ssetest.WithHeader("X-Trace", "abc"))
 ```
