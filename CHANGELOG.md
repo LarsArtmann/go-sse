@@ -25,6 +25,10 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 ## [Unreleased]
 
+### Added
+
+- `DefaultSubscriberBuffer` — the per-subscriber channel capacity (64) is now an exported constant ([`WithBufferSize`] docs and the drop-policy text reference it), so downstream hubs can size their channels by construction instead of duplicating the literal and a lockstep test. Direct rename of the unexported default; no alias. Resolves [#6](https://github.com/LarsArtmann/go-sse/issues/6).
+
 ### Changed
 
 - **ssetest (breaking): `WithLastEventID` now takes an `sse.EventID`** instead of a raw string — the same branded type `sse.LastEventIDFromRequest` returns and `sse.Replay` accepts, so an event ID cannot be confused with any other string at the call site. Construct test literals with `sse.NewEventID` (or `sse.MustParseEventID` for values that must validate). The zero `sse.EventID` now sends no `Last-Event-ID` header at all (an empty string previously set an empty-valued header), matching a browser's initial connection — pinned by `TestCollect_WithLastEventID_ZeroIDSendsNoHeader`. The next ssetest tag must be v0.5.0.

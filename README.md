@@ -37,7 +37,7 @@ Every Go project that serves SSE reinvents the same four pieces: event serializa
 go get github.com/larsartmann/go-sse
 ```
 
-Requires Go 1.27.1+ (see `go.mod`; the module proxy enforces this floor). No build tags or `GOEXPERIMENT` needed.
+Requires Go 1.27+ (see `go.mod`; the module proxy enforces this floor). No build tags or `GOEXPERIMENT` needed.
 
 ## Quick Start
 
