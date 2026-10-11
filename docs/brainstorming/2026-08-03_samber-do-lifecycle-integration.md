@@ -59,12 +59,12 @@ The three value propositions for go-sse:
 
 ## What go-sse has today
 
-| Capability                   | Current state                                | Gap                                                            |
-| ---------------------------- | -------------------------------------------- | -------------------------------------------------------------- |
-| Close all subscribers        | ~~`Broadcaster.Close()` — instant, no drain~~    | ~~No context/deadline; no "wait for in-flight sends"~~ → CLOSED: `Shutdown(ctx)` drains with a deadline |
+| Capability                   | Current state                                    | Gap                                                                                                             |
+| ---------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Close all subscribers        | ~~`Broadcaster.Close()` — instant, no drain~~    | ~~No context/deadline; no "wait for in-flight sends"~~ → CLOSED: `Shutdown(ctx)` drains with a deadline         |
 | Health signal                | ~~`Broadcaster.SubscriberCount()` (count only)~~ | ~~No "am I closed?" query; no drop counter; no structured status~~ → CLOSED: `Health()` + `WithOnDrop`/`OnDrop` |
-| Signal handling              | Consumer's responsibility (TODO_LIST item)   | No helper exists                                               |
-| Per-subscriber observability | `OnSubscribe` / `OnUnsubscribe` hooks        | No aggregate metrics (total broadcasts, total drops)           |
+| Signal handling              | Consumer's responsibility (TODO_LIST item)       | No helper exists                                                                                                |
+| Per-subscriber observability | `OnSubscribe` / `OnUnsubscribe` hooks            | No aggregate metrics (total broadcasts, total drops)                                                            |
 
 **Key insight:** the gaps are in go-sse's own API surface, not in DI wiring.
 samber/do would not add a drain method or a health struct — it would only
