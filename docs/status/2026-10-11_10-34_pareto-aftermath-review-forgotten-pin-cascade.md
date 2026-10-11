@@ -31,13 +31,13 @@ The 27 execution tasks are tabled with evidence in the 10:20 report
 (`2026-10-11_10-20_pareto-plan-execution-full-backlog.md` §a) — not
 duplicated here. This pass ADDED:
 
-| #  | Work                                    | Evidence                                                                                                                                                 |
-| -- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1  | Blast-radius sweep of the ratchet change | `grep -n "99/100/99|90/95/95|threshold" FEATURES.md README.md` → zero hits; the ratchet left no stale threshold claims in the other living docs           |
-| 2  | Downstream ssetest pin inventory         | datastartest `go.mod:9` v0.4.0; pdd `go.mod:21` v0.4.0; go-daemon `go.mod:9` v0.4.0 (fresh clone checked) — the complete v0.5.0 consumer set, none calling `WithLastEventID` (datastartest verified 10:20; the other two verified at their last cascade) |
-| 3  | Fresh gate re-verification               | `nix run .#coverage-gate`: 100.0 ×3 vs baseline 100.0 ×3; go-sse CI success on `f520175` (run 38124657381)                                                 |
-| 4  | go-datastar CI confirmation              | `2cfd151`: nix ✓, coverage (badge job, now incl. broadcast/) ✓, actionlint ✓, codeql ✓ — their CI is green on the hygiene batch                             |
-| 5  | Cross-repo end-state sweep               | go-sse/go-datastar/wise-go/go-business-rules/crush-config/go-branded-id: 0 dirty, 0 unpushed; branching-flow left with its own daemon's unpushed commits (not mine — untouched deliberately) |
+| # | Work                                     | Evidence                                                                                                                                                                                                                                                 |
+| - | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | Blast-radius sweep of the ratchet change | `grep -n "99/100/99                                                                                                                                                                                                                                      |
+| 2 | Downstream ssetest pin inventory         | datastartest `go.mod:9` v0.4.0; pdd `go.mod:21` v0.4.0; go-daemon `go.mod:9` v0.4.0 (fresh clone checked) — the complete v0.5.0 consumer set, none calling `WithLastEventID` (datastartest verified 10:20; the other two verified at their last cascade) |
+| 3 | Fresh gate re-verification               | `nix run .#coverage-gate`: 100.0 ×3 vs baseline 100.0 ×3; go-sse CI success on `f520175` (run 38124657381)                                                                                                                                               |
+| 4 | go-datastar CI confirmation              | `2cfd151`: nix ✓, coverage (badge job, now incl. broadcast/) ✓, actionlint ✓, codeql ✓ — their CI is green on the hygiene batch                                                                                                                          |
+| 5 | Cross-repo end-state sweep               | go-sse/go-datastar/wise-go/go-business-rules/crush-config/go-branded-id: 0 dirty, 0 unpushed; branching-flow left with its own daemon's unpushed commits (not mine — untouched deliberately)                                                             |
 
 ## b) PARTIALLY DONE
 
@@ -110,15 +110,15 @@ duplicated here. This pass ADDED:
 
 ## e) WHAT WE SHOULD IMPROVE
 
-| IMP   | Improvement (process, not product)                                                                                     | Priority |
-| ----- | ----------------------------------------------------------------------------------------------------------------------- | -------- |
-| IMP1  | Mechanize the pin cascade: extend `scripts/release-verify.sh` with a step that greps known consumer repos' go.mod pins (datastartest, pdd, go-daemon) and fails while any sits behind the fresh tag — the forgot-step class gets the same treatment as the release-page gap | high |
-| IMP2  | Commit each unit immediately, before starting the next — the daemon race is the recurring tax on history quality          | high     |
-| IMP3  | Extend the AGENTS-facts assertion to FEATURES.md/README.md claims (thresholds, coverage) — today only AGENTS.md is netted  | med      |
-| IMP4  | Add a unit test for `scripts/ci-probe.sh` in crush-config's guard-test suite (fixtures: red repo, green repo, no-git dir)  | med      |
-| IMP5  | go-datastar: their lint-cache key lacks the matrix module dimension — 4 matrix jobs thrash one cache key                   | med      |
-| IMP6  | Never write gate-state claims in a report before the final CI run on the final commit resolves                             | med      |
-| IMP7  | Mutation-test fixtures belong outside tracked dirs (or `git status` immediately after creating) while the daemon lives     | low      |
+| IMP  | Improvement (process, not product)                                                                                                                                                                                                                                          | Priority |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| IMP1 | Mechanize the pin cascade: extend `scripts/release-verify.sh` with a step that greps known consumer repos' go.mod pins (datastartest, pdd, go-daemon) and fails while any sits behind the fresh tag — the forgot-step class gets the same treatment as the release-page gap | high     |
+| IMP2 | Commit each unit immediately, before starting the next — the daemon race is the recurring tax on history quality                                                                                                                                                            | high     |
+| IMP3 | Extend the AGENTS-facts assertion to FEATURES.md/README.md claims (thresholds, coverage) — today only AGENTS.md is netted                                                                                                                                                   | med      |
+| IMP4 | Add a unit test for `scripts/ci-probe.sh` in crush-config's guard-test suite (fixtures: red repo, green repo, no-git dir)                                                                                                                                                   | med      |
+| IMP5 | go-datastar: their lint-cache key lacks the matrix module dimension — 4 matrix jobs thrash one cache key                                                                                                                                                                    | med      |
+| IMP6 | Never write gate-state claims in a report before the final CI run on the final commit resolves                                                                                                                                                                              | med      |
+| IMP7 | Mutation-test fixtures belong outside tracked dirs (or `git status` immediately after creating) while the daemon lives                                                                                                                                                      | low      |
 
 ## f) Up to 50 things we should get done next
 

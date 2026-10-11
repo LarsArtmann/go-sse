@@ -13,10 +13,10 @@ immutable old workflow: a panicking lint pin + a stale vendor hash).
 Release CONTENT was verified green pre-tag; their master is green; the
 proxy `.mod` files were verified post-push.
 
-| Option | Cost | Benefit |
-| ------ | ---- | ------- |
+| Option                     | Cost                                                            | Benefit                           |
+| -------------------------- | --------------------------------------------------------------- | --------------------------------- |
 | Re-cut (v0.6.3 ×3 + pages) | ~1 h + release churn + new version numbers consumers must parse | Green tag-CI on the release pages |
-| Accept frozen red | 0 | None new — status quo |
+| Accept frozen red          | 0                                                               | None new — status quo             |
 
 **Recommendation: accept frozen red.** Tag-CI cosmetics for
 content-verified releases are not worth three re-tags and the consumer-side
@@ -36,11 +36,11 @@ approved late, merged into a then-red master, its merge-commit CI FAILED
 rule "never merge a flake-update PR while master is red" (now in AGENTS.md)
 is what would have stopped it.
 
-| Option | Cost | Failure mode it leaves |
-| ------ | ---- | ---------------------- |
-| Approve per session | ~0 (habit) | Forgetting; approving into a red master |
+| Option                   | Cost                                      | Failure mode it leaves                                            |
+| ------------------------ | ----------------------------------------- | ----------------------------------------------------------------- |
+| Approve per session      | ~0 (habit)                                | Forgetting; approving into a red master                           |
 | workflow_run self-gating | Workflow restructure + one-time debugging | Approval still manual; the PR's OWN evidence becomes pre-verified |
-| Keep manual only | 0 | Both incidents' class remains human-dependent |
+| Keep manual only         | 0                                         | Both incidents' class remains human-dependent                     |
 
 **Recommendation: keep manual approval, keep the never-merge-red rule as
 the actual guard.** The workflow_run restructure is real work for a
@@ -57,10 +57,10 @@ documented rows (sseparse raw-ID fields). A gate would surface
 deliberate-skip regressions, but adds another tool-version-sensitive pin
 to the verify chain (like the golangci pin, but for a private binary).
 
-| Option | Cost | Benefit |
-| ------ | ---- | ------- |
-| Add to verify.sh | One more pinned binary + version-skew surface | Suppression drift reddens immediately |
-| Leave as periodic check | Relies on session discipline (now partially mechanized by the CI probe) | No new pin |
+| Option                  | Cost                                                                    | Benefit                               |
+| ----------------------- | ----------------------------------------------------------------------- | ------------------------------------- |
+| Add to verify.sh        | One more pinned binary + version-skew surface                           | Suppression drift reddens immediately |
+| Leave as periodic check | Relies on session discipline (now partially mechanized by the CI probe) | No new pin                            |
 
 **Recommendation: do not gate now.** The suppression set has not drifted
 since its creation, the branching-flow binary is private (no hermetic nix
@@ -79,10 +79,10 @@ the example server (`example/datastar/VERIFY.md`). The brainstorming doc
 frames it as Option B (chromedp in this repo's flake) vs Option C (manual
 verification, separate repo).
 
-| Option | Cost | Benefit |
-| ------ | ---- | ------- |
-| B: chromedp in-repo | New transitive dep tree, flake browser plumbing, example-scoped value | Same browser behavior verified in CI |
-| C: keep manual + separate repo | A browser-E2E repo to maintain | This library keeps zero browser-dep surface |
+| Option                         | Cost                                                                  | Benefit                                     |
+| ------------------------------ | --------------------------------------------------------------------- | ------------------------------------------- |
+| B: chromedp in-repo            | New transitive dep tree, flake browser plumbing, example-scoped value | Same browser behavior verified in CI        |
+| C: keep manual + separate repo | A browser-E2E repo to maintain                                        | This library keeps zero browser-dep surface |
 
 **Recommendation: Option C.** The examples are demonstrations, not
 contract; ROADMAP explicitly rejects app-like expansion; and the vendored
@@ -92,7 +92,7 @@ if the examples grow into documented, consumer-copied patterns.
 
 ---
 
-*Decisions B3 (dependabot-on-nix policy), B4 (buildflow normalize target),
+_Decisions B3 (dependabot-on-nix policy), B4 (buildflow normalize target),
 and B7 (buildcache rotation) stay owner/host-only — no brief needed; B4's
 durable fix lives in buildflow (tracked there), B3's per-PR ad hoc handling
-continues, B7 is a host-mount task.*
+continues, B7 is a host-mount task._
