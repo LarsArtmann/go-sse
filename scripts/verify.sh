@@ -121,27 +121,27 @@ echo "    tidy clean in all three modules; go directives aligned ($(echo "$direc
 
 echo "==> AGENTS-facts assertion (documented values must match the tree)"
 # AGENTS.md documents load-bearing facts no compiler checks: the coverage
-# thresholds and the go-directive policy. Both went stale silently once
-# (thresholds 90/95/95 for ten days; the 1.27.1-floor claim outliving the
-# minor-form reversal), so the gate now compares the claims against the
+# ratchet baseline and the go-directive policy. Both went stale silently
+# once (thresholds 90/95/95 for ten days; the 1.27.1-floor claim outliving
+# the minor-form reversal), so the gate now compares the claims against the
 # tree. Only the machine-checkable claim sentences are pinned — historical
 # mentions of other values in AGENTS.md stay legitimate.
-lib_thr="$(sed -n 's/.*library coverage.*threshold: \([0-9]*\)%.*/\1/p' flake.nix | head -1)"
-ssetest_thr="$(sed -n 's/.*ssetest coverage.*threshold: \([0-9]*\)%.*/\1/p' flake.nix | head -1)"
-sseparse_thr="$(sed -n 's/.*sseparse coverage.*threshold: \([0-9]*\)%.*/\1/p' flake.nix | head -1)"
+lib_thr="$(awk '$1 == "library" { print $2 }' docs/benchmarks/coverage-baseline.txt)"
+ssetest_thr="$(awk '$1 == "ssetest" { print $2 }' docs/benchmarks/coverage-baseline.txt)"
+sseparse_thr="$(awk '$1 == "sseparse" { print $2 }' docs/benchmarks/coverage-baseline.txt)"
 directive="$(echo "$directive_drift" | head -1)"
 facts_ok=1
 if [[ -z $lib_thr || -z $ssetest_thr || -z $sseparse_thr ]]; then
-  echo "FAIL: could not extract coverage thresholds from flake.nix — expected 'threshold: N%' lines in the coverage-gate app." >&2
+  echo "FAIL: could not read coverage baselines from docs/benchmarks/coverage-baseline.txt — expected '<module> <pct>' lines for library/ssetest/sseparse." >&2
   facts_ok=0
 else
   if ! grep -qF "thresholds (library ${lib_thr}%, ssetest ${ssetest_thr}%, sseparse ${sseparse_thr}%)" AGENTS.md; then
-    echo "FAIL: AGENTS.md's coverage-threshold claim is stale — flake.nix gates at ${lib_thr}/${ssetest_thr}/${sseparse_thr}." >&2
+    echo "FAIL: AGENTS.md's coverage-threshold claim is stale — the ratchet baseline is ${lib_thr}/${ssetest_thr}/${sseparse_thr}." >&2
     echo "      Fix: update the 'nix run .#coverage-gate' line in AGENTS.md to '(library ${lib_thr}%, ssetest ${ssetest_thr}%, sseparse ${sseparse_thr}%)'." >&2
     facts_ok=0
   fi
   if ! grep -qF "${lib_thr}/${ssetest_thr}/${sseparse_thr} thresholds" AGENTS.md; then
-    echo "FAIL: AGENTS.md's CI-gotcha threshold claim is stale — flake.nix gates at ${lib_thr}/${ssetest_thr}/${sseparse_thr}." >&2
+    echo "FAIL: AGENTS.md's CI-gotcha threshold claim is stale — the ratchet baseline is ${lib_thr}/${ssetest_thr}/${sseparse_thr}." >&2
     echo "      Fix: update the CI-gotcha bullet in AGENTS.md to 'the flake app's ${lib_thr}/${ssetest_thr}/${sseparse_thr} thresholds'." >&2
     facts_ok=0
   fi

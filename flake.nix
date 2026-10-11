@@ -283,7 +283,7 @@
               (cd sseparse && GOWORK=off go test ./... -coverprofile=../sseparse-coverage.out -covermode=atomic && go tool cover -func=../sseparse-coverage.out)
             '';
 
-            coverage-gate = mkApp "coverage-gate" [ goPkg pkgs.bc pkgs.gnugrep pkgs.coreutils ] ''
+            coverage-gate = mkApp "coverage-gate" [ goPkg pkgs.bc pkgs.gnugrep pkgs.gawk pkgs.coreutils ] ''
               export GOWORK=off
 
               # A caller-exported GOCACHE pointing at a nonexistent or
@@ -311,24 +311,39 @@
                 go tool cover -func="$profile" | tail -1 | grep -oP '\d+\.\d+(?=%)'
               }
 
+              # Ratchet: the floors live in docs/benchmarks/coverage-baseline.txt
+              # and only move up, deliberately. The old float thresholds
+              # (99/100/99) had zero margin against a floating toolchain — a Go
+              # patch bump shifts statement attribution by tenths of a point
+              # (identical sseparse code measured 99.2% CI vs 98.8% local), so
+              # the gate nearly flipped red twice. The checked-in baseline IS
+              # the measured reality (100.0 x3): any regression reddens, any
+              # improvement should be ratcheted up in the same commit.
+              baseline_file="docs/benchmarks/coverage-baseline.txt"
+              check() {
+                local name="$1" cov="$2" flr
+                flr="$(awk -v m="$name" '$1 == m { print $2 }' "$baseline_file")"
+                if [[ -z $flr ]]; then
+                  echo "FAIL: no baseline entry for '$name' in $baseline_file (expected a '<module> <pct>' line)" >&2
+                  exit 1
+                fi
+                if (( $(echo "$cov < $flr" | bc -l) )); then
+                  echo "FAIL: $name coverage ''${cov}% is below the ratchet baseline (''${flr}%)." >&2
+                  echo "      Fix the coverage regression — or lower the baseline deliberately in the same commit (with the reason) if a toolchain bump shifted statement attribution." >&2
+                  exit 1
+                fi
+                if (( $(echo "$cov > $flr" | bc -l) )); then
+                  echo "note: $name coverage ''${cov}% exceeds the baseline (''${flr}%) — ratchet it up: set '$name ''${cov}' in $baseline_file" >&2
+                fi
+                echo "''${name} coverage: ''${cov}% (baseline: ''${flr}%)"
+              }
+
               cov="$(measure /tmp/sse-cov .)"
-              echo "library coverage: ''${cov}% (threshold: 99%)"
-              if (( $(echo "$cov < 99" | bc -l) )); then
-                echo "FAIL: library coverage ''${cov}% < 99%"
-                exit 1
-              fi
+              check library "$cov"
               scov="$(cd ssetest && measure /tmp/ssetest-cov ./...)"
-              echo "ssetest coverage: ''${scov}% (threshold: 100%)"
-              if (( $(echo "$scov < 100" | bc -l) )); then
-                echo "FAIL: ssetest coverage ''${scov}% < 100%"
-                exit 1
-              fi
+              check ssetest "$scov"
               pcov="$(cd sseparse && measure /tmp/sseparse-cov ./...)"
-              echo "sseparse coverage: ''${pcov}% (threshold: 99%)"
-              if (( $(echo "$pcov < 99" | bc -l) )); then
-                echo "FAIL: sseparse coverage ''${pcov}% < 99%"
-                exit 1
-              fi
+              check sseparse "$pcov"
               echo "OK"
             '';
 
