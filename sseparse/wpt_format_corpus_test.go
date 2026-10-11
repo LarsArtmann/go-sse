@@ -128,7 +128,7 @@ func TestCorpusJSONIsCanonical(t *testing.T) {
 
 	if !bytes.Equal(raw, canon) {
 		t.Fatalf(
-			"testdata/wpt_format_corpus.json is not canonical (json.MarshalIndent two-space + trailing newline); regenerate it from sseparse.Corpus() instead of hand-editing",
+			"testdata/wpt_format_corpus.json is not canonical (json.MarshalIndent two-space + trailing newline); regenerate it from sseparse.Corpus() instead of hand-editing — procedure: sseparse/README.md § \"Ingesting new WPT vectors\"",
 		)
 	}
 }

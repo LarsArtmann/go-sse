@@ -250,6 +250,9 @@ type streamParser struct {
 	frame  Event // per-frame accumulator: Type and DataLines only
 
 	// Raw wire ID: branding belongs at the sse transport boundary (zero-dep module).
+	// Internal sticky state mirroring Event.ID's raw-string contract; the
+	// suppression exists so the strong-id rule does not flag the parser's
+	// own bookkeeping. Not part of any public API.
 	//branching-flow:ignore strong-id
 	lastID string // sticky last event ID buffer (spec § 9.2.6)
 	retry  uint   // sticky reconnection time in milliseconds

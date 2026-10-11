@@ -25,6 +25,11 @@ type Event struct {
 	Type      string
 	DataLines []string
 	// Raw wire ID: branding belongs at the sse transport boundary (zero-dep module).
+	// A branded type here would make brandid sseparse's first third-party
+	// require (breaking the zero-dependency boundary test) and change a
+	// public field type that ssetest/compat.go re-exports and datastartest
+	// consumes — an API break rippling across three modules for zero
+	// parser-behavior gain. Convert at the boundary with sse.ParseEventID.
 	//branching-flow:ignore strong-id
 	ID    string
 	Retry uint

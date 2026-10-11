@@ -50,6 +50,14 @@ Assertions (`RequireData`, `RequireEventID`, `RequireRetry`, `RequireDataJSON`,
 All `tb`-taking helpers accept [`testing.TB`](https://pkg.go.dev/testing#TB) —
 `*testing.T`, `*testing.B`, and Ginkgo's `GinkgoT()`.
 
+**IDs are raw wire strings by design.** `Event.ID` reports the `id:` value
+exactly as the wire carried it — the parser layer reports raw truth, so
+validation and branding stay out of the zero-dependency module. At the
+go-sse transport boundary, `sse.ParseEventID` converts an ID into the
+branded `sse.EventID` (rejecting NUL, newline, and CR per the spec's
+Last-Event-ID value space); use it wherever a parsed ID feeds a header,
+a replay call, or any typed API.
+
 ## Line-size cap
 
 A single SSE line must fit in [DefaultMaxLineBytes] (1 MiB, terminator

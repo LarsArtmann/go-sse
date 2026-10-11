@@ -53,6 +53,9 @@ type ExpectedEvent struct {
 	Type string `json:"type,omitempty"`
 	Data string `json:"data"`
 	// Raw wire ID: branding belongs at the sse transport boundary (zero-dep module).
+	// Same contract as Event.ID: the corpus mirrors the wire; a branded type
+	// would add sseparse's first third-party require and break the JSON
+	// shape third-party parsers consume as data (plus ssetest re-exports).
 	//branching-flow:ignore strong-id
 	ID    string `json:"id,omitempty"`
 	Retry uint   `json:"retry,omitempty"`
