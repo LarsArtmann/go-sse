@@ -48,6 +48,7 @@ None — every item started this session shipped completely.
   deliberately out of scope — both are separate repos with their own gates
   and the TODO frames the batch as one sweep in its own repo; pdd is not
   cloned locally. Claims re-verified current instead (row #10).
+  → routed — TODO_LIST cross-repo rows (2026-10-11 audit).
 
 ## d) TOTALLY FUCKED UP
 
@@ -79,7 +80,7 @@ None — every item started this session shipped completely.
 
 ## f) Up to 50 things we should get done next
 
-1. The cross-repo batch and pdd bump stay as the next-session sweep (see
+1. The cross-repo batch and pdd bump stay as the next-session sweep (see **→ routed — TODO_LIST cross-repo rows (go-datastar hygiene batch; pdd pin chain — re-verified open 2026-10-11)**
    TODO_LIST Cross-repo). IMP1's guard shipped this session; nothing new
    harvested beyond the standing rows.
 
