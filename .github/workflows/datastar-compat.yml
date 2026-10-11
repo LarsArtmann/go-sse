@@ -18,7 +18,7 @@ permissions:
 jobs:
   latest-pins:
     name: go-datastar tests on latest go-sse + ssetest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GOWORK: "off"
     steps:

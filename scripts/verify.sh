@@ -37,6 +37,20 @@ if grep -rn --exclude=verify.sh "GOEXPERIMENT" flake.nix scripts/ .github/workfl
 fi
 echo "    no GOEXPERIMENT references"
 
+echo "==> bare-shfmt fingerprint guard"
+# buildflow's formatter step runs bare `shfmt -w`, which re-indents Bash
+# arithmetic negation differently from treefmt's canonical style — exactly
+# the drift that reddened master twice (2026-10-03, 2026-10-11) as a
+# "formatting" daemon commit. CI's treefmt check is the primary net; this
+# grep is the cheap second one that fires before anything expensive runs.
+# (--exclude=verify.sh: the pattern text below is the one legit match.)
+if grep -rnE --include='*.sh' --exclude=verify.sh '\(\(![^ ]|\(\(!$' scripts/ 2>/dev/null; then
+  echo "FAIL: bare-shfmt fingerprint in scripts/ (an arithmetic negation lost its space after '(', above)." >&2
+  echo "      Canonical style keeps '((! x))'; run 'nix fmt' and commit its output — never bare 'shfmt -w'." >&2
+  exit 1
+fi
+echo "    no bare-shfmt fingerprints"
+
 echo "==> treefmt (formatting check)"
 if command -v treefmt >/dev/null 2>&1; then
   treefmt --fail-on-change
@@ -104,6 +118,41 @@ if [[ $(grep -c . <<<"$directive_drift") -ne 1 ]]; then
 fi
 echo "    tidy clean in all three modules; go directives aligned ($(echo "$directive_drift" | tr -d '
 '))"
+
+echo "==> AGENTS-facts assertion (documented values must match the tree)"
+# AGENTS.md documents load-bearing facts no compiler checks: the coverage
+# thresholds and the go-directive policy. Both went stale silently once
+# (thresholds 90/95/95 for ten days; the 1.27.1-floor claim outliving the
+# minor-form reversal), so the gate now compares the claims against the
+# tree. Only the machine-checkable claim sentences are pinned — historical
+# mentions of other values in AGENTS.md stay legitimate.
+lib_thr="$(sed -n 's/.*library coverage.*threshold: \([0-9]*\)%.*/\1/p' flake.nix | head -1)"
+ssetest_thr="$(sed -n 's/.*ssetest coverage.*threshold: \([0-9]*\)%.*/\1/p' flake.nix | head -1)"
+sseparse_thr="$(sed -n 's/.*sseparse coverage.*threshold: \([0-9]*\)%.*/\1/p' flake.nix | head -1)"
+directive="$(echo "$directive_drift" | head -1)"
+facts_ok=1
+if [[ -z $lib_thr || -z $ssetest_thr || -z $sseparse_thr ]]; then
+  echo "FAIL: could not extract coverage thresholds from flake.nix — expected 'threshold: N%' lines in the coverage-gate app." >&2
+  facts_ok=0
+else
+  if ! grep -qF "thresholds (library ${lib_thr}%, ssetest ${ssetest_thr}%, sseparse ${sseparse_thr}%)" AGENTS.md; then
+    echo "FAIL: AGENTS.md's coverage-threshold claim is stale — flake.nix gates at ${lib_thr}/${ssetest_thr}/${sseparse_thr}." >&2
+    echo "      Fix: update the 'nix run .#coverage-gate' line in AGENTS.md to '(library ${lib_thr}%, ssetest ${ssetest_thr}%, sseparse ${sseparse_thr}%)'." >&2
+    facts_ok=0
+  fi
+  if ! grep -qF "${lib_thr}/${ssetest_thr}/${sseparse_thr} thresholds" AGENTS.md; then
+    echo "FAIL: AGENTS.md's CI-gotcha threshold claim is stale — flake.nix gates at ${lib_thr}/${ssetest_thr}/${sseparse_thr}." >&2
+    echo "      Fix: update the CI-gotcha bullet in AGENTS.md to 'the flake app's ${lib_thr}/${ssetest_thr}/${sseparse_thr} thresholds'." >&2
+    facts_ok=0
+  fi
+fi
+if ! grep -qF "minor form (\`go ${directive}\`), all three modules identical" AGENTS.md; then
+  echo "FAIL: AGENTS.md's go-directive-policy claim is stale — the tree declares '${directive}' in all three go.mod files." >&2
+  echo "      Fix: update AGENTS.md's 'Go directive policy' line to the tree's '${directive}' (and only then ask whether the policy itself changed)." >&2
+  facts_ok=0
+fi
+if ((! facts_ok)); then exit 1; fi
+echo "    threshold (${lib_thr}/${ssetest_thr}/${sseparse_thr}) and directive (${directive}) claims match the tree"
 
 echo "==> go vet"
 go vet ./...
