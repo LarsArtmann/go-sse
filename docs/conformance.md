@@ -88,5 +88,5 @@ pinned chunk-invariant.
 ## Sources
 
 - Plan: [2026-08-16 conformance-testing plan](planning/archived/2026-08-16_09-21_SUPERB-spec-based-hardcore-sse-conformance-testing.md) (D1–D6 discovery)
-- Corpus-as-data extraction: [2026-09-29 status report](status/2026-09-29_07-03_ci-health-vendorhash-repair-pr-closure.md) and the sseparse module split
+- Corpus-as-data extraction: [2026-09-29 status report](status/archived/2026-09-29_07-03_ci-health-vendorhash-repair-pr-closure.md) and the sseparse module split
 - Corpus ingestion procedure: [sseparse/README.md](../sseparse/README.md)

@@ -15,6 +15,12 @@ lacks is a _drain_ (wait for in-flight sends) and a _health signal_. samber/do
 would wire those into a container's lifecycle — but the primitives themselves
 belong in core, not behind a DI dependency.
 
+> **Update 2026-10-11:** the recommendation below was adopted — Option C
+> shipped: `Broadcaster.Shutdown(ctx)` (graceful drain; deadline error wraps
+> ctx.Err()) and `Broadcaster.Health() BroadcasterHealth` live in core, plus
+> `WithOnDrop`/`OnDrop` drop observability. The "What go-sse has today" table
+> is historical; no `di/` subpackage exists (by design).
+
 ---
 
 ## What samber/do v2 actually provides
@@ -55,8 +61,8 @@ The three value propositions for go-sse:
 
 | Capability                   | Current state                                | Gap                                                            |
 | ---------------------------- | -------------------------------------------- | -------------------------------------------------------------- |
-| Close all subscribers        | `Broadcaster.Close()` — instant, no drain    | No context/deadline; no "wait for in-flight sends"             |
-| Health signal                | `Broadcaster.SubscriberCount()` (count only) | No "am I closed?" query; no drop counter; no structured status |
+| Close all subscribers        | ~~`Broadcaster.Close()` — instant, no drain~~    | ~~No context/deadline; no "wait for in-flight sends"~~ → CLOSED: `Shutdown(ctx)` drains with a deadline |
+| Health signal                | ~~`Broadcaster.SubscriberCount()` (count only)~~ | ~~No "am I closed?" query; no drop counter; no structured status~~ → CLOSED: `Health()` + `WithOnDrop`/`OnDrop` |
 | Signal handling              | Consumer's responsibility (TODO_LIST item)   | No helper exists                                               |
 | Per-subscriber observability | `OnSubscribe` / `OnUnsubscribe` hooks        | No aggregate metrics (total broadcasts, total drops)           |
 
@@ -189,9 +195,9 @@ consumer writes where it belongs: their composition root.
 The "Graceful-shutdown helper" TODO should evolve from "drain subscribers on
 SIGTERM" to two bounded items:
 
-1. **`Broadcaster.Shutdown(ctx context.Context) error`** — drain respecting
-   context deadline (the real primitive).
-2. **`Broadcaster.Health() BroadcasterHealth`** — structured status query.
+1. ~~**`Broadcaster.Shutdown(ctx context.Context) error`** — drain respecting
+   context deadline (the real primitive).~~ done — shipped (`fanOut.Shutdown`, 1ms drain poll, deadline error preserves `errors.Is(ctx.Err())`)
+2. ~~**`Broadcaster.Health() BroadcasterHealth`** — structured status query.~~ done — shipped (`Closed`/`Draining`/`SubscriberCount`/`BufferSize`)
 
 The signal-handling loop stays in the consumer (or samber/do's
 `ShutdownOnSignals`). go-sse provides the drain; the consumer wires it to

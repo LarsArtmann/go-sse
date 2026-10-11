@@ -21,10 +21,13 @@ call (see [Open questions](#open-questions)).
   _solely_ as a hermetic compile+test check; no binary is published. Adding a
   browser E2E check is a category shift from "does the library compile and pass
   unit tests" to "does the example render in a browser."
-- **The example loads DataStar from a CDN at runtime**
+- ~~**The example loads DataStar from a CDN at runtime**
   (`example/datastar/main.go:104` → `cdn.jsdelivr.net/gh/starfederation/datastar@...`).
   A hermetic Nix check has **no network**, so this is the hard blocker for any
-  offline browser test — VM or not.
+  offline browser test — VM or not.~~ RESOLVED since 2026-08-06: the DataStar
+  bundle is vendored (`example/datastar/static/datastar.js`, served via
+  `go:embed` — no CDN), so the offline blocker is gone; the remaining question
+  is purely the Option B vs C scope call (TODO_LIST Blocked).
 - **`chromedp` is not a dependency.** go.mod has only the two `larsartmann/*`
   libs. Adding chromedp pulls in a transitive dependency tree.
 - **The TODO_LIST already tracks this** as 🔵 BLOCKED: "CI headless browser
