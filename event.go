@@ -398,10 +398,6 @@ func forEachLine(s string, yield func(line string)) {
 // The no-CR/LF fast path allocates a single-element backing array; use
 // [forEachLine] on hot paths that only consume the lines.
 func splitLines(s string) []string {
-	if s == "" {
-		return []string{""}
-	}
-
 	if !strings.ContainsAny(s, "\n\r") {
 		return []string{s}
 	}

@@ -125,7 +125,6 @@ func newFanOut[T any](opts ...Option[T]) *fanOut[T] {
 	hub := &fanOut[T]{
 		mu:            sync.RWMutex{},
 		subscribers:   make(map[uintptr]*subscriber[T]),
-		bufferSize:    DefaultSubscriberBuffer,
 		draining:      false,
 		onSubscribe:   nil,
 		onUnsubscribe: nil,

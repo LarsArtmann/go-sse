@@ -1,6 +1,7 @@
 package sse_test
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -169,6 +170,40 @@ func TestReplayFiltered_StoreError(t *testing.T) {
 
 	if !strings.Contains(err.Error(), "store unavailable") {
 		t.Errorf("error should wrap store failure: %v", err)
+	}
+}
+
+// failingFilteredStore implements FilteredEventStore and fails the filtered
+// query, pinning ReplayFiltered's store-error branch for the pushdown path.
+type failingFilteredStore struct{}
+
+func (failingFilteredStore) EventsAfter(sse.EventID) ([]sse.Event, error) {
+	return nil, errors.New("store unavailable")
+}
+
+func (failingFilteredStore) EventsAfterFiltered(
+	sse.EventID, func(sse.Event) bool,
+) ([]sse.Event, error) {
+	return nil, errors.New("filtered store unavailable")
+}
+
+func TestReplayFiltered_FilteredStoreError(t *testing.T) {
+	t.Parallel()
+
+	stream, _ := newTestStream(t)
+
+	n, err := sse.ReplayFiltered(stream, failingFilteredStore{}, sse.NewEventID(""),
+		func(evt sse.Event) bool { return true })
+	if err == nil {
+		t.Fatal("expected error from failing filtered store")
+	}
+
+	if n != 0 {
+		t.Errorf("expected 0 on store error, got %d", n)
+	}
+
+	if !strings.Contains(err.Error(), "filtered store unavailable") {
+		t.Errorf("error should wrap filtered store failure: %v", err)
 	}
 }
 
