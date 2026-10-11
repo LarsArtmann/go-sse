@@ -52,6 +52,7 @@ type ConformanceVector struct {
 type ExpectedEvent struct {
 	Type  string `json:"type,omitempty"`
 	Data  string `json:"data"`
+	//nolint:branching-flow // :strong-id zero-dep module: raw wire ID, branding lives at the sse boundary
 	ID    string `json:"id,omitempty"`
 	Retry uint   `json:"retry,omitempty"`
 }

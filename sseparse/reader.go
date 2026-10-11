@@ -249,6 +249,7 @@ type streamParser struct {
 	events []Event
 	frame  Event // per-frame accumulator: Type and DataLines only
 
+	//nolint:branching-flow // :strong-id zero-dep module: raw wire ID, branding lives at the sse boundary
 	lastID string // sticky last event ID buffer (spec § 9.2.6)
 	retry  uint   // sticky reconnection time in milliseconds
 }
