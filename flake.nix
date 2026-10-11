@@ -217,6 +217,11 @@
               pkgs.templ
               pkgs.actionlint
               pkgs.shellcheck
+              # Link + Nix-vulnerability scanners used ad hoc by buildflow
+              # and docs upkeep; in the shell they no longer need a separate
+              # `nix run nixpkgs#<tool>` fallback.
+              pkgs.lychee
+              pkgs.vulnix
               # The project-configured treefmt (same formatter set as
               # checks.format / `nix fmt`), so scripts/verify.sh's local
               # format gate actually runs instead of skipping.

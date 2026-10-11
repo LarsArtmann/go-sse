@@ -1,0 +1,7 @@
+{
+  "ignorePatterns": [
+    "example/datastar/static/datastar.js",
+    "example/htmx/static/htmx.min.js",
+    "example/htmx/static/sse.min.js"
+  ]
+}
