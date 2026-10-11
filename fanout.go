@@ -125,6 +125,7 @@ func newFanOut[T any](opts ...Option[T]) *fanOut[T] {
 	hub := &fanOut[T]{
 		mu:            sync.RWMutex{},
 		subscribers:   make(map[uintptr]*subscriber[T]),
+		bufferSize:    0, // 0 = unset; effectiveBufferSize owns the default
 		draining:      false,
 		onSubscribe:   nil,
 		onUnsubscribe: nil,
