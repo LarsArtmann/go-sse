@@ -2,3 +2,11 @@
 # /pkg would break every consumer import path. Flat single-package layout
 # by design (same pattern as go-datastar ADR-002).
 presets: [flat]
+# Structure-heuristic policy dispositions (2026-10-14, RS2 fleet rollout):
+# example_test.go is Go's own Example-function idiom, not stray example code;
+# example/*/static assets belong to the runnable example apps, not repo assets.
+suppressions:
+  - rule: examples-directory
+    reason: "example_test.go files are Go's Example-function convention, not a missing examples/ directory"
+  - rule: assets-directory
+    reason: "static files live inside runnable example apps (example/*/static), not repo-level assets"
