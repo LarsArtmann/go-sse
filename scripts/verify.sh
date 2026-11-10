@@ -94,7 +94,7 @@ for mod in . ssetest sseparse; do
     fi
     if ((drift)); then
       diff -u "$snap_mod" go.mod >&2 || true
-      if [[ -f go.sum ]] && ((! had_sum)); then
+      if [[ -f go.sum ]] && ((!had_sum)); then
         echo "--- unexpected new file: go.sum ---" >&2
       elif ((had_sum)); then
         diff -u "$snap_sum" go.sum >&2 || true
@@ -153,7 +153,7 @@ if ! grep -qF "$policy_claim" AGENTS.md; then
   echo "      Fix: update AGENTS.md's 'Go directive policy' line to the tree's '${directive}' (and only then ask whether the policy itself changed)." >&2
   facts_ok=0
 fi
-if ((! facts_ok)); then exit 1; fi
+if ((!facts_ok)); then exit 1; fi
 echo "    threshold (${lib_thr}/${ssetest_thr}/${sseparse_thr}) and directive (${directive}) claims match the tree"
 
 echo "==> go vet"

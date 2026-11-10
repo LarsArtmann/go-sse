@@ -16,7 +16,8 @@ package sseparse_test
 
 import (
 	"bytes"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"os"
 	"strings"
 	"testing"
@@ -119,7 +120,7 @@ func TestCorpusJSONIsCanonical(t *testing.T) {
 		t.Fatalf("read corpus file: %v", err)
 	}
 
-	canon, err := json.MarshalIndent(sseparse.MustCorpus(t), "", "  ")
+	canon, err := json.Marshal(sseparse.MustCorpus(t), jsontext.WithIndentPrefix(""), jsontext.WithIndent("  "))
 	if err != nil {
 		t.Fatalf("marshal corpus: %v", err)
 	}
