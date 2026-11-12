@@ -3,7 +3,7 @@ module github.com/larsartmann/go-sse/ssetest
 go 1.27
 
 require (
-	github.com/larsartmann/go-sse v0.6.2
+	github.com/larsartmann/go-sse v0.7.0
 	github.com/larsartmann/go-sse/sseparse v0.2.1
 )
 
