@@ -259,7 +259,7 @@ Priority 5 — watch items:
 38. Next real WPT ingestion: bump `minCorpusVectors` (trigger row).
 39. Next dependency bump: record the second benchmark baseline (benchstat
     contract gets its first real before/after).
-40. CI run `36883370012` wall-clock anomaly (still unexplained; queued 28m?).
+40. ~~CI run `36883370012` wall-clock anomaly (still unexplained; queued 28m?).~~ resolved 2026-11-21 — no recurrence: later master runs queue for minutes but complete (probe: runs 44887787673/44801238963); the 2026-11-20 red (run 44801238791) was the corpus-canonical/templ-drift class, fixed 2026-11-21.
 
 (41–50 intentionally unused: everything else actionable already lives in
 TODO_LIST's rows — duplicating rows here would create the split brain this
