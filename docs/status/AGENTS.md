@@ -3,7 +3,7 @@
 Conventions for status reports in this directory. A report is a **point-in-time
 historical snapshot**: write it once, then only annotate it non-destructively
 (`~~item~~ done at \`hash\``) — never rewrite, reorder, or delete content after
-the fact. Reports with every numbered item resolved move to`archived/`.
+the fact. Reports with every numbered item resolved move to `archived/`.
 
 This file **specializes the global status-report format for this repo**: where
 the global skill and this file disagree, this file wins (it adds the coverage

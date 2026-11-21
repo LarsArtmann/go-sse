@@ -142,7 +142,7 @@ against content — messages generic but not contradictory).
    trusting the chain's silence.
 5. **One wasted dry-run cycle on annotate kind semantics.** I guessed `h`
    renders raw evidence and `w` takes a full sentence from the skill's
-   examples; `h` actually wraps in `done at \`...\``and`w` prepends its own
+   examples; `h` actually wraps in `done at \`...\`` and `w` prepends its own
    "Won't implement —". Reading annotate.go's transform (one grep) would have
    cost seconds; the skill's own tooling doc did not state rendering, and I
    chose to guess rather than look.

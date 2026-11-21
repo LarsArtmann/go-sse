@@ -71,7 +71,7 @@ clean; live fuzz bursts clean.
    was decided (still user territory), but nothing is blocked.~~ Won't implement — mooted; rotation stays owner-territory (TODO_LIST Blocked row)
 2. ~~**go-daemon corpus migration + pdd cascade** — unblocked by the release;
    both live in the go-daemon repo, out of scope here (TODO_LIST rows updated
-   to UNBLOCKED/tracking).~~ done at `36c2ecc` (go-daemon) and `d2efa06` (pdd)
+   to UNBLOCKED/tracking).~~ done at `go-daemon@36c2ecc` (go-daemon) and `d2efa06` (pdd)
 
 ## d) TOTALLY FUCKED UP
 
@@ -114,9 +114,9 @@ clean; live fuzz bursts clean.
 
 1. ~~Watch the next scheduled `datastar-compat.yml` run — only the live runner~~ done — routed — the watch row lives in TODO_LIST (2026-10-05 runner-env proof)
    ~~environment remains unproven (mechanics verified against real tags).~~
-2. ~~go-daemon: migrate its 10 framing tests to `sseparse.MustCorpus` vectors —~~ done at `36c2ecc`
+2. ~~go-daemon: migrate its 10 framing tests to `sseparse.MustCorpus` vectors —~~ done at `go-daemon@36c2ecc`
    ~~unblocked (TODO_LIST).~~
-3. ~~pdd cascade for `ssetest/v0.4.0`: go-daemon flake rev bump + vendorHash~~ done at `d2efa06`
+3. ~~pdd cascade for `ssetest/v0.4.0`: go-daemon flake rev bump + vendorHash~~ done at `project-discovery-daemon@d2efa06`
    ~~re-derive (TODO_LIST row).~~
 4. ~~IMP3 generator half: WPT-ingestion generator emitting canonical corpus~~ done at `91fe8b7`
    ~~JSON (TODO_LIST row 31).~~
@@ -133,8 +133,8 @@ clean; live fuzz bursts clean.
    ~~project root vs `/internal/` //pkg/). Keep absorbing them as~~
    ~~documented-deliberate, or should buildflow's config skip~~
    ~~`go-structure-linter` for this repo so the gate is green again?~~
-2. ~~Release timing~~ — answered by reality: released 2026-09-29 02:22.
-3. ~~buildcache policy~~ — unblocked: the mount is at 32%; a rotation policy
+2. ~~Release timing~~ resolved — released 2026-09-29 02:22.
+3. ~~buildcache policy~~ no longer blocking: the mount is at 32%; a rotation policy
    is still worth deciding someday, but nothing waits on it.
 
 ---

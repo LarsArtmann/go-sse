@@ -112,7 +112,7 @@
 ### Documentation
 
 23. Reconcile **`CHANGELOG.md` `[Unreleased]`** once `vendorHash` is fixed and a version is cut.
-24. The `AGENTS.md` "Gotcha" about `buildflow`/`.envrc` — verify `.envrc` exists locally and is `direnv allow`ed (it's gitignored; easy to forget on a fresh clone).
+24. The `AGENTS.md` "Gotcha" about `buildflow`/`.envrc` — verify `.envrc` exists locally and has `direnv allow` run (it's gitignored; easy to forget on a fresh clone).
 25. **`ROADMAP.md`** review: pull completed items, refresh priorities post-100%-coverage.
 26. Run the **`update-old-docs`** skill against `docs/status/2026-07-*` reports (several are stale).
 27. Add **package-level doc examples** (`ExampleStream`, `ExampleReplay`) to render in pkg.go.dev (currently only `ExampleWriteEvent` etc. exist per CHANGELOG — verify).
@@ -146,7 +146,7 @@
 46. **Client-side `EventSource`** in Go (consumers currently must use JS browser APIs or roll their own).
 47. **Backpressure API**: a `Broadcast` variant that blocks (with timeout) instead of dropping, for consumers who prefer latency over loss.
 48. **Per-subscriber metrics** (queue depth, drop count) via an optional inspector.
-49. **Reconnection event ID monotonicity helper**: a utility to generate strictly-increasing `EventID`s (the branded type is opaque; consumers reinvent sequencing).
+49. **Reconnection event ID monotonicity helper**: a utility to generate strictly-increasing `EventID` values (the branded type is opaque; consumers reinvent sequencing).
 50. **Formal spec-conformance test suite** against the [WHATWG SSE parser spec](https://html.spec.whatwg.org/multipage/server-sent-events.html) event-stream decoding rules (the library handles the _encoding_ side; a conformance corpus would lock it down).
 
 ---

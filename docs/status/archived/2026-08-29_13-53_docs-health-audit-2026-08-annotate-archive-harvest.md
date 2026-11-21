@@ -67,7 +67,7 @@
 3. **Build breakage by incomplete rename.** My `sed` on `reader_test.go` renamed the declaration and `.Next()` receivers but missed the `MustReadNextEvent(t, sr)` call argument → `undefined: sr` build failure, caught only on re-test. One `grep -c '\bsr\b'` beforehand would have prevented it.
 4. ~~**Three burned background-shell round trips on environment failures.** `GOCACHE`/`GOMODCACHE`/`GOLANGCI_LINT_CACHE` all point at `/mnt/buildcache` (unavailable to this shell); I failed, re-ran, failed again, and only then set the three caches manually. The project's own AGENTS.md warns the shell environment needs the right flags — I should have exported the caches before the first run.~~ done (AGENTS.md now documents the coverage-gate GOCACHE trap (2bcb0ce); app-side hardening is a TODO_LIST row (2026-09-03))
 5. **Imprecise `multiedit` old_strings** — first AGENTS.md edit rejected wholesale (hadn't viewed the file); first 11-58 edit applied 1 of 3 because I omitted the bold sub-headers interleaved between list items. Two avoidable round trips.
-6. **Two Python heredoc `SyntaxError`s** from backslash-in-double-quote quoting (the `07:45\` line) before switching to line-based insertion.
+6. **Two Python heredoc `SyntaxError` exceptions** from backslash-in-double-quote quoting (the `07:45\` line) before switching to line-based insertion.
 7. ~~**I skipped the skill's mandated annotation tooling entirely** (`annotate-prose.py`/`annotate-rows.py`, with mandatory `--dry-run`) in favor of hand-written multiedits and custom "→ tracked in TODO_LIST" markers the scripts don't support. The custom marker is defensible (the scripts have no "routed" kind) but skipping dry-run + hand-rolling bulk edits is the exact pattern the skill's tooling note exists to prevent.~~ done (the 2026-09-03 pass used annotate-prose.py with mandatory --dry-run on every file shape)
 
 ---
@@ -111,7 +111,7 @@
 17. ~~`KeyedLines`/`SendKeyed` wire round-trip property test.~~ done at `eb2b31d`
 18. ~~BOM-at-every-chunk-boundary matrix test.~~ done at `eb2b31d`
 19. ~~Sticky-ID reconnect assertion in an E2E test.~~ done at `eb2b31d`
-20. ~~`testing/synctest` for `CollectWithTimeout` tests.~~ __Won't implement — declined 2026-08-29 with root cause (network I/O in bubbles prohibited; Collect_ helpers own real sockets) - TODO_LIST WONT row._*
+20. ~~`testing/synctest` for `CollectWithTimeout` tests.~~ Won't implement — declined 2026-08-29 with root cause (network I/O in bubbles prohibited; the Collect_ helpers own real sockets); TODO_LIST WONT row.
 21. ~~`docs/guides/reconnection-and-retry.md` (the 5-layer retry model).~~ done at `eb2b31d`
 22. ~~`RequireDataJSON(tb, evt, want any)`.~~ done at `eb2b31d`
 23. ~~Extend `coverage-gate` with an ssetest threshold.~~ done at `eb2b31d`
@@ -131,7 +131,7 @@
 31. ~~`OnPredicatePanic` callback decision (ROADMAP §1).~~ done (ROADMAP §1 OnPredicatePanic bullet)
 32. ~~Backpressure policy exploration (ROADMAP §1).~~ done (ROADMAP §1 backpressure bullet)
 33. ~~Client `Dial` helper trigger watch (ROADMAP §2) — the go-retry re-open condition.~~ done (ROADMAP §2 Dial helper + §4 go-retry re-open triggers)
-34. ~~datastartest conformance README + WPT writer goldens (go-datastar repo).~~ done at `a0c0aea`
+34. ~~datastartest conformance README + WPT writer goldens (go-datastar repo).~~ done at `go-datastar@a0c0aea`
 35. ~~Browser-E2E scope decision (unblocks the BLOCKED TODO; chromedp Option B vs C).~~ done (routed: TODO_LIST Blocked row (D3 default stay-blocked applied 2026-08-29))
 36. ~~Example coverage gate or exclusion policy (htmx/server at 0%).~~ done (FEATURES example-coverage note documents the exclusion; figures refreshed 2026-09-03)
 37. ~~`example/` flake run-apps (`nix run .#htmx` / `.#datastar`) — repeatedly requested, repeatedly deferred; decide once.~~ done (recorded as a decide-once raw idea in ROADMAP (2026-09-03))

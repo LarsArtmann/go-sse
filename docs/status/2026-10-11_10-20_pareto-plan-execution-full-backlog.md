@@ -107,7 +107,7 @@ every local gate (mitigated by the post-sweep `go vet` rule + CI).
    `\` escaping inside double quotes behaves differently in this shell
    interpreter (literal backslash leak), and my quote-splice fix initially
    MISPLACED the closing backtick, producing a doubled``go go 1.27`(the
-   directive variable carried the full`go 1.27` line). Two false-negative
+   directive variable carried the full `go 1.27` line). Two false-negative
    gate runs before the positive case passed. Lesson applied: test the
    exact construct in isolation before blaming the target file.
 3. **Piped a gate through `tail` and misread its exit code** (`EXIT=0` on a

@@ -278,9 +278,10 @@ cross-repo batches — that is the whole open surface as verified today.)
    ~~policy records into current-truth statements. If yes: is there a floor~~
    ~~below which I should NOT prune (e.g., keep every gotcha verbatim, prune~~
    ~~only Commands/GOEXPERIMENT/CI-enumeration prose)?~~
-3. ~~**Which way should the archived-completeness gate be honored?** The 37~~ routed — user ruling still open; the documented deviation stands (2026-10-11 audit: 45 pre-09-14 appendix-style files)
-   ~~pre-2026-09-14 archived files use appendix-Resolution style and fail~~
-   ~~`grep -rLn '~~' archived/`. Options: (a) amend the gate's note to~~
-   ~~"applies to files archived from 2026-09-14 on" (my recommendation —~~
-   ~~their appendices were verified twice; retro-striking is mechanical noise~~
-   ~~with mis-strike risk), or (b) mandate the retro inline-strike sweep.~~
+3. **Which way should the archived-completeness gate be honored?** The 37
+   pre-2026-09-14 archived files use appendix-Resolution style and fail
+   `grep -rLn '~~' archived/`. Options: (a) amend the gate's note to
+   "applies to files archived from 2026-09-14 on" (my recommendation —
+   their appendices were verified twice; retro-striking is mechanical noise
+   with mis-strike risk), or (b) mandate the retro inline-strike sweep.
+   → routed to TODO_LIST Blocked row (37-archive retro-strike ruling)

@@ -59,7 +59,7 @@ push is user-gated.
 - ~~**Pushing** — user-gated; without it the public CI stays red and the cron fix stays unproven (top of §f).~~ done — master green since 2026-09-19, every local commit pushed
 - ~~**Release v0.6.1 decision** — the heartbeat panic fix is consumer-facing (the documented `go stream.Heartbeat(…)` pattern can crash servers); cut now or accumulate is a user call (§g.2).~~ done at `6446288`
 - ~~**Implementing the 13 TODO_LIST rows** — routed with evidence, none executed (correct for a docs pass).~~ done — all executed across the 2026-09-19 backlog pass and the 2026-09-29 sessions
-- ~~**Go-datastar-side doc sync** (their AGENTS/README stating the wrapper direction) — that repo, another session.~~ done at `c1826fb` (wrapper direction pinned, replaces dropped)
+- ~~**Go-datastar-side doc sync** (their AGENTS/README stating the wrapper direction) — that repo, another session.~~ done at `go-datastar@c1826fb` (wrapper direction pinned, replaces dropped)
 
 ## d) TOTALLY FUCKED UP
 
@@ -125,7 +125,7 @@ Grouped by priority; §1–5 are this session's own loops, §6+ is the harvested
 ### P4 — cross-repo
 
 23. ~~CI job asserting go-datastar tests against the latest ssetest tag.~~ done at `6446288`
-24. ~~go-datastar next session: their AGENTS/README should state the wrapper direction (datastartest delegates to ssetest); drop replaces before the next datastartest tag.~~ done at `c1826fb`
+24. ~~go-datastar next session: their AGENTS/README should state the wrapper direction (datastartest delegates to ssetest); drop replaces before the next datastartest tag.~~ done at `go-datastar@c1826fb`
 25. ~~After the wrapper ruling settles (§g.3): re-check datastartest's fuzz-corpus port for redundancy (belt-and-suspenders vs load-bearing).~~ **Won't implement — go-datastar-side; the pinned wrapper direction makes the redundancy question moot.**
 
 ### P5 — hygiene & follow-through

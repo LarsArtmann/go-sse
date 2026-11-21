@@ -48,7 +48,7 @@ and at release time the tag must exist before the replace is dropped
 
 - ~~go-daemon's actual migration (its 10 hand-rolled framing tests →
   `sseparse.MustCorpus` vectors): deliberately not started — blocked on the
-  release tags, and it is another repo's change (tracked in TODO_LIST).~~ done at `36c2ecc`
+  release tags, and it is another repo's change (tracked in TODO_LIST).~~ done at `go-daemon@36c2ecc`
 - ~~Root library v0.6.2: not needed — the root `sse` package is untouched
   (only `module_boundary_test.go`, `.golangci.yml`, README rows).~~ NOT-DO — confirmed: root package untouched, no root tag needed
 
@@ -81,7 +81,7 @@ and at release time the tag must exist before the replace is dropped
 ## f) Up to 50 things we should get done next
 
 1. ~~Tag `sseparse/v0.1.0` (first), then release-commit ssetest (drop replace, require resolves) and tag `ssetest/v0.4.0`; probe both with `scripts/release-verify.sh` (TODO_LIST #1).~~ done at `1cfc651`, `7cd5b3a`
-2. ~~go-daemon: migrate `sse_test.go` framing tests to `sseparse.MustCorpus` vectors (TODO_LIST #2).~~ done at `36c2ecc`
+2. ~~go-daemon: migrate `sse_test.go` framing tests to `sseparse.MustCorpus` vectors (TODO_LIST #2).~~ done at `go-daemon@36c2ecc`
 3. ~~go-datastar pin-bump pass now has a third module to consider when it adopts sseparse directly.~~ done — go-datastar v0.6.1 lockstep pins ssetest v0.4.0 (their bb4f08d)
 4. ~~Clean `/mnt/buildcache` (go build cache 149 GB; golangci facts cache) and decide a rotation policy.~~ **Won't implement — mooted — the mount measured 32% the same day; nothing blocked.**
 5. ~~Consider teaching `docs/guides/*` about sseparse where they currently say "ssetest parser" (only README/FEATURES/AGENTS were swept this session).~~ done — verified zero ssetest/sseparse references in docs/guides/ (01-58 self-review row 12)

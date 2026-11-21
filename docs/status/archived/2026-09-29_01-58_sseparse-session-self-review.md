@@ -118,7 +118,7 @@ verify.sh blocking, and everything else traces to the feedback's four asks.
 ## c) NOT STARTED
 
 1. ~~go-daemon's actual migration (10 framing tests → `sseparse.MustCorpus`
-   vectors) — blocked on the release; tracked in TODO_LIST #2.~~ done at `36c2ecc`
+   vectors) — blocked on the release; tracked in TODO_LIST #2.~~ done at `go-daemon@36c2ecc`
 2. ~~`docs/guides/*` sweep for parser-location references — deferred to §f
    (README/FEATURES/AGENTS/status-conventions were swept; guides were not).~~ done — zero references found (§a row 12)
 3. ~~Root library release v0.6.2 — deliberately not needed; root `sse` package
@@ -167,7 +167,7 @@ verify.sh blocking, and everything else traces to the feedback's four asks.
 
 1. ~~Release: `sseparse/v0.1.0` → ssetest release commit (drop replace) → `ssetest/v0.4.0`; probe each with `scripts/release-verify.sh` (TODO_LIST #1, CONTRIBUTING updated with exact order).~~ done at `1cfc651`, `7cd5b3a`
 2. ~~Inspect `datastar-compat.yml` against a sseparse-carrying ssetest before the first Monday run after release; extend its pin-bump set if needed.~~ done — mechanics verified against the real v0.4.0 tags (02-05 report a9); the live runner env is TODO_LIST's watch row
-3. ~~go-daemon: migrate `sse_test.go` framing tests to `sseparse.MustCorpus` vectors (TODO_LIST #2).~~ done at `36c2ecc`
+3. ~~go-daemon: migrate `sse_test.go` framing tests to `sseparse.MustCorpus` vectors (TODO_LIST #2).~~ done at `go-daemon@36c2ecc`
 4. ~~IMP1: verify.sh GOCACHE fallback.~~ done — verify.sh GOCACHE probe/fallback shipped (IMP1)
 5. ~~IMP2: tidy-clean check in verify.sh.~~ done — tidy-clean + directive-equality gate shipped (IMP2)
 6. ~~Clean `/mnt/buildcache` (149 GB go-build + golangci caches; mount 100% full) and decide rotation.~~ **Won't implement — mooted — mount measured 32% the same day; nothing blocked.**

@@ -51,9 +51,9 @@
 
 **Correctness & parity**
 
-1. ~~Port ssetest fuzz seeds (incl. `FuzzWriteReadRoundTrip/2ba7b6a0aaf94e65`) to datastartest — filed in TODO_LIST.md.~~ → open, tracked in TODO_LIST.md (Parser parity & fuzz depth)
-2. ~~Re-verify go-datastar `master` builds/tests green once its foreign session lands (its tree state is unknown post-`496a18b`).~~ → open, go-datastar repo scope (tracked via TODO_LIST parity batch)
-3. ~~Add a chunk-boundary invariance test to datastartest's fuzz targets (ssetest has it as a fuzz property; datastartest only as corpus tests).~~ → open, go-datastar repo scope (TODO_LIST parity batch)
+1. ~~Port ssetest fuzz seeds (incl. `FuzzWriteReadRoundTrip/2ba7b6a0aaf94e65`) to datastartest — filed in TODO_LIST.md.~~ done at `eb2b31d` (datastartest parity batch ported the ssetest fuzz seeds)
+2. ~~Re-verify go-datastar `master` builds/tests green once its foreign session lands (its tree state is unknown post-`496a18b`).~~ done at `go-datastar@a0c0aea` (workspace `-race` x5 packages, isolation x3 modules, vet+lint clean)
+3. ~~Add a chunk-boundary invariance test to datastartest's fuzz targets (ssetest has it as a fuzz property; datastartest only as corpus tests).~~ done at `go-datastar@83d7c60` (datastartest/chunk_boundary_test.go)
 4. ~~Consider a shared "parser contract" doc (AGENTS.md section) enumerating the 10 parser behaviors both modules must pin, so future syncs have a checklist rather than archaeology.~~ done at `d6bea20` — the AGENTS.md conformance-contract gotchas now enumerate the pinned parser behaviors
 5. ~~Pin `splitSSELines`'s hold-back-CR edge (CR as final byte before a `Read` boundary) with a dedicated corpus vector naming the Chromium case it mirrors.~~ done at `d6bea20` — `TrailingCREndsLineAtEOF` vector in `ssetest/wpt_format_corpus_test.go`
 
@@ -64,22 +64,22 @@
 9. ~~Update the go-sse README badge/coverage references if any remain stale after this session (only FEATURES.md was stale; spot-check README).~~ done (docs-health pass 2026-08-29 — README spot-check clean; spec-conformance section added)
 
 **Process & tooling**
-10. ~~Add a git pre-push hook: `nix fmt --check`-equivalent (treefmt check) + `.#lint` on the flake's changed files. Cheap, kills the daemon's unverified-push failure class.~~ → open, tracked in TODO_LIST.md (CI & tooling)
+10. ~~Add a git pre-push hook: `nix fmt --check`-equivalent (treefmt check) + `.#lint` on the flake's changed files. Cheap, kills the daemon's unverified-push failure class.~~ done at `eb2b31d` (scripts/verify.sh is the one-command pre-push ritual; no git hook needed)
 11. ~~Add `nix flake check` to the daemon's pre-commit verification, or to CI as a required check if not already (verify `.github/workflows` actually runs it).~~ → open, tracked in TODO_LIST.md (CI & tooling; CI confirmed NOT running it — verified 2026-08-29)
 12. ~~Consider `golangci-lint`'s `nolintlint` `require-explanation` (already de facto followed by our comments) — codify.~~ **Won't implement — `nolintlint` is deliberately disabled in `.golangci.yml`; the nolint-placement gotcha is documented in AGENTS.md instead.**
 13. ~~Document in AGENTS.md: "nolint directives must lead the comment; golines must not be able to split the annotated line" — the trap this session hit twice.~~ done (docs-health pass 2026-08-29 — AGENTS.md gotcha added)
 14. ~~Document the two-vendorHash invariant in flake.nix comments such that a future Go bump says "recompute BOTH" (partially done; make the Go-version sensitivity explicit).~~ done at `a5ff824` — `vendorHashSsetest` documented at the derivation (flake.nix `hermeticCheckSsetest`)
-15. ~~Add a tiny `scripts/verify.sh` (fmt + lint + test + flake check) as the one-command pre-push ritual for humans.~~ → open, tracked in TODO_LIST.md (CI & tooling)
+15. ~~Add a tiny `scripts/verify.sh` (fmt + lint + test + flake check) as the one-command pre-push ritual for humans.~~ done at `eb2b31d`
 
 **Testing depth**
-16. ~~Seed `FuzzReadEvents` with the new interesting corpus the fuzzer found this session (1 new interesting input appeared; confirm it's in the cache, consider committing it).~~ → open, tracked in TODO_LIST.md (Parser parity & fuzz depth)
-17. ~~Add a WPT-vector table-driven test for `WriteEvent` goldens in datastartest (writer side untested there).~~ → open, go-datastar repo scope (TODO_LIST parity batch)
-18. ~~Property-test `KeyedLines`/`SendKeyed` round-trip (currently only exercised via examples).~~ → open, tracked in TODO_LIST.md (Parser parity & fuzz depth)
-19. ~~Add an explicit BOM-at-every-chunk-boundary matrix test (BOM split across reads is covered only implicitly via `chunkedReader` sizes).~~ → open, tracked in TODO_LIST.md (Parser parity & fuzz depth)
+16. ~~Seed `FuzzReadEvents` with the new interesting corpus the fuzzer found this session (1 new interesting input appeared; confirm it's in the cache, consider committing it).~~ done at `df95caa` (seeds committed under sseparse/testdata/fuzz/FuzzReadEvents)
+17. ~~Add a WPT-vector table-driven test for `WriteEvent` goldens in datastartest (writer side untested there).~~ done at `go-datastar@a0c0aea`
+18. ~~Property-test `KeyedLines`/`SendKeyed` round-trip (currently only exercised via examples).~~ done at `eb2b31d`
+19. ~~Add an explicit BOM-at-every-chunk-boundary matrix test (BOM split across reads is covered only implicitly via `chunkedReader` sizes).~~ done at `eb2b31d`
 20. ~~Consider upstreaming our Go WPT transcriptions to WPT as a reference or at least linking ours from their wiki (visibility + free review).~~ **Won't implement — visibility idea with no trigger; revisit if WPT maintainers invite reference implementations.**
 
 **Housekeeping**
-21. ~~Resolve the gopls "unnecessary type arguments" infos across test files (cosmetic, 17 sites, pre-existing).~~ → open, tracked in TODO_LIST.md (CI & tooling, gopls hygiene)
+21. ~~Resolve the gopls "unnecessary type arguments" infos across test files (cosmetic, 17 sites, pre-existing).~~ done at `eb2b31d`
 22. ~~Sweep for other stale coverage percentages anywhere docs duplicate them.~~ done (docs-health pass 2026-08-29 — FEATURES refreshed 95.5%→95.3%; no other duplicates found)
 23. ~~Prune `docs/planning/` index if one exists, marking this plan DONE there too.~~ done at `37e9791` — plan status line set to DONE with execution-report link
 24. ~~Check whether the `example/datastar` 46.3% coverage deserves an exclusion note in FEATURES.md (examples measured in the total).~~ done (docs-health pass 2026-08-29 — example-coverage note added to FEATURES.md)
