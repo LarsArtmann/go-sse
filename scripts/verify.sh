@@ -39,17 +39,40 @@ echo "    no GOEXPERIMENT references"
 
 echo "==> bare-shfmt fingerprint guard"
 # buildflow's formatter step runs bare `shfmt -w`, which re-indents Bash
-# arithmetic negation differently from treefmt's canonical style — exactly
-# the drift that reddened master twice (2026-10-03, 2026-10-11) as a
-# "formatting" daemon commit. CI's treefmt check is the primary net; this
-# grep is the cheap second one that fires before anything expensive runs.
+# arithmetic negation differently from treefmt's canonical style — the drift
+# that reddened master three times (2026-10-03, 2026-10-11, 2026-11-21) as a
+# "formatting" daemon commit. Since both formatters run on this repo, the fix
+# is to never write arithmetic negation: use '((x == 0))' instead of '((! x))',
+# which both tools format identically. CI's treefmt check is the primary net;
+# this grep is the cheap second one that fires before anything expensive runs.
 # (--exclude=verify.sh: the pattern text below is the one legit match.)
 if grep -rnE --include='*.sh' --exclude=verify.sh '\(\(![^ ]|\(\(!$' scripts/ 2>/dev/null; then
-  echo "FAIL: bare-shfmt fingerprint in scripts/ (an arithmetic negation lost its space after '(', above)." >&2
-  echo "      Canonical style keeps '((! x))'; run 'nix fmt' and commit its output — never bare 'shfmt -w'." >&2
+  echo "FAIL: arithmetic negation in scripts/ (above): buildflow's bare shfmt and treefmt's shfmt disagree on its spacing." >&2
+  echo "      Rewrite it negation-free — '((x == 0))' instead of '((! x))' — and run 'nix fmt'; never commit bare 'shfmt -w' output." >&2
   exit 1
 fi
 echo "    no bare-shfmt fingerprints"
+
+echo "==> markdown drift guards"
+# Two failure classes surfaced on 2026-11-21. (1) A nested or escaped backtick
+# inside a docs code span (to\`archived/\`) is normalised differently by
+# dprint's markdown plugin, so the same paragraph re-formats on every lane.
+# Write the sentence without nesting: plain text plus single spans. Archived
+# reports are immutable point-in-time snapshots, so they stay out of scope.
+# (2) The auto-commit daemon's blanket `git add -A` once committed editor
+# state (.docs-gates-preflight.json); no prefixed artefact of that class may be
+# tracked — they are gitignored, this is the detector if one slips back in.
+if grep -rnE --include='*.md' --exclude-dir=archived '\\`' README.md AGENTS.md CONTRIBUTING.md FEATURES.md CHANGELOG.md TODO_LIST.md ROADMAP.md docs/ 2>/dev/null; then
+  echo "FAIL: escaped backtick in a living doc (above) — dprint and the source disagree on it." >&2
+  echo "      Rewrite the sentence without nested code spans." >&2
+  exit 1
+fi
+if git ls-files | grep -E '\.preflight\.json$|\.tmp$|(^|/)\.DS_Store$'; then
+  echo "FAIL: tracked editor-state artefact (above) — gitignore it, 'git rm --cached' it," >&2
+  echo "      and stop using a blanket 'git add -A'." >&2
+  exit 1
+fi
+echo "    no escaped backticks; no tracked editor state"
 
 echo "==> treefmt (formatting check)"
 if command -v treefmt >/dev/null 2>&1; then
@@ -94,7 +117,7 @@ for mod in . ssetest sseparse; do
     fi
     if ((drift)); then
       diff -u "$snap_mod" go.mod >&2 || true
-      if [[ -f go.sum ]] && ((! had_sum)); then
+      if [[ -f go.sum ]] && ((had_sum == 0)); then
         echo "--- unexpected new file: go.sum ---" >&2
       elif ((had_sum)); then
         diff -u "$snap_sum" go.sum >&2 || true
@@ -153,7 +176,7 @@ if ! grep -qF "$policy_claim" AGENTS.md; then
   echo "      Fix: update AGENTS.md's 'Go directive policy' line to the tree's '${directive}' (and only then ask whether the policy itself changed)." >&2
   facts_ok=0
 fi
-if ((! facts_ok)); then exit 1; fi
+if ((facts_ok == 0)); then exit 1; fi
 echo "    threshold (${lib_thr}/${ssetest_thr}/${sseparse_thr}) and directive (${directive}) claims match the tree"
 
 echo "==> go vet"

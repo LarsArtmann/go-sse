@@ -83,3 +83,6 @@ yarn-error.log*
 ## Nix
 result
 result-*
+
+## docs-gates: local editor state (the --pre-flight/--land-parity ledger)
+.docs-gates-preflight.json

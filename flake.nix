@@ -46,13 +46,11 @@
           goPkg = pkgs.go_1_27;
           buildGoModule = pkgs.buildGoModule.override { go = goPkg; };
           version = self.rev or self.dirtyRev or "dev";
-          # Separate hashes: the two modules resolve different go.mod graphs
-          # (ssetest replaces go-sse with a local path), so their vendored
-          # module sets — and therefore FOD hashes — differ. sseparse has ZERO
-          # third-party requires (guarded by TestModuleStaysZeroDependency),
-          # so its check carries no vendorHash at all.
-          vendorHash = "sha256-t65CSNftAmmJ5UXk9T8Npz/iM2D4BxdjqovA3hLNfEo=";
-          vendorHashSsetest = "sha256-EIHJSU3VhrS9fNEVH/1COR3vb92hWVsmaJRqbZ20Ew8=";
+          # Vendor hashes live in ./vendorHash.nix (one file, one diff per
+          # hash change) — see that file's header for the recompute recipe.
+          vendorHashes = import ./vendorHash.nix;
+          vendorHash = vendorHashes.root;
+          vendorHashSsetest = vendorHashes.ssetest;
 
           # go-sse is a pure library (no `main` package), so we do not publish a
           # binary `packages.default` or an overlay. Instead, buildGoModule is used

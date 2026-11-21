@@ -1,5 +1,7 @@
 # Status Report — 2026-10-11 10:20 — Pareto Plan Execution: Full Backlog, Waves 1–4
 
+> **Live remainder:** the owner decisions (B1/B2/B5/B6 briefs) are tracked in [`TODO_LIST.md`](../../../TODO_LIST.md) Blocked; every task row in §a is done and the cross-repo rows are routed.
+
 The 2026-10-11 SUPERB Pareto plan ran end-to-end: all 27 tasks across the
 four waves. Wave 1 shipped the ssetest v0.5.0 release (tag, proxy probe,
 release page) plus the two backfilled release pages; Wave 2 pinned CI
@@ -104,9 +106,9 @@ every local gate (mitigated by the post-sweep `go vet` rule + CI).
    IMMEDIATELY after each unit next time (the AGENTS rule exists; I still
    batched).
 2. **Two rounds of self-inflicted shell bugs in the facts assertion**: the
-   `\` escaping inside double quotes behaves differently in this shell
+   backslash escaping inside double quotes behaves differently in this shell
    interpreter (literal backslash leak), and my quote-splice fix initially
-   MISPLACED the closing backtick, producing a doubled``go go 1.27`(the
+   MISPLACED the closing backtick, producing a doubled `go go 1.27` (the
    directive variable carried the full `go 1.27` line). Two false-negative
    gate runs before the positive case passed. Lesson applied: test the
    exact construct in isolation before blaming the target file.

@@ -1,9 +1,10 @@
 # AGENTS.md — docs/status/ conventions
 
 Conventions for status reports in this directory. A report is a **point-in-time
-historical snapshot**: write it once, then only annotate it non-destructively
-(`~~item~~ done at \`hash\``) — never rewrite, reorder, or delete content after
-the fact. Reports with every numbered item resolved move to `archived/`.
+historical snapshot**: write it once, then only annotate it non-destructively —
+a struck item followed by its verdict (`~~item~~ done at <hash>`) — and never
+rewrite, reorder, or delete content after the fact. Reports with every numbered
+item resolved move to `archived/`.
 
 This file **specializes the global status-report format for this repo**: where
 the global skill and this file disagree, this file wins (it adds the coverage
@@ -70,3 +71,15 @@ Every report's preamble MUST carry exactly one bullet of this form:
   in `TODO_LIST.md`.
 - When every numbered item in a report carries a resolution marker, `git mv`
   the file into `archived/`.
+
+## Archived reports and the docs-freshness replay
+
+`docs-gates freshness . --audit-all` replays open items from ARCHIVED reports
+and matches their distinctive tokens against the living docs. That match is
+token-frequency based, not stable: on 2026-11-21 an ordinary wording change in
+AGENTS.md moved the historical unharvested count 122 → 123 (111 tokens sit at
+DF 7 against a bar of 8). The number is therefore not a ratchet, and
+`.docs-gates.json` skips exactly that gate (`{"skip_gates": ["audit-all"]}`);
+freshness for the newest report, annotate, routing, and cadence still run.
+Archived reports stay immutable — drain the backlog through its TODO_LIST row
+and re-enable the replay only after that row is empty. Never pin the count.

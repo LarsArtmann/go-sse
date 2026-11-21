@@ -10,18 +10,39 @@
 # Deliberate WONT-adopt policies (recorded 2026-10-11 so the weekly tool
 # suggestions stop being re-triaged):
 #
-# 1. sseparse stays on encoding/json v1 (gen_corpus.go,
-#    gen_corpus_roundtrip_test.go, wpt_format_corpus_test.go). The module's
-#    entire reason to exist is ZERO third-party requires (guarded by
-#    sseparse/go_mod_boundary_test.go). json/v2 is stdlib so a migration
-#    would not remove a require — it would only rewrite corpus-critical
-#    marshal/unmarshal code that the byte-canonical gate pins, for zero
-#    consumer-visible gain. Revisit only if sseparse ever needs a
-#    jsonv2-only feature.
+# 1. sseparse's corpus path is on encoding/json/v2 BY DESIGN: corpus.go,
+#    assert.go, gen_corpus.go, gen_corpus_roundtrip_test.go and
+#    wpt_format_corpus_test.go all marshal/decode through json/v2 + jsontext,
+#    so the ingestion generator and the byte-canonical gate share ONE encoder
+#    (a v1 generator against a v2 gate silently reddened master 2026-11-21).
+#    ExpectedEvent.Retry carries `omitzero` because json/v2's `omitempty` no
+#    longer omits numeric zero. json/v2 is stdlib, so this costs sseparse no
+#    third-party require (go_mod_boundary_test.go still guards that).
+#    Revisit only if sseparse ever needs a v1-only API.
 #
-# 2. lo.Filter suggestions (example/datastar/main_test.go,
-#    ssetest/e2e_test.go) are WONT: samber/lo is not a dependency of this
-#    repo, and the suggested sites are one-line loops where the explicit
-#    form is clearer than a utility-module import. Revisit only if the repo
-#    adopts samber/lo for other reasons.
+# 2. lo.Filter / lo.SliceToMap suggestions (replay.go,
+#    replay_filter_test.go, ssetest/e2e_test.go, example/datastar/*_test.go)
+#    are WONT: samber/lo is not a dependency of this repo, and the suggested
+#    sites are one-line loops where the explicit form is clearer than a
+#    utility-module import. Revisit only if the repo adopts samber/lo for
+#    other reasons.
+#
+# 3. art-dupl duplicate-code warnings (~52, all in *_test.go) are WONT:
+#    Go table-driven and httptest fixtures share short boilerplate
+#    (`t.Parallel()`, recorder setup, assertion scaffolding) by design; the
+#    duplication is below the level where a helper would make the test
+#    clearer, and the tool's threshold (10-18 tokens) is tuned for
+#    production code. Detect-only, warning severity. Revisit only if a
+#    PRODUCTION file starts appearing in the report.
+#
+# 4. branching-flow PHANTOM-TRANSPOSE on generic text parameters
+#    (lines.go, stream.go, ssetest/options.go) is WONT: `key`, `value`,
+#    `eventName`, and `data` are arbitrary wire text, not entity identifiers,
+#    and branding them would turn a transport API into a type-parameter
+#    puzzle with no swap risk users hit (argument order is fixed and every
+#    call site is test-pinned). The strong-ID policy applies to EventID
+#    only. The two UNSAFE_CHANNEL_OP warnings in fanout.go are the
+#    documented close-once contract: every subscriber channel is closed under
+#    the write lock, and the nil `subscribers` sentinel prevents a second
+#    close. Detect-only, warning severity.
 skip_steps:

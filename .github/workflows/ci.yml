@@ -153,7 +153,15 @@ jobs:
       # @version form (not module mode): templ's cmd needs extra deps that are
       # intentionally absent from go.sum; the version stays pinned to the
       # dependency the examples were generated with.
-      - run: go run github.com/a-h/templ/cmd/templ@v0.3.1020 generate -check
+      - run: go run github.com/a-h/templ/cmd/templ@v0.3.1100 generate -check
+      # The corpus is generated data, and its generator and byte-form gate
+      # must share one encoder. Running the generator has to be a no-op; a
+      # diff means they disagree and TestCorpusJSONIsCanonical flips on the
+      # next data change (the 2026-11-21 red master).
+      - name: Corpus generator is idempotent
+        run: |
+          (cd sseparse && GOWORK=off go generate .)
+          git diff --exit-code -- sseparse/testdata/wpt_format_corpus.json
 
   smoke:
     name: Example smoke

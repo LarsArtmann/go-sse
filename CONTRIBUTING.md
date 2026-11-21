@@ -98,10 +98,18 @@ ssetest tag whose sseparse require cannot resolve is a dead tag.
 
    `nix flake check` is the part raw `go test` cannot replace: it pins the
    vendor hashes and builds both modules with the flake's own toolchain. The
-   vendor hashes drift when a module's dependency graph changes (go.mod
-   require/replace/go.sum edits) — source-only edits do not re-drift them
-   (verified 2026-08-29). If the check fails with a hash mismatch, copy the
-   hash from the error message into `flake.nix` and re-run.
+   vendor hashes live in `vendorHash.nix` (imported by `flake.nix`) and drift
+   when a module's dependency graph changes (go.mod require/replace/go.sum
+   edits) — source-only edits do not re-drift them (verified 2026-08-29).
+   Repair them with `buildflow -s nix-hash-fix --fix` (or `nix-update`);
+   never paste a hash from the error message by hand. If rewriting the file,
+   recompute BOTH hashes — `root` and `ssetest` are independent.
+
+   `nix flake check` builds from `lib.fileset.gitTracked`, so new `.go` files
+   must be added with `git add` before the hermetic build can see them
+   (untracked files are invisible). A "not tracked by Git" or
+   "undefined: <new symbol>" error after a file split means the tree is
+   dirty, not that the code is broken.
 
 4. **Burn a fuzz budget before tagging.** CI fuzzes each target for only
    1m; a release deserves a longer soak. Run every target (root + sseparse

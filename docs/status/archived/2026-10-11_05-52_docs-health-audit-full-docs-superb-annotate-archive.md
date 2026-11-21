@@ -1,5 +1,7 @@
 # Status Report — 2026-10-11 05:52 — Docs-Health AUDIT: all `2026-0*` files, six living docs superb, annotate + archive the nine open reports
 
+> **Live remainder:** the owner decisions in §f (B2/B5/B6 verdicts) and the 37-archive ruling are tracked in [`TODO_LIST.md`](../../../TODO_LIST.md) Blocked; everything else in §f is done or routed there.
+
 Session executed the docs-health skill in AUDIT mode over every non-archived
 `2026-0*` file (9 status reports, 4 brainstorming docs, 1 feedback doc, 2
 benchmark txts) plus the six living docs, per the standing
@@ -142,8 +144,9 @@ against content — messages generic but not contradictory).
    trusting the chain's silence.
 5. **One wasted dry-run cycle on annotate kind semantics.** I guessed `h`
    renders raw evidence and `w` takes a full sentence from the skill's
-   examples; `h` actually wraps in `done at \`...\`` and `w` prepends its own
-   "Won't implement —". Reading annotate.go's transform (one grep) would have
+   examples; `h` actually wraps the value as a backticked done-at clause, and
+   `w` prepends its own "Won't implement —". Reading annotate.go's transform
+   (one grep) would have
    cost seconds; the skill's own tooling doc did not state rendering, and I
    chose to guess rather than look.
 6. **`sed -i` on `docs/conformance.md`** for the one-line link fix — speed

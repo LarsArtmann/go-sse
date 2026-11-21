@@ -1,5 +1,7 @@
 # Status Report — 2026-10-11 10:34 — Pareto Aftermath: Self-Review, Blast Radius, the Forgotten Pin Cascade
 
+> **Live remainder:** the owner decisions in §f (B2 actions-pr verdict, B6 browser-e2e verdict, 37-archive ruling) are tracked in [`TODO_LIST.md`](../../../TODO_LIST.md) Blocked; the mechanical rows are done.
+
 Follow-up to the 10:20 execution report: the user asked what was forgotten,
 what could be better, what can still improve. This pass re-audited the
 session's blast radius instead of doing new work. The headline finding: the

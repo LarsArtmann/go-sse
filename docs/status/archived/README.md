@@ -1,8 +1,8 @@
 # Archive
 
 Point-in-time status reports and plans, moved here when every numbered item
-carries an inline resolution (`~~item~~ done at `hash`` / Won't / routed) or a
-dated resolution appendix. They are history — never edit them except to
+carries an inline resolution (a struck item plus its verdict: `done at <hash>`,
+`Won't implement`, or a routed arrow) or a dated resolution appendix. They are history — never edit them except to
 annotate non-destructively. Living work lives in [`../../../TODO_LIST.md`](../../../TODO_LIST.md);
 completed work lives in [`../../../CHANGELOG.md`](../../../CHANGELOG.md).
 
@@ -27,4 +27,18 @@ first harvested into `TODO_LIST.md` / `ROADMAP.md` (verify-before-route), so
 
 The pre-2026-09-14 files above keep their dated appendix resolutions (the
 documented deviation — inline retro-striking declined by two archive passes,
-owner ruling still open).
+owner ruling still open; it is now a TODO_LIST Blocked row).
+
+## Archive manifest — 2026-11-21 red-master repair (bulk pass: 3 files)
+
+The three remaining `docs/status/` reports were annotated (every §f item holds
+a `done` / `routed` / `Won't implement` verdict; the live owner decisions carry
+`→ routed to TODO_LIST Blocked` arrows) and moved here so the cadence gate's
+oldest-report age resets. §a task tables keep their bare form: they record work
+that shipped, not open rows (the same shape every earlier pass archived).
+
+| File (moved this pass)                                                  | Classification   | Deciding reason                                                                                           |
+| ----------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------- |
+| 2026-10-11_05-52_docs-health-audit-full-docs-superb-annotate-archive.md | ANNOTATE+ARCHIVE | §f fully verdicted (item 40's CI wall-clock anomaly resolved 2026-11-21: no recurrence); decisions routed |
+| 2026-10-11_10-20_pareto-plan-execution-full-backlog.md                  | ANNOTATE+ARCHIVE | Plan executed end-to-end; every §f row done or routed to the living docs or Blocked rows                  |
+| 2026-10-11_10-34_pareto-aftermath-review-forgotten-pin-cascade.md       | ANNOTATE+ARCHIVE | B2/B6 verdicts routed to Blocked rows; 37-archive ruling routed; mechanical rows done                     |
