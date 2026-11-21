@@ -4,7 +4,10 @@ Conventions for status reports in this directory. A report is a **point-in-time
 historical snapshot**: write it once, then only annotate it non-destructively —
 a struck item followed by its verdict (`~~item~~ done at <hash>`) — and never
 rewrite, reorder, or delete content after the fact. Reports with every numbered
-item resolved move to `archived/`.
+item resolved move to `archived/`. A verdict hash must resolve in a FRESH
+clone: cite only commits pushed to the remote (the annotate gate's rule B
+flags reflog-only orphans; the 2026-11-21 docs-gates dogfood red paid for
+this), and verify a claimed PR/commit actually landed before striking.
 
 This file **specializes the global status-report format for this repo**: where
 the global skill and this file disagree, this file wins (it adds the coverage

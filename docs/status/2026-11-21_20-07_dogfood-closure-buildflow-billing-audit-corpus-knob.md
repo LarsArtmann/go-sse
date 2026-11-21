@@ -89,9 +89,9 @@ v0.4.0 release got cut for real.
 
 ## f) Up to 50 things we should get done next
 
-1. ~~Owner: fix BuildFlow billing (payment method / spending limit) on the LarsArtmann account, then re-run Build Gate/Lint Gate/SARIF~~ — routed TODO_LIST (BuildFlow CI BLOCKED row).
-2. ~~Owner: bump the system docs-gates input past `0a467ba` (v0.4.0) and rebuild~~ — routed TODO_LIST (archived-backlog row carries the flip).
-3. ~~Flip go-sse `.docs-gates.json` to `{"audit_corpus": "unarchived"}` and turn audit-all back on~~ — routed TODO_LIST (same row, exact diff recorded).
+1. ~~Owner: fix BuildFlow billing (payment method / spending limit) on the LarsArtmann account, then re-run Build Gate/Lint Gate/SARIF~~ done — routed TODO_LIST (BuildFlow CI BLOCKED row).
+2. ~~Owner: bump the system docs-gates input past `0a467ba` (v0.4.0) and rebuild~~ done — routed TODO_LIST (archived-backlog row carries the flip).
+3. ~~Flip go-sse `.docs-gates.json` to `{"audit_corpus": "unarchived"}` and turn audit-all back on~~ done — routed TODO_LIST (same row, exact diff recorded).
 4. Run the docs-health HARVEST ritual over the ~120 archived items once the flip lands — routed TODO_LIST (same row).
 5. Browser-verify the DataStar example (scripted half already green) — already TODO_LIST.
 
