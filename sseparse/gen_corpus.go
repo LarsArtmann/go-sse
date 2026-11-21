@@ -3,9 +3,10 @@
 // gen_corpus is the WPT-ingestion half of the corpus contract: it decodes
 // testdata/wpt_format_corpus.json, optionally ingests new vectors from
 // testdata/corpus_pending.json, and re-marshals everything through the
-// canonical recipe the byte-form gate pins (encoding/json MarshalIndent,
-// two-space indent, trailing newline). Running it with no pending file is
-// the idempotence proof: the output must equal the checked-in file.
+// canonical recipe the byte-form gate pins (encoding/json/v2 marshal into a
+// two-space indented document, plus a trailing newline). Running it with no
+// pending file is the idempotence proof: the output must equal the
+// checked-in file.
 //
 // Usage (from sseparse/):
 //
@@ -25,7 +26,8 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"os"
 	"strings"
@@ -110,7 +112,7 @@ func decode(raw []byte) ([]sseparse.ConformanceVector, error) {
 
 // canonical renders the corpus through the pinned byte recipe.
 func canonical(vectors []sseparse.ConformanceVector) ([]byte, error) {
-	canon, err := json.MarshalIndent(vectors, "", "  ")
+	canon, err := json.Marshal(vectors, jsontext.WithIndentPrefix(""), jsontext.WithIndent("  "))
 	if err != nil {
 		return nil, fmt.Errorf("marshal corpus: %w", err)
 	}

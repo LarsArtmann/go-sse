@@ -120,7 +120,11 @@ func TestCorpusJSONIsCanonical(t *testing.T) {
 		t.Fatalf("read corpus file: %v", err)
 	}
 
-	canon, err := json.Marshal(sseparse.MustCorpus(t), jsontext.WithIndentPrefix(""), jsontext.WithIndent("  "))
+	canon, err := json.Marshal(
+		sseparse.MustCorpus(t),
+		jsontext.WithIndentPrefix(""),
+		jsontext.WithIndent("  "),
+	)
 	if err != nil {
 		t.Fatalf("marshal corpus: %v", err)
 	}

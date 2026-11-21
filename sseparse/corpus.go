@@ -58,7 +58,7 @@ type ExpectedEvent struct {
 	// shape third-party parsers consume as data (plus ssetest re-exports).
 	//branching-flow:ignore strong-id
 	ID    string `json:"id,omitempty"`
-	Retry uint   `json:"retry,omitempty"`
+	Retry uint   `json:"retry,omitzero"`
 }
 
 // Corpus returns the conformance corpus as data. It is the single source of
