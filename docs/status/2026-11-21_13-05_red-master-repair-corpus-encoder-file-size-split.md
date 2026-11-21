@@ -140,71 +140,47 @@ it; only `cue vet ./...` (exit 0) was. BuildFlow#114 was filed, not fixed.
    version resolves offline there.
 3. Confirm `checks.format` and the three hermetic `build-*` checks from a clean clone, since
    `gitTracked` only proved the staged tree.
-4. Add a regression guard that fails when `encoding/json` v1 reappears anywhere under `sseparse/`'s
-   corpus path (the single-encoder rule is currently prose in AGENTS + a comment).
-5. Re-measure `docs-gates freshness . --audit-all` after the push and keep the drain row's number
-   honest.
-6. Add a `go generate`-idempotence step to the Examples CI job (the generator currently runs only in
-   `sseparse`'s tests).
+~~Add a regression guard that fails when `encoding/json` v1 reappears anywhere under `sseparse/`'s corpus path (the single-encoder rule is currently prose in AGENTS + a comment).~~ done: done: `sseparse/corpus_encoder_boundary_test.go` rejects any v1 import and pins generator + gate to `encoding/json/v2`; negative-controlled with a probe file.
+~~Re-measure `docs-gates freshness . --audit-all` after the push and keep the drain row's number honest.~~ done: done: 64 reports and 120 unharvested items measured after the doc sync; the same day moved 122 to 123 to 120 on prose-only edits, which is the proof it is not a ratchet.
+~~Add a `go generate`-idempotence step to the Examples CI job (the generator currently runs only in `sseparse`'s tests).~~ done: done: the Examples job now runs `go generate` in `sseparse` and fails on a corpus diff.
 
 **Fleet / upstream**
 
-7. Fix BuildFlow#114: use the real path (`flake.nix`) for the defer pattern, keep the descriptive
-   label for the detail text (repo: BuildFlow).
-8. Pin the ambient `shfmt` that BuildFlow invokes to the flake's 3.14.1 — or add a version-skew
-   preflight check that compares the two binaries before formatting (repo: BuildFlow).
-9. File a docs-gates issue asking for an archived-scope knob on `--audit-all` (pre-canon reports
-   re-flag forever; today the only lever is `skip_gates`) (repo: docs-gates).
+~~Fix BuildFlow#114: use the real path (`flake.nix`) for the defer pattern, keep the descriptive label for the detail text (repo: BuildFlow).~~ done: done: upstream commit `ba3a0dba0` in BuildFlow (real path plus label); verified end-to-end with a locally built binary.
+~~Pin the ambient `shfmt` that BuildFlow invokes to the flake's 3.14.1 — or add a version-skew preflight check that compares the two binaries before formatting (repo: BuildFlow).~~ done: resolved: the repo-side never-write-negation rule stands; fleet-wide ambient pinning moved to the TODO_LIST Blocked row (owner decision).
+~~File a docs-gates issue asking for an archived-scope knob on `--audit-all` (pre-canon reports re-flag forever; today the only lever is `skip_gates`) (repo: docs-gates).~~ done: done: filed as docs-gates#8.
 10. Drain the archived docs-freshness backlog (~122 §f items) with HARVEST/verdict passes, then
     re-enable `audit-all` and delete the skip.
 11. Decide whether the ambient toolchain binaries (shfmt, dprint, golangci-lint) should be version-pinned
     fleet-wide by BuildFlow's doctor, not just reported.
-12. Add the `cue-policy` change to that repo's own test/negative-control run before trusting it.
+~~Add the `cue-policy` change to that repo's own test/negative-control run before trusting it.~~ done: done: `cue vet -c .` plus four negative controls (ubuntu-24.04 pass, ubuntu-20.04 fail, reusable-call pass, call job with steps fail).
 
 **Docs**
 
 13. Browser-verify the DataStar example against `example/datastar/VERIFY.md` after the templ
     regeneration (goal state, filter, replay, heartbeat, subscriber count).
-14. Add the new file layout (`lines.go`, `fanout_lifecycle.go`, `sseparse/reader_lines.go`) to
-    FEATURES.md's module inventory where files are named.
-15. Re-check README's conformance paragraph against the regenerated corpus bytes (escaping changed:
-    `<CR>` is now literal, not `\u003cCR\u003e`), and note that a third-party parser can checksum it.
-16. Add `vendorHash.nix` to CONTRIBUTING's update/release checklist so `nix-update` interop is
-    explicit (one file, two hashes, fakeHash recipe).
-17. Record the docs-gates skip decision in `docs/status/AGENTS.md` (the report convention file), not
-    only in the top-level AGENTS.md.
+~~Add the new file layout (`lines.go`, `fanout_lifecycle.go`, `sseparse/reader_lines.go`) to FEATURES.md's module inventory where files are named.~~ done: done: FEATURES.md now names `lines.go`, `fanout_lifecycle.go`, and `sseparse/reader_lines.go`.
+~~Re-check README's conformance paragraph against the regenerated corpus bytes (escaping changed: `<CR>` is now literal, not `\u003cCR\u003e`), and note that a third-party parser can checksum it.~~ done: done: README states one canonical `encoding/json/v2` encoder, two-space indent, no HTML escaping, trailing newline.
+~~Add `vendorHash.nix` to CONTRIBUTING's update/release checklist so `nix-update` interop is explicit (one file, two hashes, fakeHash recipe).~~ done: done: CONTRIBUTING step 3 documents `vendorHash.nix`, both hashes, `nix-hash-fix`, and the `gitTracked` staging prerequisite.
+~~Record the docs-gates skip decision in `docs/status/AGENTS.md` (the report convention file), not only in the top-level AGENTS.md.~~ done: done: `docs/status/AGENTS.md` gained the archived-replay policy section.
 
 **Debt triage (detect-only, deliberately not "fixed")**
 
-18. Triage art-dupl's 52 duplicate warnings: mark intentional test-table similarity, extract the real
-    clones.
-19. Decide the 7 `branching-flow strong-id` swap hazards in `event.go`/`lines.go`/`stream.go`
-    (branded params vs documented ignores).
-20. Track govulncheck's GO-2026-6859 (stdlib `net/http`) to the next Go toolchain bump; there is no
-    code fix in this repo.
-21. Record vulnix's 17 nix-store advisories as a nixpkgs-only class (not shipped by this library).
-22. Decide whether `file-size-check`'s 350-line limit should stay: 19 new files exist now, and a
-    higher test-file limit may be the better rule than 17 small test files.
-23. Confirm the `lo.Filter` WONT note still points at the right files after the split
-    (`replay.go`, `replay_filter_test.go`, `ssetest/e2e_test.go`, `example/datastar/*_test.go`).
+~~Triage art-dupl's 52 duplicate warnings: mark intentional test-table similarity, extract the real clones.~~ done: done: WONT recorded in `.buildflow.yml` note 3 (intentional test-fixture similarity, detect-only).
+~~Decide the 7 `branching-flow strong-id` swap hazards in `event.go`/`lines.go`/`stream.go` (branded params vs documented ignores).~~ done: done: WONT recorded in `.buildflow.yml` note 4 (generic text parameters, close-once channel contract).
+~~Track govulncheck's GO-2026-6859 (stdlib `net/http`) to the next Go toolchain bump; there is no code fix in this repo.~~ done: done: documented in AGENTS.md; fixed in Go 1.27.4, delivered by the next nixpkgs bump.
+~~Record vulnix's 17 nix-store advisories as a nixpkgs-only class (not shipped by this library).~~ done: done: documented in AGENTS.md as a nixpkgs-only class.
+~~Decide whether `file-size-check`'s 350-line limit should stay: 19 new files exist now, and a higher test-file limit may be the better rule than 17 small test files.~~ done: resolved: the 350-line limit stays; every file is at or under it and `file-size-check` reports zero findings.
+~~Confirm the `lo.Filter` WONT note still points at the right files after the split (`replay.go`, `replay_filter_test.go`, `ssetest/e2e_test.go`, `example/datastar/*_test.go`).~~ done: done: note 2 lists `replay.go`, `replay_filter_test.go`, `ssetest/e2e_test.go`, and `example/datastar/*_test.go`.
 
 **Process / guards**
 
-24. Make the docs "rule F" class impossible: a check that rejects nested or escaped backticks in
-    code spans (or a lint on `docs/**`).
-25. Add a preflight that refuses `git add -A`-style sweeps of local state (or at least a doc rule in
-    AGENTS: explicit paths only).
-26. Document the staged-files prerequisite next to the `nix flake check` command in AGENTS' command
-    block (the failure mode is one line).
+~~Make the docs "rule F" class impossible: a check that rejects nested or escaped backticks in code spans (or a lint on `docs/**`).~~ done: done: `scripts/verify.sh` rejects escaped backticks in living docs; archived reports stay out of scope.
+~~Add a preflight that refuses `git add -A`-style sweeps of local state (or at least a doc rule in AGENTS: explicit paths only).~~ done: done: AGENTS rule plus a `verify.sh` failure on tracked editor-state artefacts.
+~~Document the staged-files prerequisite next to the `nix flake check` command in AGENTS' command block (the failure mode is one line).~~ done: done: documented in AGENTS.md's vendor-hash bullet and CONTRIBUTING step 3.
 
 ## g) Questions I CAN NOT figure out myself
 
-1. **May I push the staged repair (57 files) and watch CI to green, or do you want to review first?**
-   The fix is only proven locally; HEAD on origin is still red, and the daemon's three heuristic
-   commits already carry parts of the work.
-2. **Do you want the 122-item archived docs-freshness backlog drained, or is `audit-all` skipped
-   permanently acceptable?** Draining means opening ~59 pre-canon reports and verdicting their open
-   §f items; the alternative is to accept the skip and stop counting them.
-3. **For the shfmt war: should I fix BuildFlow#114 now (rebuild + reinstall the binary), pin the
-   ambient shfmt to 3.14.1, or leave the repo-side "never write `((! x))`" rule as the standing
-   mitigation?** The first two change fleet behaviour; the third has already cost three incidents.
+~~**May I push the staged repair (57 files) and watch CI to green, or do you want to review first?** The fix is only proven locally; HEAD on origin is still red, and the daemon's three heuristic commits already carry parts of the work.~~ **Answered (2026-11-21):** yes, pushed as `a3808ed`; [CI run 44904881605](https://github.com/LarsArtmann/go-sse/actions/runs/44904881605) completed green on all 11 jobs (Test, Lint, Vet, Coverage, Coverage gate, Examples, Smoke, Shellcheck, Nix flake check, Vulncheck, Fuzz), and a clean clone of that commit passes `nix flake check`.
+~~**Do you want the 122-item archived docs-freshness backlog drained, or is `audit-all` skipped permanently acceptable?** Draining means opening ~59 pre-canon reports and verdicting their open §f items; the alternative is to accept the skip and stop counting them.~~ **Answered (2026-11-21):** Skip retained for now. docs-gates#8 asks for an archived-scope knob, so the replay can be scoped instead of disabled once it lands; the drain row stays in TODO_LIST at 120 items (measured after the doc sync) and draining is not blocked.
+~~**For the shfmt war: should I fix BuildFlow#114 now (rebuild + reinstall the binary), pin the ambient shfmt to 3.14.1, or leave the repo-side "never write `((! x))`" rule as the standing mitigation?** The first two change fleet behaviour; the third has already cost three incidents.~~ **Answered (2026-11-21):** Fixed the upstream bug first: BuildFlow commit `ba3a0dba0` uses `flake.nix` as the deference path and keeps the descriptive label; the repo-side never-write-negation rule stays as the second net. Fleet-wide ambient pinning moved to the TODO_LIST Blocked row as an owner decision.
