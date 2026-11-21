@@ -18,38 +18,38 @@ and the remaining CI reds were traced to conditions that predate the pushes. Cov
 
 ## a) FULLY DONE
 
-| #   | Work                                                                    | Evidence                                                                                                                     |
-| --- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| 1   | go-sse push and CI                                                      | `83f6d79` on origin/master; CI run 44907564621 `success`; tree clean                                                          |
-| 2   | BuildFlow fix pushed and issue updated                                  | `ba3a0dba0` on origin/master; comment on [BuildFlow#114](https://github.com/LarsArtmann/BuildFlow/issues/114#issuecomment-7063073336) |
-| 3   | docs-gates pushes                                                       | `9cdf7e5` (draft + content-gate work) and `a5b2c26` (lint fix) on origin/main                                                |
-| 4   | cue-policy push                                                         | `0dec26d` on origin/master (allowlist + AGENTS.md + CHANGELOG)                                                               |
-| 5   | docs-gates lint repair: 17 → 0                                          | golines/gci/modernize/wsl_v5 auto-fixed; cyclop split into helpers; `hoursPerDay` named; defaults became functions; package docs corrected |
-| 6   | docs-gates local verification                                           | `golangci-lint run ./...` → 0 issues; `go vet` clean; `go test ./...` and `go test -race ./...` all packages pass              |
-| 7   | docs-gates self battery                                                 | `go run ./cmd/docs-gates run .` → 8/8 PASS including `audit-all`                                                              |
-| 8   | docs-gates CI `go` job green                                            | run [44907884267](https://github.com/Artmann-Technologies/docs-gates/actions/runs/44907884267): `provider` + `go` success       |
-| 9   | Local reproduction of the dogfood question                              | three tree shapes (working tree, clean clone, single-branch refs-pruned clone) all report 36 files / 215 strikes / 0 findings |
-| 10  | Pre-existing red confirmed                                              | BuildFlow workflows red at `ceb25ca`; docs-gates dogfood red at `43ab00a` — both before these pushes                          |
-| 11  | All working trees clean and synced                                      | `git status -sb` on all four repos shows no divergence                                                                        |
-| 12  | Report annotations from the previous pass                                | `83f6d79` strikes the push-related items and records the pushed hashes                                                        |
+| #  | Work                                       | Evidence                                                                                                                                   |
+| -- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1  | go-sse push and CI                         | `83f6d79` on origin/master; CI run 44907564621 `success`; tree clean                                                                       |
+| 2  | BuildFlow fix pushed and issue updated     | `ba3a0dba0` on origin/master; comment on [BuildFlow#114](https://github.com/LarsArtmann/BuildFlow/issues/114#issuecomment-7063073336)      |
+| 3  | docs-gates pushes                          | `9cdf7e5` (draft + content-gate work) and `a5b2c26` (lint fix) on origin/main                                                              |
+| 4  | cue-policy push                            | `0dec26d` on origin/master (allowlist + AGENTS.md + CHANGELOG)                                                                             |
+| 5  | docs-gates lint repair: 17 → 0             | golines/gci/modernize/wsl_v5 auto-fixed; cyclop split into helpers; `hoursPerDay` named; defaults became functions; package docs corrected |
+| 6  | docs-gates local verification              | `golangci-lint run ./...` → 0 issues; `go vet` clean; `go test ./...` and `go test -race ./...` all packages pass                          |
+| 7  | docs-gates self battery                    | `go run ./cmd/docs-gates run .` → 8/8 PASS including `audit-all`                                                                           |
+| 8  | docs-gates CI `go` job green               | run [44907884267](https://github.com/Artmann-Technologies/docs-gates/actions/runs/44907884267): `provider` + `go` success                  |
+| 9  | Local reproduction of the dogfood question | three tree shapes (working tree, clean clone, single-branch refs-pruned clone) all report 36 files / 215 strikes / 0 findings              |
+| 10 | Pre-existing red confirmed                 | BuildFlow workflows red at `ceb25ca`; docs-gates dogfood red at `43ab00a` — both before these pushes                                       |
+| 11 | All working trees clean and synced         | `git status -sb` on all four repos shows no divergence                                                                                     |
+| 12 | Report annotations from the previous pass  | `83f6d79` strikes the push-related items and records the pushed hashes                                                                     |
 
 ## b) PARTIALLY DONE
 
-| #   | Shipped                                                       | Remaining                                                                                                                       |
-| --- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | docs-gates `go`/`provider` jobs green                         | `dogfood` still exits 1 with 4 annotate findings; the battery prints only `gate annotate FAILED (rc=1):` and drops the findings   |
-| 2   | BuildFlow fix pushed                                          | Its CI is red for infrastructure reasons; the full workspace suite and a profile reinstall were not run                           |
-| 3   | Local proof of the docs-gates tree                            | CI-only finding text is not captured, so the 4 findings cannot be named from here                                                |
+| # | Shipped                               | Remaining                                                                                                                       |
+| - | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | docs-gates `go`/`provider` jobs green | `dogfood` still exits 1 with 4 annotate findings; the battery prints only `gate annotate FAILED (rc=1):` and drops the findings |
+| 2 | BuildFlow fix pushed                  | Its CI is red for infrastructure reasons; the full workspace suite and a profile reinstall were not run                         |
+| 3 | Local proof of the docs-gates tree    | CI-only finding text is not captured, so the 4 findings cannot be named from here                                               |
 
 ## c) NOT STARTED
 
-| #   | Item                                                        | Why                                                                                    |
-| --- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| 1   | Root-cause the 4 CI-only annotate findings                  | Needs the gate's stdout surfaced in CI or a debug workflow step                        |
-| 2   | Diagnose BuildFlow's four pre-runner workflow failures      | Runner/account-level state; owner territory                                            |
-| 3   | Drain the archived docs-freshness backlog (~120 items)      | Bounded harvest work; docs-gates#8 tracks the scoping knob                             |
-| 4   | Browser verification of the examples                        | No browser available in this environment                                               |
-| 5   | Fleet-wide formatter pinning                                | Owner decision recorded in the TODO_LIST Blocked table                                 |
+| # | Item                                                   | Why                                                             |
+| - | ------------------------------------------------------ | --------------------------------------------------------------- |
+| 1 | Root-cause the 4 CI-only annotate findings             | Needs the gate's stdout surfaced in CI or a debug workflow step |
+| 2 | Diagnose BuildFlow's four pre-runner workflow failures | Runner/account-level state; owner territory                     |
+| 3 | Drain the archived docs-freshness backlog (~120 items) | Bounded harvest work; docs-gates#8 tracks the scoping knob      |
+| 4 | Browser verification of the examples                   | No browser available in this environment                        |
+| 5 | Fleet-wide formatter pinning                           | Owner decision recorded in the TODO_LIST Blocked table          |
 
 ## d) TOTALLY FUCKED UP
 
@@ -61,14 +61,14 @@ and the remaining CI reds were traced to conditions that predate the pushes. Cov
 
 ## e) WHAT WE SHOULD IMPROVE
 
-| ID   | Priority | Improvement                                                                                                                       |
-| ---- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| IMP1 | High     | Run the sibling repo's own lint (and tests) locally before pushing any commit                                                     |
-| IMP2 | High     | Stage every related file before a daemon sweep, or squash before push, so no pushed commit is knowingly non-green                   |
-| IMP3 | High     | Surface gate stdout in the docs-gates battery on failure instead of printing only the rc                                           |
-| IMP4 | Medium   | Add a debug workflow step (or a `--verbose` passthrough) when a dogfood gate fails, so CI-only findings are nameable                |
-| IMP5 | Medium   | Check the target repo's CI history before pushing a backlog of local commits; a never-pushed feature is an untested change         |
-| IMP6 | Low      | Keep a short pre-push log in each sibling repo (lint, vet, test results) so "pushed" and "verified" cannot be confused later       |
+| ID   | Priority | Improvement                                                                                                                  |
+| ---- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| IMP1 | High     | Run the sibling repo's own lint (and tests) locally before pushing any commit                                                |
+| IMP2 | High     | Stage every related file before a daemon sweep, or squash before push, so no pushed commit is knowingly non-green            |
+| IMP3 | High     | Surface gate stdout in the docs-gates battery on failure instead of printing only the rc                                     |
+| IMP4 | Medium   | Add a debug workflow step (or a `--verbose` passthrough) when a dogfood gate fails, so CI-only findings are nameable         |
+| IMP5 | Medium   | Check the target repo's CI history before pushing a backlog of local commits; a never-pushed feature is an untested change   |
+| IMP6 | Low      | Keep a short pre-push log in each sibling repo (lint, vet, test results) so "pushed" and "verified" cannot be confused later |
 
 ## f) Up to 50 things we should get done next
 

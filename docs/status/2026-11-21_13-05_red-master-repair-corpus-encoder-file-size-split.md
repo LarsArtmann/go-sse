@@ -140,9 +140,9 @@ it; only `cue vet ./...` (exit 0) was. BuildFlow#114 was filed, not fixed.
    version resolves offline there.
 3. Confirm `checks.format` and the three hermetic `build-*` checks from a clean clone, since
    `gitTracked` only proved the staged tree.
-~~Add a regression guard that fails when `encoding/json` v1 reappears anywhere under `sseparse/`'s corpus path (the single-encoder rule is currently prose in AGENTS + a comment).~~ done: done: `sseparse/corpus_encoder_boundary_test.go` rejects any v1 import and pins generator + gate to `encoding/json/v2`; negative-controlled with a probe file.
-~~Re-measure `docs-gates freshness . --audit-all` after the push and keep the drain row's number honest.~~ done: done: 64 reports and 120 unharvested items measured after the doc sync; the same day moved 122 to 123 to 120 on prose-only edits, which is the proof it is not a ratchet.
-~~Add a `go generate`-idempotence step to the Examples CI job (the generator currently runs only in `sseparse`'s tests).~~ done: done: the Examples job now runs `go generate` in `sseparse` and fails on a corpus diff.
+   ~~Add a regression guard that fails when `encoding/json` v1 reappears anywhere under `sseparse/`'s corpus path (the single-encoder rule is currently prose in AGENTS + a comment).~~ done: done: `sseparse/corpus_encoder_boundary_test.go` rejects any v1 import and pins generator + gate to `encoding/json/v2`; negative-controlled with a probe file.
+   ~~Re-measure `docs-gates freshness . --audit-all` after the push and keep the drain row's number honest.~~ done: done: 64 reports and 120 unharvested items measured after the doc sync; the same day moved 122 to 123 to 120 on prose-only edits, which is the proof it is not a ratchet.
+   ~~Add a `go generate`-idempotence step to the Examples CI job (the generator currently runs only in `sseparse`'s tests).~~ done: done: the Examples job now runs `go generate` in `sseparse` and fails on a corpus diff.
 
 **Fleet / upstream**
 
@@ -150,19 +150,19 @@ it; only `cue vet ./...` (exit 0) was. BuildFlow#114 was filed, not fixed.
 ~~Pin the ambient `shfmt` that BuildFlow invokes to the flake's 3.14.1 — or add a version-skew preflight check that compares the two binaries before formatting (repo: BuildFlow).~~ done: resolved: the repo-side never-write-negation rule stands; fleet-wide ambient pinning moved to the TODO_LIST Blocked row (owner decision).
 ~~File a docs-gates issue asking for an archived-scope knob on `--audit-all` (pre-canon reports re-flag forever; today the only lever is `skip_gates`) (repo: docs-gates).~~ done: done: filed as docs-gates#8.
 10. Drain the archived docs-freshness backlog (~122 §f items) with HARVEST/verdict passes, then
-    re-enable `audit-all` and delete the skip.
+re-enable `audit-all` and delete the skip.
 11. Decide whether the ambient toolchain binaries (shfmt, dprint, golangci-lint) should be version-pinned
-    fleet-wide by BuildFlow's doctor, not just reported.
+fleet-wide by BuildFlow's doctor, not just reported.
 ~~Add the `cue-policy` change to that repo's own test/negative-control run before trusting it.~~ done: done: `cue vet -c .` plus four negative controls (ubuntu-24.04 pass, ubuntu-20.04 fail, reusable-call pass, call job with steps fail).
 
 **Docs**
 
 13. Browser-verify the DataStar example against `example/datastar/VERIFY.md` after the templ
     regeneration (goal state, filter, replay, heartbeat, subscriber count).
-~~Add the new file layout (`lines.go`, `fanout_lifecycle.go`, `sseparse/reader_lines.go`) to FEATURES.md's module inventory where files are named.~~ done: done: FEATURES.md now names `lines.go`, `fanout_lifecycle.go`, and `sseparse/reader_lines.go`.
-~~Re-check README's conformance paragraph against the regenerated corpus bytes (escaping changed: `<CR>` is now literal, not `\u003cCR\u003e`), and note that a third-party parser can checksum it.~~ done: done: README states one canonical `encoding/json/v2` encoder, two-space indent, no HTML escaping, trailing newline.
-~~Add `vendorHash.nix` to CONTRIBUTING's update/release checklist so `nix-update` interop is explicit (one file, two hashes, fakeHash recipe).~~ done: done: CONTRIBUTING step 3 documents `vendorHash.nix`, both hashes, `nix-hash-fix`, and the `gitTracked` staging prerequisite.
-~~Record the docs-gates skip decision in `docs/status/AGENTS.md` (the report convention file), not only in the top-level AGENTS.md.~~ done: done: `docs/status/AGENTS.md` gained the archived-replay policy section.
+    ~~Add the new file layout (`lines.go`, `fanout_lifecycle.go`, `sseparse/reader_lines.go`) to FEATURES.md's module inventory where files are named.~~ done: done: FEATURES.md now names `lines.go`, `fanout_lifecycle.go`, and `sseparse/reader_lines.go`.
+    ~~Re-check README's conformance paragraph against the regenerated corpus bytes (escaping changed: `<CR>` is now literal, not `\u003cCR\u003e`), and note that a third-party parser can checksum it.~~ done: done: README states one canonical `encoding/json/v2` encoder, two-space indent, no HTML escaping, trailing newline.
+    ~~Add `vendorHash.nix` to CONTRIBUTING's update/release checklist so `nix-update` interop is explicit (one file, two hashes, fakeHash recipe).~~ done: done: CONTRIBUTING step 3 documents `vendorHash.nix`, both hashes, `nix-hash-fix`, and the `gitTracked` staging prerequisite.
+    ~~Record the docs-gates skip decision in `docs/status/AGENTS.md` (the report convention file), not only in the top-level AGENTS.md.~~ done: done: `docs/status/AGENTS.md` gained the archived-replay policy section.
 
 **Debt triage (detect-only, deliberately not "fixed")**
 
