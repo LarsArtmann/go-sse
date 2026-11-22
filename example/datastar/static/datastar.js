@@ -1351,7 +1351,9 @@ var Z = (e) => {
       if (t.endsWith("s")) return +t.replace("s", "") * 1e3;
       try {
         return Number.parseFloat(t);
-      } catch {}
+      } catch {
+        // Number.parseFloat never throws (returns NaN on failure); defensive guard kept from upstream.
+      }
     }
     return 0;
   },
