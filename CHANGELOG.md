@@ -25,6 +25,8 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-04
+
 ### Fixed
 
 - Red master (run 44801238791, 2026-11-20) repaired: the WPT corpus generator still marshalled through `encoding/json` v1 while the byte-canonical gate verified `json/v2` output, so `TestCorpusJSONIsCanonical` failed in every job. Generator, round-trip test and gate now share one `json/v2`+`jsontext` encoder, and `ExpectedEvent.Retry` uses `omitzero` (json/v2's `omitempty` no longer omits numeric zero). Same pass regenerated the two stale `*_templ.go` files with templ v0.3.1100 (the version go.mod already required — the CI pin was eleven patch releases behind, and the stale output tripped golangci v2.15's new contextcheck), rewrote `scripts/verify.sh` negation-free so buildflow's bare `shfmt -w` and treefmt's canonical style can no longer drift it, and bumped CI's golangci-lint pin to v2.15.0 to match flake.lock. The docs corpus was re-greened at the same time: 43 annotated findings repaired (10 inline-code spacing, 17 cross-repo `done at` hashes qualified as `repo@sha`, 15 verdict repairs or un-strikes, 1 malformed table strike), three overdue reports archived with a manifest, and `.docs-gates.json` skips the `audit-all` replay, whose token-DF match over pre-canon archived reports made doc wording, not code, decide whether the gate was green. Finally the eleven files over buildflow's 350-line limit were split at symbol seams into 19 topical files (production code included: `lines.go`, `fanout_lifecycle.go`, `sseparse/reader_lines.go`); `file-size-check` now reports zero findings without raising the limit.
