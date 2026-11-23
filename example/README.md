@@ -8,11 +8,11 @@ activity feed, which lives in the companion library
 (moved there 2026-11-23, rewritten on go-datastar's Patch API with go-sse as
 the transport).
 
-| Example                  | Port    | What it shows                                                                                            | Audience                              |
-| ------------------------ | ------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| [`server.go`](server.go) | `:8080` | Bare wire format — subscribe and broadcast with `curl`. No browser.                                      | Learning the SSE wire format          |
-| [go-datastar `activity-feed/`](https://github.com/LarsArtmann/go-datastar/tree/master/example/activity-feed) | `:8767` | Live activity feed: fan-out, filtering, replay, heartbeat — via DataStar patches over go-sse.            | Rich, signal-driven UIs               |
-| [`htmx/`](htmx/)         | `:8766` | HTML fragment swapping via HTMX + its SSE extension. The server streams HTML; HTMX swaps it in.          | Hypermedia / server-rendered HTML UIs |
+| Example                                                                                                      | Port    | What it shows                                                                                   | Audience                              |
+| ------------------------------------------------------------------------------------------------------------ | ------- | ----------------------------------------------------------------------------------------------- | ------------------------------------- |
+| [`server.go`](server.go)                                                                                     | `:8080` | Bare wire format — subscribe and broadcast with `curl`. No browser.                             | Learning the SSE wire format          |
+| [go-datastar `activity-feed/`](https://github.com/LarsArtmann/go-datastar/tree/master/example/activity-feed) | `:8767` | Live activity feed: fan-out, filtering, replay, heartbeat — via DataStar patches over go-sse.   | Rich, signal-driven UIs               |
+| [`htmx/`](htmx/)                                                                                             | `:8766` | HTML fragment swapping via HTMX + its SSE extension. The server streams HTML; HTMX swaps it in. | Hypermedia / server-rendered HTML UIs |
 
 The two browser demos take **different scopes** to highlight each tool's
 strengths: go-datastar's `activity-feed/` is a full go-sse feature showcase
@@ -131,19 +131,19 @@ updates. The trade-offs below flow from that mechanism, not the specific demo.
 
 ### At a glance
 
-| Aspect                    | DataStar (go-datastar example)                                                     | HTMX `htmx/`                                                |
-| ------------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| **Mental model**          | Reactive signals + surgical DOM patches                                            | Hypermedia: swap HTML fragments into targets                |
-| **Server sends**          | Keyed-line protocol (`selector …`, `mode …`, `signals {…}`)                        | Raw HTML fragments                                          |
-| **go-sse API used**       | `Broadcaster`, `SubscribeFilter`, `EventStore`/`Replay`, `Heartbeat`               | `Send(Event{...})` (vanilla SSE; no special helpers)        |
-| **Client bundle**         | `datastar.js` (~56 KB, 1 file)                                                     | `htmx.min.js` + `sse.min.js` (~54 KB, 2 files)              |
-| **Payload per event**     | Small — only the changed signal / element                                          | Larger — the whole fragment is re-rendered each event       |
-| **Update granularity**    | Surgical — updates one value on a **stable** element                               | Coarse — `innerHTML` swap **recreates** the children        |
-| **In-place vs re-render** | Patches a stable node (CSS transitions & focus persist)                            | Replaces children (transitions reset; use `morph` ext)      |
-| **Restart the stream**    | `data-on:click="@get('/events')"` — one attribute                                  | Swap the `sse-connect` container (`outerHTML`) — a fragment |
-| **Reconnect / replay**    | Native `EventSource` → `Last-Event-ID` → go-sse replay                             | Native `EventSource` → `Last-Event-ID` → go-sse replay      |
-| **Ecosystem / maturity**  | Newer, custom attribute DSL, growing                                               | Mature, huge ecosystem, standard HTML attributes            |
-| **Learning curve**        | Reactivity + DataStar expression DSL                                               | Hypermedia fundamentals (HTML in, HTML out)                 |
+| Aspect                    | DataStar (go-datastar example)                                       | HTMX `htmx/`                                                |
+| ------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------- |
+| **Mental model**          | Reactive signals + surgical DOM patches                              | Hypermedia: swap HTML fragments into targets                |
+| **Server sends**          | Keyed-line protocol (`selector …`, `mode …`, `signals {…}`)          | Raw HTML fragments                                          |
+| **go-sse API used**       | `Broadcaster`, `SubscribeFilter`, `EventStore`/`Replay`, `Heartbeat` | `Send(Event{...})` (vanilla SSE; no special helpers)        |
+| **Client bundle**         | `datastar.js` (~56 KB, 1 file)                                       | `htmx.min.js` + `sse.min.js` (~54 KB, 2 files)              |
+| **Payload per event**     | Small — only the changed signal / element                            | Larger — the whole fragment is re-rendered each event       |
+| **Update granularity**    | Surgical — updates one value on a **stable** element                 | Coarse — `innerHTML` swap **recreates** the children        |
+| **In-place vs re-render** | Patches a stable node (CSS transitions & focus persist)              | Replaces children (transitions reset; use `morph` ext)      |
+| **Restart the stream**    | `data-on:click="@get('/events')"` — one attribute                    | Swap the `sse-connect` container (`outerHTML`) — a fragment |
+| **Reconnect / replay**    | Native `EventSource` → `Last-Event-ID` → go-sse replay               | Native `EventSource` → `Last-Event-ID` → go-sse replay      |
+| **Ecosystem / maturity**  | Newer, custom attribute DSL, growing                                 | Mature, huge ecosystem, standard HTML attributes            |
+| **Learning curve**        | Reactivity + DataStar expression DSL                                 | Hypermedia fundamentals (HTML in, HTML out)                 |
 
 ### Pros & cons
 

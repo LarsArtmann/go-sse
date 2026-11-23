@@ -20,13 +20,13 @@ not completed); remote state of the fix commit.
 
 ## a) FULLY DONE
 
-| #  | Work                                                                                                                                              | Evidence                                                                                                                            |
-| -- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| a1 | Vendored `datastar.js` empty-catch ERROR fixed with an in-body intent comment (the checker's documented-ignore remedy, honored even under `--no-suppress`) | `example/datastar/static/datastar.js:1354`; `erraudit lint ./...` → exit 0; erraudit source `internal/jserr/detectors.go:119` confirms comment-only bodies are intentional ignores |
-| a2 | 11 `--enforce-generic-return` advisories triaged and ACCEPTED (deliberate non-fixes: public error APIs return idiomatic `error`; callers classify via go-error-family codes with `errors.Is`; concrete types = API break + typed-nil landmine) | `erraudit lint ./... --max --disable generic_return` → exit 0; `erraudit fix ./...` dry-run → "No fixes found" in root, ssetest, sseparse |
-| a3 | Strict-audit posture recorded in AGENTS.md Gotchas (strict gate = `--max --disable generic_return`; no retyping; no `//nolint` — `--max` bypasses directives; re-add the catch comment on bundle upgrades) | AGENTS.md erraudit bullet (commit `dadb670`, local)                                                                                  |
-| a4 | Full pre-push gate re-run after the changes                                                                                                       | `scripts/verify.sh --fast` → ALL CHECKS PASSED (0 lint issues ×3, all tests ok, benchmarks smoke-tested)                              |
-| a5 | Coverage measured fresh for the report                                                                                                            | `nix run .#coverage-gate` → library 100.0%, ssetest 100.0%, sseparse 100.0%, all at baseline                                          |
+| #  | Work                                                                                                                                                                                                                                           | Evidence                                                                                                                                                                           |
+| -- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| a1 | Vendored `datastar.js` empty-catch ERROR fixed with an in-body intent comment (the checker's documented-ignore remedy, honored even under `--no-suppress`)                                                                                     | `example/datastar/static/datastar.js:1354`; `erraudit lint ./...` → exit 0; erraudit source `internal/jserr/detectors.go:119` confirms comment-only bodies are intentional ignores |
+| a2 | 11 `--enforce-generic-return` advisories triaged and ACCEPTED (deliberate non-fixes: public error APIs return idiomatic `error`; callers classify via go-error-family codes with `errors.Is`; concrete types = API break + typed-nil landmine) | `erraudit lint ./... --max --disable generic_return` → exit 0; `erraudit fix ./...` dry-run → "No fixes found" in root, ssetest, sseparse                                          |
+| a3 | Strict-audit posture recorded in AGENTS.md Gotchas (strict gate = `--max --disable generic_return`; no retyping; no `//nolint` — `--max` bypasses directives; re-add the catch comment on bundle upgrades)                                     | AGENTS.md erraudit bullet (commit `dadb670`, local)                                                                                                                                |
+| a4 | Full pre-push gate re-run after the changes                                                                                                                                                                                                    | `scripts/verify.sh --fast` → ALL CHECKS PASSED (0 lint issues ×3, all tests ok, benchmarks smoke-tested)                                                                           |
+| a5 | Coverage measured fresh for the report                                                                                                                                                                                                         | `nix run .#coverage-gate` → library 100.0%, ssetest 100.0%, sseparse 100.0%, all at baseline                                                                                       |
 
 ## b) PARTIALLY DONE
 
@@ -65,13 +65,13 @@ not completed); remote state of the fix commit.
 
 ## e) WHAT WE SHOULD IMPROVE
 
-| IMP# | Priority | Improvement                                                                                                                                                             |
-| ---- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| IMP# | Priority | Improvement                                                                                                                                                                                      |
+| ---- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | IMP1 | P0       | Make the erraudit posture mechanical: a `scripts/` lane (or verify.sh step) running `erraudit lint ./... --max --disable generic_return` so the strict gate is one command, not remembered prose |
-| IMP2 | P1       | Vendored-bundle edit loss-prevention: on any DataStar bundle upgrade, re-add the catch comment (AGENTS.md documents it) — or upstream the comment so upgrades carry it natively |
-| IMP3 | P1       | Evidence discipline: never capture exit codes from behind a pipe; assert the tool's exit directly                                                                        |
-| IMP4 | P2       | erraudit binary has moved (`d19cca1e` → `ee8a415`) since the go-error-modernization skill's last flag verification; a flag-table refresh belongs in the crush-config repo |
-| IMP5 | P2       | Session-start ritual: make the CI probe + ahead/behind check part of the opening tool batch, per AGENTS.md                                                              |
+| IMP2 | P1       | Vendored-bundle edit loss-prevention: on any DataStar bundle upgrade, re-add the catch comment (AGENTS.md documents it) — or upstream the comment so upgrades carry it natively                  |
+| IMP3 | P1       | Evidence discipline: never capture exit codes from behind a pipe; assert the tool's exit directly                                                                                                |
+| IMP4 | P2       | erraudit binary has moved (`d19cca1e` → `ee8a415`) since the go-error-modernization skill's last flag verification; a flag-table refresh belongs in the crush-config repo                        |
+| IMP5 | P2       | Session-start ritual: make the CI probe + ahead/behind check part of the opening tool batch, per AGENTS.md                                                                                       |
 
 ## f) Up to 50 things we should get done next
 

@@ -355,14 +355,14 @@ go run ./example/activity-feed/
 # open http://localhost:8767
 ```
 
-| You do this...               | ...and this go-sse API carries it                                        |
-| ---------------------------- | ------------------------------------------------------------------------- |
+| You do this...               | ...and this go-sse API carries it                                          |
+| ---------------------------- | -------------------------------------------------------------------------- |
 | Open multiple browser tabs   | `Broadcaster` fan-out — 64-deep buffered subscriber channels, drop on full |
-| Watch the subscriber counter | `OnSubscribe`/`OnUnsubscribe` callbacks + `SubscriberCount()`               |
-| Click "Alerts only"          | `SubscribeFilter` — predicate evaluated under the fan-out read lock         |
-| Close a tab, wait, reopen    | `EventStore` + `Replay` via the `Last-Event-ID` header                      |
-| Leave a tab idle             | `Stream.Heartbeat` — SSE comment frames every 15s                           |
-| Press Ctrl+C                 | `Broadcaster.Shutdown(ctx)` — drains buffers, then closes channels          |
+| Watch the subscriber counter | `OnSubscribe`/`OnUnsubscribe` callbacks + `SubscriberCount()`              |
+| Click "Alerts only"          | `SubscribeFilter` — predicate evaluated under the fan-out read lock        |
+| Close a tab, wait, reopen    | `EventStore` + `Replay` via the `Last-Event-ID` header                     |
+| Leave a tab idle             | `Stream.Heartbeat` — SSE comment frames every 15s                          |
+| Press Ctrl+C                 | `Broadcaster.Shutdown(ctx)` — drains buffers, then closes channels         |
 
 A minimal HTMX SSE example lives in [`example/htmx/`](example/htmx/):
 
