@@ -131,7 +131,7 @@ Separate Go module (`github.com/larsartmann/go-sse/ssetest`), so `testing` never
 | Dogfood E2E over real go-sse types                                               | FULLY_FUNCTIONAL | `e2e_test.go` (Stream round-trip, Broadcaster fan-out, Replay+LastEventID, heartbeat invisibility, timeout read, sticky-ID reconnect end-to-end)                                                                                                             |
 | Hermetic Nix check for the nested module                                         | FULLY_FUNCTIONAL | `hermeticCheckSsetest` (`checks.build-ssetest`) in `flake.nix`; `preBuild = "cd ssetest"` bridges buildGoModule's root-module assumption                                                                                                                     |
 
-Example coverage note: the runnable `example/` packages are measured in the repo-wide `go test ./... -cover` total (root package `.` 100.0%, `example/datastar` 47.9%, `example/server.go` and `example/htmx` 0% — example figures measured 2026-10-11) but are excluded from the library coverage gate, which measures the `sse` package only.
+Example coverage note: the runnable `example/` packages are measured in the repo-wide `go test ./... -cover` total (root package `.` 100.0%, `example/` 8.6%, `example/htmx` 2.2% — example figures measured 2026-11-23, after the DataStar activity-feed example moved to go-datastar's `example/activity-feed/`) but are excluded from the library coverage gate, which measures the `sse` package only.
 
 ## Explicit non-goals
 

@@ -21,7 +21,8 @@
 #    Revisit only if sseparse ever needs a v1-only API.
 #
 # 2. lo.Filter / lo.SliceToMap suggestions (replay.go,
-#    replay_filter_test.go, ssetest/e2e_test.go, example/datastar/*_test.go)
+#    replay_filter_test.go, ssetest/e2e_test.go; example/datastar/*_test.go
+#    fired too until that example moved to go-datastar 2026-11-23)
 #    are WONT: samber/lo is not a dependency of this repo, and the suggested
 #    sites are one-line loops where the explicit form is clearer than a
 #    utility-module import. Revisit only if the repo adopts samber/lo for

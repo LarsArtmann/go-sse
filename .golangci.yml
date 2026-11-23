@@ -278,9 +278,6 @@ linters:
         text: unused
         linters:
           - unused
-      - path: example/datastar/
-        linters:
-          - godoclint
       - path: example/htmx/
         linters:
           - godoclint
