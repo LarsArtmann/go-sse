@@ -77,7 +77,6 @@ yarn-error.log*
 
 ## Go example binaries (produced by `go build ./example/<name>` from repo root)
 /htmx
-/datastar
 /server
 
 ## Nix

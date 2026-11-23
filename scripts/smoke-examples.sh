@@ -4,7 +4,7 @@
 # A no-browser smoke check: CI's examples job only compiles them, so a dead
 # handler, a wrong port, or a startup panic would ship unnoticed. Run locally
 # with `nix develop -c scripts/smoke-examples.sh` or in CI as-is (needs go +
-# curl on PATH). Each example is booted on a smoke port (18080/18765/18766 —
+# curl on PATH). Each example is booted on a smoke port (18080/18766 —
 # the 1-prefix avoids colliding with the defaults while something else on
 # the dev machine holds 8080) via the PORT env the examples honor.
 set -euo pipefail
@@ -68,20 +68,6 @@ curl -sf -X POST "http://127.0.0.1:18080/broadcast?msg=smoke-probe" >/dev/null |
     exit 1
   }
 echo "    root example OK"
-
-echo "==> example/datastar (:18765)"
-start_example example-datastar ./example/datastar 18765
-http_ok "http://127.0.0.1:18765/" ||
-  {
-    echo "FAIL: datastar example index not served" >&2
-    exit 1
-  }
-sse_bytes "http://127.0.0.1:18765/events" 8 ||
-  {
-    echo "FAIL: datastar example /events served no SSE frame" >&2
-    exit 1
-  }
-echo "    datastar example OK"
 
 echo "==> example/htmx (:18766)"
 start_example example-htmx ./example/htmx 18766
