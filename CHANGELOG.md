@@ -25,6 +25,18 @@ without changelog lines (`a5ff824`, `7776bc7`).
 
 ## [Unreleased]
 
+### Changed
+
+- The DataStar activity-feed example moved to the companion library:
+  [`go-datastar/example/activity-feed/`](https://github.com/LarsArtmann/go-datastar/tree/master/example/activity-feed)
+  (`:8767`), rewritten on go-datastar's Patch API (`ElementsPatch`/
+  `SignalsPatch` with event IDs) while keeping go-sse as the transport
+  (`Broadcaster`, `SubscribeFilter`, ring-buffer `EventStore` + `Replay`,
+  `Heartbeat`). go-sse keeps `example/server.go` and `example/htmx/`; guides
+  and READMEs link to the new location. Scope rationale: go-sse stays a
+  protocol-free transport; the DataStar wire demo belongs where the protocol
+  library lives.
+
 ## [0.7.0] - 2026-11-04
 
 ### Fixed

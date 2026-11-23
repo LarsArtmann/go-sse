@@ -34,7 +34,8 @@ writes everything it returns. Three properties follow:
 ## Pattern 1: Bounded ring buffer (the default choice)
 
 Keep the last N events. On append, evict the oldest. This is what
-`example/datastar/store.go` (`memStore`) does:
+go-datastar's [`example/activity-feed/store.go`](https://github.com/LarsArtmann/go-datastar/blob/master/example/activity-feed/store.go)
+(`memStore`) does:
 
 ```go
 type memStore struct {
@@ -170,4 +171,6 @@ store type's doc comment so the choice is discoverable. Whatever you pick,
 
 - [Reconnection and Retry](reconnection-and-retry.md) — how `Replay`,
   `Last-Event-ID`, and the browser's reconnect hint cooperate.
-- `example/datastar/store.go` — the ring buffer this guide abstracts, in use.
+- go-datastar's
+  [`example/activity-feed/store.go`](https://github.com/LarsArtmann/go-datastar/blob/master/example/activity-feed/store.go)
+  — the ring buffer this guide abstracts, in use.

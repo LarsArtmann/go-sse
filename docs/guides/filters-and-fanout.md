@@ -28,7 +28,8 @@ A `nil` predicate means "all events" — identical to `Subscribe`.
 
 Each handler derives the predicate from _its own_ request, so one broadcaster
 serves every client's slice of the stream (the `?filter=alerts` pattern from
-`example/datastar`):
+go-datastar's [activity-feed
+example](https://github.com/LarsArtmann/go-datastar/tree/master/example/activity-feed)):
 
 ```go
 func eventsHandler(bc *sse.Broadcaster[sse.Event]) http.HandlerFunc {
@@ -142,6 +143,8 @@ type, or run two broadcasters.
 ## See also
 
 - `fanout.go` — the read-lock contract and `safePredCall` containment.
-- `example/datastar/handlers.go` — the `?filter=alerts` recipe, live.
+- go-datastar's
+  [`example/activity-feed/server.go`](https://github.com/LarsArtmann/go-datastar/blob/master/example/activity-feed/server.go)
+  — the `?filter=alerts` recipe, live.
 - [EventStore Patterns](eventstore-patterns.md) — retention bounds for the
   replay side of filtering.

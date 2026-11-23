@@ -67,7 +67,9 @@ store's semantics dictate. IDs are validated with `ParseEventID` (the spec
 forbids NUL, LF, CR in the header value); `MustParseEventID` is for constants
 and tests only.
 
-See `example/datastar/` for the full pattern (store + replay + live fan-out).
+See go-datastar's [activity-feed
+example](https://github.com/LarsArtmann/go-datastar/tree/master/example/activity-feed)
+for the full pattern (store + replay + live fan-out).
 
 ### 4. `Heartbeat` (the connection survives idle periods)
 

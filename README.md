@@ -340,83 +340,39 @@ go-sse has no DataStar-specific types or event-name constants — it remains a
 transport library. `KeyedLines` is a general SSE utility (keyed data lines are
 used by many protocols); DataStar is the most prominent consumer.
 
-### Runnable example: live activity feed
+### Runnable examples
 
-A complete DataStar example lives in [`example/datastar/`](example/datastar/); a minimal HTMX SSE example lives in [`example/htmx/`](example/htmx/). [`example/README.md`](example/README.md) compares the two approaches (mechanism, payload size, granularity, bundle size, trade-offs).
-It is a **live activity feed** that demonstrates every go-sse feature in under
-30 seconds of interaction.
-
-| You do this...               | ...and see this go-sse feature                                                  |
-| ---------------------------- | ------------------------------------------------------------------------------- |
-| Open multiple browser tabs   | All tabs receive the same events live — `Broadcaster` fan-out                   |
-| Watch the subscriber counter | Updates in real time — `SubscriberCount` via `OnSubscribe`/`OnUnsubscribe`      |
-| Click "Alerts only"          | Feed instantly filters — `SubscribeFilter` with a predicate                     |
-| Close a tab, wait, reopen it | "Replayed N missed events" banner — `EventStore` + `Replay` via `Last-Event-ID` |
-| Leave a tab idle             | Connection stays alive — `Heartbeat`                                            |
-
-The example uses [templ](https://templ.guide) for type-safe HTML, a real `.css`
-file with dark/light theme support, and embeds the DataStar JS bundle via
-`go:embed` — no CDN required.
+The flagship **live activity feed** — fan-out, subscriber count, alerts-only
+filtering, reconnection replay, heartbeat, graceful shutdown, all observable
+in under 30 seconds of browser interaction — lives in the companion library:
+[go-datastar's `example/activity-feed/`](https://github.com/LarsArtmann/go-datastar/tree/master/example/activity-feed).
+It moved out of this repo on 2026-11-23 and was rewritten on go-datastar's
+Patch API, with go-sse underneath as the transport. Run it from a go-datastar
+checkout:
 
 ```bash
-go run ./example/datastar/
-# open http://localhost:8765
+go run ./example/activity-feed/
+# open http://localhost:8767
 ```
 
-### Try It (60-second checklist)
+| You do this...               | ...and this go-sse API carries it                                        |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| Open multiple browser tabs   | `Broadcaster` fan-out — 64-deep buffered subscriber channels, drop on full |
+| Watch the subscriber counter | `OnSubscribe`/`OnUnsubscribe` callbacks + `SubscriberCount()`               |
+| Click "Alerts only"          | `SubscribeFilter` — predicate evaluated under the fan-out read lock         |
+| Close a tab, wait, reopen    | `EventStore` + `Replay` via the `Last-Event-ID` header                      |
+| Leave a tab idle             | `Stream.Heartbeat` — SSE comment frames every 15s                           |
+| Press Ctrl+C                 | `Broadcaster.Shutdown(ctx)` — drains buffers, then closes channels          |
 
-1. **Fan-out** — Open `http://localhost:8765` in 2+ browser tabs. All tabs show the same events arriving simultaneously. The "clients connected" counter updates in real time.
-2. **Filtering** — Click "Alerts only" in one tab. Only ALERT events appear. Other tabs stay unfiltered. Press `a` / `e` as keyboard shortcuts.
-3. **Reconnection replay** — Close a tab, wait 6+ seconds (3+ missed events), reopen it. The "Replayed N missed events" banner appears briefly with the gap filled.
-4. **Heartbeat** — Leave a tab idle for 60+ seconds. The connection stays alive through the green pulsing "live" indicator.
-5. **Shutdown** — Press `Ctrl+C` in the terminal. Connected clients are drained gracefully within 5 seconds.
+A minimal HTMX SSE example lives in [`example/htmx/`](example/htmx/):
 
-### How It Works
-
-**Data flow:**
-
-```
-background producer goroutine
-    │  generates a random activity item every 2s
-    │  assigns a sequential event ID
-    ▼
-memStore.Append(evt) ──── stores last 50 events for replay
-    │
-    ▼
-Broadcaster.BroadcastMany(evt, totalSignal)
-    │  non-blocking fan-out: each subscriber gets the event
-    │  via a 64-deep buffered channel (drops on overflow)
-    ▼
-per-client event loop (eventsHandler)
-    │  reads from subscriber channel
-    │  stream.Send(evt) → WriteEvent → ResponseWriter + Flush
-    ▼
-browser (DataStar SDK)
-    parses SSE event → patches DOM (prepend feed item)
-    or patches signals (update subscriber count, total events)
+```bash
+go run ./example/htmx/
+# open http://localhost:8766
 ```
 
-**Feature mapping:**
-
-| Example behavior          | go-sse API                                                            |
-| ------------------------- | --------------------------------------------------------------------- |
-| All tabs see same events  | `Broadcaster.Broadcast` / `BroadcastMany` — non-blocking fan-out      |
-| "N clients connected"     | `OnSubscribe` / `OnUnsubscribe` callbacks + `SubscriberCount()`       |
-| "Alerts only" filter      | `SubscribeFilter(func(evt) bool)` — predicate under fan-out read lock |
-| Reconnect replay          | `EventStore` (memStore) + `Replay` via `Last-Event-ID` header         |
-| Connection stays alive    | `Stream.Heartbeat(ctx, interval)` — sends SSE comment every 15s       |
-| Graceful drain on SIGINT  | `Broadcaster.Shutdown(ctx)` — drains buffers, then closes channels    |
-| Health/status snapshot    | `Broadcaster.Health()` — value-type for k8s liveness/readiness probes |
-| DataStar keyed data lines | `KeyedLines` + `SendLines` / `SendKeyed`                              |
-
-**Shutdown sequence:**
-
-1. `SIGINT` / `SIGTERM` received → context cancelled → producer goroutine exits
-2. `httpServer.Shutdown(ctx)` drains active HTTP requests (SSE connections close)
-3. `broadcaster.Shutdown(ctx)` marks the hub as draining (rejects new `Subscribe` calls), waits for subscriber buffers to empty, then closes all channels
-4. If the deadline (5s) fires before the drain completes, the broadcaster returns a `context.DeadlineExceeded` error wrapped with code `sse.shutdown_drain_deadline_exceeded`
-
-The example source is split into focused files: `main.go` (server setup + embed), `store.go` (in-memory ring buffer), `producer.go` (event generation), `handlers.go` (HTTP handlers + broadcaster wiring). See [`VERIFY.md`](example/datastar/VERIFY.md) for a manual browser verification checklist.
+[`example/README.md`](example/README.md) compares the two integration styles
+(keyed-line DataStar dialect vs fragment-swap HTMX).
 
 ## Companion Libraries
 

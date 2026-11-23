@@ -1,18 +1,22 @@
 # go-sse examples
 
-Three runnable examples for the [go-sse](https://github.com/larsartmann/go-sse)
-library, progressing from a raw terminal demo to two browser UIs that contrast
-the two most popular ways to consume SSE in a Go backend.
+Two runnable examples for the [go-sse](https://github.com/larsartmann/go-sse)
+library — a raw terminal demo and a browser UI — plus the DataStar-dialect
+activity feed, which lives in the companion library
+[go-datastar](https://github.com/larsartmann/go-datastar)'s
+[`example/activity-feed/`](https://github.com/LarsArtmann/go-datastar/tree/master/example/activity-feed)
+(moved there 2026-11-23, rewritten on go-datastar's Patch API with go-sse as
+the transport).
 
 | Example                  | Port    | What it shows                                                                                            | Audience                              |
 | ------------------------ | ------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | [`server.go`](server.go) | `:8080` | Bare wire format — subscribe and broadcast with `curl`. No browser.                                      | Learning the SSE wire format          |
-| [`datastar/`](datastar/) | `:8765` | Live activity feed: fan-out, filtering, replay, heartbeat — via DataStar reactive signals + keyed lines. | Rich, signal-driven UIs               |
+| [go-datastar `activity-feed/`](https://github.com/LarsArtmann/go-datastar/tree/master/example/activity-feed) | `:8767` | Live activity feed: fan-out, filtering, replay, heartbeat — via DataStar patches over go-sse.            | Rich, signal-driven UIs               |
 | [`htmx/`](htmx/)         | `:8766` | HTML fragment swapping via HTMX + its SSE extension. The server streams HTML; HTMX swaps it in.          | Hypermedia / server-rendered HTML UIs |
 
-The two browser examples take **different scopes** to highlight each tool's
-strengths: `datastar/` is a full go-sse feature showcase (a live activity feed
-with fan-out, filtering, replay, and heartbeat), while `htmx/` is a focused
+The two browser demos take **different scopes** to highlight each tool's
+strengths: go-datastar's `activity-feed/` is a full go-sse feature showcase
+(fan-out, filtering, replay, and heartbeat), while `htmx/` is a focused
 progress-bar demo. What's comparable is the _mechanism_ each uses to consume
 SSE — summarized below and explained in detail in [DataStar vs HTMX](#datastar-vs-htmx).
 
@@ -22,15 +26,16 @@ SSE — summarized below and explained in detail in [DataStar vs HTMX](#datastar
 
 ```bash
 go run example/server.go      # raw terminal demo   → http://localhost:8080
-go run example/datastar/      # DataStar UI         → http://localhost:8765
 go run example/htmx/          # HTMX UI             → http://localhost:8766
+# DataStar activity feed: from a go-datastar checkout
+# go run ./example/activity-feed/   → http://localhost:8767
 ```
 
 The URLs above are the defaults; every example honors a `PORT` environment
-variable override (`PORT=9000 go run example/datastar/`).
+variable override (`PORT=9000 go run example/htmx/`).
 
 > Each example is an independent `package main`. Run the package
-> (`example/datastar/`), not a single file, because the page is rendered by
+> (`example/htmx/`), not a single file, because the page is rendered by
 > generated templ code (`index_templ.go`). The JS bundles and CSS are embedded
 > via `go:embed` — no CDN, no internet connection required at runtime.
 
@@ -75,9 +80,10 @@ header on reconnect, enabling replay of missed events.
 
 ---
 
-## 2. DataStar example (`datastar/`)
+## 2. DataStar activity feed (in go-datastar)
 
-A **live activity feed** that showcases the full go-sse feature set:
+The **live activity feed** — the full go-sse feature showcase — lives in
+[go-datastar's `example/activity-feed/`](https://github.com/LarsArtmann/go-datastar/tree/master/example/activity-feed):
 
 - **`Broadcaster`** — open multiple tabs; every client receives the same events
   simultaneously (real-time fan-out).
@@ -87,18 +93,14 @@ A **live activity feed** that showcases the full go-sse feature set:
   from the in-memory ring buffer using `Last-Event-ID`.
 - **`Heartbeat`** — comment-frame pings keep the connection alive through
   proxies.
-- **Reactive signals** — `datastar-patch-signals` drives the live client count
-  (`$subscriberCount`) and replay banner (`$replayed`); `datastar-patch-elements`
-  appends entries to the `#feed`.
+- **Reactive signals** — patch-signals events drive the live client count
+  (`$subscriberCount`) and replay banner (`$replayed`); patch-elements events
+  prepend entries to the `#feed`.
 
-Built with the go-sse DataStar helpers: [`KeyedLines`](../event.go),
-[`SendKeyed`](../stream.go), and [`SendLines`](../stream.go). The page is a
-type-safe [templ](https://templ.guide) template; the DataStar JS bundle is
-embedded.
-
-```bash
-go run example/datastar/    # → http://localhost:8765
-```
+Server-side it is built with plain go-sse primitives (`Broadcaster`,
+`SubscribeFilter`, a ring-buffer `EventStore`, `Stream.Heartbeat`); the wire
+payloads are go-datastar patch values (`ElementsPatch`/`SignalsPatch`). A
+browser verification checklist ships alongside it (`VERIFY.md`).
 
 ---
 
@@ -129,11 +131,11 @@ updates. The trade-offs below flow from that mechanism, not the specific demo.
 
 ### At a glance
 
-| Aspect                    | DataStar `datastar/`                                                               | HTMX `htmx/`                                                |
+| Aspect                    | DataStar (go-datastar example)                                                     | HTMX `htmx/`                                                |
 | ------------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | **Mental model**          | Reactive signals + surgical DOM patches                                            | Hypermedia: swap HTML fragments into targets                |
 | **Server sends**          | Keyed-line protocol (`selector …`, `mode …`, `signals {…}`)                        | Raw HTML fragments                                          |
-| **go-sse API used**       | `Broadcaster`, `SubscribeFilter`, `EventStore`/`Replay`, `Heartbeat`, `KeyedLines` | `Send(Event{...})` (vanilla SSE; no special helpers)        |
+| **go-sse API used**       | `Broadcaster`, `SubscribeFilter`, `EventStore`/`Replay`, `Heartbeat`               | `Send(Event{...})` (vanilla SSE; no special helpers)        |
 | **Client bundle**         | `datastar.js` (~56 KB, 1 file)                                                     | `htmx.min.js` + `sse.min.js` (~54 KB, 2 files)              |
 | **Payload per event**     | Small — only the changed signal / element                                          | Larger — the whole fragment is re-rendered each event       |
 | **Update granularity**    | Surgical — updates one value on a **stable** element                               | Coarse — `innerHTML` swap **recreates** the children        |
